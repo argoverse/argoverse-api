@@ -1,0 +1,366 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.utils.manhattan_search &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>argoverse.utils.manhattan_search</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for argoverse.utils.manhattan_search</h1><div class="highlight"><pre>
+<span></span><span class="c1"># &lt;Copyright 2019, Argo AI, LLC. Released under the MIT license.&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;Fast search functions of nearest neighbor based on Manhattan distance.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="compute_polygon_bboxes"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.manhattan_search.compute_polygon_bboxes">[docs]</a><span class="k">def</span> <span class="nf">compute_polygon_bboxes</span><span class="p">(</span><span class="n">polygons</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; Compute the minimum size enclosing xy bounding box for each polygon that is provided as input.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        polygons: an array of type &#39;O&#39; (object) with shape (n,). Each object has shape (m, 3+).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        polygon_bboxes: a float array with shape (n, 4).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bboxes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">polygon</span> <span class="ow">in</span> <span class="n">polygons</span><span class="p">:</span>
+        <span class="n">bbox</span> <span class="o">=</span> <span class="n">compute_point_cloud_bbox</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span>
+        <span class="n">bboxes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span>
+
+    <span class="n">polygon_bboxes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bboxes</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">polygon_bboxes</span></div>
+
+
+<div class="viewcode-block" id="compute_point_cloud_bbox"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.manhattan_search.compute_point_cloud_bbox">[docs]</a><span class="k">def</span> <span class="nf">compute_point_cloud_bbox</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; Given a set of 2D or 3D points, find the minimum size axis-aligned bounding box in the xy plane (ground plane).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        point_cloud: an array of dim (N,3) or (N,2).</span>
+<span class="sd">        verbose: False by default, if set to True, it prints the bounding box dimensions.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bbox: an array of dim (4,) representing x_min, y_min, x_max, y_max.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">x_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">y_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">y_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">bbox_width</span> <span class="o">=</span> <span class="n">x_max</span> <span class="o">-</span> <span class="n">x_min</span>
+    <span class="n">bbox_height</span> <span class="o">=</span> <span class="n">y_max</span> <span class="o">-</span> <span class="n">y_min</span>
+
+    <span class="n">bbox</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Point cloud bbox width = </span><span class="si">{bbox_width}</span><span class="s2">, height = </span><span class="si">{bbox_height}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">bbox</span></div>
+
+
+<div class="viewcode-block" id="find_all_polygon_bboxes_overlapping_query_bbox"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.manhattan_search.find_all_polygon_bboxes_overlapping_query_bbox">[docs]</a><span class="k">def</span> <span class="nf">find_all_polygon_bboxes_overlapping_query_bbox</span><span class="p">(</span><span class="n">polygon_bboxes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">query_bbox</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; Find all the overlapping polygon bounding boxes.</span>
+
+<span class="sd">    Each bounding box has the following structure:</span>
+<span class="sd">        bbox = np.array([x_min,y_min,x_max,y_max])</span>
+
+<span class="sd">    In 3D space, if the coordinates are equal (polygon bboxes touch), then these are considered overlapping.</span>
+<span class="sd">    We have a guarantee that the cropped image will have any sort of overlap with the zero&#39;th object bounding box</span>
+<span class="sd">    inside of the image e.g. along the x-dimension, either the left or right side of the bounding box lies between the</span>
+<span class="sd">    edges of the query bounding box, or the bounding box completely engulfs the query bounding box.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        polygon_bboxes: An array of shape (K,), each array element is a NumPy array of shape (4,) representing</span>
+<span class="sd">                        the bounding box for a polygon or point cloud.</span>
+<span class="sd">        query_bbox: An array of shape (4,) representing a 2d axis-aligned bounding box, with order</span>
+<span class="sd">                    [min_x,min_y,max_x,max_y].</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        An integer array of shape (K,) representing indices where overlap occurs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">query_min_x</span> <span class="o">=</span> <span class="n">query_bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">query_min_y</span> <span class="o">=</span> <span class="n">query_bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">query_max_x</span> <span class="o">=</span> <span class="n">query_bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">query_max_y</span> <span class="o">=</span> <span class="n">query_bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="n">bboxes_x1</span> <span class="o">=</span> <span class="n">polygon_bboxes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">bboxes_x2</span> <span class="o">=</span> <span class="n">polygon_bboxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">bboxes_y1</span> <span class="o">=</span> <span class="n">polygon_bboxes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">bboxes_y2</span> <span class="o">=</span> <span class="n">polygon_bboxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
+
+    <span class="c1"># check if falls within range</span>
+    <span class="n">overlaps_left</span> <span class="o">=</span> <span class="p">(</span><span class="n">query_min_x</span> <span class="o">&lt;=</span> <span class="n">bboxes_x2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">bboxes_x2</span> <span class="o">&lt;=</span> <span class="n">query_max_x</span><span class="p">)</span>
+    <span class="n">overlaps_right</span> <span class="o">=</span> <span class="p">(</span><span class="n">query_min_x</span> <span class="o">&lt;=</span> <span class="n">bboxes_x1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">bboxes_x1</span> <span class="o">&lt;=</span> <span class="n">query_max_x</span><span class="p">)</span>
+
+    <span class="n">x_check1</span> <span class="o">=</span> <span class="n">bboxes_x1</span> <span class="o">&lt;=</span> <span class="n">query_min_x</span>
+    <span class="n">x_check2</span> <span class="o">=</span> <span class="n">query_min_x</span> <span class="o">&lt;=</span> <span class="n">query_max_x</span>
+    <span class="n">x_check3</span> <span class="o">=</span> <span class="n">query_max_x</span> <span class="o">&lt;=</span> <span class="n">bboxes_x2</span>
+    <span class="n">x_subsumed</span> <span class="o">=</span> <span class="n">x_check1</span> <span class="o">&amp;</span> <span class="n">x_check2</span> <span class="o">&amp;</span> <span class="n">x_check3</span>
+
+    <span class="n">x_in_range</span> <span class="o">=</span> <span class="n">overlaps_left</span> <span class="o">|</span> <span class="n">overlaps_right</span> <span class="o">|</span> <span class="n">x_subsumed</span>
+
+    <span class="n">overlaps_below</span> <span class="o">=</span> <span class="p">(</span><span class="n">query_min_y</span> <span class="o">&lt;=</span> <span class="n">bboxes_y2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">bboxes_y2</span> <span class="o">&lt;=</span> <span class="n">query_max_y</span><span class="p">)</span>
+    <span class="n">overlaps_above</span> <span class="o">=</span> <span class="p">(</span><span class="n">query_min_y</span> <span class="o">&lt;=</span> <span class="n">bboxes_y1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">bboxes_y1</span> <span class="o">&lt;=</span> <span class="n">query_max_y</span><span class="p">)</span>
+
+    <span class="n">y_check1</span> <span class="o">=</span> <span class="n">bboxes_y1</span> <span class="o">&lt;=</span> <span class="n">query_min_y</span>
+    <span class="n">y_check2</span> <span class="o">=</span> <span class="n">query_min_y</span> <span class="o">&lt;=</span> <span class="n">query_max_y</span>
+    <span class="n">y_check3</span> <span class="o">=</span> <span class="n">query_max_y</span> <span class="o">&lt;=</span> <span class="n">bboxes_y2</span>
+    <span class="n">y_subsumed</span> <span class="o">=</span> <span class="n">y_check1</span> <span class="o">&amp;</span> <span class="n">y_check2</span> <span class="o">&amp;</span> <span class="n">y_check3</span>
+    <span class="n">y_in_range</span> <span class="o">=</span> <span class="n">overlaps_below</span> <span class="o">|</span> <span class="n">overlaps_above</span> <span class="o">|</span> <span class="n">y_subsumed</span>
+
+    <span class="n">overlap_indxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x_in_range</span> <span class="o">&amp;</span> <span class="n">y_in_range</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">overlap_indxs</span></div>
+
+
+<div class="viewcode-block" id="find_local_polygons"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.manhattan_search.find_local_polygons">[docs]</a><span class="k">def</span> <span class="nf">find_local_polygons</span><span class="p">(</span>
+    <span class="n">lane_polygons</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">lane_bboxes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">query_min_x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">query_max_x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">query_min_y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">query_max_y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot; Find local polygons. We always also return indices.</span>
+
+<span class="sd">    Take a collection of precomputed polygon bounding boxes, and compare with a query bounding box then returns the</span>
+<span class="sd">    polygons that overlap, along with their array indices.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        lane_polygons: An array of polygons.</span>
+<span class="sd">        lane_bboxes: An array of shape (K,), each array element is a NumPy array of shape (4,) representing</span>
+<span class="sd">                    the bounding box for a polygon or point cloud.</span>
+<span class="sd">        query_min_x: minimum x coordinate of the query bounding box.</span>
+<span class="sd">        query_max_x: maximum x coordinate of the query bounding box.</span>
+<span class="sd">        query_min_y: minimum y coordinate of the query bounding box.</span>
+<span class="sd">        query_max_y: maximum y coordinate of the query bounding box.</span>
+<span class="sd">        return_indices: False by default, if set to True, the overlapping indices are returned along with the</span>
+<span class="sd">                        overlapping polygon.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Overlapping polygon.</span>
+<span class="sd">        Overlapping indices.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">query_bbox</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">query_min_x</span><span class="p">,</span> <span class="n">query_min_y</span><span class="p">,</span> <span class="n">query_max_x</span><span class="p">,</span> <span class="n">query_max_y</span><span class="p">])</span>
+    <span class="n">overlap_indxs</span> <span class="o">=</span> <span class="n">find_all_polygon_bboxes_overlapping_query_bbox</span><span class="p">(</span><span class="n">lane_bboxes</span><span class="p">,</span> <span class="n">query_bbox</span><span class="p">)</span>
+
+    <span class="n">pruned_lane_polygons</span> <span class="o">=</span> <span class="n">lane_polygons</span><span class="p">[</span><span class="n">overlap_indxs</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">pruned_lane_polygons</span><span class="p">,</span> <span class="n">overlap_indxs</span></div>
+
+
+<div class="viewcode-block" id="prune_polygons_manhattan_dist"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.manhattan_search.prune_polygons_manhattan_dist">[docs]</a><span class="k">def</span> <span class="nf">prune_polygons_manhattan_dist</span><span class="p">(</span>
+    <span class="n">query_pt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">points_xyz</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">query_search_range_manhattan</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; Prune polygon points based on a search area defined by the manhattan distance.</span>
+
+<span class="sd">    Take a collection of small point clouds and return only point clouds that fall within a manhattan search radius of</span>
+<span class="sd">    the 2D query point.</span>
+
+<span class="sd">    Similar to the function above, except query bounding box and polygon bounding boxes are not pre-computed, meaning</span>
+<span class="sd">    they must be computed on fly, which can be quite computationally expensive in a loop.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        query_pt: Numpy n-d array with dimension (2,) representing xy query location.</span>
+<span class="sd">        points_xyz: An array of shape (n,) of array objects. Each array object could be a 2D or 3D polygon, i.e. of</span>
+<span class="sd">        shape (m,2) or (m,3) respectively.</span>
+<span class="sd">        query_search_range_manhattan: Side length of query bounding box square which is set to 200 by default.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        An array pruned xyz point objects of shape (k,). Each array object could be a 2D or 3D polygon, i.e. of shape</span>
+<span class="sd">        (m,2) or (m,3) respectively.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bboxes</span> <span class="o">=</span> <span class="n">compute_polygon_bboxes</span><span class="p">(</span><span class="n">points_xyz</span><span class="p">)</span>
+
+    <span class="n">query_min_x</span> <span class="o">=</span> <span class="n">query_pt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">query_search_range_manhattan</span>
+    <span class="n">query_max_x</span> <span class="o">=</span> <span class="n">query_pt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">query_search_range_manhattan</span>
+    <span class="n">query_min_y</span> <span class="o">=</span> <span class="n">query_pt</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">query_search_range_manhattan</span>
+    <span class="n">query_max_y</span> <span class="o">=</span> <span class="n">query_pt</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">query_search_range_manhattan</span>
+
+    <span class="n">query_bbox</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">query_min_x</span><span class="p">,</span> <span class="n">query_min_y</span><span class="p">,</span> <span class="n">query_max_x</span><span class="p">,</span> <span class="n">query_max_y</span><span class="p">])</span>
+    <span class="n">overlap_indxs</span> <span class="o">=</span> <span class="n">find_all_polygon_bboxes_overlapping_query_bbox</span><span class="p">(</span><span class="n">bboxes</span><span class="p">,</span> <span class="n">query_bbox</span><span class="p">)</span>
+
+    <span class="n">pruned_points_xyz</span> <span class="o">=</span> <span class="n">points_xyz</span><span class="p">[</span><span class="n">overlap_indxs</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">pruned_points_xyz</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

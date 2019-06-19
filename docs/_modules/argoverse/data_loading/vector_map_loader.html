@@ -1,0 +1,508 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.data_loading.vector_map_loader &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>argoverse.data_loading.vector_map_loader</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for argoverse.data_loading.vector_map_loader</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># &lt;Copyright 2019, Argo AI, LLC. Released under the MIT license.&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Utility to load the Argoverse vector map from disk, where it is stored in an XML format.</span>
+
+<span class="sd">We release our Argoverse vector map in a modified OpenStreetMap (OSM) form. We also provide</span>
+<span class="sd">the map data loader. OpenStreetMap (OSM) provides XML data and relies upon &quot;Nodes&quot; and &quot;Ways&quot; as</span>
+<span class="sd">its fundamental element.</span>
+
+<span class="sd">A &quot;Node&quot; is a point of interest, or a constituent point of a line feature such as a road.</span>
+<span class="sd">In OpenStreetMap, a `Node` has tags, which might be</span>
+<span class="sd">        -natural: If it&#39;s a natural feature, indicates the type (hill summit, etc)</span>
+<span class="sd">        -man_made: If it&#39;s a man made feature, indicates the type (water tower, mast etc)</span>
+<span class="sd">        -amenity: If it&#39;s an amenity (e.g. a pub, restaurant, recycling</span>
+<span class="sd">            centre etc) indicates the type</span>
+
+<span class="sd">In OSM, a &quot;Way&quot; is most often a road centerline, composed of an ordered list of &quot;Nodes&quot;.</span>
+<span class="sd">An OSM way often represents a line or polygon feature, e.g. a road, a stream, a wood, a lake.</span>
+<span class="sd">Ways consist of two or more nodes. Tags for a Way might be:</span>
+<span class="sd">        -highway: the class of road (motorway, primary,secondary etc)</span>
+<span class="sd">        -maxspeed: maximum speed in km/h</span>
+<span class="sd">        -ref: the road reference number</span>
+<span class="sd">        -oneway: is it a one way road? (boolean)</span>
+
+<span class="sd">However, in Argoverse, a &quot;Way&quot; corresponds to a LANE segment centerline. An Argoverse Way has the</span>
+<span class="sd">following 9 attributes:</span>
+<span class="sd">        -   id: integer, unique lane ID that serves as identifier for this &quot;Way&quot;</span>
+<span class="sd">        -   has_traffic_control: boolean</span>
+<span class="sd">        -   turn_direction: string, &#39;RIGHT&#39;, &#39;LEFT&#39;, or &#39;NONE&#39;</span>
+<span class="sd">        -   is_intersection: boolean</span>
+<span class="sd">        -   l_neighbor_id: integer, unique ID for left neighbor</span>
+<span class="sd">        -   r_neighbor_id: integer, unique ID for right neighbor</span>
+<span class="sd">        -   predecessors: list of integers or None</span>
+<span class="sd">        -   successors: list of integers or None</span>
+<span class="sd">        -   centerline_node_ids: list</span>
+
+<span class="sd">In Argoverse, a `LaneSegment` object is derived from a combination of a single `Way` and two or more</span>
+<span class="sd">`Node` objects.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">ET</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">argoverse.map_representation.lane_segment</span> <span class="k">import</span> <span class="n">LaneSegment</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="n">_PathLike</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;os.PathLike[str]&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="Node"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.vector_map_loader.Node">[docs]</a><span class="k">class</span> <span class="nc">Node</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    e.g. a point of interest, or a constituent point of a</span>
+<span class="sd">    line feature such as a road</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Node.__init__"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.vector_map_loader.Node.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Args:</span>
+<span class="sd">                id: representing unique node ID</span>
+<span class="sd">                x: x-coordinate in city reference system</span>
+<span class="sd">                y: y-coordinate in city reference system</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="nb">id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">height</span></div></div>
+
+
+<div class="viewcode-block" id="str_to_bool"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.vector_map_loader.str_to_bool">[docs]</a><span class="k">def</span> <span class="nf">str_to_bool</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">       s: string representation of boolean, either &#39;True&#39; or &#39;False&#39;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       boolean</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">s</span> <span class="o">==</span> <span class="s2">&quot;True&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">assert</span> <span class="n">s</span> <span class="o">==</span> <span class="s2">&quot;False&quot;</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="convert_dictionary_to_lane_segment_obj"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.vector_map_loader.convert_dictionary_to_lane_segment_obj">[docs]</a><span class="k">def</span> <span class="nf">convert_dictionary_to_lane_segment_obj</span><span class="p">(</span><span class="n">lane_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">lane_dictionary</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">LaneSegment</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Not all lanes have predecessors and successors.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       lane_id: representing unique lane ID</span>
+<span class="sd">       lane_dictionary: dictionary with LaneSegment attributes, not yet in object instance form</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       ls: LaneSegment object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">predecessors</span> <span class="o">=</span> <span class="n">lane_dictionary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;predecessor&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">successors</span> <span class="o">=</span> <span class="n">lane_dictionary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;successor&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">has_traffic_control</span> <span class="o">=</span> <span class="n">str_to_bool</span><span class="p">(</span><span class="n">lane_dictionary</span><span class="p">[</span><span class="s2">&quot;has_traffic_control&quot;</span><span class="p">])</span>
+    <span class="n">is_intersection</span> <span class="o">=</span> <span class="n">str_to_bool</span><span class="p">(</span><span class="n">lane_dictionary</span><span class="p">[</span><span class="s2">&quot;is_intersection&quot;</span><span class="p">])</span>
+    <span class="n">lnid</span> <span class="o">=</span> <span class="n">lane_dictionary</span><span class="p">[</span><span class="s2">&quot;l_neighbor_id&quot;</span><span class="p">]</span>
+    <span class="n">rnid</span> <span class="o">=</span> <span class="n">lane_dictionary</span><span class="p">[</span><span class="s2">&quot;r_neighbor_id&quot;</span><span class="p">]</span>
+    <span class="n">l_neighbor_id</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">lnid</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">lnid</span><span class="p">)</span>
+    <span class="n">r_neighbor_id</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">rnid</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">rnid</span><span class="p">)</span>
+    <span class="n">ls</span> <span class="o">=</span> <span class="n">LaneSegment</span><span class="p">(</span>
+        <span class="n">lane_id</span><span class="p">,</span>
+        <span class="n">has_traffic_control</span><span class="p">,</span>
+        <span class="n">lane_dictionary</span><span class="p">[</span><span class="s2">&quot;turn_direction&quot;</span><span class="p">],</span>
+        <span class="n">is_intersection</span><span class="p">,</span>
+        <span class="n">l_neighbor_id</span><span class="p">,</span>
+        <span class="n">r_neighbor_id</span><span class="p">,</span>
+        <span class="n">predecessors</span><span class="p">,</span>
+        <span class="n">successors</span><span class="p">,</span>
+        <span class="n">lane_dictionary</span><span class="p">[</span><span class="s2">&quot;centerline&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">ls</span></div>
+
+
+<div class="viewcode-block" id="append_additional_key_value_pair"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.vector_map_loader.append_additional_key_value_pair">[docs]</a><span class="k">def</span> <span class="nf">append_additional_key_value_pair</span><span class="p">(</span><span class="n">lane_obj</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">way_field</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Key name was either &#39;predecessor&#39; or &#39;successor&#39;, for which we can have multiple.</span>
+<span class="sd">    Thus we append them to a list. They should be integers, as lane IDs.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       lane_obj: lane object</span>
+<span class="sd">       way_field: key and value pair to append</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">way_field</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">way_field</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">way_field</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">lane_obj</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="append_unique_key_value_pair"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.vector_map_loader.append_unique_key_value_pair">[docs]</a><span class="k">def</span> <span class="nf">append_unique_key_value_pair</span><span class="p">(</span><span class="n">lane_obj</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">way_field</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For the following types of Way &quot;tags&quot;, the key, value pair is defined only once within</span>
+<span class="sd">    the object:</span>
+<span class="sd">        - has_traffic_control, turn_direction, is_intersection, l_neighbor_id, r_neighbor_id</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       lane_obj: lane object</span>
+<span class="sd">       way_field: key and value pair to append</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">way_field</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">way_field</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">way_field</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">lane_obj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span></div>
+
+
+<div class="viewcode-block" id="extract_node_waypt"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.vector_map_loader.extract_node_waypt">[docs]</a><span class="k">def</span> <span class="nf">extract_node_waypt</span><span class="p">(</span><span class="n">way_field</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a list with a reference node such as [(&#39;ref&#39;, &#39;0&#39;)], extract out the lane ID.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       way_field: key and node id pair to extract</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       node_id: unique ID for a node waypoint</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">way_field</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">node_id</span> <span class="o">=</span> <span class="n">way_field</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;ref&quot;</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">node_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_lane_identifier"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.vector_map_loader.get_lane_identifier">[docs]</a><span class="k">def</span> <span class="nf">get_lane_identifier</span><span class="p">(</span><span class="n">child</span><span class="p">:</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fetch lane ID from XML ET.Element.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       child: ET.Element with information about Way</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       unique lane ID</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;lane_id&quot;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="convert_node_id_list_to_xy"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.vector_map_loader.convert_node_id_list_to_xy">[docs]</a><span class="k">def</span> <span class="nf">convert_node_id_list_to_xy</span><span class="p">(</span><span class="n">node_id_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">all_graph_nodes</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Node</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    convert node id list to centerline xy coordinate</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       node_id_list: list of node_id&#39;s</span>
+<span class="sd">       all_graph_nodes: dictionary mapping node_ids to Node</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       centerline</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">num_nodes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">node_id_list</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">all_graph_nodes</span><span class="p">[</span><span class="n">node_id_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">height</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">centerline</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_nodes</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">centerline</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_nodes</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">node_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">node_id_list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">all_graph_nodes</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span><span class="o">.</span><span class="n">height</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">centerline</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">all_graph_nodes</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">all_graph_nodes</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">all_graph_nodes</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span><span class="o">.</span><span class="n">height</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">centerline</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">all_graph_nodes</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">all_graph_nodes</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span><span class="o">.</span><span class="n">y</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">centerline</span></div>
+
+
+<div class="viewcode-block" id="extract_node_from_ET_element"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.vector_map_loader.extract_node_from_ET_element">[docs]</a><span class="k">def</span> <span class="nf">extract_node_from_ET_element</span><span class="p">(</span><span class="n">child</span><span class="p">:</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a line of XML, build a node object. The &quot;node_fields&quot; dictionary will hold &quot;id&quot;, &quot;x&quot;, &quot;y&quot;.</span>
+<span class="sd">    The XML will resemble:</span>
+
+<span class="sd">        &lt;node id=&quot;0&quot; x=&quot;3168.066310258233&quot; y=&quot;1674.663991981186&quot; /&gt;</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        child: xml.etree.ElementTree element</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Node object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">node_fields</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span>
+    <span class="n">node_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">node_fields</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="s2">&quot;height&quot;</span> <span class="ow">in</span> <span class="n">node_fields</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">Node</span><span class="p">(</span>
+            <span class="nb">id</span><span class="o">=</span><span class="n">node_id</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">node_fields</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]),</span> <span class="n">y</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">node_fields</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]),</span> <span class="n">height</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">node_fields</span><span class="p">[</span><span class="s2">&quot;height&quot;</span><span class="p">])</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">Node</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">node_id</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">node_fields</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]),</span> <span class="n">y</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">node_fields</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="extract_lane_segment_from_ET_element"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.vector_map_loader.extract_lane_segment_from_ET_element">[docs]</a><span class="k">def</span> <span class="nf">extract_lane_segment_from_ET_element</span><span class="p">(</span>
+    <span class="n">child</span><span class="p">:</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span> <span class="n">all_graph_nodes</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Node</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">LaneSegment</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    We build a lane segment from an XML element. A lane segment is equivalent</span>
+<span class="sd">    to a &quot;Way&quot; in our XML file. Each Lane Segment has a polyline representing its centerline.</span>
+<span class="sd">    The relevant XML data might resemble::</span>
+
+<span class="sd">        &lt;way lane_id=&quot;9604854&quot;&gt;</span>
+<span class="sd">            &lt;tag k=&quot;has_traffic_control&quot; v=&quot;False&quot; /&gt;</span>
+<span class="sd">            &lt;tag k=&quot;turn_direction&quot; v=&quot;NONE&quot; /&gt;</span>
+<span class="sd">            &lt;tag k=&quot;is_intersection&quot; v=&quot;False&quot; /&gt;</span>
+<span class="sd">            &lt;tag k=&quot;l_neighbor_id&quot; v=&quot;None&quot; /&gt;</span>
+<span class="sd">            &lt;tag k=&quot;r_neighbor_id&quot; v=&quot;None&quot; /&gt;</span>
+<span class="sd">            &lt;nd ref=&quot;0&quot; /&gt;</span>
+<span class="sd">            ...</span>
+<span class="sd">            &lt;nd ref=&quot;9&quot; /&gt;</span>
+<span class="sd">            &lt;tag k=&quot;predecessor&quot; v=&quot;9608794&quot; /&gt;</span>
+<span class="sd">            ...</span>
+<span class="sd">            &lt;tag k=&quot;predecessor&quot; v=&quot;9609147&quot; /&gt;</span>
+<span class="sd">        &lt;/way&gt;</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        child: xml.etree.ElementTree element</span>
+<span class="sd">        all_graph_nodes</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        lane_segment: LaneSegment object</span>
+<span class="sd">        lane_id</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lane_obj</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">lane_id</span> <span class="o">=</span> <span class="n">get_lane_identifier</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+    <span class="n">node_id_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">child</span><span class="p">:</span>
+        <span class="c1"># The cast on the next line is the result of a typeshed bug.  This really is a List and not a ItemsView.</span>
+        <span class="n">way_field</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span> <span class="n">element</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="n">field_name</span> <span class="o">=</span> <span class="n">way_field</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s2">&quot;k&quot;</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">way_field</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;predecessor&quot;</span><span class="p">,</span> <span class="s2">&quot;successor&quot;</span><span class="p">}:</span>
+                <span class="n">append_additional_key_value_pair</span><span class="p">(</span><span class="n">lane_obj</span><span class="p">,</span> <span class="n">way_field</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">append_unique_key_value_pair</span><span class="p">(</span><span class="n">lane_obj</span><span class="p">,</span> <span class="n">way_field</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">node_id_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extract_node_waypt</span><span class="p">(</span><span class="n">way_field</span><span class="p">))</span>
+
+    <span class="n">lane_obj</span><span class="p">[</span><span class="s2">&quot;centerline&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">convert_node_id_list_to_xy</span><span class="p">(</span><span class="n">node_id_list</span><span class="p">,</span> <span class="n">all_graph_nodes</span><span class="p">)</span>
+    <span class="n">lane_segment</span> <span class="o">=</span> <span class="n">convert_dictionary_to_lane_segment_obj</span><span class="p">(</span><span class="n">lane_id</span><span class="p">,</span> <span class="n">lane_obj</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lane_segment</span><span class="p">,</span> <span class="n">lane_id</span></div>
+
+
+<div class="viewcode-block" id="load_lane_segments_from_xml"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.vector_map_loader.load_lane_segments_from_xml">[docs]</a><span class="k">def</span> <span class="nf">load_lane_segments_from_xml</span><span class="p">(</span><span class="n">map_fpath</span><span class="p">:</span> <span class="n">_PathLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">LaneSegment</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load lane segment object from xml file</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       map_fpath: path to xml file</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       lane_objs: List of LaneSegment objects</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fspath</span><span class="p">(</span><span class="n">map_fpath</span><span class="p">))</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Loaded root: </span><span class="si">{root.tag}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">all_graph_nodes</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">lane_objs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c1"># all children are either Nodes or Ways</span>
+    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">root</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;node&quot;</span><span class="p">:</span>
+            <span class="n">node_obj</span> <span class="o">=</span> <span class="n">extract_node_from_ET_element</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+            <span class="n">all_graph_nodes</span><span class="p">[</span><span class="n">node_obj</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_obj</span>
+        <span class="k">elif</span> <span class="n">child</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;way&quot;</span><span class="p">:</span>
+            <span class="n">lane_obj</span><span class="p">,</span> <span class="n">lane_id</span> <span class="o">=</span> <span class="n">extract_lane_segment_from_ET_element</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">all_graph_nodes</span><span class="p">)</span>
+            <span class="n">lane_objs</span><span class="p">[</span><span class="n">lane_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">lane_obj</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Unknown XML item encountered.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unknown XML item encountered.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lane_objs</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

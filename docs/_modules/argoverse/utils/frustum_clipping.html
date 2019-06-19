@@ -1,0 +1,601 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.utils.frustum_clipping &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>argoverse.utils.frustum_clipping</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for argoverse.utils.frustum_clipping</h1><div class="highlight"><pre>
+<span></span><span class="c1"># &lt;Copyright 2019, Argo AI, LLC. Released under the MIT license.&gt;</span>
+<span class="sd">&quot;&quot;&quot;Collection of utilities to explicitly form the camera view frustum and clip line segments to within frustum view.</span>
+
+<span class="sd">These utilities use focal lengths and camera image dimensions to create camera view frustums,</span>
+<span class="sd">and then to clip line segments to live within the frustum only.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.camera_stats</span> <span class="k">import</span> <span class="n">get_image_dims_for_camera</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.manhattan_search</span> <span class="k">import</span> <span class="n">compute_point_cloud_bbox</span>
+
+
+<div class="viewcode-block" id="fit_plane_to_point_cloud"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.frustum_clipping.fit_plane_to_point_cloud">[docs]</a><span class="k">def</span> <span class="nf">fit_plane_to_point_cloud</span><span class="p">(</span><span class="n">pc</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Use SVD with at least 3 points to fit a plane.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pc: Array of shape (N, 3)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        a, b, c, d: float-like values defining ax + by + cz = d for the plane</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="n">pc</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">pc</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">vh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">pc</span> <span class="o">-</span> <span class="n">center</span><span class="p">)</span>
+
+    <span class="c1"># Get the unitary normal vector</span>
+    <span class="n">u_norm</span> <span class="o">=</span> <span class="n">vh</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u_norm</span><span class="p">,</span> <span class="n">center</span><span class="p">)</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">u_norm</span>
+    <span class="k">return</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span></div>
+
+
+<div class="viewcode-block" id="form_right_clipping_plane"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.frustum_clipping.form_right_clipping_plane">[docs]</a><span class="k">def</span> <span class="nf">form_right_clipping_plane</span><span class="p">(</span><span class="n">fx</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">img_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Form the right clipping plane for a camera view frustum.</span>
+
+<span class="sd">    In the camera coordinate frame, y is down the imager, x is across the imager,</span>
+<span class="sd">    and z is along the optical axis. The focal length is the distance to the center</span>
+<span class="sd">    of the image plane. We know that a similar triangle is formed as follows::</span>
+
+<span class="sd">        (x,y,z)--(x,y,z)</span>
+<span class="sd">          |         /</span>
+<span class="sd">          |        / -&gt;outside of frustum</span>
+<span class="sd">          |       / -&gt;outside of frustum</span>
+<span class="sd">          | (w/2)/</span>
+<span class="sd">          o-----o IMAGE PLANE</span>
+<span class="sd">          |    /</span>
+<span class="sd">        fx|   /</span>
+<span class="sd">          |  /</span>
+<span class="sd">          | /</span>
+<span class="sd">          O PINHOLE</span>
+
+<span class="sd">    Normal must point into the frustum. The plane moves +fx in z-axis for</span>
+<span class="sd">    every +w/2 in x-axis, so normal will have negative inverse slope components.</span>
+
+<span class="sd">    Then, enforce that x-component of normal points in negative direction.</span>
+<span class="sd">    The &quot;d&quot; in &quot;ax + by + cz = d&quot; is zero because plane goes through origin.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fx: Horizontal focal length in pixels</span>
+<span class="sd">        img_width: Image width in pixels</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        right_plane: Array of shape (4,) for ax + by + cz = d</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">right_plane</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">fx</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">img_width</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+    <span class="n">right_plane</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">right_plane</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">right_plane</span></div>
+
+
+<div class="viewcode-block" id="form_left_clipping_plane"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.frustum_clipping.form_left_clipping_plane">[docs]</a><span class="k">def</span> <span class="nf">form_left_clipping_plane</span><span class="p">(</span><span class="n">fx</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">img_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Form the left clipping plane for a camera view frustum.</span>
+
+<span class="sd">    In the camera coordinate frame, y is down the imager, x is across the imager,</span>
+<span class="sd">    and z is along the optical axis. The focal length is the distance to the center</span>
+<span class="sd">    of the image plane. We know that a similar triangle is formed as follows::</span>
+
+<span class="sd">                       (x,y,z)-----(x,y,z)</span>
+<span class="sd">                          \\          |</span>
+<span class="sd">     outside of frustum &lt;- \\         |</span>
+<span class="sd">      outside of frustum &lt;- \\        |</span>
+<span class="sd">                             \\ (-w/2)|</span>
+<span class="sd">                               o------o IMAGE PLANE</span>
+<span class="sd">                               \\     |</span>
+<span class="sd">                                \\    |</span>
+<span class="sd">                                 \\   |fx</span>
+<span class="sd">                                  \\  |</span>
+<span class="sd">                                   \\ |</span>
+<span class="sd">                                      O PINHOLE</span>
+
+<span class="sd">    Normal must point into the frustum. The plane moves +fx in z-axis for</span>
+<span class="sd">    every -w/2 in x-axis, so normal will have negative inverse slope components.</span>
+<span class="sd">    The &quot;d&quot; in &quot;ax + by + cz = d&quot; is zero because plane goes through origin.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fx: Horizontal focal length in pixels</span>
+<span class="sd">        img_width: Image width in pixels</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        left_plane: Array of shape (4,) for ax + by + cz = d</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">left_plane</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">fx</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">img_width</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+    <span class="n">left_plane</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">left_plane</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">left_plane</span></div>
+
+
+<div class="viewcode-block" id="form_top_clipping_plane"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.frustum_clipping.form_top_clipping_plane">[docs]</a><span class="k">def</span> <span class="nf">form_top_clipping_plane</span><span class="p">(</span><span class="n">fx</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">img_height</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Form the top clipping plane for a camera view frustum.</span>
+
+<span class="sd">    In the camera coordinate frame, y is down the imager, x is across the imager,</span>
+<span class="sd">    and z is along the optical axis. The focal length is the distance to the center</span>
+<span class="sd">    of the image plane. We know that a similar triangle is formed as follows::</span>
+
+<span class="sd">          (x,y,z)               (x,y,z)</span>
+<span class="sd">              \\=================//</span>
+<span class="sd">               \\               //</span>
+<span class="sd">        (-w/h,-h/2,fx)       (w/h,-h/2,fx)</span>
+<span class="sd">                 o-------------o</span>
+<span class="sd">                 |\\         //| IMAGE PLANE</span>
+<span class="sd">                 | \\       // | IMAGE PLANE</span>
+<span class="sd">                 o--\\-----//--o</span>
+<span class="sd">                     \\   //</span>
+<span class="sd">                      \\ //</span>
+<span class="sd">                        O PINHOLE</span>
+
+<span class="sd">    Normal must point into the frustum. The plane moves -h/2 in y-axis for every</span>
+<span class="sd">    +fx in z-axis, so normal will have negative inverse slope components. The</span>
+<span class="sd">    x-axis component is zero since constant in x.</span>
+<span class="sd">    The &quot;d&quot; in &quot;ax + by + cz = d&quot; is zero because plane goes through origin.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fx: Horizontal focal length in pixels</span>
+<span class="sd">        img_height: Image height in pixels</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        top_plane: Array of shape (4,) for ax + by + cz = d</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">top_plane</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">fx</span><span class="p">,</span> <span class="n">img_height</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+    <span class="n">top_plane</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">top_plane</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">top_plane</span></div>
+
+
+<div class="viewcode-block" id="form_low_clipping_plane"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.frustum_clipping.form_low_clipping_plane">[docs]</a><span class="k">def</span> <span class="nf">form_low_clipping_plane</span><span class="p">(</span><span class="n">fx</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">img_height</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Form the low clipping plane for a camera view frustum.</span>
+
+<span class="sd">    Use 3 points to fit the low clipping plane. In the camera coordinate frame,</span>
+<span class="sd">    y is down the imager, x is across the imager, and z is along the optical axis.</span>
+<span class="sd">    We know that a similar triangle is formed as follows::</span>
+
+<span class="sd">                (x,y,z)              (x,y,z)</span>
+<span class="sd">                   \\                   //</span>
+<span class="sd">                    \\ o-------------o //</span>
+<span class="sd">                     \\| IMAGE PLANE |//</span>
+<span class="sd">                       |             |/</span>
+<span class="sd">        (-w/h, h/2,fx) o-------------o (w/h, h/2,fx)</span>
+<span class="sd">                        \\         //</span>
+<span class="sd">                         \\       //</span>
+<span class="sd">                          \\     //</span>
+<span class="sd">                           \\   //</span>
+<span class="sd">                            \\ //</span>
+<span class="sd">                              O PINHOLE</span>
+
+<span class="sd">    Normal must point into the frustum. The plane moves +h/2 in y-axis for every</span>
+<span class="sd">    +fx in z-axis, so normal will have negative inverse slope components. The</span>
+<span class="sd">    x-axis component is zero since constant in x.</span>
+
+<span class="sd">    Then enforce that y-coord of normal points in neg y-axis dir(up) on low-clipping plane.</span>
+<span class="sd">    The z-coord should point in positive z-axis direction (away from camera).</span>
+<span class="sd">    The &quot;d&quot; in &quot;ax + by + cz = d&quot; is zero because plane goes through origin.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fx: Horizontal focal length in pixels</span>
+<span class="sd">        img_height: Image height in pixels</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        low_plane: Array of shape (4,) for ax + by + cz = d</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">low_plane</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">fx</span><span class="p">,</span> <span class="n">img_height</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+    <span class="n">low_plane</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">low_plane</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">low_plane</span></div>
+
+
+<div class="viewcode-block" id="form_near_clipping_plane"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.frustum_clipping.form_near_clipping_plane">[docs]</a><span class="k">def</span> <span class="nf">form_near_clipping_plane</span><span class="p">(</span><span class="n">near_clip_dist</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Form the near clipping plane for a camera view frustum.</span>
+
+<span class="sd">    In the camera coordinate frame, y is down the imager, x is across the imager,</span>
+<span class="sd">    and z is along the optical axis. The near clipping plane should point in</span>
+<span class="sd">    the positive z-direction (along optical axis).</span>
+
+<span class="sd">    We form &quot;ax + by + cz = d&quot;, where &quot;d&quot; is a distance from the origin.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        near_clip_dist: Near clipping plane distance in meters</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        top_plane: Array of shape (4,) for ax + by + cz = d</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="n">near_clip_dist</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="generate_frustum_planes"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.frustum_clipping.generate_frustum_planes">[docs]</a><span class="k">def</span> <span class="nf">generate_frustum_planes</span><span class="p">(</span><span class="n">K</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">camera_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">near_clip_dist</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;Compute the planes enclosing the field of view (viewing frustum) for a single camera.</span>
+
+<span class="sd">    We do this using similar triangles.</span>
+<span class="sd">    tan(theta/2) = (0.5 * height)/focal_length</span>
+<span class="sd">    &quot;theta&quot; is the vertical FOV. Similar for horizontal FOV.</span>
+<span class="sd">    height and focal_length are both in pixels.</span>
+
+<span class="sd">    Note that ring cameras and stereo cameras have different image widths</span>
+<span class="sd">    and heights, affecting the field of view.</span>
+
+<span class="sd">    Ring Camera intrinsics K look like (in pixels)::</span>
+
+<span class="sd">        [1400,   0, 964]     [fx,skew,cx]</span>
+<span class="sd">        [   0,1403, 605] for [-,   fy,cy]</span>
+<span class="sd">        [   0,   0,   1]     [0,    0, 1]</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        K: Array of shape (3, 3) representing camera intrinsics matrix</span>
+<span class="sd">        camera_name: String representing the camera name to get the dimensions of and compute the FOV for</span>
+<span class="sd">        near_clip_dist: The distance for the near clipping plane in meters</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        planes: List of length 5, where each list element is an Array of shape (4,)</span>
+<span class="sd">                representing the equation of a plane, e.g. (a, b, c, d) in ax + by + cz = d</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">img_width</span><span class="p">,</span> <span class="n">img_height</span> <span class="o">=</span> <span class="n">get_image_dims_for_camera</span><span class="p">(</span><span class="n">camera_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">img_width</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">img_height</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+    <span class="n">fx</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">fy</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">right_plane</span> <span class="o">=</span> <span class="n">form_right_clipping_plane</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">img_width</span><span class="p">)</span>
+    <span class="n">left_plane</span> <span class="o">=</span> <span class="n">form_left_clipping_plane</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">img_width</span><span class="p">)</span>
+    <span class="n">near_plane</span> <span class="o">=</span> <span class="n">form_near_clipping_plane</span><span class="p">(</span><span class="n">near_clip_dist</span><span class="p">)</span>
+
+    <span class="c1"># The horizontal and vertical focal lengths should be very close to equal,</span>
+    <span class="c1"># otherwise something went wrong when forming K matrix.</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">fx</span> <span class="o">-</span> <span class="n">fy</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">10</span>
+
+    <span class="n">low_plane</span> <span class="o">=</span> <span class="n">form_low_clipping_plane</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">img_height</span><span class="p">)</span>
+    <span class="n">top_plane</span> <span class="o">=</span> <span class="n">form_top_clipping_plane</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">img_height</span><span class="p">)</span>
+
+    <span class="n">planes</span> <span class="o">=</span> <span class="p">[</span><span class="n">left_plane</span><span class="p">,</span> <span class="n">right_plane</span><span class="p">,</span> <span class="n">near_plane</span><span class="p">,</span> <span class="n">low_plane</span><span class="p">,</span> <span class="n">top_plane</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">planes</span></div>
+
+
+<div class="viewcode-block" id="clip_segment_v3_plane_n"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.frustum_clipping.clip_segment_v3_plane_n">[docs]</a><span class="k">def</span> <span class="nf">clip_segment_v3_plane_n</span><span class="p">(</span><span class="n">p1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">p2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">planes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Iterate over the frustum planes and intersect them with the segment.</span>
+
+<span class="sd">    This  updating the min/max, bailing out early if the min &gt; max.</span>
+<span class="sd">    We exploit the fact that in a camera frustum, all plane</span>
+<span class="sd">    normals point inside the frustum volume.</span>
+
+<span class="sd">    See section &quot;Line-Plane Intersection&quot; for technical details at: http://geomalgorithms.com/a05-_intersect-1.html</span>
+
+<span class="sd">    &quot;t&quot; is the distance we travel along the ray from p1 to p2.</span>
+<span class="sd">    If &quot;t&quot; exceeds 1.0, then we have exceeded the line segment.</span>
+
+<span class="sd">    A similar function, written in C, can be found in the Blender source code at:</span>
+<span class="sd">    https://fossies.org/dox/blender-2.79b/math__geom_8c_source.html</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        p1: 3D vector defining a point to constrain a line segment</span>
+<span class="sd">        p2: 3D vector defining a point to constrain a line segment</span>
+<span class="sd">        planes: List of length 5, where each list element is an Array of shape (4,)</span>
+<span class="sd">                representing the equation of a plane, e.g. (a, b, c, d) in ax + by + cz = d</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        2 vector triplets (the clipped segment) or (None, None) meaning the segment is entirely outside the frustum.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dp</span> <span class="o">=</span> <span class="n">p2</span> <span class="o">-</span> <span class="n">p1</span>
+
+    <span class="n">p1_fac</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">p2_fac</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">planes</span><span class="p">:</span>
+        <span class="n">div</span> <span class="o">=</span> <span class="n">p</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span>
+
+        <span class="c1"># check if line vector and plane normal are perpendicular</span>
+        <span class="c1"># if perpendicular, line and plane are parallel</span>
+        <span class="k">if</span> <span class="n">div</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="c1"># if not perpendicular, find intersection</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="o">-</span><span class="n">plane_point_side_v3</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">p1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">div</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>  <span class="c1"># clip p1 lower bounds</span>
+                <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;=</span> <span class="n">div</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="n">fac</span> <span class="o">=</span> <span class="n">t</span> <span class="o">/</span> <span class="n">div</span>
+                    <span class="k">if</span> <span class="n">fac</span> <span class="o">&gt;</span> <span class="n">p1_fac</span><span class="p">:</span>
+                        <span class="n">p1_fac</span> <span class="o">=</span> <span class="n">fac</span>
+                        <span class="k">if</span> <span class="n">p1_fac</span> <span class="o">&gt;</span> <span class="n">p2_fac</span><span class="p">:</span>
+                            <span class="c1"># intersection occurs outside of segment</span>
+                            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+            <span class="k">elif</span> <span class="n">div</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>  <span class="c1"># clip p2 upper bounds</span>
+                <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="n">div</span><span class="p">:</span>
+                    <span class="n">fac</span> <span class="o">=</span> <span class="n">t</span> <span class="o">/</span> <span class="n">div</span>
+                    <span class="k">if</span> <span class="n">fac</span> <span class="o">&lt;</span> <span class="n">p2_fac</span><span class="p">:</span>
+                        <span class="n">p2_fac</span> <span class="o">=</span> <span class="n">fac</span>
+                        <span class="k">if</span> <span class="n">p1_fac</span> <span class="o">&gt;</span> <span class="n">p2_fac</span><span class="p">:</span>
+                            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">p1_clip</span> <span class="o">=</span> <span class="n">p1</span> <span class="o">+</span> <span class="p">(</span><span class="n">dp</span> <span class="o">*</span> <span class="n">p1_fac</span><span class="p">)</span>
+    <span class="n">p2_clip</span> <span class="o">=</span> <span class="n">p1</span> <span class="o">+</span> <span class="p">(</span><span class="n">dp</span> <span class="o">*</span> <span class="n">p2_fac</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">p1_clip</span><span class="p">,</span> <span class="n">p2_clip</span></div>
+
+
+<div class="viewcode-block" id="plane_point_side_v3"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.frustum_clipping.plane_point_side_v3">[docs]</a><span class="k">def</span> <span class="nf">plane_point_side_v3</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Get sign of point to plane distance.</span>
+
+<span class="sd">    This function does not compute the actual distance.</span>
+
+<span class="sd">    Positive denotes that point v is on the same side of the plane as the plane&#39;s normal vector.</span>
+<span class="sd">    Negative if it is on the opposite side.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        p: Array of shape (4,) representing a plane in Hessian Normal Form, ax + by + cz + d = 0</span>
+<span class="sd">        v: A vector/3D point</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        sign: A float-like value representing sign of signed distance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">p</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="cuboid_to_2d_frustum_bbox"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.frustum_clipping.cuboid_to_2d_frustum_bbox">[docs]</a><span class="k">def</span> <span class="nf">cuboid_to_2d_frustum_bbox</span><span class="p">(</span><span class="n">corners</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">planes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">K</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Convert a 3D cuboid to a 2D frustum bounding box.</span>
+
+<span class="sd">    We bring the 3D points into each camera, and do the clipping there.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        corners: The corners to use as the corners of the frustum bounding box</span>
+<span class="sd">        planes: List of 4-tuples for ax + by + cz = d representing planes in Hessian Normal Form</span>
+<span class="sd">        K: 3x3 camera intrinsic matrix</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bbox_2d: Numpy array of shape (4,) with entries [x_min,y_min,x_max,y_max]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">clip_line_segment</span><span class="p">(</span><span class="n">pt_a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pt_b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">K</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Clip a line segment based on two points and the camera instrinc matrix.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pt_a: One 3D point vector constraining a line segment</span>
+<span class="sd">            pt_b: One 3D point vector constraining a line segment</span>
+<span class="sd">            K: A 3x3 array representing a camera intrinsic matrix</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            a, b: A tuple of the clipped line segment 3D point vectors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pt_a</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">pt_a</span><span class="p">)</span>
+        <span class="n">pt_a</span> <span class="o">/=</span> <span class="n">pt_a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">pt_b</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">pt_b</span><span class="p">)</span>
+        <span class="n">pt_b</span> <span class="o">/=</span> <span class="n">pt_b</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">pt_a</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">pt_b</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">clip_rect</span><span class="p">(</span><span class="n">selected_corners</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">clipped_uv_verts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Clip a rectangle based on the selected corners and clipped vertices coordinates.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            selected_corners: A list of selected corners</span>
+<span class="sd">            clipped_uv_verts: A list of clipped vertices</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new list of clipped vertices based on the selected corners</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">prev</span> <span class="o">=</span> <span class="n">selected_corners</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">corner</span> <span class="ow">in</span> <span class="n">selected_corners</span><span class="p">:</span>
+            <span class="c1"># interpolate line segments to the image border</span>
+            <span class="n">clip_prev</span><span class="p">,</span> <span class="n">clip_corner</span> <span class="o">=</span> <span class="n">clip_segment_v3_plane_n</span><span class="p">(</span>
+                <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">prev</span><span class="p">),</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">corner</span><span class="p">),</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">planes</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">prev</span> <span class="o">=</span> <span class="n">corner</span>
+            <span class="k">if</span> <span class="n">clip_prev</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">clip_corner</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">clip_line_segment</span><span class="p">(</span><span class="n">clip_prev</span><span class="p">,</span> <span class="n">clip_corner</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span>
+            <span class="n">clipped_uv_verts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">clipped_uv_verts</span><span class="p">,</span> <span class="n">a</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
+            <span class="n">clipped_uv_verts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">clipped_uv_verts</span><span class="p">,</span> <span class="n">b</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
+
+        <span class="k">return</span> <span class="n">clipped_uv_verts</span>
+
+    <span class="n">clipped_uv_verts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="c1"># Draw the sides</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+        <span class="n">corner_f</span> <span class="o">=</span> <span class="n">corners</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>  <span class="c1"># front corner</span>
+        <span class="n">corner_b</span> <span class="o">=</span> <span class="n">corners</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">4</span><span class="p">]</span>  <span class="c1"># back corner</span>
+
+        <span class="n">clip_c_f</span><span class="p">,</span> <span class="n">clip_c_b</span> <span class="o">=</span> <span class="n">clip_segment_v3_plane_n</span><span class="p">(</span><span class="n">corner_f</span><span class="p">,</span> <span class="n">corner_b</span><span class="p">,</span> <span class="n">planes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">clip_c_f</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">clip_c_b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">clip_line_segment</span><span class="p">(</span><span class="n">clip_c_f</span><span class="p">,</span> <span class="n">clip_c_b</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span>
+
+        <span class="n">clipped_uv_verts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">clipped_uv_verts</span><span class="p">,</span> <span class="n">a</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
+        <span class="n">clipped_uv_verts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">clipped_uv_verts</span><span class="p">,</span> <span class="n">b</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
+
+    <span class="c1"># Draw front (first 4 corners) and rear (last 4 corners) rectangles(3d)/lines(2d)</span>
+    <span class="n">front_verts</span> <span class="o">=</span> <span class="n">clip_rect</span><span class="p">(</span><span class="n">corners</span><span class="p">[:</span><span class="mi">4</span><span class="p">],</span> <span class="n">clipped_uv_verts</span><span class="p">)</span>
+    <span class="n">back_verts</span> <span class="o">=</span> <span class="n">clip_rect</span><span class="p">(</span><span class="n">corners</span><span class="p">[</span><span class="mi">4</span><span class="p">:],</span> <span class="n">clipped_uv_verts</span><span class="p">)</span>
+
+    <span class="n">clipped_uv_verts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">clipped_uv_verts</span><span class="p">,</span> <span class="n">front_verts</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
+    <span class="n">clipped_uv_verts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">clipped_uv_verts</span><span class="p">,</span> <span class="n">back_verts</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
+
+    <span class="k">if</span> <span class="n">clipped_uv_verts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">bbox_2d</span> <span class="o">=</span> <span class="n">compute_point_cloud_bbox</span><span class="p">(</span><span class="n">clipped_uv_verts</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">bbox_2d</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,714 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.visualization package &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">argoverse.visualization package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-argoverse.visualization.colormap">argoverse.visualization.colormap module</a></li>
+<li><a class="reference internal" href="#module-argoverse.visualization.generate_sequence_videos">argoverse.visualization.generate_sequence_videos module</a></li>
+<li><a class="reference internal" href="#module-argoverse.visualization.ground_visualization">argoverse.visualization.ground_visualization module</a></li>
+<li><a class="reference internal" href="#module-argoverse.visualization.mayavi_utils">argoverse.visualization.mayavi_utils module</a><ul>
+<li><a class="reference internal" href="#mayavi-examples">Mayavi Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-argoverse.visualization.mpl_point_cloud_vis">argoverse.visualization.mpl_point_cloud_vis module</a></li>
+<li><a class="reference internal" href="#module-argoverse.visualization.vis_mask">argoverse.visualization.vis_mask module</a></li>
+<li><a class="reference internal" href="#module-argoverse.visualization.visualization_utils">argoverse.visualization.visualization_utils module</a></li>
+<li><a class="reference internal" href="#module-argoverse.visualization.visualize_sequences">argoverse.visualization.visualize_sequences module</a></li>
+<li><a class="reference internal" href="#module-argoverse.visualization">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>argoverse.visualization package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/argoverse.visualization.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="argoverse-visualization-package">
+<h1>argoverse.visualization package<a class="headerlink" href="#argoverse-visualization-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-argoverse.visualization.colormap">
+<span id="argoverse-visualization-colormap-module"></span><h2>argoverse.visualization.colormap module<a class="headerlink" href="#module-argoverse.visualization.colormap" title="Permalink to this headline">¶</a></h2>
+<p>An awesome colormap for really neat visualizations.</p>
+<dl class="function">
+<dt id="argoverse.visualization.colormap.colormap">
+<code class="sig-prename descclassname">argoverse.visualization.colormap.</code><code class="sig-name descname">colormap</code><span class="sig-paren">(</span><em class="sig-param">rgb=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/colormap.html#colormap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.colormap.colormap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.visualization.generate_sequence_videos">
+<span id="argoverse-visualization-generate-sequence-videos-module"></span><h2>argoverse.visualization.generate_sequence_videos module<a class="headerlink" href="#module-argoverse.visualization.generate_sequence_videos" title="Permalink to this headline">¶</a></h2>
+<p>A simple python script to generate sequence videos.</p>
+<dl class="function">
+<dt id="argoverse.visualization.generate_sequence_videos.main">
+<code class="sig-prename descclassname">argoverse.visualization.generate_sequence_videos.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><em class="sig-param">arguments</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/generate_sequence_videos.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.generate_sequence_videos.main" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.visualization.ground_visualization">
+<span id="argoverse-visualization-ground-visualization-module"></span><h2>argoverse.visualization.ground_visualization module<a class="headerlink" href="#module-argoverse.visualization.ground_visualization" title="Permalink to this headline">¶</a></h2>
+<p>Ground visualization utilities.</p>
+<dl class="function">
+<dt id="argoverse.visualization.ground_visualization.draw_ground_pts_in_image">
+<code class="sig-prename descclassname">argoverse.visualization.ground_visualization.</code><code class="sig-name descname">draw_ground_pts_in_image</code><span class="sig-paren">(</span><em class="sig-param">sdb</em>, <em class="sig-param">lidar_points</em>, <em class="sig-param">city_to_egovehicle_se3</em>, <em class="sig-param">dataset_map</em>, <em class="sig-param">log_id</em>, <em class="sig-param">lidar_timestamp</em>, <em class="sig-param">city_name</em>, <em class="sig-param">dataset_dir</em>, <em class="sig-param">experiment_prefix</em>, <em class="sig-param">plot_ground=True</em>, <em class="sig-param">motion_compensate=False</em>, <em class="sig-param">camera=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/ground_visualization.html#draw_ground_pts_in_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.ground_visualization.draw_ground_pts_in_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write an image to disk with rendered ground points for every camera.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sdb</strong> (<a class="reference internal" href="argoverse.data_loading.html#argoverse.data_loading.synchronization_database.SynchronizationDB" title="argoverse.data_loading.synchronization_database.SynchronizationDB"><code class="xref py py-class docutils literal notranslate"><span class="pre">SynchronizationDB</span></code></a>) – instance of SynchronizationDB</p></li>
+<li><p><strong>lidar_points</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Numpy array of shape (N,3) in egovehicle frame</p></li>
+<li><p><strong>city_to_egovehicle_se3</strong> (<a class="reference internal" href="argoverse.utils.html#argoverse.utils.se3.SE3" title="argoverse.utils.se3.SE3"><code class="xref py py-class docutils literal notranslate"><span class="pre">SE3</span></code></a>) – SE3 instance which takes a point in egovehicle frame and brings it into city frame</p></li>
+<li><p><strong>dataset_map</strong> (<a class="reference internal" href="argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap" title="argoverse.map_representation.map_api.ArgoverseMap"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArgoverseMap</span></code></a>) – Map dataset instance</p></li>
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – ID of the log</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – A city’s name (e.g. ‘MIA’ or ‘PIT’)</p></li>
+<li><p><strong>motion_compensate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – Whether to bring lidar points from world frame &#64; lidar timestamp, to world frame &#64; camera
+timestamp</p></li>
+<li><p><strong>camera</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – camera name, if specified will return image of that specific camera, if None, will save all camera to
+disk and return None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.visualization.mayavi_utils">
+<span id="argoverse-visualization-mayavi-utils-module"></span><h2>argoverse.visualization.mayavi_utils module<a class="headerlink" href="#module-argoverse.visualization.mayavi_utils" title="Permalink to this headline">¶</a></h2>
+<p>A collection of utilities for visualizing 3D data with Mayavi mlab.</p>
+<div class="section" id="mayavi-examples">
+<h3>Mayavi Examples<a class="headerlink" href="#mayavi-examples" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># To save a figure:</span>
+<span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span> <span class="n">png_savepath</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1000</span><span class="p">))</span>
+
+<span class="c1"># To close a figure:</span>
+<span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+<span class="c1"># To adjust figure&#39;s azimuth:</span>
+<span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">azimuth</span><span class="o">=</span><span class="mi">180</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="data">
+<dt id="argoverse.visualization.mayavi_utils.Figure">
+<code class="sig-prename descclassname">argoverse.visualization.mayavi_utils.</code><code class="sig-name descname">Figure</code><em class="property"> = typing.Any</em><a class="headerlink" href="#argoverse.visualization.mayavi_utils.Figure" title="Permalink to this definition">¶</a></dt>
+<dd><p>A stub representing mayavi_wrapper.mlab figure types</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="argoverse.visualization.mayavi_utils.Point">
+<code class="sig-prename descclassname">argoverse.visualization.mayavi_utils.</code><code class="sig-name descname">Point</code><a class="headerlink" href="#argoverse.visualization.mayavi_utils.Point" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="argoverse.visualization.mayavi_utils.PointCloud">
+<code class="sig-prename descclassname">argoverse.visualization.mayavi_utils.</code><code class="sig-name descname">PointCloud</code><a class="headerlink" href="#argoverse.visualization.mayavi_utils.PointCloud" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a></p>
+</dd></dl>
+
+<dl class="data">
+<dt id="argoverse.visualization.mayavi_utils.Number">
+<code class="sig-prename descclassname">argoverse.visualization.mayavi_utils.</code><code class="sig-name descname">Number</code><em class="property"> = typing.Union[int, float]</em><a class="headerlink" href="#argoverse.visualization.mayavi_utils.Number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Any numeric type</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="argoverse.visualization.mayavi_utils.Color">
+<code class="sig-prename descclassname">argoverse.visualization.mayavi_utils.</code><code class="sig-name descname">Color</code><a class="headerlink" href="#argoverse.visualization.mayavi_utils.Color" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.Tuple</span></code></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.visualization.mayavi_utils.plot_bbox_3d_mayavi">
+<code class="sig-prename descclassname">argoverse.visualization.mayavi_utils.</code><code class="sig-name descname">plot_bbox_3d_mayavi</code><span class="sig-paren">(</span><em class="sig-param">fig</em>, <em class="sig-param">corners</em>, <em class="sig-param">colors=((0</em>, <em class="sig-param">0</em>, <em class="sig-param">1)</em>, <em class="sig-param">(1</em>, <em class="sig-param">0</em>, <em class="sig-param">0)</em>, <em class="sig-param">(0</em>, <em class="sig-param">1</em>, <em class="sig-param">0))</em>, <em class="sig-param">line_width=2</em>, <em class="sig-param">draw_text=None</em>, <em class="sig-param">text_scale=(1</em>, <em class="sig-param">1</em>, <em class="sig-param">1)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/mayavi_utils.html#plot_bbox_3d_mayavi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.mayavi_utils.plot_bbox_3d_mayavi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a 3D bounding box</p>
+<p>We plot the front of the cuboid in blue, and the back in red.
+We plot the sides of the cuboid in green. We draw a line
+segment through the front half of the cuboid, on its bottom face.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fig</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>) – Mayavi figure</p></li>
+<li><p><strong>corners</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Numpy array of shape (N,3)</p></li>
+<li><p><strong>colors</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]) – RGB values used to color the cuboid</p></li>
+<li><p><strong>line_width</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – Width of the cuboid’s lines</p></li>
+<li><p><strong>draw_text</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – Optional text to plot with the cuboid</p></li>
+<li><p><strong>text_scale</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]) – Scaling factor for the text</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Updated Mayavi figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.visualization.mayavi_utils.plot_points_3D_mayavi">
+<code class="sig-prename descclassname">argoverse.visualization.mayavi_utils.</code><code class="sig-name descname">plot_points_3D_mayavi</code><span class="sig-paren">(</span><em class="sig-param">points</em>, <em class="sig-param">fig</em>, <em class="sig-param">per_pt_color_strengths=None</em>, <em class="sig-param">fixed_color=(1</em>, <em class="sig-param">0</em>, <em class="sig-param">0)</em>, <em class="sig-param">colormap='spectral'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/mayavi_utils.html#plot_points_3D_mayavi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.mayavi_utils.plot_points_3D_mayavi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize points with Mayavi. Scale factor has no influence on point size rendering
+when calling <cite>points3d()</cite> with the mode=”point” argument, so we ignore it altogether.
+The parameter “line_width” also has no effect on points, so we ignore it also.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – The points to visualize</p></li>
+<li><p><strong>fig</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>) – A Mayavi figure</p></li>
+<li><p><strong>per_pt_color_strengths</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>]) – An array of scalar values the same size as <cite>points</cite></p></li>
+<li><p><strong>fixed_color</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]) – Use a fixed color instead of a colormap</p></li>
+<li><p><strong>colormap</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – different green to red jet for ‘spectral’ or ‘gnuplot’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Updated Mayavi figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.visualization.mayavi_utils.plot_3d_clipped_bbox_mayavi">
+<code class="sig-prename descclassname">argoverse.visualization.mayavi_utils.</code><code class="sig-name descname">plot_3d_clipped_bbox_mayavi</code><span class="sig-paren">(</span><em class="sig-param">fig</em>, <em class="sig-param">planes</em>, <em class="sig-param">uv_cam</em>, <em class="sig-param">colors=((0</em>, <em class="sig-param">0</em>, <em class="sig-param">1)</em>, <em class="sig-param">(1</em>, <em class="sig-param">0</em>, <em class="sig-param">0)</em>, <em class="sig-param">(0</em>, <em class="sig-param">1</em>, <em class="sig-param">0))</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/mayavi_utils.html#plot_3d_clipped_bbox_mayavi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.mayavi_utils.plot_3d_clipped_bbox_mayavi" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fig</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>) – Mayavi figure</p></li>
+<li><p><strong>planes</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – </p></li>
+<li><p><strong>uv_cam</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – 3d points in camera coordinate frame</p></li>
+<li><p><strong>colors</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Updated Mayavi figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.visualization.mayavi_utils.draw_coordinate_frame_at_origin">
+<code class="sig-prename descclassname">argoverse.visualization.mayavi_utils.</code><code class="sig-name descname">draw_coordinate_frame_at_origin</code><span class="sig-paren">(</span><em class="sig-param">fig</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/mayavi_utils.html#draw_coordinate_frame_at_origin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.mayavi_utils.draw_coordinate_frame_at_origin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw the origin and 3 vectors representing standard basis vectors to express
+a coordinate reference frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fig</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>) – Mayavi figure</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Updated Mayavi figure</p>
+</dd>
+</dl>
+<p><a class="reference external" href="https://github.com/hengck23/didi-udacity-2017/blob/master/baseline-04/kitti_data/draw.py">https://github.com/hengck23/didi-udacity-2017/blob/master/baseline-04/kitti_data/draw.py</a>
+<a class="reference external" href="https://github.com/charlesq34/frustum-pointnets/blob/master/mayavi/viz_util.py">https://github.com/charlesq34/frustum-pointnets/blob/master/mayavi/viz_util.py</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.visualization.mayavi_utils.draw_lidar">
+<code class="sig-prename descclassname">argoverse.visualization.mayavi_utils.</code><code class="sig-name descname">draw_lidar</code><span class="sig-paren">(</span><em class="sig-param">point_cloud</em>, <em class="sig-param">colormap='spectral'</em>, <em class="sig-param">fig=None</em>, <em class="sig-param">bgcolor=(0</em>, <em class="sig-param">0</em>, <em class="sig-param">0)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/mayavi_utils.html#draw_lidar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.mayavi_utils.draw_lidar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render a <span class="xref std std-ref">PointCloud</span> with a 45 degree viewing frustum from ego-vehicle.</p>
+<p>Creates a Mayavi figure, draws a point cloud. Since the majority of interesting objects and
+scenarios are found closeby to the ground, we want to see the objects near the ground expressed
+in the full range of the colormap. Since returns on power lines, trees, and buildings
+will dominate and dilute the colormap otherwise, we clip the colors so that all points
+beyond a certain z-elevation (height) share the same color at the edge of the colormap.
+We choose anything beyond the 90th percentile as a height outlier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_cloud</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – The pointcloud to render</p></li>
+<li><p><strong>fig</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – A pre-existing Mayavi figure to render to</p></li>
+<li><p><strong>bgcolor</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – The background color</p></li>
+<li><p><strong>colormap</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – “spectral” or “gnuplot” or “jet” are best</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Updated or created Mayavi figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.visualization.mayavi_utils.mayavi_compare_point_clouds">
+<code class="sig-prename descclassname">argoverse.visualization.mayavi_utils.</code><code class="sig-name descname">mayavi_compare_point_clouds</code><span class="sig-paren">(</span><em class="sig-param">point_cloud_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/mayavi_utils.html#mayavi_compare_point_clouds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.mayavi_utils.mayavi_compare_point_clouds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Useful for visualizing the segmentation of a scene has
+separate objects, each colored differently.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>point_cloud_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>]) – A list of :ref:<a href="#id1"><span class="problematic" id="id2">`</span></a>PointCloud`s to render</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.visualization.mayavi_utils.draw_mayavi_line_segment">
+<code class="sig-prename descclassname">argoverse.visualization.mayavi_utils.</code><code class="sig-name descname">draw_mayavi_line_segment</code><span class="sig-paren">(</span><em class="sig-param">fig</em>, <em class="sig-param">points</em>, <em class="sig-param">color=(1</em>, <em class="sig-param">0</em>, <em class="sig-param">0)</em>, <em class="sig-param">line_width=1</em>, <em class="sig-param">tube_radius=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/mayavi_utils.html#draw_mayavi_line_segment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.mayavi_utils.draw_mayavi_line_segment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw a single line segment with Mayavi.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fig</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>) – The Mayavi figure to render to</p></li>
+<li><p><strong>points</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>]) – The points representing the line segment to draw</p></li>
+<li><p><strong>color</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – The color of the line segment</p></li>
+<li><p><strong>line_width</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – The width of the line</p></li>
+<li><p><strong>tube_radius</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – The radius if rendering the line segment as a tube</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Mayavi figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-argoverse.visualization.mpl_point_cloud_vis">
+<span id="argoverse-visualization-mpl-point-cloud-vis-module"></span><h2>argoverse.visualization.mpl_point_cloud_vis module<a class="headerlink" href="#module-argoverse.visualization.mpl_point_cloud_vis" title="Permalink to this headline">¶</a></h2>
+<p>Utility function to visualize a 3d point cloud from a bird’s eye view with Matplotlib (“mpl”).</p>
+<dl class="function">
+<dt id="argoverse.visualization.mpl_point_cloud_vis.draw_point_cloud_bev">
+<code class="sig-prename descclassname">argoverse.visualization.mpl_point_cloud_vis.</code><code class="sig-name descname">draw_point_cloud_bev</code><span class="sig-paren">(</span><em class="sig-param">axes</em>, <em class="sig-param">pointcloud</em>, <em class="sig-param">color='w'</em>, <em class="sig-param">x_lim_3d=None</em>, <em class="sig-param">y_lim_3d=None</em>, <em class="sig-param">z_lim_3d=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/mpl_point_cloud_vis.html#draw_point_cloud_bev"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.mpl_point_cloud_vis.draw_point_cloud_bev" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw a pointcloud from a bird’s eye view perspective.</p>
+<p>Convenient method for drawing various point cloud projections with Matplotlib.
+The point cloud is rendered in a 2D projection, the bird’s eye view (“bev”).</p>
+<p>Reference: <a class="reference external" href="http://eamonbracht.com/lidar.html">http://eamonbracht.com/lidar.html</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>axes</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>) – Matplotlib axes</p></li>
+<li><p><strong>pointcloud</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Numpy array of shape (N,3) representing point cloud</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – A color string (e.g. ‘w’)</p></li>
+<li><p><strong>x_lim_3d</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – X axis limit</p></li>
+<li><p><strong>y_lim_3d</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – Y axis limit</p></li>
+<li><p><strong>z_lim_3d</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – Z axis limit</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.visualization.vis_mask">
+<span id="argoverse-visualization-vis-mask-module"></span><h2>argoverse.visualization.vis_mask module<a class="headerlink" href="#module-argoverse.visualization.vis_mask" title="Permalink to this headline">¶</a></h2>
+<p>This tool is loosely based off of Facebook’s Mask R-CNN visualization tool.
+<a class="reference external" href="https://github.com/facebookresearch/Detectron/blob/master/detectron/utils/vis.py">https://github.com/facebookresearch/Detectron/blob/master/detectron/utils/vis.py</a></p>
+<dl class="function">
+<dt id="argoverse.visualization.vis_mask.decode_segment_to_mask">
+<code class="sig-prename descclassname">argoverse.visualization.vis_mask.</code><code class="sig-name descname">decode_segment_to_mask</code><span class="sig-paren">(</span><em class="sig-param">segm</em>, <em class="sig-param">image</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/vis_mask.html#decode_segment_to_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.vis_mask.decode_segment_to_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a mask from a segment</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>segm</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – The segment</p></li>
+<li><p><strong>image</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – The associated image</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A mask built from the given segment and image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.visualization.vis_mask.vis_bbox">
+<code class="sig-prename descclassname">argoverse.visualization.vis_mask.</code><code class="sig-name descname">vis_bbox</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">bbox</em>, <em class="sig-param">thickness=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/vis_mask.html#vis_bbox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.vis_mask.vis_bbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize a bounding box.
+:type image: <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>
+:param image: The input image
+:type bbox: <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]
+:param bbox: Bounding box
+:type thickness: <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>
+:param thickness: Line thickness</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The modified image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.visualization.vis_mask.vis_class">
+<code class="sig-prename descclassname">argoverse.visualization.vis_mask.</code><code class="sig-name descname">vis_class</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">pos</em>, <em class="sig-param">class_str</em>, <em class="sig-param">font_scale=50.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/vis_mask.html#vis_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.vis_mask.vis_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualizes a class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – The image</p></li>
+<li><p><strong>pos</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – The position for the text</p></li>
+<li><p><strong>class_str</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the class</p></li>
+<li><p><strong>font_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Text size</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The modified image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.visualization.vis_mask.vis_mask">
+<code class="sig-prename descclassname">argoverse.visualization.vis_mask.</code><code class="sig-name descname">vis_mask</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">mask</em>, <em class="sig-param">color</em>, <em class="sig-param">alpha=0.4</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/vis_mask.html#vis_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.vis_mask.vis_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize a single binary mask.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – The input image</p></li>
+<li><p><strong>mask</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – The mask to visualize</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – The color for the mask</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – The alpha level for the mask</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The modified image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.visualization.vis_mask.vis_one_image">
+<code class="sig-prename descclassname">argoverse.visualization.vis_mask.</code><code class="sig-name descname">vis_one_image</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">image_name</em>, <em class="sig-param">output_dir</em>, <em class="sig-param">boxes</em>, <em class="sig-param">segms=None</em>, <em class="sig-param">dpi=200</em>, <em class="sig-param">box_alpha=0.0</em>, <em class="sig-param">show_class=True</em>, <em class="sig-param">extension='pdf'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/vis_mask.html#vis_one_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.vis_mask.vis_one_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visual debugging of detections.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – The image data</p></li>
+<li><p><strong>image_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the image</p></li>
+<li><p><strong>output_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Directory to output to</p></li>
+<li><p><strong>boxes</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Boxes</p></li>
+<li><p><strong>segms</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]]) – Segmentations</p></li>
+<li><p><strong>dpi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – DPI</p></li>
+<li><p><strong>box_alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Alpha channel of the boxes</p></li>
+<li><p><strong>show_class</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – Whether to show object classes</p></li>
+<li><p><strong>extension</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Extension of the output file</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.visualization.vis_mask.vis_one_image_opencv">
+<code class="sig-prename descclassname">argoverse.visualization.vis_mask.</code><code class="sig-name descname">vis_one_image_opencv</code><span class="sig-paren">(</span><em class="sig-param">image</em>, <em class="sig-param">boxes</em>, <em class="sig-param">segms=None</em>, <em class="sig-param">show_box=False</em>, <em class="sig-param">show_class=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/vis_mask.html#vis_one_image_opencv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.vis_mask.vis_one_image_opencv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a numpy array with the detections visualized.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – The image data</p></li>
+<li><p><strong>boxes</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – The box data</p></li>
+<li><p><strong>segms</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]]) – Segmentations</p></li>
+<li><p><strong>show_box</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – Whether to show the boxes</p></li>
+<li><p><strong>show_class</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – Whether to show the object classes</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The newly constructed image</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.visualization.visualization_utils">
+<span id="argoverse-visualization-visualization-utils-module"></span><h2>argoverse.visualization.visualization_utils module<a class="headerlink" href="#module-argoverse.visualization.visualization_utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="argoverse.visualization.visualization_utils.draw_box">
+<code class="sig-prename descclassname">argoverse.visualization.visualization_utils.</code><code class="sig-name descname">draw_box</code><span class="sig-paren">(</span><em class="sig-param">pyplot_axis</em>, <em class="sig-param">vertices</em>, <em class="sig-param">axes=None</em>, <em class="sig-param">color='red'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/visualization_utils.html#draw_box"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.visualization_utils.draw_box" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.visualization.visualization_utils.draw_point_cloud">
+<code class="sig-prename descclassname">argoverse.visualization.visualization_utils.</code><code class="sig-name descname">draw_point_cloud</code><span class="sig-paren">(</span><em class="sig-param">ax</em>, <em class="sig-param">title</em>, <em class="sig-param">argoverse_data</em>, <em class="sig-param">idx</em>, <em class="sig-param">axes=None</em>, <em class="sig-param">xlim3d=None</em>, <em class="sig-param">ylim3d=None</em>, <em class="sig-param">zlim3d=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/visualization_utils.html#draw_point_cloud"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.visualization_utils.draw_point_cloud" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.visualization.visualization_utils.draw_point_cloud_trajectory">
+<code class="sig-prename descclassname">argoverse.visualization.visualization_utils.</code><code class="sig-name descname">draw_point_cloud_trajectory</code><span class="sig-paren">(</span><em class="sig-param">ax</em>, <em class="sig-param">title</em>, <em class="sig-param">argoverse_data</em>, <em class="sig-param">idx</em>, <em class="sig-param">axes=None</em>, <em class="sig-param">xlim3d=None</em>, <em class="sig-param">ylim3d=None</em>, <em class="sig-param">zlim3d=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/visualization_utils.html#draw_point_cloud_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.visualization_utils.draw_point_cloud_trajectory" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.visualization.visualization_utils.make_grid_ring_camera">
+<code class="sig-prename descclassname">argoverse.visualization.visualization_utils.</code><code class="sig-name descname">make_grid_ring_camera</code><span class="sig-paren">(</span><em class="sig-param">argoverse_data</em>, <em class="sig-param">idx</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/visualization_utils.html#make_grid_ring_camera"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.visualization_utils.make_grid_ring_camera" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="(in Matplotlib v3.1.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Figure</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.visualization.visualization_utils.show_image_with_boxes">
+<code class="sig-prename descclassname">argoverse.visualization.visualization_utils.</code><code class="sig-name descname">show_image_with_boxes</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">objects</em>, <em class="sig-param">calib</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/visualization_utils.html#show_image_with_boxes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.visualization_utils.show_image_with_boxes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show image with 2D bounding boxes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.visualization.visualize_sequences">
+<span id="argoverse-visualization-visualize-sequences-module"></span><h2>argoverse.visualization.visualize_sequences module<a class="headerlink" href="#module-argoverse.visualization.visualize_sequences" title="Permalink to this headline">¶</a></h2>
+<p>A simple python script template.</p>
+<dl class="function">
+<dt id="argoverse.visualization.visualize_sequences.interpolate_polyline">
+<code class="sig-prename descclassname">argoverse.visualization.visualize_sequences.</code><code class="sig-name descname">interpolate_polyline</code><span class="sig-paren">(</span><em class="sig-param">polyline</em>, <em class="sig-param">num_points</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/visualize_sequences.html#interpolate_polyline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.visualize_sequences.interpolate_polyline" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.visualization.visualize_sequences.viz_sequence">
+<code class="sig-prename descclassname">argoverse.visualization.visualize_sequences.</code><code class="sig-name descname">viz_sequence</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">lane_centerlines=None</em>, <em class="sig-param">show=True</em>, <em class="sig-param">smoothen=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/visualization/visualize_sequences.html#viz_sequence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.visualization.visualize_sequences.viz_sequence" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.visualization">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-argoverse.visualization" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,394 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.utils.interpolate &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>argoverse.utils.interpolate</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for argoverse.utils.interpolate</h1><div class="highlight"><pre>
+<span></span><span class="c1"># &lt;Copyright 2019, Argo AI, LLC. Released under the MIT license.&gt;</span>
+
+<span class="kn">import</span> <span class="nn">pdb</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># For a single line segment</span>
+<span class="n">NUM_CENTERLINE_INTERP_PTS</span> <span class="o">=</span> <span class="mi">10</span>
+
+
+<div class="viewcode-block" id="compute_lane_width"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.interpolate.compute_lane_width">[docs]</a><span class="k">def</span> <span class="nf">compute_lane_width</span><span class="p">(</span><span class="n">left_even_pts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">right_even_pts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the width of a lane, given an explicit left and right boundary.</span>
+<span class="sd">    Requires an equal number of waypoints on each boundary.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        left_even_pts: Numpy array of shape (N,2)</span>
+<span class="sd">        right_even_pts: Numpy array of shape (N,2)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        lane_width: float representing average width of a lane</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">left_even_pts</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">right_even_pts</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">lane_width</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">left_even_pts</span> <span class="o">-</span> <span class="n">right_even_pts</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">lane_width</span></div>
+
+
+<div class="viewcode-block" id="compute_mid_pivot_arc"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.interpolate.compute_mid_pivot_arc">[docs]</a><span class="k">def</span> <span class="nf">compute_mid_pivot_arc</span><span class="p">(</span><span class="n">single_pt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">arc_pts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a line of points on one boundary, and a single point on the other side,</span>
+<span class="sd">    produce the middle arc we get by pivoting around the single point.</span>
+
+<span class="sd">    Occurs when mapping cul-de-sacs:</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        single_pt: Numpy array of shape (2,)</span>
+<span class="sd">        arc_pts: Numpy array of shape (N,2)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        centerline_pts: Numpy array of shape (N,3)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">num_pts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arc_pts</span><span class="p">)</span>
+    <span class="n">single_pt_tiled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">single_pt</span><span class="p">,</span> <span class="p">(</span><span class="n">num_pts</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">centerline_pts</span> <span class="o">=</span> <span class="p">(</span><span class="n">single_pt_tiled</span> <span class="o">+</span> <span class="n">arc_pts</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+    <span class="n">lane_width</span> <span class="o">=</span> <span class="n">compute_lane_width</span><span class="p">(</span><span class="n">single_pt_tiled</span><span class="p">,</span> <span class="n">arc_pts</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">centerline_pts</span><span class="p">,</span> <span class="n">lane_width</span></div>
+
+
+<div class="viewcode-block" id="compute_midpoint_line"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.interpolate.compute_midpoint_line">[docs]</a><span class="k">def</span> <span class="nf">compute_midpoint_line</span><span class="p">(</span>
+    <span class="n">left_ln_bnds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">right_ln_bnds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_interp_pts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">NUM_CENTERLINE_INTERP_PTS</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the lane segment centerline by interpolating n points along each</span>
+<span class="sd">    boundary, and then averaging left and right waypoints.</span>
+
+<span class="sd">    Note that the number of input waypoints along the left and right boundaries</span>
+<span class="sd">    can be vastly different -- consider cul-de-sacs, for example.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        left_ln_bnds: Numpy array of shape (M,2)</span>
+<span class="sd">        right_ln_bnds: Numpy array of shape (N,2)</span>
+<span class="sd">        num_interp_pts: number of midpoints to compute for this lane segment,</span>
+<span class="sd">            except if it is a cul-de-sac, in which case the number of midpoints</span>
+<span class="sd">            will be equal to max(M,N).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        centerline_pts:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># first, remove duplicates (might only be left with a single pt afterwards)</span>
+    <span class="n">px</span><span class="p">,</span> <span class="n">py</span> <span class="o">=</span> <span class="n">eliminate_duplicates_2d</span><span class="p">(</span><span class="n">left_ln_bnds</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">left_ln_bnds</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">left_ln_bnds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">px</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">py</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]])</span>
+    <span class="n">px</span><span class="p">,</span> <span class="n">py</span> <span class="o">=</span> <span class="n">eliminate_duplicates_2d</span><span class="p">(</span><span class="n">right_ln_bnds</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">right_ln_bnds</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">right_ln_bnds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">px</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">py</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]])</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">left_ln_bnds</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">centerline_pts</span><span class="p">,</span> <span class="n">lane_width</span> <span class="o">=</span> <span class="n">compute_mid_pivot_arc</span><span class="p">(</span><span class="n">single_pt</span><span class="o">=</span><span class="n">left_ln_bnds</span><span class="p">,</span> <span class="n">arc_pts</span><span class="o">=</span><span class="n">right_ln_bnds</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">centerline_pts</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">lane_width</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">right_ln_bnds</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">centerline_pts</span><span class="p">,</span> <span class="n">lane_width</span> <span class="o">=</span> <span class="n">compute_mid_pivot_arc</span><span class="p">(</span><span class="n">single_pt</span><span class="o">=</span><span class="n">right_ln_bnds</span><span class="p">,</span> <span class="n">arc_pts</span><span class="o">=</span><span class="n">left_ln_bnds</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">centerline_pts</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">lane_width</span>
+
+    <span class="n">left_even_pts</span> <span class="o">=</span> <span class="n">interp_arc</span><span class="p">(</span><span class="n">num_interp_pts</span><span class="p">,</span> <span class="n">left_ln_bnds</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">left_ln_bnds</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">right_even_pts</span> <span class="o">=</span> <span class="n">interp_arc</span><span class="p">(</span><span class="n">num_interp_pts</span><span class="p">,</span> <span class="n">right_ln_bnds</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">right_ln_bnds</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">centerline_pts</span> <span class="o">=</span> <span class="p">(</span><span class="n">left_even_pts</span> <span class="o">+</span> <span class="n">right_even_pts</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+    <span class="n">lane_width</span> <span class="o">=</span> <span class="n">compute_lane_width</span><span class="p">(</span><span class="n">left_even_pts</span><span class="p">,</span> <span class="n">right_even_pts</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">centerline_pts</span><span class="p">,</span> <span class="n">lane_width</span></div>
+
+
+<div class="viewcode-block" id="get_duplicate_indices_1d"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.interpolate.get_duplicate_indices_1d">[docs]</a><span class="k">def</span> <span class="nf">get_duplicate_indices_1d</span><span class="p">(</span><span class="n">coords_1d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a 1D polyline, remove consecutive duplicate coordinates.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        coords_1d:</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dup_vals:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">num_pts</span> <span class="o">=</span> <span class="n">coords_1d</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">unique_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">coords_1d</span><span class="p">,</span> <span class="n">return_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">all_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_pts</span><span class="p">)</span>
+
+    <span class="c1"># Find the set difference of two arrays.</span>
+    <span class="c1"># Return the sorted, unique values in array1 that are not in array2.</span>
+    <span class="n">dup_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">setdiff1d</span><span class="p">(</span><span class="n">all_inds</span><span class="p">,</span> <span class="n">unique_inds</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dup_inds</span></div>
+
+
+<div class="viewcode-block" id="assert_consecutive"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.interpolate.assert_consecutive">[docs]</a><span class="k">def</span> <span class="nf">assert_consecutive</span><span class="p">(</span><span class="n">shared_dup_inds</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_pts</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">coords_1d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">        shared_dup_inds</span>
+<span class="sd">        num_pts</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">left_dup</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">right_dup</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># not at the far right edge already</span>
+    <span class="k">if</span> <span class="n">shared_dup_inds</span> <span class="o">!=</span> <span class="p">(</span><span class="n">num_pts</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">right_dup</span> <span class="o">=</span> <span class="n">coords_1d</span><span class="p">[</span><span class="n">shared_dup_inds</span><span class="p">]</span> <span class="o">==</span> <span class="n">coords_1d</span><span class="p">[</span><span class="n">shared_dup_inds</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># not at the far left edge already</span>
+    <span class="k">if</span> <span class="n">shared_dup_inds</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">left_dup</span> <span class="o">=</span> <span class="n">coords_1d</span><span class="p">[</span><span class="n">shared_dup_inds</span><span class="p">]</span> <span class="o">==</span> <span class="n">coords_1d</span><span class="p">[</span><span class="n">shared_dup_inds</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">assert</span> <span class="n">left_dup</span> <span class="ow">or</span> <span class="n">right_dup</span></div>
+
+
+<div class="viewcode-block" id="eliminate_duplicates_2d"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.interpolate.eliminate_duplicates_2d">[docs]</a><span class="k">def</span> <span class="nf">eliminate_duplicates_2d</span><span class="p">(</span><span class="n">px</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">py</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    We compare indices to ensure that deleted values are exactly</span>
+<span class="sd">    adjacent to each other in the polyline sequence.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">num_pts</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">px</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">py</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">px_dup_inds</span> <span class="o">=</span> <span class="n">get_duplicate_indices_1d</span><span class="p">(</span><span class="n">px</span><span class="p">)</span>
+    <span class="n">py_dup_inds</span> <span class="o">=</span> <span class="n">get_duplicate_indices_1d</span><span class="p">(</span><span class="n">py</span><span class="p">)</span>
+    <span class="n">shared_dup_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">(</span><span class="n">px_dup_inds</span><span class="p">,</span> <span class="n">py_dup_inds</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">shared_dup_inds</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">shared_dup_inds</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="mi">2</span>
+        <span class="n">shared_dup_inds</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">shared_dup_inds</span><span class="p">)</span>
+        <span class="c1"># enforce that must be consecutive indices</span>
+        <span class="n">assert_consecutive</span><span class="p">(</span><span class="n">shared_dup_inds</span><span class="p">,</span> <span class="n">num_pts</span><span class="p">,</span> <span class="n">px</span><span class="p">)</span>
+        <span class="n">assert_consecutive</span><span class="p">(</span><span class="n">shared_dup_inds</span><span class="p">,</span> <span class="n">num_pts</span><span class="p">,</span> <span class="n">py</span><span class="p">)</span>
+
+        <span class="n">px</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">px</span><span class="p">,</span> <span class="p">[</span><span class="n">shared_dup_inds</span><span class="p">])</span>
+        <span class="n">py</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">py</span><span class="p">,</span> <span class="p">[</span><span class="n">shared_dup_inds</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">px</span><span class="p">,</span> <span class="n">py</span></div>
+
+
+<div class="viewcode-block" id="interp_arc"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.interpolate.interp_arc">[docs]</a><span class="k">def</span> <span class="nf">interp_arc</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">px</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">py</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">interp_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;linear&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Interpolate a polyline using arc-length interpolation.</span>
+<span class="sd">    We remove duplicate consecutive points, since these have zero</span>
+<span class="sd">    distance and thus cause division by zero in chord length computation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        t: number of points that will be uniformly interpolated and returned</span>
+<span class="sd">        px: Numpy array of shape (N,), representing x-coordinates of the arc</span>
+<span class="sd">        py: Numpy array of shape (N,), representing y-coordinates of the arc</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pt: Numpy array of shape (N,2)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">px</span><span class="p">,</span> <span class="n">py</span> <span class="o">=</span> <span class="n">eliminate_duplicates_2d</span><span class="p">(</span><span class="n">px</span><span class="p">,</span> <span class="n">py</span><span class="p">)</span>
+
+    <span class="c1"># equally spaced in arclength</span>
+    <span class="n">transposed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>  <span class="c1"># should be 15 x 1</span>
+
+    <span class="c1"># how many points will be uniformly interpolated?</span>
+    <span class="n">nt</span> <span class="o">=</span> <span class="n">transposed</span><span class="o">.</span><span class="n">size</span>
+
+    <span class="c1"># the number of points on the curve itself</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">size</span>
+
+    <span class="c1"># are px and py both vectors of the same length?</span>
+    <span class="k">assert</span> <span class="n">px</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">py</span><span class="o">.</span><span class="n">size</span>
+
+    <span class="n">pxy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">px</span><span class="p">,</span> <span class="n">py</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">ndim</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="c1"># Compute the chordal arclength of each segment.</span>
+    <span class="c1"># Compute differences between each x coord, to get the dx&#39;s</span>
+    <span class="c1"># Do the same to get dy&#39;s. Then the hypotenuse length is computed as a norm.</span>
+    <span class="n">chordlen</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">pxy</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="c1"># Normalize the arclengths to a unit total</span>
+    <span class="n">chordlen</span> <span class="o">=</span> <span class="n">chordlen</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">chordlen</span><span class="p">)</span>
+    <span class="c1"># cumulative arclength</span>
+    <span class="n">cumarc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">chordlen</span><span class="p">))</span>
+
+    <span class="c1"># which interval did each point fall in, in terms of transposed? (bin index)</span>
+    <span class="n">tbins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">digitize</span><span class="p">(</span><span class="n">transposed</span><span class="p">,</span> <span class="n">cumarc</span><span class="p">)</span>
+
+    <span class="c1"># #catch any problems at the ends</span>
+    <span class="n">tbins</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">tbins</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">transposed</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">))]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">tbins</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">tbins</span> <span class="o">&gt;=</span> <span class="n">n</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">transposed</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">))]</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">((</span><span class="n">transposed</span> <span class="o">-</span> <span class="n">cumarc</span><span class="p">[</span><span class="n">tbins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">chordlen</span><span class="p">[</span><span class="n">tbins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">pt</span> <span class="o">=</span> <span class="n">pxy</span><span class="p">[</span><span class="n">tbins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">((</span><span class="n">pxy</span><span class="p">[</span><span class="n">tbins</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">pxy</span><span class="p">[</span><span class="n">tbins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]),</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">s</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pt</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

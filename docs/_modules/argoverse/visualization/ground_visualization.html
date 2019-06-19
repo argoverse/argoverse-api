@@ -1,0 +1,320 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.visualization.ground_visualization &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>argoverse.visualization.ground_visualization</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for argoverse.visualization.ground_visualization</h1><div class="highlight"><pre>
+<span></span><span class="c1"># &lt;Copyright 2019, Argo AI, LLC. Released under the MIT license.&gt;</span>
+<span class="sd">&quot;&quot;&quot;Ground visualization utilities.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="k">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="k">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">imageio</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">colour</span> <span class="k">import</span> <span class="n">Color</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span> <span class="nn">argoverse.data_loading.synchronization_database</span> <span class="k">import</span> <span class="n">SynchronizationDB</span>
+<span class="kn">from</span> <span class="nn">argoverse.map_representation.map_api</span> <span class="k">import</span> <span class="n">ArgoverseMap</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.calibration</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">point_cloud_to_homogeneous</span><span class="p">,</span>
+    <span class="n">project_lidar_to_img</span><span class="p">,</span>
+    <span class="n">project_lidar_to_img_motion_compensated</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.camera_stats</span> <span class="k">import</span> <span class="n">RING_CAMERA_LIST</span><span class="p">,</span> <span class="n">STEREO_CAMERA_LIST</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.cv2_plotting_utils</span> <span class="k">import</span> <span class="n">draw_point_cloud_in_img_cv2</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.json_utils</span> <span class="k">import</span> <span class="n">read_json_file</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.se3</span> <span class="k">import</span> <span class="n">SE3</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;draw_ground_pts_in_image&quot;</span><span class="p">]</span>
+
+<span class="n">NUM_RANGE_BINS</span> <span class="o">=</span> <span class="mi">50</span>
+
+
+<div class="viewcode-block" id="draw_ground_pts_in_image"><a class="viewcode-back" href="../../../argoverse.visualization.html#argoverse.visualization.ground_visualization.draw_ground_pts_in_image">[docs]</a><span class="k">def</span> <span class="nf">draw_ground_pts_in_image</span><span class="p">(</span>
+    <span class="n">sdb</span><span class="p">:</span> <span class="n">SynchronizationDB</span><span class="p">,</span>
+    <span class="n">lidar_points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">city_to_egovehicle_se3</span><span class="p">:</span> <span class="n">SE3</span><span class="p">,</span>
+    <span class="n">dataset_map</span><span class="p">:</span> <span class="n">ArgoverseMap</span><span class="p">,</span>
+    <span class="n">log_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">lidar_timestamp</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">dataset_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">experiment_prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">plot_ground</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">motion_compensate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">camera</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Write an image to disk with rendered ground points for every camera.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        sdb: instance of SynchronizationDB</span>
+<span class="sd">        lidar_points: Numpy array of shape (N,3) in egovehicle frame</span>
+<span class="sd">        city_to_egovehicle_se3: SE3 instance which takes a point in egovehicle frame and brings it into city frame</span>
+<span class="sd">        dataset_map: Map dataset instance</span>
+<span class="sd">        log_id: ID of the log</span>
+<span class="sd">        city_name: A city&#39;s name (e.g. &#39;MIA&#39; or &#39;PIT&#39;)</span>
+<span class="sd">        motion_compensate: Whether to bring lidar points from world frame @ lidar timestamp, to world frame @ camera</span>
+<span class="sd">                           timestamp</span>
+<span class="sd">        camera: camera name, if specified will return image of that specific camera, if None, will save all camera to</span>
+<span class="sd">                disk and return None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># put into city coords, then prune away ground and non-RoI points</span>
+    <span class="n">lidar_points</span> <span class="o">=</span> <span class="n">city_to_egovehicle_se3</span><span class="o">.</span><span class="n">transform_point_cloud</span><span class="p">(</span><span class="n">lidar_points</span><span class="p">)</span>
+    <span class="n">lidar_points</span> <span class="o">=</span> <span class="n">dataset_map</span><span class="o">.</span><span class="n">remove_non_driveable_area_points</span><span class="p">(</span><span class="n">lidar_points</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">not_ground_logicals</span> <span class="o">=</span> <span class="n">dataset_map</span><span class="o">.</span><span class="n">remove_ground_surface</span><span class="p">(</span>
+        <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">lidar_points</span><span class="p">),</span> <span class="n">city_name</span><span class="p">,</span> <span class="n">return_logicals</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">lidar_points</span> <span class="o">=</span> <span class="n">lidar_points</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">not_ground_logicals</span><span class="p">)</span> <span class="k">if</span> <span class="n">plot_ground</span> <span class="k">else</span> <span class="n">not_ground_logicals</span><span class="p">]</span>
+
+    <span class="c1"># put back into ego-vehicle coords</span>
+    <span class="n">lidar_points</span> <span class="o">=</span> <span class="n">city_to_egovehicle_se3</span><span class="o">.</span><span class="n">inverse_transform_point_cloud</span><span class="p">(</span><span class="n">lidar_points</span><span class="p">)</span>
+
+    <span class="n">calib_fpath</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{dataset_dir}</span><span class="s2">/</span><span class="si">{log_id}</span><span class="s2">/vehicle_calibration_info.json&quot;</span>
+    <span class="n">calib_data</span> <span class="o">=</span> <span class="n">read_json_file</span><span class="p">(</span><span class="n">calib_fpath</span><span class="p">)</span>
+
+    <span class="c1"># repeat green to red colormap every 50 m.</span>
+    <span class="n">colors_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[[</span><span class="n">color_obj</span><span class="o">.</span><span class="n">rgb</span><span class="p">]</span> <span class="k">for</span> <span class="n">color_obj</span> <span class="ow">in</span> <span class="n">Color</span><span class="p">(</span><span class="s2">&quot;red&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">range_to</span><span class="p">(</span><span class="n">Color</span><span class="p">(</span><span class="s2">&quot;green&quot;</span><span class="p">),</span> <span class="n">NUM_RANGE_BINS</span><span class="p">)]</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">fliplr</span><span class="p">(</span><span class="n">colors_arr</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">cam_idx</span><span class="p">,</span> <span class="n">camera_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">RING_CAMERA_LIST</span> <span class="o">+</span> <span class="n">STEREO_CAMERA_LIST</span><span class="p">):</span>
+        <span class="n">im_dir</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{dataset_dir}</span><span class="s2">/</span><span class="si">{log_id}</span><span class="s2">/</span><span class="si">{camera_name}</span><span class="s2">&quot;</span>
+
+        <span class="c1"># load images, e.g. &#39;image_raw_ring_front_center_000000486.jpg&#39;</span>
+        <span class="n">cam_timestamp</span> <span class="o">=</span> <span class="n">sdb</span><span class="o">.</span><span class="n">get_closest_cam_channel_timestamp</span><span class="p">(</span><span class="n">lidar_timestamp</span><span class="p">,</span> <span class="n">camera_name</span><span class="p">,</span> <span class="n">log_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cam_timestamp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="n">im_fname</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{camera_name}</span><span class="s2">_</span><span class="si">{cam_timestamp}</span><span class="s2">.jpg&quot;</span>
+        <span class="n">im_fpath</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{im_dir}</span><span class="s2">/</span><span class="si">{im_fname}</span><span class="s2">&quot;</span>
+
+        <span class="c1"># Swap channel order as OpenCV expects it -- BGR not RGB</span>
+        <span class="c1"># must make a copy to make memory contiguous</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">imageio</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">im_fpath</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">points_h</span> <span class="o">=</span> <span class="n">point_cloud_to_homogeneous</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">lidar_points</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="k">if</span> <span class="n">motion_compensate</span><span class="p">:</span>
+            <span class="n">uv</span><span class="p">,</span> <span class="n">uv_cam</span><span class="p">,</span> <span class="n">valid_pts_bool</span> <span class="o">=</span> <span class="n">project_lidar_to_img_motion_compensated</span><span class="p">(</span>
+                <span class="n">points_h</span><span class="p">,</span>  <span class="c1"># these are recorded at lidar_time</span>
+                <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">calib_data</span><span class="p">),</span>
+                <span class="n">camera_name</span><span class="p">,</span>
+                <span class="n">cam_timestamp</span><span class="p">,</span>
+                <span class="n">lidar_timestamp</span><span class="p">,</span>
+                <span class="n">dataset_dir</span><span class="p">,</span>
+                <span class="n">log_id</span><span class="p">,</span>
+                <span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">uv</span><span class="p">,</span> <span class="n">uv_cam</span><span class="p">,</span> <span class="n">valid_pts_bool</span> <span class="o">=</span> <span class="n">project_lidar_to_img</span><span class="p">(</span><span class="n">points_h</span><span class="p">,</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">calib_data</span><span class="p">),</span> <span class="n">camera_name</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">valid_pts_bool</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">uv</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">uv_cam</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">valid_pts_bool</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="n">uv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">uv</span><span class="p">[</span><span class="n">valid_pts_bool</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">uv_cam</span> <span class="o">=</span> <span class="n">uv_cam</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">valid_pts_bool</span><span class="p">]</span>
+        <span class="n">pt_ranges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">uv_cam</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">rgb_bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">pt_ranges</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="c1"># account for moving past 100 meters, loop around again</span>
+        <span class="n">rgb_bins</span> <span class="o">=</span> <span class="n">rgb_bins</span> <span class="o">%</span> <span class="n">NUM_RANGE_BINS</span>
+        <span class="n">uv_colors</span> <span class="o">=</span> <span class="p">(</span><span class="mi">255</span> <span class="o">*</span> <span class="n">colors_arr</span><span class="p">[</span><span class="n">rgb_bins</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+        <span class="n">img</span> <span class="o">=</span> <span class="n">draw_point_cloud_in_img_cv2</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">uv</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">fliplr</span><span class="p">(</span><span class="n">uv_colors</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{experiment_prefix}</span><span class="s2">_ground_viz/</span><span class="si">{log_id}</span><span class="s2">/</span><span class="si">{camera_name}</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{experiment_prefix}</span><span class="s2">_ground_viz/</span><span class="si">{log_id}</span><span class="s2">/</span><span class="si">{camera_name}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">save_dir</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{experiment_prefix}</span><span class="s2">_ground_viz/</span><span class="si">{log_id}</span><span class="s2">/</span><span class="si">{camera_name}</span><span class="s2">&quot;</span>
+        <span class="n">cv2</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{save_dir}</span><span class="s2">/</span><span class="si">{camera_name}</span><span class="s2">_</span><span class="si">{lidar_timestamp}</span><span class="s2">.jpg&quot;</span><span class="p">,</span> <span class="n">img</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">camera</span> <span class="o">==</span> <span class="n">camera_name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2RGB</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

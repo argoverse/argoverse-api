@@ -1,0 +1,479 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.data_loading.object_label_record &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>argoverse.data_loading.object_label_record</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for argoverse.data_loading.object_label_record</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="c1"># &lt;Copyright 2019, Argo AI, LLC. Released under the MIT license.&gt;</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pdb</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.calibration</span> <span class="k">import</span> <span class="n">CameraConfig</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.cv2_plotting_utils</span> <span class="k">import</span> <span class="n">draw_clipped_line_segment</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.se3</span> <span class="k">import</span> <span class="n">SE3</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.transform</span> <span class="k">import</span> <span class="n">quat2rotmat</span>
+
+
+<div class="viewcode-block" id="ObjectLabelRecord"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.object_label_record.ObjectLabelRecord">[docs]</a><span class="k">class</span> <span class="nc">ObjectLabelRecord</span><span class="p">:</span>
+<div class="viewcode-block" id="ObjectLabelRecord.__init__"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.object_label_record.ObjectLabelRecord.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">quaternion</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+        <span class="n">translation</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+        <span class="n">length</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">height</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">occlusion</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">label_class</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">track_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Create an ObjectLabelRecord.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">           quaternion: Numpy vector representing quaternion, box/cuboid orientation</span>
+<span class="sd">           translation: Numpy vector representing translation, center of box given as x, y, z.</span>
+<span class="sd">           length: object length.</span>
+<span class="sd">           width: object width.</span>
+<span class="sd">           height: object height.</span>
+<span class="sd">           occlusion: occlusion value.</span>
+<span class="sd">           label_class: class label, see object_classes.py for all possible class in argoverse</span>
+<span class="sd">           track_id: object track id, this is unique for each track</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quaternion</span> <span class="o">=</span> <span class="n">quaternion</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">translation</span> <span class="o">=</span> <span class="n">translation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="n">length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">height</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">occlusion</span> <span class="o">=</span> <span class="n">occlusion</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_class</span> <span class="o">=</span> <span class="n">label_class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">track_id</span> <span class="o">=</span> <span class="n">track_id</span></div>
+
+<div class="viewcode-block" id="ObjectLabelRecord.as_2d_bbox"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.object_label_record.ObjectLabelRecord.as_2d_bbox">[docs]</a>    <span class="k">def</span> <span class="nf">as_2d_bbox</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Construct a 2D bounding box from this label.</span>
+
+<span class="sd">        Length is x, width is y, and z is height</span>
+
+<span class="sd">        Alternatively could write code like::</span>
+
+<span class="sd">            x_corners = l / 2 * np.array([1,  1,  1,  1, -1, -1, -1, -1])</span>
+<span class="sd">            y_corners = w / 2 * np.array([1, -1, -1,  1,  1, -1, -1,  1])</span>
+<span class="sd">            z_corners = h / 2 * np.array([1,  1, -1, -1,  1,  1, -1, -1])</span>
+<span class="sd">            corners = np.vstack((x_corners, y_corners, z_corners))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bbox_object_frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">],</span>
+                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">],</span>
+                <span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">],</span>
+                <span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">],</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">egovehicle_to_object_se3</span> <span class="o">=</span> <span class="n">SE3</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="n">quat2rotmat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quaternion</span><span class="p">),</span> <span class="n">translation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">translation</span><span class="p">)</span>
+        <span class="n">bbox_in_egovehicle_frame</span> <span class="o">=</span> <span class="n">egovehicle_to_object_se3</span><span class="o">.</span><span class="n">transform_point_cloud</span><span class="p">(</span><span class="n">bbox_object_frame</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bbox_in_egovehicle_frame</span></div>
+
+<div class="viewcode-block" id="ObjectLabelRecord.as_3d_bbox"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.object_label_record.ObjectLabelRecord.as_3d_bbox">[docs]</a>    <span class="k">def</span> <span class="nf">as_3d_bbox</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculate the 8 bounding box corners.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            None</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Numpy array of shape (8,3)</span>
+
+<span class="sd">        Corner numbering::</span>
+
+<span class="sd">             5------4</span>
+<span class="sd">             |\\    |\\</span>
+<span class="sd">             | \\   | \\</span>
+<span class="sd">             6--\\--7  \\</span>
+<span class="sd">             \\  \\  \\ \\</span>
+<span class="sd">         l    \\  1-------0    h</span>
+<span class="sd">          e    \\ ||   \\ ||   e</span>
+<span class="sd">           n    \\||    \\||   i</span>
+<span class="sd">            g    \\2------3    g</span>
+<span class="sd">             t      width.     h</span>
+<span class="sd">              h.               t.</span>
+
+<span class="sd">        First four corners are the ones facing forward.</span>
+<span class="sd">        The last four are the ones facing backwards.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 3D bounding box corners. (Convention: x points forward, y to the left, z up.)</span>
+        <span class="n">x_corners</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">y_corners</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">z_corners</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">corners_object_frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">x_corners</span><span class="p">,</span> <span class="n">y_corners</span><span class="p">,</span> <span class="n">z_corners</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="n">egovehicle_to_object_se3</span> <span class="o">=</span> <span class="n">SE3</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="n">quat2rotmat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quaternion</span><span class="p">),</span> <span class="n">translation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">translation</span><span class="p">)</span>
+        <span class="n">corners_egovehicle_frame</span> <span class="o">=</span> <span class="n">egovehicle_to_object_se3</span><span class="o">.</span><span class="n">transform_point_cloud</span><span class="p">(</span><span class="n">corners_object_frame</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">corners_egovehicle_frame</span></div>
+
+<div class="viewcode-block" id="ObjectLabelRecord.render_clip_frustum_cv2"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.object_label_record.ObjectLabelRecord.render_clip_frustum_cv2">[docs]</a>    <span class="k">def</span> <span class="nf">render_clip_frustum_cv2</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">img</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+        <span class="n">corners</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+        <span class="n">planes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">]],</span>
+        <span class="n">camera_config</span><span class="p">:</span> <span class="n">CameraConfig</span><span class="p">,</span>
+        <span class="n">colors</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
+            <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">),</span>
+        <span class="n">linewidth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;We bring the 3D points into each camera, and do the clipping there.</span>
+
+<span class="sd">        Renders box using OpenCV2. Roughly based on</span>
+<span class="sd">        https://github.com/nutonomy/nuscenes-devkit/blob/master/python-sdk/nuscenes_utils/data_classes.py</span>
+
+<span class="sd">        ::</span>
+
+<span class="sd">                5------4</span>
+<span class="sd">                |\\    |\\</span>
+<span class="sd">                | \\   | \\</span>
+<span class="sd">                6--\\--7  \\</span>
+<span class="sd">                \\  \\  \\ \\</span>
+<span class="sd">            l    \\  1-------0    h</span>
+<span class="sd">             e    \\ ||   \\ ||   e</span>
+<span class="sd">              n    \\||    \\||   i</span>
+<span class="sd">               g    \\2------3    g</span>
+<span class="sd">                t      width.     h</span>
+<span class="sd">                 h.               t.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            img: Numpy array of shape (M,N,3)</span>
+<span class="sd">            corners: Numpy array of shape (8,3) in camera coordinate frame.</span>
+<span class="sd">            planes: Iterable of 5 clipping planes. Each plane is defined by 4 points.</span>
+<span class="sd">            camera_config: CameraConfig object</span>
+<span class="sd">            colors: tuple of RGB 3-tuples, Colors for front, side &amp; rear.</span>
+<span class="sd">                defaults are    0. blue (0,0,255) in RGB and (255,0,0) in OpenCV&#39;s BGR</span>
+<span class="sd">                                1. red (255,0,0) in RGB and (0,0,255) in OpenCV&#39;s BGR</span>
+<span class="sd">                                2. green (0,255,0) in RGB and BGR alike.</span>
+<span class="sd">            linewidth: integer, linewidth for plot</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            img: Numpy array of shape (M,N,3), representing updated image</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">draw_rect</span><span class="p">(</span><span class="n">selected_corners</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">prev</span> <span class="o">=</span> <span class="n">selected_corners</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">corner</span> <span class="ow">in</span> <span class="n">selected_corners</span><span class="p">:</span>
+                <span class="n">draw_clipped_line_segment</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">prev</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">corner</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">camera_config</span><span class="p">,</span> <span class="n">linewidth</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">color</span><span class="p">)</span>
+                <span class="n">prev</span> <span class="o">=</span> <span class="n">corner</span>
+
+        <span class="c1"># Draw the sides in green</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+            <span class="c1"># between front and back corners</span>
+            <span class="n">draw_clipped_line_segment</span><span class="p">(</span>
+                <span class="n">img</span><span class="p">,</span> <span class="n">corners</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">corners</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">4</span><span class="p">],</span> <span class="n">camera_config</span><span class="p">,</span> <span class="n">linewidth</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">colors</span><span class="p">[</span><span class="mi">2</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Draw front (first 4 corners) in blue</span>
+        <span class="n">draw_rect</span><span class="p">(</span><span class="n">corners</span><span class="p">[:</span><span class="mi">4</span><span class="p">],</span> <span class="n">colors</span><span class="p">[</span><span class="mi">0</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="c1"># Draw rear (last 4 corners) in red</span>
+        <span class="n">draw_rect</span><span class="p">(</span><span class="n">corners</span><span class="p">[</span><span class="mi">4</span><span class="p">:],</span> <span class="n">colors</span><span class="p">[</span><span class="mi">1</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># Draw blue line indicating the front half</span>
+        <span class="n">center_bottom_forward</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">corners</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">center_bottom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">corners</span><span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">6</span><span class="p">]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">draw_clipped_line_segment</span><span class="p">(</span>
+            <span class="n">img</span><span class="p">,</span> <span class="n">center_bottom</span><span class="p">,</span> <span class="n">center_bottom_forward</span><span class="p">,</span> <span class="n">camera_config</span><span class="p">,</span> <span class="n">linewidth</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">colors</span><span class="p">[</span><span class="mi">0</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">img</span></div></div>
+
+
+<div class="viewcode-block" id="form_obj_label_from_json"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.object_label_record.form_obj_label_from_json">[docs]</a><span class="k">def</span> <span class="nf">form_obj_label_from_json</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Construct object from loaded json.</span>
+
+<span class="sd">    The dictionary loaded from saved json file is expected to have the</span>
+<span class="sd">    following fields::</span>
+
+<span class="sd">        [&#39;frame_index&#39;, &#39;center&#39;, &#39;rotation&#39;, &#39;length&#39;, &#39;width&#39;, &#39;height&#39;,</span>
+<span class="sd">        &#39;track_label_uuid&#39;, &#39;occlusion&#39;, &#39;on_driveable_surface&#39;, &#39;key_frame&#39;,</span>
+<span class="sd">        &#39;stationary&#39;, &#39;label_class&#39;]</span>
+
+<span class="sd">   Args:</span>
+<span class="sd">        label: Python dictionary that was loaded from saved json file</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple of (bbox_ego_frame, color); bbox is a numpy array of shape (4,3); color is &quot;g&quot; or &quot;r&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tr_x</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+    <span class="n">tr_y</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">][</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
+    <span class="n">tr_z</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">][</span><span class="s2">&quot;z&quot;</span><span class="p">]</span>
+    <span class="n">translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">tr_x</span><span class="p">,</span> <span class="n">tr_y</span><span class="p">,</span> <span class="n">tr_z</span><span class="p">])</span>
+
+    <span class="n">rot_w</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;rotation&quot;</span><span class="p">][</span><span class="s2">&quot;w&quot;</span><span class="p">]</span>
+    <span class="n">rot_x</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;rotation&quot;</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+    <span class="n">rot_y</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;rotation&quot;</span><span class="p">][</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
+    <span class="n">rot_z</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;rotation&quot;</span><span class="p">][</span><span class="s2">&quot;z&quot;</span><span class="p">]</span>
+    <span class="n">quaternion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">rot_w</span><span class="p">,</span> <span class="n">rot_x</span><span class="p">,</span> <span class="n">rot_y</span><span class="p">,</span> <span class="n">rot_z</span><span class="p">])</span>
+
+    <span class="n">obj_label_rec</span> <span class="o">=</span> <span class="n">ObjectLabelRecord</span><span class="p">(</span>
+        <span class="n">quaternion</span><span class="o">=</span><span class="n">quaternion</span><span class="p">,</span>
+        <span class="n">translation</span><span class="o">=</span><span class="n">translation</span><span class="p">,</span>
+        <span class="n">length</span><span class="o">=</span><span class="n">label</span><span class="p">[</span><span class="s2">&quot;length&quot;</span><span class="p">],</span>
+        <span class="n">width</span><span class="o">=</span><span class="n">label</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">],</span>
+        <span class="n">height</span><span class="o">=</span><span class="n">label</span><span class="p">[</span><span class="s2">&quot;height&quot;</span><span class="p">],</span>
+        <span class="n">occlusion</span><span class="o">=</span><span class="n">label</span><span class="p">[</span><span class="s2">&quot;occlusion&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">bbox_ego_frame</span> <span class="o">=</span> <span class="n">obj_label_rec</span><span class="o">.</span><span class="n">as_2d_bbox</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;occlusion&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;g&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;r&quot;</span>
+    <span class="k">return</span> <span class="n">bbox_ego_frame</span><span class="p">,</span> <span class="n">color</span></div>
+
+
+<div class="viewcode-block" id="json_label_dict_to_obj_record"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.object_label_record.json_label_dict_to_obj_record">[docs]</a><span class="k">def</span> <span class="nf">json_label_dict_to_obj_record</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ObjectLabelRecord</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Convert a label dict (from JSON) to an ObjectLabelRecord.</span>
+
+<span class="sd">    NB: &quot;Shrink-wrapped&quot; objects don&#39;t have the occlusion field, but</span>
+<span class="sd">    other other objects do.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        label: Python dictionary with relevant info about a cuboid, loaded from json</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ObjectLabelRecord object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tr_x</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+    <span class="n">tr_y</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">][</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
+    <span class="n">tr_z</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">][</span><span class="s2">&quot;z&quot;</span><span class="p">]</span>
+    <span class="n">translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">tr_x</span><span class="p">,</span> <span class="n">tr_y</span><span class="p">,</span> <span class="n">tr_z</span><span class="p">])</span>
+
+    <span class="n">rot_w</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;rotation&quot;</span><span class="p">][</span><span class="s2">&quot;w&quot;</span><span class="p">]</span>
+    <span class="n">rot_x</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;rotation&quot;</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+    <span class="n">rot_y</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;rotation&quot;</span><span class="p">][</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
+    <span class="n">rot_z</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;rotation&quot;</span><span class="p">][</span><span class="s2">&quot;z&quot;</span><span class="p">]</span>
+    <span class="n">quaternion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">rot_w</span><span class="p">,</span> <span class="n">rot_x</span><span class="p">,</span> <span class="n">rot_y</span><span class="p">,</span> <span class="n">rot_z</span><span class="p">])</span>
+
+    <span class="n">length</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;length&quot;</span><span class="p">]</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">]</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;height&quot;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="s2">&quot;occlusion&quot;</span> <span class="ow">in</span> <span class="n">label</span><span class="p">:</span>
+        <span class="n">occlusion</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;occlusion&quot;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">occlusion</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">if</span> <span class="s2">&quot;label_class&quot;</span> <span class="ow">in</span> <span class="n">label</span><span class="p">:</span>
+        <span class="n">label_class</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;label_class&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;name&quot;</span> <span class="ow">in</span> <span class="n">label_class</span><span class="p">:</span>
+            <span class="n">label_class</span> <span class="o">=</span> <span class="n">label_class</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">label_class</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="s2">&quot;track_label_uuid&quot;</span> <span class="ow">in</span> <span class="n">label</span><span class="p">:</span>
+        <span class="n">track_id</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="s2">&quot;track_label_uuid&quot;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">track_id</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">obj_rec</span> <span class="o">=</span> <span class="n">ObjectLabelRecord</span><span class="p">(</span><span class="n">quaternion</span><span class="p">,</span> <span class="n">translation</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">occlusion</span><span class="p">,</span> <span class="n">label_class</span><span class="p">,</span> <span class="n">track_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">obj_rec</span></div>
+
+
+<div class="viewcode-block" id="read_label"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.object_label_record.read_label">[docs]</a><span class="k">def</span> <span class="nf">read_label</span><span class="p">(</span><span class="n">label_filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ObjectLabelRecord</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Read label from the json file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        label_filename: label filename,</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List of ObjectLabelRecords constructed from the file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">label_filename</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">label_filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="n">objects</span> <span class="o">=</span> <span class="p">[</span><span class="n">json_label_dict_to_obj_record</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">objects</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

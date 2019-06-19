@@ -1,0 +1,38 @@
+argoverse.map\_representation package
+=====================================
+
+Submodules
+----------
+
+argoverse.map\_representation.lane\_segment module
+--------------------------------------------------
+
+.. automodule:: argoverse.map_representation.lane_segment
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+argoverse.map\_representation.map\_api module
+---------------------------------------------
+
+.. automodule:: argoverse.map_representation.map_api
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+argoverse.map\_representation.map\_viz\_helper module
+-----------------------------------------------------
+
+.. automodule:: argoverse.map_representation.map_viz_helper
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: argoverse.map_representation
+   :members:
+   :undoc-members:
+   :show-inheritance:

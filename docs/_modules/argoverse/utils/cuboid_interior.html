@@ -1,0 +1,687 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.utils.cuboid_interior &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>argoverse.utils.cuboid_interior</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for argoverse.utils.cuboid_interior</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2018 Charles R. Qi from Stanford University and Wei Liu from Nuro Inc.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">##############################################################################</span>
+<span class="c1"># &lt;Modifications copyright (C) 2019, Argo AI, LLC&gt;</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="k">import</span> <span class="n">Delaunay</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+
+<div class="viewcode-block" id="filter_point_cloud_to_bbox"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.cuboid_interior.filter_point_cloud_to_bbox">[docs]</a><span class="k">def</span> <span class="nf">filter_point_cloud_to_bbox</span><span class="p">(</span><span class="n">bbox</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">velodyne_pts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given 2 orthogonal directions &quot;u&quot;, &quot;v&quot; defined by 3 bbox vertices, s.t.::</span>
+
+<span class="sd">        u = P1 - P2</span>
+<span class="sd">        v = P1 - P4</span>
+
+<span class="sd">    a point &quot;x&quot; in R^3 lies within the bbox iff::</span>
+
+<span class="sd">        &lt;u,P1&gt; &gt;= &lt;u,x&gt; &gt;= &lt;u,P2&gt;</span>
+<span class="sd">        &lt;v,P1&gt; &gt;= &lt;v,x&gt; &gt;= &lt;v,P4&gt;</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       bbox: Numpy array of shape (4,3) representing 3D bbox</span>
+<span class="sd">       velodyne_pts: NumPy array of shape (N,3) representing Velodyne point cloud</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       interior_pts: Numpy array of shape (N,3) representing velodyne points</span>
+<span class="sd">            that fall inside the cuboid</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">P3</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># xmax, ymax</span>
+    <span class="n">P4</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># xmax, ymin</span>
+    <span class="n">P2</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># xmin, ymax</span>
+    <span class="n">P1</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># xmin, ymin</span>
+
+    <span class="n">u</span> <span class="o">=</span> <span class="n">P1</span> <span class="o">-</span> <span class="n">P2</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">P1</span> <span class="o">-</span> <span class="n">P4</span>
+
+    <span class="n">pt_indices_to_plot</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">u_low_bnd</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">P2</span><span class="p">)</span>
+    <span class="n">u_upp_bnd</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">P1</span><span class="p">)</span>
+
+    <span class="n">v_low_bnd</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">P4</span><span class="p">)</span>
+    <span class="n">v_upp_bnd</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">P1</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">pt_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">velodyne_pts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">u_dot_x</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">velodyne_pts</span><span class="p">[</span><span class="n">pt_idx</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">v_dot_x</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">velodyne_pts</span><span class="p">[</span><span class="n">pt_idx</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span>
+
+        <span class="n">inside_u</span> <span class="o">=</span> <span class="n">u_low_bnd</span> <span class="o">&lt;=</span> <span class="n">u_dot_x</span> <span class="o">&lt;=</span> <span class="n">u_upp_bnd</span>
+        <span class="n">inside_v</span> <span class="o">=</span> <span class="n">v_low_bnd</span> <span class="o">&lt;=</span> <span class="n">v_dot_x</span> <span class="o">&lt;=</span> <span class="n">v_upp_bnd</span>
+        <span class="k">if</span> <span class="n">inside_u</span> <span class="ow">and</span> <span class="n">inside_v</span><span class="p">:</span>
+            <span class="n">pt_indices_to_plot</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pt_idx</span><span class="p">)</span>
+
+    <span class="n">interior_pt_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pt_indices_to_plot</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">interior_pt_indices</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">interior_pts</span> <span class="o">=</span> <span class="n">velodyne_pts</span><span class="p">[</span><span class="n">interior_pt_indices</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">interior_pts</span></div>
+
+
+<div class="viewcode-block" id="filter_point_cloud_to_bbox_2D_vectorized"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.cuboid_interior.filter_point_cloud_to_bbox_2D_vectorized">[docs]</a><span class="k">def</span> <span class="nf">filter_point_cloud_to_bbox_2D_vectorized</span><span class="p">(</span><span class="n">bbox</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pc_raw</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">       bbox: NumPy array of shape (4,2) representing 2D bbox</span>
+<span class="sd">       pc_raw: NumPy array of shape (N,3) representing Velodyne point cloud</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       pc_seg: NumPy array of shape (N,3) representing velodyne points</span>
+<span class="sd">            that fall inside the cuboid</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pc_2d</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">pc_raw</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">P3</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># xmax, ymax</span>
+    <span class="n">P4</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># xmax, ymin</span>
+    <span class="n">P2</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># xmin, ymax</span>
+    <span class="n">P1</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>  <span class="c1"># xmin, ymin</span>
+
+    <span class="n">u</span> <span class="o">=</span> <span class="n">P1</span> <span class="o">-</span> <span class="n">P2</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">P1</span> <span class="o">-</span> <span class="n">P4</span>
+
+    <span class="n">U</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="n">P1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="n">P2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="n">P4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="n">P5</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+    <span class="n">dot1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">pc_2d</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">dot2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">pc_2d</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">u_p1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">((</span><span class="n">U</span> <span class="o">*</span> <span class="n">P1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pc_2d</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">v_p1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">((</span><span class="n">V</span> <span class="o">*</span> <span class="n">P1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pc_2d</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">u_p2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">((</span><span class="n">U</span> <span class="o">*</span> <span class="n">P2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pc_2d</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">v_p4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">((</span><span class="n">V</span> <span class="o">*</span> <span class="n">P4</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pc_2d</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">flag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">in_between_matrix</span><span class="p">(</span><span class="n">dot1</span><span class="p">,</span> <span class="n">u_p1</span><span class="p">,</span> <span class="n">u_p2</span><span class="p">),</span> <span class="n">in_between_matrix</span><span class="p">(</span><span class="n">dot2</span><span class="p">,</span> <span class="n">v_p1</span><span class="p">,</span> <span class="n">v_p4</span><span class="p">))</span>
+    <span class="n">flag</span> <span class="o">=</span> <span class="n">flag</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+    <span class="n">pc_seg</span> <span class="o">=</span> <span class="n">pc_raw</span><span class="p">[</span><span class="n">flag</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">pc_seg</span><span class="p">,</span> <span class="n">flag</span></div>
+
+
+<div class="viewcode-block" id="filter_point_cloud_to_bbox_3D"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.cuboid_interior.filter_point_cloud_to_bbox_3D">[docs]</a><span class="k">def</span> <span class="nf">filter_point_cloud_to_bbox_3D</span><span class="p">(</span><span class="n">bbox</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pc_raw</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">       bbox has shape object array: [(3,), (3,), (3,), height]</span>
+<span class="sd">       pc_raw</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">w</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="n">p5</span> <span class="o">=</span> <span class="n">w</span> <span class="o">+</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">U</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+    <span class="n">P1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+    <span class="n">P2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+    <span class="n">P4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+    <span class="n">P5</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">p5</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+
+    <span class="n">dot1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">pc_raw</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">dot2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">pc_raw</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">dot3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">pc_raw</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">u_p1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">((</span><span class="n">U</span> <span class="o">*</span> <span class="n">P1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pc_raw</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">v_p1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">((</span><span class="n">V</span> <span class="o">*</span> <span class="n">P1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pc_raw</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">w_p1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">((</span><span class="n">W</span> <span class="o">*</span> <span class="n">P1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pc_raw</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">u_p2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">((</span><span class="n">U</span> <span class="o">*</span> <span class="n">P2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pc_raw</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">v_p4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">((</span><span class="n">V</span> <span class="o">*</span> <span class="n">P4</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pc_raw</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">w_p5</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">((</span><span class="n">W</span> <span class="o">*</span> <span class="n">P5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pc_raw</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">flag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">in_between_matrix</span><span class="p">(</span><span class="n">dot1</span><span class="p">,</span> <span class="n">u_p1</span><span class="p">,</span> <span class="n">u_p2</span><span class="p">),</span> <span class="n">in_between_matrix</span><span class="p">(</span><span class="n">dot2</span><span class="p">,</span> <span class="n">v_p1</span><span class="p">,</span> <span class="n">v_p4</span><span class="p">)),</span>
+        <span class="n">in_between_matrix</span><span class="p">(</span><span class="n">dot3</span><span class="p">,</span> <span class="n">w_p1</span><span class="p">,</span> <span class="n">w_p5</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">pc_seg</span> <span class="o">=</span> <span class="n">pc_raw</span><span class="p">[</span><span class="n">flag</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]]</span>
+    <span class="k">return</span> <span class="n">pc_seg</span></div>
+
+
+<div class="viewcode-block" id="in_between_matrix"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.cuboid_interior.in_between_matrix">[docs]</a><span class="k">def</span> <span class="nf">in_between_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="n">v1</span><span class="p">,</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="n">v2</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="n">v1</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="filter_point_cloud_to_bbox_3D_single_pt"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.cuboid_interior.filter_point_cloud_to_bbox_3D_single_pt">[docs]</a><span class="k">def</span> <span class="nf">filter_point_cloud_to_bbox_3D_single_pt</span><span class="p">(</span><span class="n">bbox</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>  <span class="c1"># pc_raw):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       bbox: Numpy array of shape (8,1)</span>
+<span class="sd">       x: Numpy array of shape (3,1)</span>
+
+<span class="sd">    https://math.stackexchange.com/questions/1472049/check-if-a-point-is-inside-a-rectangular-shaped-area-3d</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">            5------4</span>
+<span class="sd">            |\\    |\\</span>
+<span class="sd">            | \\   | \\</span>
+<span class="sd">            6--\\--7  \\</span>
+<span class="sd">            \\  \\  \\ \\</span>
+<span class="sd">        l    \\  1-------0    h</span>
+<span class="sd">         e    \\ ||   \\ ||   e</span>
+<span class="sd">          n    \\||    \\||   i</span>
+<span class="sd">           g    \\2------3    g</span>
+<span class="sd">            t      width.     h</span>
+<span class="sd">             h.               t.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get 3 principal directions (edges) of the cuboid</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># point x lies within the box when the following</span>
+    <span class="c1"># constraints are respected</span>
+
+    <span class="c1"># IN BETWEEN</span>
+
+    <span class="c1"># do i need to check the other direction as well?</span>
+    <span class="n">valid_u1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">u</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">u</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">u</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">6</span><span class="p">]))</span>
+    <span class="n">valid_v1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">v</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">v</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">v</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+    <span class="n">valid_w1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">w</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">w</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">w</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="n">valid_u2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">u</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">u</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">u</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">6</span><span class="p">]))</span>
+    <span class="n">valid_v2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">v</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">v</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">v</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+    <span class="n">valid_w2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">w</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">w</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">w</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="n">valid_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">valid_u1</span><span class="p">,</span> <span class="n">valid_u2</span><span class="p">)</span>
+    <span class="n">valid_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">valid_v1</span><span class="p">,</span> <span class="n">valid_v2</span><span class="p">)</span>
+    <span class="n">valid_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">valid_w1</span><span class="p">,</span> <span class="n">valid_w2</span><span class="p">)</span>
+
+    <span class="n">valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">valid_u</span><span class="p">,</span> <span class="n">valid_v</span><span class="p">),</span> <span class="n">valid_w</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">valid</span></div>
+
+
+<div class="viewcode-block" id="filter_point_cloud_to_bbox_3D_vectorized"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.cuboid_interior.filter_point_cloud_to_bbox_3D_vectorized">[docs]</a><span class="k">def</span> <span class="nf">filter_point_cloud_to_bbox_3D_vectorized</span><span class="p">(</span><span class="n">bbox</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pc_raw</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       bbox: Numpy array pf shape (8,3) representing 3d cuboid vertices, ordered</span>
+<span class="sd">                as shown below.</span>
+<span class="sd">       pc_raw: Numpy array of shape (N,3), representing a point cloud</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       segment: Numpy array of shape (K,3) representing 3d points that fell</span>
+<span class="sd">                within 3d cuboid volume.</span>
+<span class="sd">       is_valid: Numpy array of shape (N,) of type bool</span>
+
+<span class="sd">    https://math.stackexchange.com/questions/1472049/check-if-a-point-is-inside-a-rectangular-shaped-area-3d</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">            5------4</span>
+<span class="sd">            |\\    |\\</span>
+<span class="sd">            | \\   | \\</span>
+<span class="sd">            6--\\--7  \\</span>
+<span class="sd">            \\  \\  \\ \\</span>
+<span class="sd">        l    \\  1-------0    h</span>
+<span class="sd">         e    \\ ||   \\ ||   e</span>
+<span class="sd">          n    \\||    \\||   i</span>
+<span class="sd">           g    \\2------3    g</span>
+<span class="sd">            t      width.     h</span>
+<span class="sd">             h.               t.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get 3 principal directions (edges) of the cuboid</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># point x lies within the box when the following</span>
+    <span class="c1"># constraints are respected</span>
+
+    <span class="c1"># IN BETWEEN</span>
+
+    <span class="c1"># do i need to check the other direction as well?</span>
+    <span class="n">valid_u1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">pc_raw</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">pc_raw</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">u</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">6</span><span class="p">]))</span>
+    <span class="n">valid_v1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">pc_raw</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">pc_raw</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">v</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+    <span class="n">valid_w1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">pc_raw</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w</span><span class="p">),</span> <span class="n">pc_raw</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">w</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="n">valid_u2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">pc_raw</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">pc_raw</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">u</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">6</span><span class="p">]))</span>
+    <span class="n">valid_v2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">pc_raw</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">pc_raw</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">v</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+    <span class="n">valid_w2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">pc_raw</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w</span><span class="p">),</span> <span class="n">pc_raw</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">w</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="n">valid_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">valid_u1</span><span class="p">,</span> <span class="n">valid_u2</span><span class="p">)</span>
+    <span class="n">valid_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">valid_v1</span><span class="p">,</span> <span class="n">valid_v2</span><span class="p">)</span>
+    <span class="n">valid_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">valid_w1</span><span class="p">,</span> <span class="n">valid_w2</span><span class="p">)</span>
+
+    <span class="n">is_valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">valid_u</span><span class="p">,</span> <span class="n">valid_v</span><span class="p">),</span> <span class="n">valid_w</span><span class="p">)</span>
+    <span class="n">segment_pc</span> <span class="o">=</span> <span class="n">pc_raw</span><span class="p">[</span><span class="n">is_valid</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">segment_pc</span><span class="p">,</span> <span class="n">is_valid</span></div>
+
+
+<div class="viewcode-block" id="extract_pc_in_box3d_hull"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.cuboid_interior.extract_pc_in_box3d_hull">[docs]</a><span class="k">def</span> <span class="nf">extract_pc_in_box3d_hull</span><span class="p">(</span><span class="n">pc</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">bbox_3d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find points that fall within a 3d cuboid, by treating the 3d cuboid as a hull.</span>
+<span class="sd">    Scipy.spatial&#39;s Delaunay class performs tesselation in N dimensions. By finding</span>
+<span class="sd">    the simplices containing the given points, we also can determine which points</span>
+<span class="sd">    lie outside the triangulation. Such invalid points obtain the value &quot;-1&quot;. We</span>
+<span class="sd">    threshold these to find the points that fall within the cuboid/hull.</span>
+
+<span class="sd">    Please see Apache 2.0 license below, which governs this specific function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       pc: Numpy array of shape (N,3) representing point cloud</span>
+<span class="sd">       bbox_3d: Numpy array of shape (8,3) representing 3D cuboid vertices</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       segment: Numpy array of shape (K,3) representing 3d points that fell</span>
+<span class="sd">                within 3d cuboid volume.</span>
+<span class="sd">       box3d_roi_inds: Numpy array of shape (N,) of type bool, representing</span>
+<span class="sd">            point cloud indices corresponding to points that fall within the</span>
+<span class="sd">            3D cuboid.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bbox_3d</span><span class="p">,</span> <span class="n">Delaunay</span><span class="p">):</span>
+        <span class="n">hull</span> <span class="o">=</span> <span class="n">Delaunay</span><span class="p">(</span><span class="n">bbox_3d</span><span class="p">)</span>
+
+    <span class="n">box3d_roi_inds</span> <span class="o">=</span> <span class="n">hull</span><span class="o">.</span><span class="n">find_simplex</span><span class="p">(</span><span class="n">pc</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">pc</span><span class="p">[</span><span class="n">box3d_roi_inds</span><span class="p">,</span> <span class="p">:],</span> <span class="n">box3d_roi_inds</span></div>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">https://github.com/charlesq34/frustum-pointnets/blob/master/LICENSE</span>
+<span class="sd">                                 Apache License</span>
+<span class="sd">                           Version 2.0, January 2004</span>
+<span class="sd">                        http://www.apache.org/licenses/</span>
+
+<span class="sd">   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION</span>
+
+<span class="sd">   1. Definitions.</span>
+
+<span class="sd">      &quot;License&quot; shall mean the terms and conditions for use, reproduction,</span>
+<span class="sd">      and distribution as defined by Sections 1 through 9 of this document.</span>
+
+<span class="sd">      &quot;Licensor&quot; shall mean the copyright owner or entity authorized by</span>
+<span class="sd">      the copyright owner that is granting the License.</span>
+
+<span class="sd">      &quot;Legal Entity&quot; shall mean the union of the acting entity and all</span>
+<span class="sd">      other entities that control, are controlled by, or are under common</span>
+<span class="sd">      control with that entity. For the purposes of this definition,</span>
+<span class="sd">      &quot;control&quot; means (i) the power, direct or indirect, to cause the</span>
+<span class="sd">      direction or management of such entity, whether by contract or</span>
+<span class="sd">      otherwise, or (ii) ownership of fifty percent (50%) or more of the</span>
+<span class="sd">      outstanding shares, or (iii) beneficial ownership of such entity.</span>
+
+<span class="sd">      &quot;You&quot; (or &quot;Your&quot;) shall mean an individual or Legal Entity</span>
+<span class="sd">      exercising permissions granted by this License.</span>
+
+<span class="sd">      &quot;Source&quot; form shall mean the preferred form for making modifications,</span>
+<span class="sd">      including but not limited to software source code, documentation</span>
+<span class="sd">      source, and configuration files.</span>
+
+<span class="sd">      &quot;Object&quot; form shall mean any form resulting from mechanical</span>
+<span class="sd">      transformation or translation of a Source form, including but</span>
+<span class="sd">      not limited to compiled object code, generated documentation,</span>
+<span class="sd">      and conversions to other media types.</span>
+
+<span class="sd">      &quot;Work&quot; shall mean the work of authorship, whether in Source or</span>
+<span class="sd">      Object form, made available under the License, as indicated by a</span>
+<span class="sd">      copyright notice that is included in or attached to the work</span>
+<span class="sd">      (an example is provided in the Appendix below).</span>
+
+<span class="sd">      &quot;Derivative Works&quot; shall mean any work, whether in Source or Object</span>
+<span class="sd">      form, that is based on (or derived from) the Work and for which the</span>
+<span class="sd">      editorial revisions, annotations, elaborations, or other modifications</span>
+<span class="sd">      represent, as a whole, an original work of authorship. For the purposes</span>
+<span class="sd">      of this License, Derivative Works shall not include works that remain</span>
+<span class="sd">      separable from, or merely link (or bind by name) to the interfaces of,</span>
+<span class="sd">      the Work and Derivative Works thereof.</span>
+
+<span class="sd">      &quot;Contribution&quot; shall mean any work of authorship, including</span>
+<span class="sd">      the original version of the Work and any modifications or additions</span>
+<span class="sd">      to that Work or Derivative Works thereof, that is intentionally</span>
+<span class="sd">      submitted to Licensor for inclusion in the Work by the copyright owner</span>
+<span class="sd">      or by an individual or Legal Entity authorized to submit on behalf of</span>
+<span class="sd">      the copyright owner. For the purposes of this definition, &quot;submitted&quot;</span>
+<span class="sd">      means any form of electronic, verbal, or written communication sent</span>
+<span class="sd">      to the Licensor or its representatives, including but not limited to</span>
+<span class="sd">      communication on electronic mailing lists, source code control systems,</span>
+<span class="sd">      and issue tracking systems that are managed by, or on behalf of, the</span>
+<span class="sd">      Licensor for the purpose of discussing and improving the Work, but</span>
+<span class="sd">      excluding communication that is conspicuously marked or otherwise</span>
+<span class="sd">      designated in writing by the copyright owner as &quot;Not a Contribution.&quot;</span>
+
+<span class="sd">      &quot;Contributor&quot; shall mean Licensor and any individual or Legal Entity</span>
+<span class="sd">      on behalf of whom a Contribution has been received by Licensor and</span>
+<span class="sd">      subsequently incorporated within the Work.</span>
+
+<span class="sd">   2. Grant of Copyright License. Subject to the terms and conditions of</span>
+<span class="sd">      this License, each Contributor hereby grants to You a perpetual,</span>
+<span class="sd">      worldwide, non-exclusive, no-charge, royalty-free, irrevocable</span>
+<span class="sd">      copyright license to reproduce, prepare Derivative Works of,</span>
+<span class="sd">      publicly display, publicly perform, sublicense, and distribute the</span>
+<span class="sd">      Work and such Derivative Works in Source or Object form.</span>
+
+<span class="sd">   3. Grant of Patent License. Subject to the terms and conditions of</span>
+<span class="sd">      this License, each Contributor hereby grants to You a perpetual,</span>
+<span class="sd">      worldwide, non-exclusive, no-charge, royalty-free, irrevocable</span>
+<span class="sd">      (except as stated in this section) patent license to make, have made,</span>
+<span class="sd">      use, offer to sell, sell, import, and otherwise transfer the Work,</span>
+<span class="sd">      where such license applies only to those patent claims licensable</span>
+<span class="sd">      by such Contributor that are necessarily infringed by their</span>
+<span class="sd">      Contribution(s) alone or by combination of their Contribution(s)</span>
+<span class="sd">      with the Work to which such Contribution(s) was submitted. If You</span>
+<span class="sd">      institute patent litigation against any entity (including a</span>
+<span class="sd">      cross-claim or counterclaim in a lawsuit) alleging that the Work</span>
+<span class="sd">      or a Contribution incorporated within the Work constitutes direct</span>
+<span class="sd">      or contributory patent infringement, then any patent licenses</span>
+<span class="sd">      granted to You under this License for that Work shall terminate</span>
+<span class="sd">      as of the date such litigation is filed.</span>
+
+<span class="sd">   4. Redistribution. You may reproduce and distribute copies of the</span>
+<span class="sd">      Work or Derivative Works thereof in any medium, with or without</span>
+<span class="sd">      modifications, and in Source or Object form, provided that You</span>
+<span class="sd">      meet the following conditions:</span>
+
+<span class="sd">      (a) You must give any other recipients of the Work or</span>
+<span class="sd">          Derivative Works a copy of this License; and</span>
+
+<span class="sd">      (b) You must cause any modified files to carry prominent notices</span>
+<span class="sd">          stating that You changed the files; and</span>
+
+<span class="sd">      (c) You must retain, in the Source form of any Derivative Works</span>
+<span class="sd">          that You distribute, all copyright, patent, trademark, and</span>
+<span class="sd">          attribution notices from the Source form of the Work,</span>
+<span class="sd">          excluding those notices that do not pertain to any part of</span>
+<span class="sd">          the Derivative Works; and</span>
+
+<span class="sd">      (d) If the Work includes a &quot;NOTICE&quot; text file as part of its</span>
+<span class="sd">          distribution, then any Derivative Works that You distribute must</span>
+<span class="sd">          include a readable copy of the attribution notices contained</span>
+<span class="sd">          within such NOTICE file, excluding those notices that do not</span>
+<span class="sd">          pertain to any part of the Derivative Works, in at least one</span>
+<span class="sd">          of the following places: within a NOTICE text file distributed</span>
+<span class="sd">          as part of the Derivative Works; within the Source form or</span>
+<span class="sd">          documentation, if provided along with the Derivative Works; or,</span>
+<span class="sd">          within a display generated by the Derivative Works, if and</span>
+<span class="sd">          wherever such third-party notices normally appear. The contents</span>
+<span class="sd">          of the NOTICE file are for informational purposes only and</span>
+<span class="sd">          do not modify the License. You may add Your own attribution</span>
+<span class="sd">          notices within Derivative Works that You distribute, alongside</span>
+<span class="sd">          or as an addendum to the NOTICE text from the Work, provided</span>
+<span class="sd">          that such additional attribution notices cannot be construed</span>
+<span class="sd">          as modifying the License.</span>
+
+<span class="sd">      You may add Your own copyright statement to Your modifications and</span>
+<span class="sd">      may provide additional or different license terms and conditions</span>
+<span class="sd">      for use, reproduction, or distribution of Your modifications, or</span>
+<span class="sd">      for any such Derivative Works as a whole, provided Your use,</span>
+<span class="sd">      reproduction, and distribution of the Work otherwise complies with</span>
+<span class="sd">      the conditions stated in this License.</span>
+
+<span class="sd">   5. Submission of Contributions. Unless You explicitly state otherwise,</span>
+<span class="sd">      any Contribution intentionally submitted for inclusion in the Work</span>
+<span class="sd">      by You to the Licensor shall be under the terms and conditions of</span>
+<span class="sd">      this License, without any additional terms or conditions.</span>
+<span class="sd">      Notwithstanding the above, nothing herein shall supersede or modify</span>
+<span class="sd">      the terms of any separate license agreement you may have executed</span>
+<span class="sd">      with Licensor regarding such Contributions.</span>
+
+<span class="sd">   6. Trademarks. This License does not grant permission to use the trade</span>
+<span class="sd">      names, trademarks, service marks, or product names of the Licensor,</span>
+<span class="sd">      except as required for reasonable and customary use in describing the</span>
+<span class="sd">      origin of the Work and reproducing the content of the NOTICE file.</span>
+
+<span class="sd">   7. Disclaimer of Warranty. Unless required by applicable law or</span>
+<span class="sd">      agreed to in writing, Licensor provides the Work (and each</span>
+<span class="sd">      Contributor provides its Contributions) on an &quot;AS IS&quot; BASIS,</span>
+<span class="sd">      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or</span>
+<span class="sd">      implied, including, without limitation, any warranties or conditions</span>
+<span class="sd">      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A</span>
+<span class="sd">      PARTICULAR PURPOSE. You are solely responsible for determining the</span>
+<span class="sd">      appropriateness of using or redistributing the Work and assume any</span>
+<span class="sd">      risks associated with Your exercise of permissions under this License.</span>
+
+<span class="sd">   8. Limitation of Liability. In no event and under no legal theory,</span>
+<span class="sd">      whether in tort (including negligence), contract, or otherwise,</span>
+<span class="sd">      unless required by applicable law (such as deliberate and grossly</span>
+<span class="sd">      negligent acts) or agreed to in writing, shall any Contributor be</span>
+<span class="sd">      liable to You for damages, including any direct, indirect, special,</span>
+<span class="sd">      incidental, or consequential damages of any character arising as a</span>
+<span class="sd">      result of this License or out of the use or inability to use the</span>
+<span class="sd">      Work (including but not limited to damages for loss of goodwill,</span>
+<span class="sd">      work stoppage, computer failure or malfunction, or any and all</span>
+<span class="sd">      other commercial damages or losses), even if such Contributor</span>
+<span class="sd">      has been advised of the possibility of such damages.</span>
+
+<span class="sd">   9. Accepting Warranty or Additional Liability. While redistributing</span>
+<span class="sd">      the Work or Derivative Works thereof, You may choose to offer,</span>
+<span class="sd">      and charge a fee for, acceptance of support, warranty, indemnity,</span>
+<span class="sd">      or other liability obligations and/or rights consistent with this</span>
+<span class="sd">      License. However, in accepting such obligations, You may act only</span>
+<span class="sd">      on Your own behalf and on Your sole responsibility, not on behalf</span>
+<span class="sd">      of any other Contributor, and only if You agree to indemnify,</span>
+<span class="sd">      defend, and hold each Contributor harmless for any liability</span>
+<span class="sd">      incurred by, or claims asserted against, such Contributor by reason</span>
+<span class="sd">      of your accepting any such warranty or additional liability.</span>
+
+<span class="sd">   END OF TERMS AND CONDITIONS</span>
+
+<span class="sd">   APPENDIX: How to apply the Apache License to your work.</span>
+
+<span class="sd">      To apply the Apache License to your work, attach the following</span>
+<span class="sd">      boilerplate notice, with the fields enclosed by brackets &quot;[]&quot;</span>
+<span class="sd">      replaced with your own identifying information. (Don&#39;t include</span>
+<span class="sd">      the brackets!)  The text should be enclosed in the appropriate</span>
+<span class="sd">      comment syntax for the file format. We also recommend that a</span>
+<span class="sd">      file or class name and description of purpose be included on the</span>
+<span class="sd">      same &quot;printed page&quot; as the copyright notice for easier</span>
+<span class="sd">      identification within third-party archives.</span>
+
+<span class="sd">   Copyright 2018 Charles R. Qi from Stanford University and</span>
+<span class="sd">    Wei Liu from Nuro Inc.</span>
+
+<span class="sd">   Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="sd">   you may not use this file except in compliance with the License.</span>
+<span class="sd">   You may obtain a copy of the License at</span>
+
+<span class="sd">       http://www.apache.org/licenses/LICENSE-2.0</span>
+
+<span class="sd">   Unless required by applicable law or agreed to in writing, software</span>
+<span class="sd">   distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="sd">   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="sd">   See the License for the specific language governing permissions and</span>
+<span class="sd">   limitations under the License.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

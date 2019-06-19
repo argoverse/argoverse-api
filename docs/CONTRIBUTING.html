@@ -1,0 +1,240 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Contributing to Argoverse &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Contributing to Argoverse</a><ul>
+<li><a class="reference internal" href="#helpful-documentation">Helpful documentation</a></li>
+<li><a class="reference internal" href="#license">License</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Contributing to Argoverse</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/CONTRIBUTING.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="contributing-to-argoverse">
+<h1>Contributing to Argoverse<a class="headerlink" href="#contributing-to-argoverse" title="Permalink to this headline">¶</a></h1>
+<p>Contributions to Argoverse are welcomed!  If you find a bug please open an issue on the github page describing the problem with steps to reproduce.  Better yet, if you figure out a fix, please open a pull request!</p>
+<p>To open a pull request here are some steps to get you started:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://help.github.com/en/articles/fork-a-repo">Fork the Argoverse repository</a> and <a class="reference external" href="https://help.github.com/en/articles/cloning-a-repository">clone to your machine</a>.</p></li>
+<li><p>Create a branch for your changes.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">git</span> <span class="pre">checkout</span> <span class="pre">-b</span> <span class="pre">&lt;name</span> <span class="pre">of</span> <span class="pre">your</span> <span class="pre">branch&gt;</span></code></p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://pre-commit.com/#install">Install pre-commit</a></p></li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">install</span> <span class="pre">--install-hooks</span></code> to install the <a class="reference external" href="https://githooks.com/">git hooks</a> for this repo, so your changes get auto-formatted as you commit.</p></li>
+<li><p>Validate that your changes do not break any existing unit tests.</p>
+<ul>
+<li><p>Run all unit tests: <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">pytest</span> <span class="pre">tests</span></code></p></li>
+</ul>
+</li>
+<li><p>Please provide documentation for any new code your pull request provides.</p></li>
+<li><p>Push your branch to the remote when it is complete.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">git</span> <span class="pre">push</span> <span class="pre">--set-upstream</span> <span class="pre">origin</span> <span class="pre">&lt;name</span> <span class="pre">of</span> <span class="pre">your</span> <span class="pre">branch&gt;</span></code></p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://help.github.com/en/articles/creating-a-pull-request-from-a-fork">Open a pull request</a> https://github.com/argoai/argoverse-api/pulls from your branch.</p>
+<ul>
+<li><p>Hint: having unit tests that validate your changes with your pull
+request will help to land your changes faster.</p></li>
+</ul>
+</li>
+</ul>
+<div class="section" id="helpful-documentation">
+<h2>Helpful documentation<a class="headerlink" href="#helpful-documentation" title="Permalink to this headline">¶</a></h2>
+<p>Making a contribution to Argoverse will require some basic knowledge of Git and Github.  If these tools are new to you, here are is some documentation that might be helpful.</p>
+<ul class="simple">
+<li><p>Basic tutorial for using Git and Github: https://guides.github.com/activities/hello-world/</p></li>
+<li><p>Forking a repository: https://help.github.com/en/articles/fork-a-repo</p></li>
+<li><p>Examples for formatting documentation: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html#example-google</p></li>
+<li><p>Creating a pull request from a fork: https://help.github.com/en/articles/creating-a-pull-request-from-a-fork</p></li>
+</ul>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>By contributing to this project you are acknowledging and agreeing that all contributions made by you are submitted under the terms of the <a class="reference internal" href="LICENSE.html"><span class="doc">MIT license</span></a>.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,353 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.utils.cv2_plotting_utils &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>argoverse.utils.cv2_plotting_utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for argoverse.utils.cv2_plotting_utils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># &lt;Copyright 2019, Argo AI, LLC. Released under the MIT license.&gt;</span>
+<span class="sd">&quot;&quot;&quot;OpenCV plotting utility functions.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">.calibration</span> <span class="k">import</span> <span class="n">CameraConfig</span><span class="p">,</span> <span class="n">proj_cam_to_uv</span>
+<span class="kn">from</span> <span class="nn">.frustum_clipping</span> <span class="k">import</span> <span class="n">clip_segment_v3_plane_n</span>
+
+
+<div class="viewcode-block" id="draw_clipped_line_segment"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.cv2_plotting_utils.draw_clipped_line_segment">[docs]</a><span class="k">def</span> <span class="nf">draw_clipped_line_segment</span><span class="p">(</span>
+    <span class="n">img</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+    <span class="n">vert_a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+    <span class="n">vert_b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+    <span class="n">camera_config</span><span class="p">:</span> <span class="n">CameraConfig</span><span class="p">,</span>
+    <span class="n">linewidth</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">planes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">]],</span>
+    <span class="n">color</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Plot the portion of a line segment that lives within a parameterized 3D camera frustum.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        img: Numpy array of shape (M,N,3)</span>
+<span class="sd">        vert_a: first point, in the camera coordinate frame.</span>
+<span class="sd">        vert_b: second point, in the camera coordinate frame.</span>
+<span class="sd">        camera_config: CameraConfig object</span>
+<span class="sd">        linewidth: integer, linewidth for plot</span>
+<span class="sd">        planes: frustum clipping plane parameters</span>
+<span class="sd">        color: RGB 3-tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">clip_vert_a</span><span class="p">,</span> <span class="n">clip_vert_b</span> <span class="o">=</span> <span class="n">clip_segment_v3_plane_n</span><span class="p">(</span><span class="n">vert_a</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">vert_b</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">planes</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">clip_vert_a</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">clip_vert_b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="n">uv_a</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">proj_cam_to_uv</span><span class="p">(</span><span class="n">clip_vert_a</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">camera_config</span><span class="p">)</span>
+    <span class="n">uv_b</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">proj_cam_to_uv</span><span class="p">(</span><span class="n">clip_vert_b</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">camera_config</span><span class="p">)</span>
+
+    <span class="n">uv_a</span> <span class="o">=</span> <span class="n">uv_a</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+    <span class="n">uv_b</span> <span class="o">=</span> <span class="n">uv_b</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">uv_a</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">uv_a</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">uv_b</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">uv_b</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> <span class="n">color</span><span class="p">,</span> <span class="n">linewidth</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="draw_point_cloud_in_img_cv2"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.cv2_plotting_utils.draw_point_cloud_in_img_cv2">[docs]</a><span class="k">def</span> <span class="nf">draw_point_cloud_in_img_cv2</span><span class="p">(</span><span class="n">img</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">xy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">colors</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">radius</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Plot a point cloud in an image by drawing small circles centered at (x,y) locations.</span>
+
+<span class="sd">    Note these are not (u,v) but rather (v,u) coordinate pairs.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        img: Array of shape (M, N, 3), representing an image with channel order BGR, per the OpenCV convention</span>
+<span class="sd">        xy: Array of shape (K, 2) representing the center coordinates of each circle</span>
+<span class="sd">        colors: Array of shape (K, 3), with BGR values in [0, 255] representing the fill color for each circle</span>
+<span class="sd">        radius: radius of all circles</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        img: Array of shape (M, N, 3), with all circles plotted</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">xy</span><span class="p">):</span>
+        <span class="n">rgb</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">rgb</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">intensity</span><span class="p">)</span> <span class="k">for</span> <span class="n">intensity</span> <span class="ow">in</span> <span class="n">rgb</span><span class="p">])</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">circle</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">radius</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">rgb</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">img</span></div>
+
+
+<div class="viewcode-block" id="draw_polyline_cv2"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.cv2_plotting_utils.draw_polyline_cv2">[docs]</a><span class="k">def</span> <span class="nf">draw_polyline_cv2</span><span class="p">(</span>
+    <span class="n">line_segments_arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">im_h</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">im_w</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Draw a polyline onto an image using given line segments.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        line_segments_arr: Array of shape (K, 2) representing the coordinates of each line segment</span>
+<span class="sd">        image: Array of shape (M, N, 3), representing a 3-channel BGR image</span>
+<span class="sd">        color: Tuple of shape (3,) with a BGR format color</span>
+<span class="sd">        im_h: Image height in pixels</span>
+<span class="sd">        im_w: Image width in pixels</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">line_segments_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">x1</span> <span class="o">=</span> <span class="n">line_segments_arr</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y1</span> <span class="o">=</span> <span class="n">line_segments_arr</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">x2</span> <span class="o">=</span> <span class="n">line_segments_arr</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y2</span> <span class="o">=</span> <span class="n">line_segments_arr</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">x_in_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">x1</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">x2</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">y1</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">y2</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">y_in_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">x1</span> <span class="o">&lt;</span> <span class="n">im_w</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">x2</span> <span class="o">&lt;</span> <span class="n">im_w</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">y1</span> <span class="o">&lt;</span> <span class="n">im_h</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">y2</span> <span class="o">&lt;</span> <span class="n">im_h</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">x_in_range</span> <span class="ow">and</span> <span class="n">y_in_range</span><span class="p">:</span>
+            <span class="c1"># Use anti-aliasing (AA) for curves</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span> <span class="p">(</span><span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">),</span> <span class="n">color</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">LINE_AA</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="draw_polygon_cv2"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.cv2_plotting_utils.draw_polygon_cv2">[docs]</a><span class="k">def</span> <span class="nf">draw_polygon_cv2</span><span class="p">(</span><span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Draw a polygon onto an image using the given points and fill color.</span>
+
+<span class="sd">    These polygons are often non-convex, so we cannot use cv2.fillConvexPoly().</span>
+<span class="sd">    Note that cv2.fillPoly() accepts an array of array of points as an</span>
+<span class="sd">    argument (i.e. an array of polygons where each polygon is represented</span>
+<span class="sd">    as an array of points).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        points: Array of shape (N, 2) representing all points of the polygon</span>
+<span class="sd">        image: Array of shape (M, N, 3) representing the image to be drawn onto</span>
+<span class="sd">        color: Tuple of shape (3,) with a BGR format color</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        image: Array of shape (M, N, 3) with polygon rendered on it</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">points</span><span class="p">])</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">fillPoly</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">color</span><span class="p">)</span>  <span class="c1"># , lineType[, shift]]) -&gt; None</span>
+    <span class="k">return</span> <span class="n">image</span></div>
+
+
+<div class="viewcode-block" id="plot_bbox_polygon_cv2"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.cv2_plotting_utils.plot_bbox_polygon_cv2">[docs]</a><span class="k">def</span> <span class="nf">plot_bbox_polygon_cv2</span><span class="p">(</span><span class="n">img</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">track_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">bbox</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Draw a colored bounding box with a red border.</span>
+
+<span class="sd">    We use OpenCV&#39;s rectangle rendering to draw the thin red border.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        img: Array of shape (M,N,3) represnenting the image to plot the bounding box onto</span>
+<span class="sd">        track_id: The track id to use as a label</span>
+<span class="sd">        color: Numpy Array of shape (3,) with a BGR format color</span>
+<span class="sd">        bbox: Numpy array, containing values xmin, ymin, xmax, ymax. Note that the requested color is placed in</span>
+<span class="sd">            xmax-1 and ymax-1, but not beyond. in accordance with Numpy indexing implementation).</span>
+<span class="sd">            All values on the border (touching xmin, or xmax, or ymin, or ymax along an edge) will be colored red.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        img: Array of shape (M, N, 3)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">bbox</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+
+    <span class="n">bbox_h</span><span class="p">,</span> <span class="n">bbox_w</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="n">ymin</span><span class="p">:</span><span class="n">ymax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">:</span><span class="n">xmax</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">tiled_color</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">color</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="n">bbox_h</span><span class="p">,</span> <span class="n">bbox_w</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">img</span><span class="p">[</span><span class="n">ymin</span><span class="p">:</span><span class="n">ymax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">:</span><span class="n">xmax</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">(</span><span class="n">img</span><span class="p">[</span><span class="n">ymin</span><span class="p">:</span><span class="n">ymax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">:</span><span class="n">xmax</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">tiled_color</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+    <span class="n">white</span> <span class="o">=</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+    <span class="n">plot_x</span> <span class="o">=</span> <span class="n">xmin</span> <span class="o">+</span> <span class="mi">10</span>
+    <span class="n">plot_y</span> <span class="o">=</span> <span class="n">ymin</span> <span class="o">+</span> <span class="mi">25</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">putText</span><span class="p">(</span>
+        <span class="n">img</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">track_id</span><span class="p">),</span> <span class="p">(</span><span class="n">plot_x</span><span class="p">,</span> <span class="n">plot_y</span><span class="p">),</span> <span class="n">fontFace</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">FONT_HERSHEY_SIMPLEX</span><span class="p">,</span> <span class="n">fontScale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">white</span>
+    <span class="p">)</span>
+
+    <span class="n">red</span> <span class="o">=</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># Use the default thickness value of 1. Negative values, like CV_FILLED, would provide a filled rectangle instead.</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span><span class="p">),</span> <span class="p">(</span><span class="n">xmax</span><span class="p">,</span> <span class="n">ymax</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">red</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">img</span></div>
+
+
+<div class="viewcode-block" id="get_img_contours"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.cv2_plotting_utils.get_img_contours">[docs]</a><span class="k">def</span> <span class="nf">get_img_contours</span><span class="p">(</span><span class="n">img</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Uses</span>
+
+<span class="sd">    Ref: Suzuki, S. and Abe, K., Topological Structural Analysis of Digitized Binary Images</span>
+<span class="sd">    by Border Following. CVGIP 30 1, pp 32-46 (1985)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        img: binary image with zero and one values</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        contours: Numpy array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">imgray</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="o">*</span> <span class="mi">255</span>
+    <span class="n">threshold_val</span> <span class="o">=</span> <span class="mi">127</span>
+    <span class="n">max_binary_val</span> <span class="o">=</span> <span class="mi">255</span>
+    <span class="n">ret</span><span class="p">,</span> <span class="n">thresh</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">threshold</span><span class="p">(</span><span class="n">imgray</span><span class="p">,</span> <span class="n">threshold_val</span><span class="p">,</span> <span class="n">max_binary_val</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">contours</span><span class="p">,</span> <span class="n">hierarchy</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">findContours</span><span class="p">(</span><span class="n">thresh</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">RETR_TREE</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">CHAIN_APPROX_SIMPLE</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">contours</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

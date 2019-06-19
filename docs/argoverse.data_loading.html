@@ -1,0 +1,1868 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.data_loading package &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">argoverse.data_loading package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-argoverse.data_loading.argoverse_forecasting_loader">argoverse.data_loading.argoverse_forecasting_loader module</a></li>
+<li><a class="reference internal" href="#module-argoverse.data_loading.argoverse_tracking_loader">argoverse.data_loading.argoverse_tracking_loader module</a></li>
+<li><a class="reference internal" href="#module-argoverse.data_loading.frame_label_accumulator">argoverse.data_loading.frame_label_accumulator module</a></li>
+<li><a class="reference internal" href="#module-argoverse.data_loading.frame_record">argoverse.data_loading.frame_record module</a></li>
+<li><a class="reference internal" href="#module-argoverse.data_loading.object_classes">argoverse.data_loading.object_classes module</a></li>
+<li><a class="reference internal" href="#module-argoverse.data_loading.object_label_record">argoverse.data_loading.object_label_record module</a></li>
+<li><a class="reference internal" href="#module-argoverse.data_loading.pose_loader">argoverse.data_loading.pose_loader module</a></li>
+<li><a class="reference internal" href="#module-argoverse.data_loading.simple_track_dataloader">argoverse.data_loading.simple_track_dataloader module</a></li>
+<li><a class="reference internal" href="#module-argoverse.data_loading.synchronization_database">argoverse.data_loading.synchronization_database module</a></li>
+<li><a class="reference internal" href="#module-argoverse.data_loading.trajectory_loader">argoverse.data_loading.trajectory_loader module</a></li>
+<li><a class="reference internal" href="#module-argoverse.data_loading.vector_map_loader">argoverse.data_loading.vector_map_loader module</a></li>
+<li><a class="reference internal" href="#module-argoverse.data_loading">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>argoverse.data_loading package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/argoverse.data_loading.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="argoverse-data-loading-package">
+<h1>argoverse.data_loading package<a class="headerlink" href="#argoverse-data-loading-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-argoverse.data_loading.argoverse_forecasting_loader">
+<span id="argoverse-data-loading-argoverse-forecasting-loader-module"></span><h2>argoverse.data_loading.argoverse_forecasting_loader module<a class="headerlink" href="#module-argoverse.data_loading.argoverse_forecasting_loader" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader">
+<em class="property">class </em><code class="sig-prename descclassname">argoverse.data_loading.argoverse_forecasting_loader.</code><code class="sig-name descname">ArgoverseForecastingLoader</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_forecasting_loader.html#ArgoverseForecastingLoader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.__getitem__">
+<code class="sig-name descname">__getitem__</code><span class="sig-paren">(</span><em class="sig-param">key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_forecasting_loader.html#ArgoverseForecastingLoader.__getitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the DataLoader object for the sequence corresponding to the given index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – index of the element</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader" title="argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArgoverseForecastingLoader</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Data Loader object for the given index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_forecasting_loader.html#ArgoverseForecastingLoader.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialization function for the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>root_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a>]) – Path to the folder having sequence csv files</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.__iter__">
+<code class="sig-name descname">__iter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_forecasting_loader.html#ArgoverseForecastingLoader.__iter__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterator for enumerating over sequences in the root_dir specified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader" title="argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArgoverseForecastingLoader</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Data Loader object for the first sequence in the data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.__len__">
+<code class="sig-name descname">__len__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_forecasting_loader.html#ArgoverseForecastingLoader.__len__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.__len__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of sequences in the data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Number of sequences in the data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.__next__">
+<code class="sig-name descname">__next__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_forecasting_loader.html#ArgoverseForecastingLoader.__next__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.__next__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the Data Loader object for the next sequence in the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader" title="argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArgoverseForecastingLoader</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Data Loader object for the next sequence in the data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.__str__">
+<code class="sig-name descname">__str__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_forecasting_loader.html#ArgoverseForecastingLoader.__str__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator that returns a string storing some stats of the current sequence</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A string storing some stats of the current sequence</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.agent_traj">
+<em class="property">property </em><code class="sig-name descname">agent_traj</code><a class="headerlink" href="#argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.agent_traj" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the trajectory for the track of type ‘AGENT’ in the current sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>numpy array of shape (seq_len x 2) for the agent trajectory</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.city">
+<em class="property">property </em><code class="sig-name descname">city</code><a class="headerlink" href="#argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.city" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the city name for the current sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>city name, i.e., either ‘PIT’ or ‘MIA’</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.get">
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param">seq_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_forecasting_loader.html#ArgoverseForecastingLoader.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the DataLoader object for the given sequence path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>seq_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – Fully qualified path to the sequence</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader" title="argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArgoverseForecastingLoader</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Data Loader object for the given sequence path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.num_tracks">
+<em class="property">property </em><code class="sig-name descname">num_tracks</code><a class="headerlink" href="#argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.num_tracks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of tracks in the current sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>number of tracks in the current sequence</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.seq_df">
+<em class="property">property </em><code class="sig-name descname">seq_df</code><a class="headerlink" href="#argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.seq_df" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the dataframe for the current sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>pandas DataFrame for the current sequence</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.track_id_list">
+<em class="property">property </em><code class="sig-name descname">track_id_list</code><a class="headerlink" href="#argoverse.data_loading.argoverse_forecasting_loader.ArgoverseForecastingLoader.track_id_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the track ids in the current sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of track ids in the current sequence</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.data_loading.argoverse_tracking_loader">
+<span id="argoverse-data-loading-argoverse-tracking-loader-module"></span><h2>argoverse.data_loading.argoverse_tracking_loader module<a class="headerlink" href="#module-argoverse.data_loading.argoverse_tracking_loader" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader">
+<em class="property">class </em><code class="sig-prename descclassname">argoverse.data_loading.argoverse_tracking_loader.</code><code class="sig-name descname">ArgoverseTrackingLoader</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_tracking_loader.html#ArgoverseTrackingLoader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.calib">
+<em class="property">property </em><code class="sig-name descname">calib</code><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.calib" title="Permalink to this definition">¶</a></dt>
+<dd><p>get calibration dict for current log</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Calibration object for the current log</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>calib</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.city_name">
+<em class="property">property </em><code class="sig-name descname">city_name</code><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.city_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>get city name of the current log</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>city name of the current log, either ‘PIT’ or ‘MIA’</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>city_name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get">
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param">log_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_tracking_loader.html#ArgoverseTrackingLoader.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>get ArgoverseTrackingLoader object with current_log set to specified log_id</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – log id</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>with current_log set to log_id</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader" title="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader">ArgoverseTrackingLoader</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_calibration">
+<code class="sig-name descname">get_calibration</code><span class="sig-paren">(</span><em class="sig-param">camera</em>, <em class="sig-param">log_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_tracking_loader.html#ArgoverseTrackingLoader.get_calibration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_calibration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get calibration corresponding to the camera.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>camera</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – <p>name of the camera; one of:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s2">&quot;ring_front_center&quot;</span><span class="p">,</span>
+ <span class="s2">&quot;ring_front_left&quot;</span><span class="p">,</span>
+ <span class="s2">&quot;ring_front_right&quot;</span><span class="p">,</span>
+ <span class="s2">&quot;ring_rear_left&quot;</span><span class="p">,</span>
+ <span class="s2">&quot;ring_rear_right&quot;</span><span class="p">,</span>
+ <span class="s2">&quot;ring_side_left&quot;</span><span class="p">,</span>
+ <span class="s2">&quot;ring_side_right&quot;</span><span class="p">,</span>
+ <span class="s2">&quot;stereo_front_left&quot;</span><span class="p">,</span>
+ <span class="s2">&quot;stereo_front_right&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</p></li>
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – ID of log to search (default: current log)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="argoverse.utils.html#argoverse.utils.calibration.Calibration" title="argoverse.utils.calibration.Calibration"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calibration</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Calibration info for a particular index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_idx_from_timestamp">
+<code class="sig-name descname">get_idx_from_timestamp</code><span class="sig-paren">(</span><em class="sig-param">timestamp</em>, <em class="sig-param">log_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_tracking_loader.html#ArgoverseTrackingLoader.get_idx_from_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_idx_from_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get index corresponding to a timestamp in a particular log_id.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timestamp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Timestamp to search for</p></li>
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – ID of log to search (default: current log)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Index in the log if found, or None if not found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_image">
+<code class="sig-name descname">get_image</code><span class="sig-paren">(</span><em class="sig-param">idx</em>, <em class="sig-param">camera</em>, <em class="sig-param">log_id=None</em>, <em class="sig-param">load=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_tracking_loader.html#ArgoverseTrackingLoader.get_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>get image or image path at a specific index (in image index)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – image based 0-index</p></li>
+<li><p><strong>camera</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – camera based on camera_stats.CAMERA_LIST</p></li>
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – log_id, if not specified will use self.current_log</p></li>
+<li><p><strong>load</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – whether to return image array (True) or image path (False)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of image path (str or np.array)),</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_image_at_timestamp">
+<code class="sig-name descname">get_image_at_timestamp</code><span class="sig-paren">(</span><em class="sig-param">timestamp</em>, <em class="sig-param">camera</em>, <em class="sig-param">log_id=None</em>, <em class="sig-param">load=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_tracking_loader.html#ArgoverseTrackingLoader.get_image_at_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_image_at_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>get image or image path at a specific timestamp</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timestamp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – timestamp</p></li>
+<li><p><strong>camera</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – camera based on camera_stats.CAMERA_LIST</p></li>
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – log_id, if not specified will use self.current_log</p></li>
+<li><p><strong>load</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – whether to return image array (True) or image path (False)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of image path (str or np.array)),</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_image_list">
+<code class="sig-name descname">get_image_list</code><span class="sig-paren">(</span><em class="sig-param">camera</em>, <em class="sig-param">log_id=None</em>, <em class="sig-param">load=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_tracking_loader.html#ArgoverseTrackingLoader.get_image_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_image_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get list of image/or image path</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>camera</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – camera based on camera_stats.CAMERA_LIST</p></li>
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – log_id, if not specified will use self.current_log</p></li>
+<li><p><strong>load</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – whether to return image array (True) or image path (False)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of image path (str or np.array)),</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_image_list_sync">
+<code class="sig-name descname">get_image_list_sync</code><span class="sig-paren">(</span><em class="sig-param">camera</em>, <em class="sig-param">log_id=None</em>, <em class="sig-param">load=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_tracking_loader.html#ArgoverseTrackingLoader.get_image_list_sync"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_image_list_sync" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get list of image/or image path in lidar index</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>camera</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – camera based on camera_stats.CAMERA_LIST</p></li>
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – log_id, if not specified will use self.current_log</p></li>
+<li><p><strong>load</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – whether to return image array (True) or image path (False)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of image path (str or np.array)),</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_image_sync">
+<code class="sig-name descname">get_image_sync</code><span class="sig-paren">(</span><em class="sig-param">idx</em>, <em class="sig-param">camera</em>, <em class="sig-param">log_id=None</em>, <em class="sig-param">load=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_tracking_loader.html#ArgoverseTrackingLoader.get_image_sync"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_image_sync" title="Permalink to this definition">¶</a></dt>
+<dd><p>get image or image path at a specific index (in lidar index)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – lidar based 0-index</p></li>
+<li><p><strong>camera</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – camera based on camera_stats.CAMERA_LIST</p></li>
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – log_id, if not specified will use self.current_log</p></li>
+<li><p><strong>load</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – whether to return image array (True) or image path (False)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of image path (str or np.array)),</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_label_object">
+<code class="sig-name descname">get_label_object</code><span class="sig-paren">(</span><em class="sig-param">idx</em>, <em class="sig-param">log_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_tracking_loader.html#ArgoverseTrackingLoader.get_label_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_label_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get label corresponding to frame index idx (in lidar frame).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Lidar frame index</p></li>
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – ID of log to search (default: current log)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference internal" href="#argoverse.data_loading.object_label_record.ObjectLabelRecord" title="argoverse.data_loading.object_label_record.ObjectLabelRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectLabelRecord</span></code></a>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List of ObjectLabelRecord info for a particular index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_lidar">
+<code class="sig-name descname">get_lidar</code><span class="sig-paren">(</span><em class="sig-param">idx</em>, <em class="sig-param">log_id=None</em>, <em class="sig-param">load=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_tracking_loader.html#ArgoverseTrackingLoader.get_lidar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_lidar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get lidar corresponding to frame index idx (in lidar frame).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Lidar frame index</p></li>
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – ID of log to search (default: current log)</p></li>
+<li><p><strong>load</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – whether to load up the data, will return path to the lidar file if set to false</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Either path to lidar at a specific index, or point cloud data if load is set to True</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_pose">
+<code class="sig-name descname">get_pose</code><span class="sig-paren">(</span><em class="sig-param">idx</em>, <em class="sig-param">log_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_tracking_loader.html#ArgoverseTrackingLoader.get_pose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_pose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get pose corresponding to an index in a particular log_id.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Lidar frame index</p></li>
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – ID of log to search (default: current log)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="argoverse.utils.html#argoverse.utils.se3.SE3" title="argoverse.utils.se3.SE3"><code class="xref py py-class docutils literal notranslate"><span class="pre">SE3</span></code></a>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Pose for a particular index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.image_list">
+<em class="property">property </em><code class="sig-name descname">image_list</code><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.image_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>return list of all image path (str) for all cameras for the current log</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dictionary of list of image, with camera name as key</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>image_list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.image_list_sync">
+<em class="property">property </em><code class="sig-name descname">image_list_sync</code><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.image_list_sync" title="Permalink to this definition">¶</a></dt>
+<dd><p>return list of image path (str) for all cameras for the current log.</p>
+<p>The different between image_list and image_list_sync is that image_list_sync
+syncronizes the image to lidar frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>dictionary of list of image, with camera name as key. Each camera will have the same</dt><dd><p>number of images as #lidar frame.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>image_list_sync</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.image_timestamp_list">
+<em class="property">property </em><code class="sig-name descname">image_timestamp_list</code><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.image_timestamp_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>return dict of list of image timestamp (str) for all cameras for the current log.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dictionary of list of image timestamp for all cameras</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>image_timestamp_list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.image_timestamp_list_sync">
+<em class="property">property </em><code class="sig-name descname">image_timestamp_list_sync</code><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.image_timestamp_list_sync" title="Permalink to this definition">¶</a></dt>
+<dd><p>return list of image timestamp (str) for all cameras for the current log.</p>
+<p>The different between image_timestamp and image_timestamp_list_sync is that image_timestamp_list_sync
+syncronize the image to lidar frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>dictionary of list of image timestamp, with camera name as key.</dt><dd><p>Each camera will have the same number of image timestamps as #lidar frame.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>image_timestamp_list_sync</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.label_list">
+<em class="property">property </em><code class="sig-name descname">label_list</code><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.label_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>return list of label path (str) of the current log</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of label path for the current log</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>label</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.lidar_list">
+<em class="property">property </em><code class="sig-name descname">lidar_list</code><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.lidar_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>return list of lidar path (str) of the current log</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of lidar path for the current log</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>lidar_list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.lidar_timestamp_list">
+<em class="property">property </em><code class="sig-name descname">lidar_timestamp_list</code><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.lidar_timestamp_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>return list of lidar timestamp</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of lidar timestamp (at 10hz)</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>lidar_timestamp_list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.log_list">
+<em class="property">property </em><code class="sig-name descname">log_list</code><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.log_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>return list of log (str) in the current dataset directory</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of string representing log id</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>log_list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.print_all">
+<code class="sig-name descname">print_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/argoverse_tracking_loader.html#ArgoverseTrackingLoader.print_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.print_all" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.timestamp_image_dict">
+<em class="property">property </em><code class="sig-name descname">timestamp_image_dict</code><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.timestamp_image_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>return dict of list of image path (str) for all cameras for the current log, index by timestamp.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dictionary of list of image path for all cameras, with timestamp as key</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>timestamp_image_dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.timestamp_lidar_dict">
+<em class="property">property </em><code class="sig-name descname">timestamp_lidar_dict</code><a class="headerlink" href="#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.timestamp_lidar_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>return dict of list of lidar path (str) for the current log, index by timestamp.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dictionary of list of lidar path, with timestamp as key</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>timestamp_lidar_dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.data_loading.frame_label_accumulator">
+<span id="argoverse-data-loading-frame-label-accumulator-module"></span><h2>argoverse.data_loading.frame_label_accumulator module<a class="headerlink" href="#module-argoverse.data_loading.frame_label_accumulator" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator">
+<em class="property">class </em><code class="sig-prename descclassname">argoverse.data_loading.frame_label_accumulator.</code><code class="sig-name descname">PerFrameLabelAccumulator</code><span class="sig-paren">(</span><em class="sig-param">dataset_dir</em>, <em class="sig-param">labels_dir</em>, <em class="sig-param">experiment_prefix</em>, <em class="sig-param">bboxes_3d=False</em>, <em class="sig-param">save=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/frame_label_accumulator.html#PerFrameLabelAccumulator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>We will cache the accumulated track label trajectories per city, per log, and per frame.
+In order to plot each frame sequentially, one at a time, we need to aggregate beforehand
+the tracks and cuboids for each frame.</p>
+<dl class="attribute">
+<dt id="argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.bboxes_3d">
+<code class="sig-name descname">bboxes_3d</code><a class="headerlink" href="#argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.bboxes_3d" title="Permalink to this definition">¶</a></dt>
+<dd><p>to use 3d bounding boxes (True) or 2d bounding boxes (False).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.dataset_dir">
+<code class="sig-name descname">dataset_dir</code><a class="headerlink" href="#argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.dataset_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dataset directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.labels_dir">
+<code class="sig-name descname">labels_dir</code><a class="headerlink" href="#argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.labels_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Labels directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.log_egopose_dict">
+<code class="sig-name descname">log_egopose_dict</code><a class="headerlink" href="#argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.log_egopose_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Egopose per log id and timestamp.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.log_timestamp_dict">
+<code class="sig-name descname">log_timestamp_dict</code><a class="headerlink" href="#argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.log_timestamp_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of frame records per log id and timestamp.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.per_city_traj_dict">
+<code class="sig-name descname">per_city_traj_dict</code><a class="headerlink" href="#argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.per_city_traj_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Per city trajectory dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.sdb">
+<code class="sig-name descname">sdb</code><a class="headerlink" href="#argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.sdb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Synchronization DB.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#argoverse.data_loading.synchronization_database.SynchronizationDB" title="argoverse.data_loading.synchronization_database.SynchronizationDB">SynchronizationDB</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">dataset_dir</em>, <em class="sig-param">labels_dir</em>, <em class="sig-param">experiment_prefix</em>, <em class="sig-param">bboxes_3d=False</em>, <em class="sig-param">save=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/frame_label_accumulator.html#PerFrameLabelAccumulator.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize PerFrameLabelAccumulator object for use with tracking benchmark data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Dataset directory.</p></li>
+<li><p><strong>labels_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Labels directory.</p></li>
+<li><p><strong>experiment_prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Prefix for experimint to use.</p></li>
+<li><p><strong>bboxes_3d</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – to use 3d bounding boxes (True) or 2d bounding boxes (False).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.accumulate_per_log_data">
+<code class="sig-name descname">accumulate_per_log_data</code><span class="sig-paren">(</span><em class="sig-param">log_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/frame_label_accumulator.html#PerFrameLabelAccumulator.accumulate_per_log_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.accumulate_per_log_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loop through all of the logs that we have. Get the labels that pertain to the
+benchmark (i.e. tracking or detection) that we are interested in.</p>
+<p>We use a unique color to describe each trajectory, and then we store the
+instance of the trajectory, along with its color, <em>PER FRAME</em> , per log.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.convert_bbox_to_city_frame">
+<code class="sig-name descname">convert_bbox_to_city_frame</code><span class="sig-paren">(</span><em class="sig-param">lidar_timestamp_ns</em>, <em class="sig-param">dataset_dir</em>, <em class="sig-param">log_id</em>, <em class="sig-param">bbox_ego_frame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/frame_label_accumulator.html#PerFrameLabelAccumulator.convert_bbox_to_city_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.convert_bbox_to_city_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert bounding box to city frame.
+:type lidar_timestamp_ns: <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>
+:param lidar_timestamp_ns: Lidar timestamp.
+:type lidar_timestamp_ns: int
+:type dataset_dir: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>
+:param dataset_dir: representing full path to the log_ids.
+:type dataset_dir: str
+:type log_id: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>
+:param log_id: e.g. ‘3ced8dba-62d0-3930-8f60-ebeea2feabb8’.
+:type log_id: str
+:type bbox_ego_frame: <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>
+:param bbox_ego_frame: Numpy array of shape (4,3), representing bounding box in egovehicle frame
+:type bbox_ego_frame: np.ndarray</p>
+<dl>
+<dt>Returned:</dt><dd><p>bbox_city_fr: Numpy array of shape (4,3), representing bounding box in CITY frame
+pose_city_to_ego: dictionary, has two fields: ‘translation’ and ‘rotation’</p>
+<blockquote>
+<div><p>describing the SE(3) for p_city = city_to_egovehicle_se3 * p_egovehicle</p>
+</div></blockquote>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.get_log_trajectory_labels">
+<code class="sig-name descname">get_log_trajectory_labels</code><span class="sig-paren">(</span><em class="sig-param">log_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/frame_label_accumulator.html#PerFrameLabelAccumulator.get_log_trajectory_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.get_log_trajectory_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a very large list with all of the trajectory data.</p>
+<p>Treat a single object cuboid label as one step in a trajectory.
+Then we can share the same representation for both.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Log id to load.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of trajectory labels.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="#argoverse.data_loading.trajectory_loader.TrajectoryLabel" title="argoverse.data_loading.trajectory_loader.TrajectoryLabel">TrajectoryLabel</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.place_trajectory_in_city_frame">
+<code class="sig-name descname">place_trajectory_in_city_frame</code><span class="sig-paren">(</span><em class="sig-param">traj_label</em>, <em class="sig-param">log_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/frame_label_accumulator.html#PerFrameLabelAccumulator.place_trajectory_in_city_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.frame_label_accumulator.PerFrameLabelAccumulator.place_trajectory_in_city_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Place trajectory in the city frame
+:type traj_label: <a class="reference internal" href="#argoverse.data_loading.trajectory_loader.TrajectoryLabel" title="argoverse.data_loading.trajectory_loader.TrajectoryLabel"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrajectoryLabel</span></code></a>
+:param traj_label: instance of the TrajectoryLabel class.
+:type traj_label: TrajectoryLabel
+:type log_id: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>
+:param log_id: Log id.
+:type log_id: str</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>trajectory length of NUM_CUBOID_VERTS (x,y,z) coords per cuboid.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>traj_city_fr</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.data_loading.frame_record">
+<span id="argoverse-data-loading-frame-record-module"></span><h2>argoverse.data_loading.frame_record module<a class="headerlink" href="#module-argoverse.data_loading.frame_record" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="argoverse.data_loading.frame_record.FrameRecord">
+<em class="property">class </em><code class="sig-prename descclassname">argoverse.data_loading.frame_record.</code><code class="sig-name descname">FrameRecord</code><span class="sig-paren">(</span><em class="sig-param">bbox_city_fr</em>, <em class="sig-param">bbox_ego_frame</em>, <em class="sig-param">occlusion_val</em>, <em class="sig-param">color</em>, <em class="sig-param">track_uuid</em>, <em class="sig-param">obj_class_str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/frame_record.html#FrameRecord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.frame_record.FrameRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Store representation of a bounding box in some timeframe, in different coordinate systems.
+This bounding box comes from a track that shares the same color.</p>
+<dl class="method">
+<dt id="argoverse.data_loading.frame_record.FrameRecord.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">bbox_city_fr</em>, <em class="sig-param">bbox_ego_frame</em>, <em class="sig-param">occlusion_val</em>, <em class="sig-param">color</em>, <em class="sig-param">track_uuid</em>, <em class="sig-param">obj_class_str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/frame_record.html#FrameRecord.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.frame_record.FrameRecord.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize FrameRecord.
+:type bbox_city_fr: &lt;built-in function array&gt;
+:param bbox_city_fr: bounding box for city frame.
+:type bbox_ego_frame: &lt;built-in function array&gt;
+:param bbox_ego_frame: bounding box for ego frame.
+:type occlusion_val: <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>
+:param occlusion_val: occlusion value.
+:type color: <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]
+:param color: tuple representing color. RGB values should be within [0,1] range.
+:type track_uuid: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>
+:param track_uuid: track uuid
+:type obj_class_str: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>
+:param obj_class_str: object class string</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.data_loading.object_classes">
+<span id="argoverse-data-loading-object-classes-module"></span><h2>argoverse.data_loading.object_classes module<a class="headerlink" href="#module-argoverse.data_loading.object_classes" title="Permalink to this headline">¶</a></h2>
+<p>Object Class mapping dictionary.</p>
+</div>
+<div class="section" id="module-argoverse.data_loading.object_label_record">
+<span id="argoverse-data-loading-object-label-record-module"></span><h2>argoverse.data_loading.object_label_record module<a class="headerlink" href="#module-argoverse.data_loading.object_label_record" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="argoverse.data_loading.object_label_record.ObjectLabelRecord">
+<em class="property">class </em><code class="sig-prename descclassname">argoverse.data_loading.object_label_record.</code><code class="sig-name descname">ObjectLabelRecord</code><span class="sig-paren">(</span><em class="sig-param">quaternion</em>, <em class="sig-param">translation</em>, <em class="sig-param">length</em>, <em class="sig-param">width</em>, <em class="sig-param">height</em>, <em class="sig-param">occlusion</em>, <em class="sig-param">label_class=None</em>, <em class="sig-param">track_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/object_label_record.html#ObjectLabelRecord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.object_label_record.ObjectLabelRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="argoverse.data_loading.object_label_record.ObjectLabelRecord.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">quaternion</em>, <em class="sig-param">translation</em>, <em class="sig-param">length</em>, <em class="sig-param">width</em>, <em class="sig-param">height</em>, <em class="sig-param">occlusion</em>, <em class="sig-param">label_class=None</em>, <em class="sig-param">track_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/object_label_record.html#ObjectLabelRecord.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.object_label_record.ObjectLabelRecord.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an ObjectLabelRecord.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>quaternion</strong> (<em>&lt;built-in function array&gt;</em>) – Numpy vector representing quaternion, box/cuboid orientation</p></li>
+<li><p><strong>translation</strong> (<em>&lt;built-in function array&gt;</em>) – Numpy vector representing translation, center of box given as x, y, z.</p></li>
+<li><p><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – object length.</p></li>
+<li><p><strong>width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – object width.</p></li>
+<li><p><strong>height</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – object height.</p></li>
+<li><p><strong>occlusion</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – occlusion value.</p></li>
+<li><p><strong>label_class</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – class label, see object_classes.py for all possible class in argoverse</p></li>
+<li><p><strong>track_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – object track id, this is unique for each track</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.object_label_record.ObjectLabelRecord.as_2d_bbox">
+<code class="sig-name descname">as_2d_bbox</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/object_label_record.html#ObjectLabelRecord.as_2d_bbox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.object_label_record.ObjectLabelRecord.as_2d_bbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a 2D bounding box from this label.</p>
+<p>Length is x, width is y, and z is height</p>
+<p>Alternatively could write code like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x_corners</span> <span class="o">=</span> <span class="n">l</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">y_corners</span> <span class="o">=</span> <span class="n">w</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">])</span>
+<span class="n">z_corners</span> <span class="o">=</span> <span class="n">h</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">corners</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">x_corners</span><span class="p">,</span> <span class="n">y_corners</span><span class="p">,</span> <span class="n">z_corners</span><span class="p">))</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.object_label_record.ObjectLabelRecord.as_3d_bbox">
+<code class="sig-name descname">as_3d_bbox</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/object_label_record.html#ObjectLabelRecord.as_3d_bbox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.object_label_record.ObjectLabelRecord.as_3d_bbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the 8 bounding box corners.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Numpy array of shape (8,3)</p>
+</dd>
+</dl>
+<p>Corner numbering:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="mi">5</span><span class="o">------</span><span class="mi">4</span>
+    <span class="o">|</span>\\    <span class="o">|</span>\\
+    <span class="o">|</span> \\   <span class="o">|</span> \\
+    <span class="mi">6</span><span class="o">--</span>\\<span class="o">--</span><span class="mi">7</span>  \\
+    \\  \\  \\ \\
+<span class="n">l</span>    \\  <span class="mi">1</span><span class="o">-------</span><span class="mi">0</span>    <span class="n">h</span>
+ <span class="n">e</span>    \\ <span class="o">||</span>   \\ <span class="o">||</span>   <span class="n">e</span>
+  <span class="n">n</span>    \\<span class="o">||</span>    \\<span class="o">||</span>   <span class="n">i</span>
+   <span class="n">g</span>    \\<span class="mi">2</span><span class="o">------</span><span class="mi">3</span>    <span class="n">g</span>
+    <span class="n">t</span>      <span class="n">width</span><span class="o">.</span>     <span class="n">h</span>
+     <span class="n">h</span><span class="o">.</span>               <span class="n">t</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>First four corners are the ones facing forward.
+The last four are the ones facing backwards.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.object_label_record.ObjectLabelRecord.render_clip_frustum_cv2">
+<code class="sig-name descname">render_clip_frustum_cv2</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">corners</em>, <em class="sig-param">planes</em>, <em class="sig-param">camera_config</em>, <em class="sig-param">colors=((0</em>, <em class="sig-param">0</em>, <em class="sig-param">255)</em>, <em class="sig-param">(255</em>, <em class="sig-param">0</em>, <em class="sig-param">0)</em>, <em class="sig-param">(0</em>, <em class="sig-param">255</em>, <em class="sig-param">0))</em>, <em class="sig-param">linewidth=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/object_label_record.html#ObjectLabelRecord.render_clip_frustum_cv2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.object_label_record.ObjectLabelRecord.render_clip_frustum_cv2" title="Permalink to this definition">¶</a></dt>
+<dd><p>We bring the 3D points into each camera, and do the clipping there.</p>
+<p>Renders box using OpenCV2. Roughly based on
+<a class="reference external" href="https://github.com/nutonomy/nuscenes-devkit/blob/master/python-sdk/nuscenes_utils/data_classes.py">https://github.com/nutonomy/nuscenes-devkit/blob/master/python-sdk/nuscenes_utils/data_classes.py</a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="mi">5</span><span class="o">------</span><span class="mi">4</span>
+    <span class="o">|</span>\\    <span class="o">|</span>\\
+    <span class="o">|</span> \\   <span class="o">|</span> \\
+    <span class="mi">6</span><span class="o">--</span>\\<span class="o">--</span><span class="mi">7</span>  \\
+    \\  \\  \\ \\
+<span class="n">l</span>    \\  <span class="mi">1</span><span class="o">-------</span><span class="mi">0</span>    <span class="n">h</span>
+ <span class="n">e</span>    \\ <span class="o">||</span>   \\ <span class="o">||</span>   <span class="n">e</span>
+  <span class="n">n</span>    \\<span class="o">||</span>    \\<span class="o">||</span>   <span class="n">i</span>
+   <span class="n">g</span>    \\<span class="mi">2</span><span class="o">------</span><span class="mi">3</span>    <span class="n">g</span>
+    <span class="n">t</span>      <span class="n">width</span><span class="o">.</span>     <span class="n">h</span>
+     <span class="n">h</span><span class="o">.</span>               <span class="n">t</span><span class="o">.</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> (<em>&lt;built-in function array&gt;</em>) – Numpy array of shape (M,N,3)</p></li>
+<li><p><strong>corners</strong> (<em>&lt;built-in function array&gt;</em>) – Numpy array of shape (8,3) in camera coordinate frame.</p></li>
+<li><p><strong>planes</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[&lt;built-in function array&gt;, &lt;built-in function array&gt;, &lt;built-in function array&gt;, &lt;built-in function array&gt;, &lt;built-in function array&gt;]]) – Iterable of 5 clipping planes. Each plane is defined by 4 points.</p></li>
+<li><p><strong>camera_config</strong> (<a class="reference internal" href="argoverse.utils.html#argoverse.utils.calibration.CameraConfig" title="argoverse.utils.calibration.CameraConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraConfig</span></code></a>) – CameraConfig object</p></li>
+<li><p><strong>colors</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]]) – <p>tuple of RGB 3-tuples, Colors for front, side &amp; rear.
+defaults are    0. blue (0,0,255) in RGB and (255,0,0) in OpenCV’s BGR</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>red (255,0,0) in RGB and (0,0,255) in OpenCV’s BGR</p></li>
+<li><p>green (0,255,0) in RGB and BGR alike.</p></li>
+</ol>
+</div></blockquote>
+</p></li>
+<li><p><strong>linewidth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – integer, linewidth for plot</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Numpy array of shape (M,N,3), representing updated image</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>img</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.data_loading.object_label_record.form_obj_label_from_json">
+<code class="sig-prename descclassname">argoverse.data_loading.object_label_record.</code><code class="sig-name descname">form_obj_label_from_json</code><span class="sig-paren">(</span><em class="sig-param">label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/object_label_record.html#form_obj_label_from_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.object_label_record.form_obj_label_from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct object from loaded json.</p>
+<blockquote>
+<div><p>The dictionary loaded from saved json file is expected to have the
+following fields:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;frame_index&#39;</span><span class="p">,</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="s1">&#39;rotation&#39;</span><span class="p">,</span> <span class="s1">&#39;length&#39;</span><span class="p">,</span> <span class="s1">&#39;width&#39;</span><span class="p">,</span> <span class="s1">&#39;height&#39;</span><span class="p">,</span>
+<span class="s1">&#39;track_label_uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;occlusion&#39;</span><span class="p">,</span> <span class="s1">&#39;on_driveable_surface&#39;</span><span class="p">,</span> <span class="s1">&#39;key_frame&#39;</span><span class="p">,</span>
+<span class="s1">&#39;stationary&#39;</span><span class="p">,</span> <span class="s1">&#39;label_class&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – <p>Python dictionary that was loaded from saved json file</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>Tuple of (bbox_ego_frame, color); bbox is a numpy array of shape (4,3); color is “g” or “r”</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[&lt;built-in function array&gt;, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.data_loading.object_label_record.json_label_dict_to_obj_record">
+<code class="sig-prename descclassname">argoverse.data_loading.object_label_record.</code><code class="sig-name descname">json_label_dict_to_obj_record</code><span class="sig-paren">(</span><em class="sig-param">label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/object_label_record.html#json_label_dict_to_obj_record"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.object_label_record.json_label_dict_to_obj_record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a label dict (from JSON) to an ObjectLabelRecord.</p>
+<p>NB: “Shrink-wrapped” objects don’t have the occlusion field, but
+other other objects do.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – Python dictionary with relevant info about a cuboid, loaded from json</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#argoverse.data_loading.object_label_record.ObjectLabelRecord" title="argoverse.data_loading.object_label_record.ObjectLabelRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectLabelRecord</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>ObjectLabelRecord object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.data_loading.object_label_record.read_label">
+<code class="sig-prename descclassname">argoverse.data_loading.object_label_record.</code><code class="sig-name descname">read_label</code><span class="sig-paren">(</span><em class="sig-param">label_filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/object_label_record.html#read_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.object_label_record.read_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read label from the json file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label_filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – label filename,</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference internal" href="#argoverse.data_loading.object_label_record.ObjectLabelRecord" title="argoverse.data_loading.object_label_record.ObjectLabelRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectLabelRecord</span></code></a>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List of ObjectLabelRecords constructed from the file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.data_loading.pose_loader">
+<span id="argoverse-data-loading-pose-loader-module"></span><h2>argoverse.data_loading.pose_loader module<a class="headerlink" href="#module-argoverse.data_loading.pose_loader" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="argoverse.data_loading.pose_loader.get_city_SE3_egovehicle_at_sensor_t">
+<code class="sig-prename descclassname">argoverse.data_loading.pose_loader.</code><code class="sig-name descname">get_city_SE3_egovehicle_at_sensor_t</code><span class="sig-paren">(</span><em class="sig-param">sensor_timestamp</em>, <em class="sig-param">dataset_dir</em>, <em class="sig-param">log_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/pose_loader.html#get_city_SE3_egovehicle_at_sensor_t"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.pose_loader.get_city_SE3_egovehicle_at_sensor_t" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get translation from city to ego vechile coordinates at a given timestamp.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sensor_timestamp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – in nanoseconds</p></li>
+<li><p><strong>dataset_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – </p></li>
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="argoverse.utils.html#argoverse.utils.se3.SE3" title="argoverse.utils.se3.SE3"><code class="xref py py-class docutils literal notranslate"><span class="pre">SE3</span></code></a>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>SE3 for translating city coordinates to ego vehicle coordinates if found, else None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.data_loading.simple_track_dataloader">
+<span id="argoverse-data-loading-simple-track-dataloader-module"></span><h2>argoverse.data_loading.simple_track_dataloader module<a class="headerlink" href="#module-argoverse.data_loading.simple_track_dataloader" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="argoverse.data_loading.simple_track_dataloader.SimpleArgoverseTrackingDataLoader">
+<em class="property">class </em><code class="sig-prename descclassname">argoverse.data_loading.simple_track_dataloader.</code><code class="sig-name descname">SimpleArgoverseTrackingDataLoader</code><span class="sig-paren">(</span><em class="sig-param">data_dir</em>, <em class="sig-param">labels_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/simple_track_dataloader.html#SimpleArgoverseTrackingDataLoader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.simple_track_dataloader.SimpleArgoverseTrackingDataLoader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Simple abstraction for retrieving log data, given a path to the dataset.</p>
+<dl class="method">
+<dt id="argoverse.data_loading.simple_track_dataloader.SimpleArgoverseTrackingDataLoader.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">data_dir</em>, <em class="sig-param">labels_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/simple_track_dataloader.html#SimpleArgoverseTrackingDataLoader.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.simple_track_dataloader.SimpleArgoverseTrackingDataLoader.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – str, representing path to raw Argoverse data</p></li>
+<li><p><strong>labels_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – strrepresenting path to Argoverse data labels</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.simple_track_dataloader.SimpleArgoverseTrackingDataLoader.get_city_name">
+<code class="sig-name descname">get_city_name</code><span class="sig-paren">(</span><em class="sig-param">log_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/simple_track_dataloader.html#SimpleArgoverseTrackingDataLoader.get_city_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.simple_track_dataloader.SimpleArgoverseTrackingDataLoader.get_city_name" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – str</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>city_name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.simple_track_dataloader.SimpleArgoverseTrackingDataLoader.get_city_to_egovehicle_se3">
+<code class="sig-name descname">get_city_to_egovehicle_se3</code><span class="sig-paren">(</span><em class="sig-param">log_id</em>, <em class="sig-param">lidar_timestamp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/simple_track_dataloader.html#SimpleArgoverseTrackingDataLoader.get_city_to_egovehicle_se3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.simple_track_dataloader.SimpleArgoverseTrackingDataLoader.get_city_to_egovehicle_se3" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – str, unique ID of vehicle log</p></li>
+<li><p><strong>lidar_timestamp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – int, timestamp of LiDAR sweep capture, in nanoseconds</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>SE3 transformation to bring egovehicle frame point into city frame.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>city_to_egovehicle_se3</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.simple_track_dataloader.SimpleArgoverseTrackingDataLoader.get_closest_im_fpath">
+<code class="sig-name descname">get_closest_im_fpath</code><span class="sig-paren">(</span><em class="sig-param">log_id</em>, <em class="sig-param">camera_name</em>, <em class="sig-param">lidar_timestamp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/simple_track_dataloader.html#SimpleArgoverseTrackingDataLoader.get_closest_im_fpath"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.simple_track_dataloader.SimpleArgoverseTrackingDataLoader.get_closest_im_fpath" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – str, unique ID of vehicle log</p></li>
+<li><p><strong>camera_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – str</p></li>
+<li><p><strong>lidar_timestamp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – int, timestamp of LiDAR sweep capture, in nanoseconds</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>im_fpath, string representing path to image, or else None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.simple_track_dataloader.SimpleArgoverseTrackingDataLoader.get_labels_at_lidar_timestamp">
+<code class="sig-name descname">get_labels_at_lidar_timestamp</code><span class="sig-paren">(</span><em class="sig-param">log_id</em>, <em class="sig-param">lidar_timestamp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/simple_track_dataloader.html#SimpleArgoverseTrackingDataLoader.get_labels_at_lidar_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.simple_track_dataloader.SimpleArgoverseTrackingDataLoader.get_labels_at_lidar_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – str, unique ID of vehicle log</p></li>
+<li><p><strong>lidar_timestamp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – int, timestamp of LiDAR sweep capture, in nanoseconds</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dictionary</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>labels</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.simple_track_dataloader.SimpleArgoverseTrackingDataLoader.get_log_calibration_data">
+<code class="sig-name descname">get_log_calibration_data</code><span class="sig-paren">(</span><em class="sig-param">log_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/simple_track_dataloader.html#SimpleArgoverseTrackingDataLoader.get_log_calibration_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.simple_track_dataloader.SimpleArgoverseTrackingDataLoader.get_log_calibration_data" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – str</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dictionary</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>log_calib_data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.simple_track_dataloader.SimpleArgoverseTrackingDataLoader.get_ordered_log_ply_fpaths">
+<code class="sig-name descname">get_ordered_log_ply_fpaths</code><span class="sig-paren">(</span><em class="sig-param">log_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/simple_track_dataloader.html#SimpleArgoverseTrackingDataLoader.get_ordered_log_ply_fpaths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.simple_track_dataloader.SimpleArgoverseTrackingDataLoader.get_ordered_log_ply_fpaths" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – str, unique ID of vehicle log</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of strings, representing paths to ply files in this log</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ply_fpaths</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.data_loading.synchronization_database">
+<span id="argoverse-data-loading-synchronization-database-module"></span><h2>argoverse.data_loading.synchronization_database module<a class="headerlink" href="#module-argoverse.data_loading.synchronization_database" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="argoverse.data_loading.synchronization_database.SynchronizationDB">
+<em class="property">class </em><code class="sig-prename descclassname">argoverse.data_loading.synchronization_database.</code><code class="sig-name descname">SynchronizationDB</code><span class="sig-paren">(</span><em class="sig-param">dataset_dir</em>, <em class="sig-param">collect_single_log_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/synchronization_database.html#SynchronizationDB"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.synchronization_database.SynchronizationDB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="attribute">
+<dt id="argoverse.data_loading.synchronization_database.SynchronizationDB.MAX_LIDAR_RING_CAM_TIMESTAMP_DIFF">
+<code class="sig-name descname">MAX_LIDAR_RING_CAM_TIMESTAMP_DIFF</code><em class="property"> = 16649999.999999998</em><a class="headerlink" href="#argoverse.data_loading.synchronization_database.SynchronizationDB.MAX_LIDAR_RING_CAM_TIMESTAMP_DIFF" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="argoverse.data_loading.synchronization_database.SynchronizationDB.MAX_LIDAR_STEREO_CAM_TIMESTAMP_DIFF">
+<code class="sig-name descname">MAX_LIDAR_STEREO_CAM_TIMESTAMP_DIFF</code><em class="property"> = 200000000.0</em><a class="headerlink" href="#argoverse.data_loading.synchronization_database.SynchronizationDB.MAX_LIDAR_STEREO_CAM_TIMESTAMP_DIFF" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.synchronization_database.SynchronizationDB.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">dataset_dir</em>, <em class="sig-param">collect_single_log_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/synchronization_database.html#SynchronizationDB.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.synchronization_database.SynchronizationDB.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the SynchronizationDB.
+Note that the timestamps for each camera channel are not identical, but they are clustered together.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – path to dataset.</p></li>
+<li><p><strong>collect_single_log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – log id to process. (All if not set)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.synchronization_database.SynchronizationDB.get_closest_cam_channel_timestamp">
+<code class="sig-name descname">get_closest_cam_channel_timestamp</code><span class="sig-paren">(</span><em class="sig-param">lidar_timestamp</em>, <em class="sig-param">camera_name</em>, <em class="sig-param">log_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/synchronization_database.html#SynchronizationDB.get_closest_cam_channel_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.synchronization_database.SynchronizationDB.get_closest_cam_channel_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grab the LiDAR pose file. Get its timestamp, and then find the pose message
+with the closest absolute timestamp.</p>
+<p>Instead of sorting the whole array of timestamp differences, we just
+take the minimum value (to speed up this function).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lidar_timestamp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – integer</p></li>
+<li><p><strong>camera_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – string, representing path to log directories</p></li>
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – string</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>closest timestamp</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>closest_cam_ch_timestamp</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.data_loading.synchronization_database.SynchronizationDB.get_valid_logs">
+<code class="sig-name descname">get_valid_logs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/synchronization_database.html#SynchronizationDB.get_valid_logs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.synchronization_database.SynchronizationDB.get_valid_logs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the log_ids for which the SynchronizationDatabase contains pose information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.data_loading.synchronization_database.get_timestamps_from_sensor_folder">
+<code class="sig-prename descclassname">argoverse.data_loading.synchronization_database.</code><code class="sig-name descname">get_timestamps_from_sensor_folder</code><span class="sig-paren">(</span><em class="sig-param">sensor_folder_wildcard</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/synchronization_database.html#get_timestamps_from_sensor_folder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.synchronization_database.get_timestamps_from_sensor_folder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Timestamp always lies at end of filename</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sensor_folder_wildcard</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – string to glob to find all filepaths for a particular
+sensor files within a single log run</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Numpy array of integers, representing timestamps</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.data_loading.trajectory_loader">
+<span id="argoverse-data-loading-trajectory-loader-module"></span><h2>argoverse.data_loading.trajectory_loader module<a class="headerlink" href="#module-argoverse.data_loading.trajectory_loader" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="argoverse.data_loading.trajectory_loader.TrajectoryLabel">
+<em class="property">class </em><code class="sig-prename descclassname">argoverse.data_loading.trajectory_loader.</code><code class="sig-name descname">TrajectoryLabel</code><span class="sig-paren">(</span><em class="sig-param">timestamps</em>, <em class="sig-param">quaternions</em>, <em class="sig-param">translations</em>, <em class="sig-param">obj_class</em>, <em class="sig-param">obj_class_str</em>, <em class="sig-param">occlusions</em>, <em class="sig-param">track_uuid</em>, <em class="sig-param">log_id</em>, <em class="sig-param">max_length</em>, <em class="sig-param">max_width</em>, <em class="sig-param">max_height</em>, <em class="sig-param">lengths</em>, <em class="sig-param">widths</em>, <em class="sig-param">heights</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/trajectory_loader.html#TrajectoryLabel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.trajectory_loader.TrajectoryLabel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Trajectory object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timestamps</strong> (<em>np.array</em>) – Array of timestamps for trajectory.</p></li>
+<li><p><strong>quaternions</strong> (<em>np.array</em>) – Array of quaternions for trajectory.</p></li>
+<li><p><strong>translations</strong> (<em>np.array</em>) – Array of translations of SE3 poses for trajectory.</p></li>
+<li><p><strong>obj_class</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Object class id.</p></li>
+<li><p><strong>obj_class_str</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Object class name.</p></li>
+<li><p><strong>occlusions</strong> (<em>np.array</em>) – Array of occlusions for trajectory.</p></li>
+<li><p><strong>track_uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Track uuid.</p></li>
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Log id.</p></li>
+<li><p><strong>max_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – Maximum length for trajectory.</p></li>
+<li><p><strong>max_width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – Maximum width for trajectory.</p></li>
+<li><p><strong>max_height</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – Maximum height for trajectory.</p></li>
+<li><p><strong>lengths</strong> (<em>np.array</em>) – Array of lengths for trajectory.</p></li>
+<li><p><strong>widths</strong> (<em>np.array</em>) – Array of widths for trajectory.</p></li>
+<li><p><strong>heights</strong> (<em>np.array</em>) – Array of heights for trajectory.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="argoverse.data_loading.trajectory_loader.TrajectoryLabel.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">timestamps</em>, <em class="sig-param">quaternions</em>, <em class="sig-param">translations</em>, <em class="sig-param">obj_class</em>, <em class="sig-param">obj_class_str</em>, <em class="sig-param">occlusions</em>, <em class="sig-param">track_uuid</em>, <em class="sig-param">log_id</em>, <em class="sig-param">max_length</em>, <em class="sig-param">max_width</em>, <em class="sig-param">max_height</em>, <em class="sig-param">lengths</em>, <em class="sig-param">widths</em>, <em class="sig-param">heights</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/trajectory_loader.html#TrajectoryLabel.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.trajectory_loader.TrajectoryLabel.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize TrajectoryLabel object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timestamps</strong> (<em>np.array</em>) – Array of timestamps for trajectory.</p></li>
+<li><p><strong>quaternions</strong> (<em>np.array</em>) – Array of quaternions for trajectory.</p></li>
+<li><p><strong>translations</strong> (<em>np.array</em>) – Array of translations of SE3 poses for trajectory.</p></li>
+<li><p><strong>obj_class</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Object class id.</p></li>
+<li><p><strong>obj_class_str</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Object class name.</p></li>
+<li><p><strong>occlusions</strong> (<em>np.array</em>) – Array of occlusions for trajectory.</p></li>
+<li><p><strong>track_uuid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Track uuid.</p></li>
+<li><p><strong>log_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Log id.</p></li>
+<li><p><strong>max_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – Maximum length for trajectory.</p></li>
+<li><p><strong>max_width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – Maximum width for trajectory.</p></li>
+<li><p><strong>max_height</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – Maximum height for trajectory.</p></li>
+<li><p><strong>lengths</strong> (<em>np.array</em>) – Array of lengths for trajectory.</p></li>
+<li><p><strong>widths</strong> (<em>np.array</em>) – Array of widths for trajectory.</p></li>
+<li><p><strong>heights</strong> (<em>np.array</em>) – Array of heights for trajectory.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.data_loading.trajectory_loader.load_json_track_labels">
+<code class="sig-prename descclassname">argoverse.data_loading.trajectory_loader.</code><code class="sig-name descname">load_json_track_labels</code><span class="sig-paren">(</span><em class="sig-param">log_track_labels_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/trajectory_loader.html#load_json_track_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.trajectory_loader.load_json_track_labels" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Trajectories are stored on disk as 1 track per 1 json file.</dt><dd><p>We load all labeled tracks here from the JSON files.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>log_track_labels_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Log track directory.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a Python list of TrajectoryLabels.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="#argoverse.data_loading.trajectory_loader.TrajectoryLabel" title="argoverse.data_loading.trajectory_loader.TrajectoryLabel">TrajectoryLabel</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.data_loading.vector_map_loader">
+<span id="argoverse-data-loading-vector-map-loader-module"></span><h2>argoverse.data_loading.vector_map_loader module<a class="headerlink" href="#module-argoverse.data_loading.vector_map_loader" title="Permalink to this headline">¶</a></h2>
+<p>Utility to load the Argoverse vector map from disk, where it is stored in an XML format.</p>
+<p>We release our Argoverse vector map in a modified OpenStreetMap (OSM) form. We also provide
+the map data loader. OpenStreetMap (OSM) provides XML data and relies upon “Nodes” and “Ways” as
+its fundamental element.</p>
+<p>A “Node” is a point of interest, or a constituent point of a line feature such as a road.
+In OpenStreetMap, a <cite>Node</cite> has tags, which might be</p>
+<blockquote>
+<div><p>-natural: If it’s a natural feature, indicates the type (hill summit, etc)
+-man_made: If it’s a man made feature, indicates the type (water tower, mast etc)
+-amenity: If it’s an amenity (e.g. a pub, restaurant, recycling</p>
+<blockquote>
+<div><p>centre etc) indicates the type</p>
+</div></blockquote>
+</div></blockquote>
+<p>In OSM, a “Way” is most often a road centerline, composed of an ordered list of “Nodes”.
+An OSM way often represents a line or polygon feature, e.g. a road, a stream, a wood, a lake.
+Ways consist of two or more nodes. Tags for a Way might be:</p>
+<blockquote>
+<div><p>-highway: the class of road (motorway, primary,secondary etc)
+-maxspeed: maximum speed in km/h
+-ref: the road reference number
+-oneway: is it a one way road? (boolean)</p>
+</div></blockquote>
+<p>However, in Argoverse, a “Way” corresponds to a LANE segment centerline. An Argoverse Way has the
+following 9 attributes:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>id: integer, unique lane ID that serves as identifier for this “Way”</p></li>
+<li><p>has_traffic_control: boolean</p></li>
+<li><p>turn_direction: string, ‘RIGHT’, ‘LEFT’, or ‘NONE’</p></li>
+<li><p>is_intersection: boolean</p></li>
+<li><p>l_neighbor_id: integer, unique ID for left neighbor</p></li>
+<li><p>r_neighbor_id: integer, unique ID for right neighbor</p></li>
+<li><p>predecessors: list of integers or None</p></li>
+<li><p>successors: list of integers or None</p></li>
+<li><p>centerline_node_ids: list</p></li>
+</ul>
+</div></blockquote>
+<p>In Argoverse, a <cite>LaneSegment</cite> object is derived from a combination of a single <cite>Way</cite> and two or more
+<cite>Node</cite> objects.</p>
+<dl class="class">
+<dt id="argoverse.data_loading.vector_map_loader.Node">
+<em class="property">class </em><code class="sig-prename descclassname">argoverse.data_loading.vector_map_loader.</code><code class="sig-name descname">Node</code><span class="sig-paren">(</span><em class="sig-param">id</em>, <em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">height=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/vector_map_loader.html#Node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.vector_map_loader.Node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>e.g. a point of interest, or a constituent point of a
+line feature such as a road</p>
+<dl class="method">
+<dt id="argoverse.data_loading.vector_map_loader.Node.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">id</em>, <em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">height=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/vector_map_loader.html#Node.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.vector_map_loader.Node.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – representing unique node ID</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – x-coordinate in city reference system</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – y-coordinate in city reference system</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.data_loading.vector_map_loader.append_additional_key_value_pair">
+<code class="sig-prename descclassname">argoverse.data_loading.vector_map_loader.</code><code class="sig-name descname">append_additional_key_value_pair</code><span class="sig-paren">(</span><em class="sig-param">lane_obj</em>, <em class="sig-param">way_field</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/vector_map_loader.html#append_additional_key_value_pair"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.vector_map_loader.append_additional_key_value_pair" title="Permalink to this definition">¶</a></dt>
+<dd><p>Key name was either ‘predecessor’ or ‘successor’, for which we can have multiple.
+Thus we append them to a list. They should be integers, as lane IDs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lane_obj</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Mutablemapping</span></code>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – lane object</p></li>
+<li><p><strong>way_field</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]) – key and value pair to append</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.data_loading.vector_map_loader.append_unique_key_value_pair">
+<code class="sig-prename descclassname">argoverse.data_loading.vector_map_loader.</code><code class="sig-name descname">append_unique_key_value_pair</code><span class="sig-paren">(</span><em class="sig-param">lane_obj</em>, <em class="sig-param">way_field</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/vector_map_loader.html#append_unique_key_value_pair"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.vector_map_loader.append_unique_key_value_pair" title="Permalink to this definition">¶</a></dt>
+<dd><p>For the following types of Way “tags”, the key, value pair is defined only once within
+the object:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>has_traffic_control, turn_direction, is_intersection, l_neighbor_id, r_neighbor_id</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lane_obj</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Mutablemapping</span></code>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – lane object</p></li>
+<li><p><strong>way_field</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]) – key and value pair to append</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.data_loading.vector_map_loader.convert_dictionary_to_lane_segment_obj">
+<code class="sig-prename descclassname">argoverse.data_loading.vector_map_loader.</code><code class="sig-name descname">convert_dictionary_to_lane_segment_obj</code><span class="sig-paren">(</span><em class="sig-param">lane_id</em>, <em class="sig-param">lane_dictionary</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/vector_map_loader.html#convert_dictionary_to_lane_segment_obj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.vector_map_loader.convert_dictionary_to_lane_segment_obj" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not all lanes have predecessors and successors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lane_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – representing unique lane ID</p></li>
+<li><p><strong>lane_dictionary</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – dictionary with LaneSegment attributes, not yet in object instance form</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>LaneSegment object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ls</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.data_loading.vector_map_loader.convert_node_id_list_to_xy">
+<code class="sig-prename descclassname">argoverse.data_loading.vector_map_loader.</code><code class="sig-name descname">convert_node_id_list_to_xy</code><span class="sig-paren">(</span><em class="sig-param">node_id_list</em>, <em class="sig-param">all_graph_nodes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/vector_map_loader.html#convert_node_id_list_to_xy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.vector_map_loader.convert_node_id_list_to_xy" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert node id list to centerline xy coordinate</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node_id_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – list of node_id’s</p></li>
+<li><p><strong>all_graph_nodes</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference internal" href="#argoverse.data_loading.vector_map_loader.Node" title="argoverse.data_loading.vector_map_loader.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">Node</span></code></a>]) – dictionary mapping node_ids to Node</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>centerline</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.data_loading.vector_map_loader.extract_lane_segment_from_ET_element">
+<code class="sig-prename descclassname">argoverse.data_loading.vector_map_loader.</code><code class="sig-name descname">extract_lane_segment_from_ET_element</code><span class="sig-paren">(</span><em class="sig-param">child</em>, <em class="sig-param">all_graph_nodes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/vector_map_loader.html#extract_lane_segment_from_ET_element"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.vector_map_loader.extract_lane_segment_from_ET_element" title="Permalink to this definition">¶</a></dt>
+<dd><p>We build a lane segment from an XML element. A lane segment is equivalent
+to a “Way” in our XML file. Each Lane Segment has a polyline representing its centerline.
+The relevant XML data might resemble:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">way</span> <span class="n">lane_id</span><span class="o">=</span><span class="s2">&quot;9604854&quot;</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;has_traffic_control&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;False&quot;</span> <span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;turn_direction&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span> <span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;is_intersection&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;False&quot;</span> <span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;l_neighbor_id&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;None&quot;</span> <span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;r_neighbor_id&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;None&quot;</span> <span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;0&quot;</span> <span class="o">/&gt;</span>
+    <span class="o">...</span>
+    <span class="o">&lt;</span><span class="n">nd</span> <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;9&quot;</span> <span class="o">/&gt;</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;predecessor&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;9608794&quot;</span> <span class="o">/&gt;</span>
+    <span class="o">...</span>
+    <span class="o">&lt;</span><span class="n">tag</span> <span class="n">k</span><span class="o">=</span><span class="s2">&quot;predecessor&quot;</span> <span class="n">v</span><span class="o">=</span><span class="s2">&quot;9609147&quot;</span> <span class="o">/&gt;</span>
+<span class="o">&lt;/</span><span class="n">way</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>child</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Element</span></code></a>) – xml.etree.ElementTree element</p></li>
+<li><p><strong>all_graph_nodes</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference internal" href="#argoverse.data_loading.vector_map_loader.Node" title="argoverse.data_loading.vector_map_loader.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">Node</span></code></a>]) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>LaneSegment object
+lane_id</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>lane_segment</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.data_loading.vector_map_loader.extract_node_from_ET_element">
+<code class="sig-prename descclassname">argoverse.data_loading.vector_map_loader.</code><code class="sig-name descname">extract_node_from_ET_element</code><span class="sig-paren">(</span><em class="sig-param">child</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/vector_map_loader.html#extract_node_from_ET_element"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.vector_map_loader.extract_node_from_ET_element" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a line of XML, build a node object. The “node_fields” dictionary will hold “id”, “x”, “y”.
+The XML will resemble:</p>
+<blockquote>
+<div><p>&lt;node id=”0” x=”3168.066310258233” y=”1674.663991981186” /&gt;</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>child</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Element</span></code></a>) – xml.etree.ElementTree element</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#argoverse.data_loading.vector_map_loader.Node" title="argoverse.data_loading.vector_map_loader.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">Node</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Node object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.data_loading.vector_map_loader.extract_node_waypt">
+<code class="sig-prename descclassname">argoverse.data_loading.vector_map_loader.</code><code class="sig-name descname">extract_node_waypt</code><span class="sig-paren">(</span><em class="sig-param">way_field</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/vector_map_loader.html#extract_node_waypt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.vector_map_loader.extract_node_waypt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a list with a reference node such as [(‘ref’, ‘0’)], extract out the lane ID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>way_field</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]) – key and node id pair to extract</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>unique ID for a node waypoint</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>node_id</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.data_loading.vector_map_loader.get_lane_identifier">
+<code class="sig-prename descclassname">argoverse.data_loading.vector_map_loader.</code><code class="sig-name descname">get_lane_identifier</code><span class="sig-paren">(</span><em class="sig-param">child</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/vector_map_loader.html#get_lane_identifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.vector_map_loader.get_lane_identifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch lane ID from XML ET.Element.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>child</strong> (<a class="reference external" href="https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.Element" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Element</span></code></a>) – ET.Element with information about Way</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>unique lane ID</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.data_loading.vector_map_loader.load_lane_segments_from_xml">
+<code class="sig-prename descclassname">argoverse.data_loading.vector_map_loader.</code><code class="sig-name descname">load_lane_segments_from_xml</code><span class="sig-paren">(</span><em class="sig-param">map_fpath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/vector_map_loader.html#load_lane_segments_from_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.vector_map_loader.load_lane_segments_from_xml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load lane segment object from xml file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>map_fpath</strong> – path to xml file</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of LaneSegment objects</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>lane_objs</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.data_loading.vector_map_loader.str_to_bool">
+<code class="sig-prename descclassname">argoverse.data_loading.vector_map_loader.</code><code class="sig-name descname">str_to_bool</code><span class="sig-paren">(</span><em class="sig-param">s</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/data_loading/vector_map_loader.html#str_to_bool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.data_loading.vector_map_loader.str_to_bool" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>s</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – string representation of boolean, either ‘True’ or ‘False’</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.data_loading">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-argoverse.data_loading" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

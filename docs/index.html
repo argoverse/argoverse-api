@@ -1,0 +1,377 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Argoverse API &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Argoverse API</a><ul>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li><a class="reference internal" href="#installation">Installation</a><ul>
+<li><a class="reference internal" href="#clone">1) Clone</a></li>
+<li><a class="reference internal" href="#download-hd-map-data">2) Download HD map data</a></li>
+<li><a class="reference internal" href="#download-argoverse-tracking-and-argoverse-forecasting">3) Download Argoverse-Tracking and Argoverse-Forecasting</a></li>
+<li><a class="reference internal" href="#install-argoverse-module">4) Install argoverse module</a></li>
+<li><a class="reference internal" href="#optional-install-mayavi">(optional) Install mayavi</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#demo">Demo</a><ul>
+<li><a class="reference internal" href="#argoverse-map-tutorial"><strong>Argoverse Map Tutorial</strong></a></li>
+<li><a class="reference internal" href="#argoverse-tracking-tutorial"><strong>Argoverse-Tracking Tutorial</strong></a></li>
+<li><a class="reference internal" href="#argoverse-forecasting-tutorial"><strong>Argoverse-Forecasting Tutorial</strong></a></li>
+<li><a class="reference internal" href="#rendering-birds-eye-view">Rendering birds-eye-view</a></li>
+<li><a class="reference internal" href="#rendering-cuboids-on-images">Rendering cuboids on images</a></li>
+<li><a class="reference internal" href="#rendering-ground-lidar-points-on-images">Rendering ground lidar points on images</a></li>
+<li><a class="reference internal" href="#stereo-correspondence">Stereo correspondence</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#contributing">Contributing</a></li>
+<li><a class="reference internal" href="#disclaimer">Disclaimer</a></li>
+<li><a class="reference internal" href="#license">License</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>Argoverse API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <p><a class="reference external" href="https://www.python.org/downloads/release/python-360/"><img alt="https://img.shields.io/badge/python-3.6-blue.svg" src="https://img.shields.io/badge/python-3.6-blue.svg" /></a>
+<a class="reference external" href="https://www.python.org/downloads/release/python-370/"><img alt="https://img.shields.io/badge/python-3.7-blue.svg" src="https://img.shields.io/badge/python-3.7-blue.svg" /></a>
+<a class="reference internal" href="LICENSE.html"><span class="doc"></span></a></p>
+<div class="section" id="argoverse-api">
+<h1>Argoverse API<a class="headerlink" href="#argoverse-api" title="Permalink to this headline">¶</a></h1>
+<blockquote>
+<div><p>Official GitHub repository for <a class="reference external" href="https://www.argoverse.org">Argoverse dataset</a></p>
+</div></blockquote>
+<hr class="docutils" />
+<div class="section" id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>If you have any questions, feel free to open a <a class="reference external" href="https://github.com/argoai/argoverse-api/issues">GitHub issue</a> describing the problem.</p>
+</div></blockquote>
+<ul class="simple">
+<li><p><a class="reference external" href="#installation">Installation</a></p></li>
+<li><p><a class="reference internal" href="argoverse.html"><span class="doc">API Reference</span></a></p></li>
+<li><p><a class="reference external" href="#usage">Usage</a></p></li>
+<li><p><a class="reference external" href="#demo">Demo</a></p></li>
+<li><p><a class="reference external" href="#contributing">Contributing</a></p></li>
+<li><p><a class="reference external" href="#disclaimer">Disclaimer</a></p></li>
+<li><p><a class="reference external" href="#license">License</a></p></li>
+</ul>
+</div>
+<hr class="docutils" />
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Requires Linux/MacOS, git, and Python 3.6+</p>
+<div class="section" id="clone">
+<h3>1) Clone<a class="headerlink" href="#clone" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Clone this repo to your local machine using:
+<code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">git&#64;github.com/argoai/argoverse-api/argodataset.git</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="download-hd-map-data">
+<h3>2) Download HD map data<a class="headerlink" href="#download-hd-map-data" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Download <code class="docutils literal notranslate"><span class="pre">hd_maps.tar.gz</span></code> from <a class="reference external" href="https://www.argoverse.org/data.html#download-link">our website</a> and extract into the root directory of the repo. Your directory structure should look something like this:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>argodataset
+└── argoverse
+    └── data_loading
+    └── evaluation
+    └── map_representation
+    └── utils
+    └── visualization
+└── map_files
+└── license
+...
+</pre></div>
+</div>
+</div>
+<div class="section" id="download-argoverse-tracking-and-argoverse-forecasting">
+<h3>3) Download Argoverse-Tracking and Argoverse-Forecasting<a class="headerlink" href="#download-argoverse-tracking-and-argoverse-forecasting" title="Permalink to this headline">¶</a></h3>
+<p>We provide both the full dataset and the sample version of the dataset for testing purposes. Head to <a class="reference external" href="https://www.argoverse.org/data.html#download-link">our website</a> to see the download option.</p>
+<ul class="simple">
+<li><p><strong>Argoverse-Tracking</strong> provides track annotations and raw data from camera (&#64;30hz) and lidar sensors (&#64;10hz) as well as two stereo cameras (&#64;5hz). We’ve released a total 113 scenes/logs, separated into 65 logs for training, 24 logs for validating, and 24 logs for testing. We’ve separated training data into smaller files to make it easier to download, but you should extract them all into one folder.
+We also provide sample data (1 log) in <code class="docutils literal notranslate"><span class="pre">tracking_sample.tar.gz</span></code>.</p></li>
+<li><p><strong>Argoverse-Forecasting</strong> contains 327793 sequences of interesting scenarios. Each sequence follows the trajectory of the main agent for 5 seconds, while keeping track of all other actors (e.g car, pedestrian). We’ve separated them into 79392 test sequences, 40128 validation sequences, and 208273 training sequences.
+We also provide sample data (5 sequences) in <code class="docutils literal notranslate"><span class="pre">forecasting_sample.tar.gz</span></code>.</p></li>
+</ul>
+<p>Note that you need to download HD map data (and extract them into project root folder) for the API to function properly. You can selectively download either <strong>Argoverse-Tracking</strong> or <strong>Argoverse-Forecasting</strong> or both, depending on what type of data you need. The data can be extracted to any location in your local machine.</p>
+</div>
+<div class="section" id="install-argoverse-module">
+<h3>4) Install argoverse module<a class="headerlink" href="#install-argoverse-module" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">argoverse</span></code> can be installed as a python package using</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">/</span><span class="n">path_to_root_directory_of_the_repo</span><span class="o">/</span>
+</pre></div>
+</div>
+</li>
+<li><p>if you recieve any error about <code class="docutils literal notranslate"><span class="pre">No</span> <span class="pre">matching</span> <span class="pre">distribution</span> <span class="pre">found</span> <span class="pre">for</span> <span class="pre">pyntcloud</span></code>, upgrade your pip using <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">pip</span></code> or pip install with <code class="docutils literal notranslate"><span class="pre">--process-dependency-links</span></code></p></li>
+</ul>
+<p>Make sure that you can <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">argoverse</span></code> in python, and you are good to go!</p>
+</div>
+<div class="section" id="optional-install-mayavi">
+<h3>(optional) Install mayavi<a class="headerlink" href="#optional-install-mayavi" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Some visualization may require <code class="docutils literal notranslate"><span class="pre">mayavi</span></code>. See instructions on how to install <a class="reference external" href="https://docs.enthought.com/mayavi/mayavi/installation.html">here</a></p></li>
+</ul>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>The Argoverse API provides useful functionality to interact with 3 main components of our dataset: HD Map, Argoverse Tracking Dataset and Argoverse Forecasting Dataset.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">argoverse.map_representation.map_api</span> <span class="kn">import</span> <span class="n">ArgoverseMap</span>
+<span class="kn">from</span> <span class="nn">argoverse.data_loading.argoverse_tracking_loader</span> <span class="kn">import</span> <span class="n">ArgoverseTrackingLoader</span>
+<span class="kn">from</span> <span class="nn">argoverse.data_loading.argoverse_forecasting_loader</span> <span class="kn">import</span> <span class="n">ArgoverseForecastingLoader</span>
+<span class="n">avm</span> <span class="o">=</span> <span class="n">ArgoverseMap</span><span class="p">()</span>
+<span class="n">argoverse_tracker_loader</span> <span class="o">=</span> <span class="n">ArgoverseTrackingLoader</span><span class="p">(</span><span class="s1">&#39;argoverse-tracking/&#39;</span><span class="p">)</span>    <span class="c1">#simply change to your local path of the data</span>
+<span class="n">argoverse_forecasting_loader</span> <span class="o">=</span> <span class="n">ArgoverseForecastingLoader</span><span class="p">(</span><span class="s1">&#39;argoverse-forecasting/&#39;</span><span class="p">)</span> <span class="c1">#simply change to your local path of the data</span>
+</pre></div>
+</div>
+<p>See our demo tutorials below.</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="demo">
+<h2>Demo<a class="headerlink" href="#demo" title="Permalink to this headline">¶</a></h2>
+<p>To make it easier to use our API, we provide demo tutorials in the form of Jupyter Notebooks.</p>
+<p>To run, you’ll need to first install Jupyter Notebook <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">jupyter</span></code>. Then navigate to the repo directory and open a server with <code class="docutils literal notranslate"><span class="pre">jupyter</span> <span class="pre">notebook</span></code>. When you run the command, it will open your browser automatically. If you lose the page, you can click on the link in your terminal to re-open the Jupyter notebook.</p>
+<p>Once it’s running, just navigate to the <code class="docutils literal notranslate"><span class="pre">demo_usage</span></code> folder and open any tutorial! Note that to use the tracking and forecasting tutorials, you’ll need to download the tracking and forecasting sample data from <a class="reference external" href="https://www.argoverse.org/data.html#download-link">our website</a> and extract the folders into the root of the repo.</p>
+<div class="section" id="argoverse-map-tutorial">
+<h3><strong>Argoverse Map Tutorial</strong><a class="headerlink" href="#argoverse-map-tutorial" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://github.com/argoai/argoverse-api/tree/demo_usage/argoverse_map_tutorial.ipynb"><img alt="_images/map_tutorial.png" src="_images/map_tutorial.png" /></a></p>
+</div>
+<div class="section" id="argoverse-tracking-tutorial">
+<h3><strong>Argoverse-Tracking Tutorial</strong><a class="headerlink" href="#argoverse-tracking-tutorial" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://github.com/argoai/argoverse-api/tree/demo_usage/argoverse_tracking_tutorial.ipynb"><img alt="_images/tracking_tutorial.png" src="_images/tracking_tutorial.png" /></a></p>
+</div>
+<div class="section" id="argoverse-forecasting-tutorial">
+<h3><strong>Argoverse-Forecasting Tutorial</strong><a class="headerlink" href="#argoverse-forecasting-tutorial" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://github.com/argoai/argoverse-api/tree/demo_usage/argoverse_forecasting_tutorial.ipynb"><img alt="_images/forecasting_tutorial.png" src="_images/forecasting_tutorial.png" /></a></p>
+</div>
+<div class="section" id="rendering-birds-eye-view">
+<h3>Rendering birds-eye-view<a class="headerlink" href="#rendering-birds-eye-view" title="Permalink to this headline">¶</a></h3>
+<p>Run the following script to render cuboids from a birds-eye-view on the map.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python visualize_30hz_benchmark_data_on_map.py --dataset_dir &lt;path/to/logs&gt; --log_id &lt;id of the specific log&gt; --experiment_prefix &lt;prefix of the output directory&gt;
+</pre></div>
+</div>
+<p>For example, the path to the logs might be <code class="docutils literal notranslate"><span class="pre">argoverse-tracking/train4</span></code> and the log id might be <code class="docutils literal notranslate"><span class="pre">2bc6a872-9979-3493-82eb-fb55407473c9</span></code>.  This script will write to <code class="docutils literal notranslate"><span class="pre">&lt;experiment</span> <span class="pre">prefix&gt;_per_log_viz/&lt;log</span> <span class="pre">id&gt;</span></code> in the current working directory with images that look like the following: <img alt="_images/MIA_cb762bb1-7ce1-3ba5-b53d-13c159b532c8_315967327020035000.png" src="_images/MIA_cb762bb1-7ce1-3ba5-b53d-13c159b532c8_315967327020035000.png" /></p>
+<p>It will also generate a video visualization at <code class="docutils literal notranslate"><span class="pre">&lt;experiment</span> <span class="pre">prefix&gt;_per_log_viz/&lt;log</span> <span class="pre">id&gt;_lidar_roi_nonground.mp4</span></code></p>
+</div>
+<div class="section" id="rendering-cuboids-on-images">
+<h3>Rendering cuboids on images<a class="headerlink" href="#rendering-cuboids-on-images" title="Permalink to this headline">¶</a></h3>
+<p>Run the following script to render cuboids on images.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python cuboids_to_bboxes.py --dataset-dir &lt;path/to/logs&gt; --log-ids &lt;id of specific log&gt; --experiment-prefix &lt;prefix for output directory&gt;
+</pre></div>
+</div>
+<p>This script can process multiple logs if desired.  They can be passed as a comma separated list to <code class="docutils literal notranslate"><span class="pre">--log-ids</span></code>.  Images will be written to <code class="docutils literal notranslate"><span class="pre">&lt;experiment</span> <span class="pre">prefix&gt;_&lt;log</span> <span class="pre">id&gt;</span></code> in the working directory that look like the following: <img alt="_images/ring_front_center_315966393219913000.jpg" src="_images/ring_front_center_315966393219913000.jpg" /></p>
+<p>It will also generate video visualizations for each camera in <code class="docutils literal notranslate"><span class="pre">&lt;experiment</span> <span class="pre">prefix&gt;_amodal_labels/</span></code></p>
+</div>
+<div class="section" id="rendering-ground-lidar-points-on-images">
+<h3>Rendering ground lidar points on images<a class="headerlink" href="#rendering-ground-lidar-points-on-images" title="Permalink to this headline">¶</a></h3>
+<p>Run the following script to render lidar points corresponding to the ground surface onto images.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python visualize_ground_lidar_points.py --dataset-dir &lt;path/to/logs&gt; --log-ids &lt;comma separated list of logs&gt;  --experiment-prefix &lt;prefix for output directory&gt;
+</pre></div>
+</div>
+<p>This will produce images and videos will be in the directory <code class="docutils literal notranslate"><span class="pre">&lt;experiment</span> <span class="pre">prefix&gt;_ground_viz/&lt;log</span> <span class="pre">id&gt;</span></code>.  Here is an example image: <img alt="_images/ring_front_center_315966392920007000.jpg" src="_images/ring_front_center_315966392920007000.jpg" /></p>
+</div>
+<div class="section" id="stereo-correspondence">
+<h3>Stereo correspondence<a class="headerlink" href="#stereo-correspondence" title="Permalink to this headline">¶</a></h3>
+<p>For all log segments, accurate calibration between liDAR and cameras enables sensor fusion approaches, but the calibration may not register the stereo images into perfect epipolar correspondence.</p>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
+<p>Contributions are always welcome! Please be aware of our <a class="reference internal" href="CONTRIBUTING.html"><span class="doc">contribution guidelines for this project</span></a>.</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="disclaimer">
+<h2>Disclaimer<a class="headerlink" href="#disclaimer" title="Permalink to this headline">¶</a></h2>
+<p>Argoverse APIs are created by John Lambert, Patsorn Sangkloy, Ming-Fang Chang, and Jagjeet Singh to support “Chang, M.F. et al. (2019) Argoverse: 3D Tracking and Forecasting with Rich Maps, paper presented at The IEEE Conference on Computer Vision and Pattern Recognition (CVPR) (pp. 8748-8757). Long Beach, CA: Computer Vision Foundation.” THIS SOFTWARE CODE IS INTENDED FOR RESEARCH PURPOSES ONLY AND IS NOT DESIGNATED FOR USE IN TRANSPORTATION OR FOR ANY OTHER DANGEROUS APPLICATION IN WHICH THE FAILURE OF SOFTWARE COULD CREATE A SITUATION WHERE PERSONAL INJURY OR DEATH MAY OCCUR.</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>We release our API under the MIT license. We retain the Apache 2.0 license on certain files. See <strong><a class="reference internal" href="LICENSE.html"><span class="doc">LICENSE</span></a></strong></p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

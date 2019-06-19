@@ -1,0 +1,511 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.visualization.mayavi_utils &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>argoverse.visualization.mayavi_utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for argoverse.visualization.mayavi_utils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># &lt;Copyright 2019, Argo AI, LLC. Released under the MIT license.&gt;</span>
+<span class="sd">&quot;&quot;&quot;A collection of utilities for visualizing 3D data with Mayavi mlab.</span>
+
+<span class="sd">Mayavi Examples</span>
+<span class="sd">----</span>
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">    # To save a figure:</span>
+<span class="sd">    mayavi_wrapper.mlab.savefig( png_savepath, size=(1000,1000))</span>
+
+<span class="sd">    # To close a figure:</span>
+<span class="sd">    mayavi_wrapper.mlab.close(fig)</span>
+
+<span class="sd">    # To adjust figure&#39;s azimuth:</span>
+<span class="sd">    mayavi_wrapper.mlab.view(azimuth=180)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.frustum_clipping</span> <span class="k">import</span> <span class="n">clip_segment_v3_plane_n</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils</span> <span class="k">import</span> <span class="n">mayavi_wrapper</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;Figure&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Point&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PointCloud&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Number&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Color&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plot_bbox_3d_mayavi&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plot_points_3D_mayavi&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plot_3d_clipped_bbox_mayavi&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;draw_coordinate_frame_at_origin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;draw_lidar&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mayavi_compare_point_clouds&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;draw_mayavi_line_segment&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="c1">#: A stub representing mayavi_wrapper.mlab figure types</span>
+<span class="n">Figure</span> <span class="o">=</span> <span class="n">Any</span>
+
+<span class="c1">#: A 3D Point</span>
+<span class="n">Point</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+
+<span class="c1">#: An array of 3D points</span>
+<span class="n">PointCloud</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+
+<span class="c1">#: Any numeric type</span>
+<span class="n">Number</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+
+<span class="c1">#: RGB color created from 0.0 to 1.0 values</span>
+<span class="n">Color</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="plot_bbox_3d_mayavi"><a class="viewcode-back" href="../../../argoverse.visualization.html#argoverse.visualization.mayavi_utils.plot_bbox_3d_mayavi">[docs]</a><span class="k">def</span> <span class="nf">plot_bbox_3d_mayavi</span><span class="p">(</span>
+    <span class="n">fig</span><span class="p">:</span> <span class="n">Figure</span><span class="p">,</span>
+    <span class="n">corners</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">colors</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Color</span><span class="p">,</span> <span class="n">Color</span><span class="p">,</span> <span class="n">Color</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+    <span class="n">line_width</span><span class="p">:</span> <span class="n">Number</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">draw_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">text_scale</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Number</span><span class="p">,</span> <span class="n">Number</span><span class="p">,</span> <span class="n">Number</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Figure</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Plot a 3D bounding box</span>
+
+<span class="sd">    We plot the front of the cuboid in blue, and the back in red.</span>
+<span class="sd">    We plot the sides of the cuboid in green. We draw a line</span>
+<span class="sd">    segment through the front half of the cuboid, on its bottom face.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       fig: Mayavi figure</span>
+<span class="sd">       corners: Numpy array of shape (N,3)</span>
+<span class="sd">       colors: RGB values used to color the cuboid</span>
+<span class="sd">       line_width: Width of the cuboid&#39;s lines</span>
+<span class="sd">       draw_text: Optional text to plot with the cuboid</span>
+<span class="sd">       text_scale: Scaling factor for the text</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Updated Mayavi figure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">draw_rect</span><span class="p">(</span><span class="n">fig</span><span class="p">:</span> <span class="n">Figure</span><span class="p">,</span> <span class="n">selected_corners</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="n">Color</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">prev</span> <span class="o">=</span> <span class="n">selected_corners</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">corner</span> <span class="ow">in</span> <span class="n">selected_corners</span><span class="p">:</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">draw_mayavi_line_segment</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="p">[</span><span class="n">prev</span><span class="p">,</span> <span class="n">corner</span><span class="p">],</span> <span class="n">color</span><span class="p">,</span> <span class="n">line_width</span><span class="p">)</span>
+            <span class="n">prev</span> <span class="o">=</span> <span class="n">corner</span>
+
+    <span class="k">if</span> <span class="n">draw_text</span><span class="p">:</span>
+        <span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">text3d</span><span class="p">(</span>
+            <span class="n">corners</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">corners</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">corners</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">draw_text</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">text_scale</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">figure</span><span class="o">=</span><span class="n">fig</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Draw the sides in green</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+        <span class="n">corner_f</span> <span class="o">=</span> <span class="n">corners</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>  <span class="c1"># front corner</span>
+        <span class="n">corner_b</span> <span class="o">=</span> <span class="n">corners</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">4</span><span class="p">]</span>  <span class="c1"># back corner</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">draw_mayavi_line_segment</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="p">[</span><span class="n">corner_f</span><span class="p">,</span> <span class="n">corner_b</span><span class="p">],</span> <span class="n">colors</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">line_width</span><span class="p">)</span>
+
+    <span class="c1"># Draw front (first 4 corners) in blue</span>
+    <span class="n">draw_rect</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">corners</span><span class="p">[:</span><span class="mi">4</span><span class="p">],</span> <span class="n">colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="c1"># Draw rear (last 4 corners) in red</span>
+    <span class="n">draw_rect</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">corners</span><span class="p">[</span><span class="mi">4</span><span class="p">:],</span> <span class="n">colors</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># Draw blue line indicating the front half</span>
+    <span class="n">center_bottom_forward</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">corners</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">center_bottom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">corners</span><span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">6</span><span class="p">]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">draw_mayavi_line_segment</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="p">[</span><span class="n">center_bottom</span><span class="p">,</span> <span class="n">center_bottom_forward</span><span class="p">],</span> <span class="n">colors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">line_width</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+
+<div class="viewcode-block" id="plot_points_3D_mayavi"><a class="viewcode-back" href="../../../argoverse.visualization.html#argoverse.visualization.mayavi_utils.plot_points_3D_mayavi">[docs]</a><span class="k">def</span> <span class="nf">plot_points_3D_mayavi</span><span class="p">(</span>
+    <span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">fig</span><span class="p">:</span> <span class="n">Figure</span><span class="p">,</span>
+    <span class="n">per_pt_color_strengths</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">fixed_color</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Color</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="n">colormap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;spectral&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Figure</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Visualize points with Mayavi. Scale factor has no influence on point size rendering</span>
+<span class="sd">    when calling `points3d()` with the mode=&quot;point&quot; argument, so we ignore it altogether.</span>
+<span class="sd">    The parameter &quot;line_width&quot; also has no effect on points, so we ignore it also.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       points: The points to visualize</span>
+<span class="sd">       fig: A Mayavi figure</span>
+<span class="sd">       per_pt_color_strengths: An array of scalar values the same size as `points`</span>
+<span class="sd">       fixed_color: Use a fixed color instead of a colormap</span>
+<span class="sd">       colormap: different green to red jet for &#39;spectral&#39; or &#39;gnuplot&#39;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       Updated Mayavi figure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">per_pt_color_strengths</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">per_pt_color_strengths</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+        <span class="c1"># Height data used for shading</span>
+        <span class="n">per_pt_color_strengths</span> <span class="o">=</span> <span class="n">points</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">points3d</span><span class="p">(</span>
+        <span class="n">points</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>  <span class="c1"># x</span>
+        <span class="n">points</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>  <span class="c1"># y</span>
+        <span class="n">points</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>  <span class="c1"># z</span>
+        <span class="n">per_pt_color_strengths</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;point&quot;</span><span class="p">,</span>  <span class="c1"># Render each point as a &#39;point&#39;, not as a &#39;sphere&#39; or &#39;cube&#39;</span>
+        <span class="n">colormap</span><span class="o">=</span><span class="n">colormap</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="n">fixed_color</span><span class="p">,</span>  <span class="c1"># Used a fixed (r,g,b) color instead of colormap</span>
+        <span class="n">figure</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+
+<div class="viewcode-block" id="plot_3d_clipped_bbox_mayavi"><a class="viewcode-back" href="../../../argoverse.visualization.html#argoverse.visualization.mayavi_utils.plot_3d_clipped_bbox_mayavi">[docs]</a><span class="k">def</span> <span class="nf">plot_3d_clipped_bbox_mayavi</span><span class="p">(</span>
+    <span class="n">fig</span><span class="p">:</span> <span class="n">Figure</span><span class="p">,</span>
+    <span class="n">planes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">uv_cam</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">colors</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Color</span><span class="p">,</span> <span class="n">Color</span><span class="p">,</span> <span class="n">Color</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Figure</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">       fig: Mayavi figure</span>
+<span class="sd">       planes:</span>
+<span class="sd">       uv_cam: 3d points in camera coordinate frame</span>
+<span class="sd">       colors:</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       Updated Mayavi figure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">draw_rect</span><span class="p">(</span><span class="n">fig</span><span class="p">:</span> <span class="n">Figure</span><span class="p">,</span> <span class="n">selected_corners</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="n">Color</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">prev</span> <span class="o">=</span> <span class="n">selected_corners</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">corner</span> <span class="ow">in</span> <span class="n">selected_corners</span><span class="p">:</span>
+            <span class="n">clip_prev</span><span class="p">,</span> <span class="n">clip_corner</span> <span class="o">=</span> <span class="n">clip_segment_v3_plane_n</span><span class="p">(</span><span class="n">prev</span><span class="p">,</span> <span class="n">corner</span><span class="p">,</span> <span class="n">planes</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">clip_prev</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">clip_corner</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">draw_mayavi_line_segment</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="p">[</span><span class="n">clip_prev</span><span class="p">,</span> <span class="n">clip_corner</span><span class="p">],</span> <span class="n">color</span><span class="p">,</span> <span class="n">line_width</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">prev</span> <span class="o">=</span> <span class="n">corner</span>
+
+    <span class="c1"># Draw the sides</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+        <span class="n">corner_f</span> <span class="o">=</span> <span class="n">uv_cam</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>  <span class="c1"># front corner</span>
+        <span class="n">corner_b</span> <span class="o">=</span> <span class="n">uv_cam</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">4</span><span class="p">]</span>  <span class="c1"># back corner</span>
+
+        <span class="n">clip_c_f</span><span class="p">,</span> <span class="n">clip_c_b</span> <span class="o">=</span> <span class="n">clip_segment_v3_plane_n</span><span class="p">(</span><span class="n">corner_f</span><span class="p">,</span> <span class="n">corner_b</span><span class="p">,</span> <span class="n">planes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">clip_c_f</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">clip_c_b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># color green</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">draw_mayavi_line_segment</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="p">[</span><span class="n">clip_c_f</span><span class="p">,</span> <span class="n">clip_c_b</span><span class="p">],</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">line_width</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Draw front (first 4 corners) and rear (last 4 corners) rectangles(3d)/lines(2d)</span>
+    <span class="n">draw_rect</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">uv_cam</span><span class="p">[:</span><span class="mi">4</span><span class="p">],</span> <span class="n">colors</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># red</span>
+    <span class="n">draw_rect</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">uv_cam</span><span class="p">[</span><span class="mi">4</span><span class="p">:],</span> <span class="n">colors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># blue</span>
+
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+
+<div class="viewcode-block" id="draw_coordinate_frame_at_origin"><a class="viewcode-back" href="../../../argoverse.visualization.html#argoverse.visualization.mayavi_utils.draw_coordinate_frame_at_origin">[docs]</a><span class="k">def</span> <span class="nf">draw_coordinate_frame_at_origin</span><span class="p">(</span><span class="n">fig</span><span class="p">:</span> <span class="n">Figure</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Figure</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Draw the origin and 3 vectors representing standard basis vectors to express</span>
+<span class="sd">    a coordinate reference frame.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       fig: Mayavi figure</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       Updated Mayavi figure</span>
+
+<span class="sd">    Based on</span>
+<span class="sd">    --------</span>
+<span class="sd">    https://github.com/hengck23/didi-udacity-2017/blob/master/baseline-04/kitti_data/draw.py</span>
+<span class="sd">    https://github.com/charlesq34/frustum-pointnets/blob/master/mayavi/viz_util.py</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># draw origin</span>
+    <span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">points3d</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;sphere&quot;</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+    <span class="c1"># Form standard basis vectors e_1, e_2, e_3</span>
+    <span class="n">axes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="c1"># e_1 in red</span>
+    <span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">plot3d</span><span class="p">(</span>
+        <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">tube_radius</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figure</span><span class="o">=</span><span class="n">fig</span>
+    <span class="p">)</span>
+    <span class="c1"># e_2 in green</span>
+    <span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">plot3d</span><span class="p">(</span>
+        <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">tube_radius</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figure</span><span class="o">=</span><span class="n">fig</span>
+    <span class="p">)</span>
+    <span class="c1"># e_3 in blue</span>
+    <span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">plot3d</span><span class="p">(</span>
+        <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">tube_radius</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figure</span><span class="o">=</span><span class="n">fig</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+
+<div class="viewcode-block" id="draw_lidar"><a class="viewcode-back" href="../../../argoverse.visualization.html#argoverse.visualization.mayavi_utils.draw_lidar">[docs]</a><span class="k">def</span> <span class="nf">draw_lidar</span><span class="p">(</span>
+    <span class="n">point_cloud</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">colormap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;spectral&quot;</span><span class="p">,</span> <span class="n">fig</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Figure</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bgcolor</span><span class="p">:</span> <span class="n">Color</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Figure</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Render a :ref:`PointCloud` with a 45 degree viewing frustum from ego-vehicle.</span>
+
+<span class="sd">    Creates a Mayavi figure, draws a point cloud. Since the majority of interesting objects and</span>
+<span class="sd">    scenarios are found closeby to the ground, we want to see the objects near the ground expressed</span>
+<span class="sd">    in the full range of the colormap. Since returns on power lines, trees, and buildings</span>
+<span class="sd">    will dominate and dilute the colormap otherwise, we clip the colors so that all points</span>
+<span class="sd">    beyond a certain z-elevation (height) share the same color at the edge of the colormap.</span>
+<span class="sd">    We choose anything beyond the 90th percentile as a height outlier.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       point_cloud: The pointcloud to render</span>
+<span class="sd">       fig: A pre-existing Mayavi figure to render to</span>
+<span class="sd">       bgcolor: The background color</span>
+<span class="sd">       colormap: &quot;spectral&quot; or &quot;gnuplot&quot; or &quot;jet&quot; are best</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       Updated or created Mayavi figure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">fig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bgcolor</span><span class="o">=</span><span class="n">bgcolor</span><span class="p">,</span> <span class="n">fgcolor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1600</span><span class="p">,</span> <span class="mi">1000</span><span class="p">))</span>
+
+    <span class="n">z_thresh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="mi">90</span><span class="p">)</span>
+    <span class="n">thresholded_heights</span> <span class="o">=</span> <span class="n">point_cloud</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="c1"># Colors of highest points will be clipped to all lie at edge of colormap</span>
+    <span class="n">thresholded_heights</span><span class="p">[</span><span class="n">thresholded_heights</span> <span class="o">&gt;</span> <span class="n">z_thresh</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span>
+
+    <span class="c1"># draw points</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_points_3D_mayavi</span><span class="p">(</span>
+        <span class="n">points</span><span class="o">=</span><span class="n">point_cloud</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span> <span class="n">per_pt_color_strengths</span><span class="o">=</span><span class="n">thresholded_heights</span><span class="p">,</span> <span class="n">fixed_color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="n">colormap</span>
+    <span class="p">)</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">draw_coordinate_frame_at_origin</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+    <span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">view</span><span class="p">(</span>
+        <span class="n">azimuth</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span> <span class="n">elevation</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span> <span class="n">focalpoint</span><span class="o">=</span><span class="p">[</span><span class="mf">12.0909996</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.04700089</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.03249991</span><span class="p">],</span> <span class="n">distance</span><span class="o">=</span><span class="mf">62.0</span><span class="p">,</span> <span class="n">figure</span><span class="o">=</span><span class="n">fig</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+
+<div class="viewcode-block" id="mayavi_compare_point_clouds"><a class="viewcode-back" href="../../../argoverse.visualization.html#argoverse.visualization.mayavi_utils.mayavi_compare_point_clouds">[docs]</a><span class="k">def</span> <span class="nf">mayavi_compare_point_clouds</span><span class="p">(</span><span class="n">point_cloud_list</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Useful for visualizing the segmentation of a scene has</span>
+<span class="sd">    separate objects, each colored differently.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       point_cloud_list: A list of :ref:`PointCloud`s to render</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">bgcolor</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">))</span>
+    <span class="n">colors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Color</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">point_cloud</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">point_cloud_list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="c1"># use very distinctive colors</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Color</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]))</span>
+
+        <span class="n">plot_points_3D_mayavi</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">point_cloud</span><span class="p">,</span> <span class="n">color</span><span class="p">)</span>
+
+    <span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">azimuth</span><span class="o">=</span><span class="mi">180</span><span class="p">)</span>
+    <span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="draw_mayavi_line_segment"><a class="viewcode-back" href="../../../argoverse.visualization.html#argoverse.visualization.mayavi_utils.draw_mayavi_line_segment">[docs]</a><span class="k">def</span> <span class="nf">draw_mayavi_line_segment</span><span class="p">(</span>
+    <span class="n">fig</span><span class="p">:</span> <span class="n">Figure</span><span class="p">,</span>
+    <span class="n">points</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+    <span class="n">color</span><span class="p">:</span> <span class="n">Color</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="n">line_width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Number</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">tube_radius</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Number</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Figure</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Draw a single line segment with Mayavi.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       fig: The Mayavi figure to render to</span>
+<span class="sd">       points: The points representing the line segment to draw</span>
+<span class="sd">       color: The color of the line segment</span>
+<span class="sd">       line_width: The width of the line</span>
+<span class="sd">       tube_radius: The radius if rendering the line segment as a tube</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       Mayavi figure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">plot3d</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">points</span><span class="p">],</span>
+        <span class="p">[</span><span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">points</span><span class="p">],</span>
+        <span class="p">[</span><span class="n">point</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">points</span><span class="p">],</span>
+        <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+        <span class="n">tube_radius</span><span class="o">=</span><span class="n">tube_radius</span><span class="p">,</span>
+        <span class="n">line_width</span><span class="o">=</span><span class="n">line_width</span><span class="p">,</span>
+        <span class="n">figure</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">fig</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

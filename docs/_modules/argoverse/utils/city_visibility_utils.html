@@ -1,0 +1,265 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.utils.city_visibility_utils &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>argoverse.utils.city_visibility_utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for argoverse.utils.city_visibility_utils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># &lt;Copyright 2019, Argo AI, LLC. Released under the MIT license.&gt;</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="clip_point_cloud_to_visible_region"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.city_visibility_utils.clip_point_cloud_to_visible_region">[docs]</a><span class="k">def</span> <span class="nf">clip_point_cloud_to_visible_region</span><span class="p">(</span>
+    <span class="n">egovehicle_pts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">lidar_pts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">n_polar_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    LiDAR points provide visibility information for a map point cloud in city coordinates.</span>
+<span class="sd">    We bin the world into polar bins, and then if you&#39;ve gone past the farthest LiDAR point</span>
+<span class="sd">    in that orientation bin, we ignore such city points. Those city points could be lane</span>
+<span class="sd">    centerlines or ROI boundary.</span>
+
+<span class="sd">    Other options would be to fix a skinny rectangle around the egovehicle (long along road,</span>
+<span class="sd">    and skinny along sidewalks), or to combine cells with &lt;1.41 distance to each other into</span>
+<span class="sd">    a polygon, growing the region with DBSCAN. Could also vectorize this.</span>
+
+<span class="sd">    We loop through 2 pi radians in n polar bins to find the closest lidar return.</span>
+<span class="sd">    Arctan has range [-pi, pi], so we start our loop there.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       egovehicle_pts: 3d points in city coordinate fram</span>
+<span class="sd">       lidar_pts: Array of LiDAR returns</span>
+<span class="sd">       n_polar_bins: number of bins to discretize the unit circle with</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       egovehicle_pts</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">angle_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">n_polar_bins</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">angle_values</span><span class="p">):</span>
+        <span class="n">min_angle</span> <span class="o">=</span> <span class="n">angle_values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">max_angle</span> <span class="o">=</span> <span class="n">angle_values</span><span class="p">[(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">n_polar_bins</span><span class="p">]</span>
+
+        <span class="c1"># find all roi points in this bin</span>
+        <span class="n">egovehicle_pt_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">egovehicle_pts</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">egovehicle_pts</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">egovehicle_pt_bools</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">egovehicle_pt_angles</span> <span class="o">&gt;=</span> <span class="n">min_angle</span><span class="p">,</span> <span class="n">egovehicle_pt_angles</span> <span class="o">&lt;</span> <span class="n">max_angle</span><span class="p">)</span>
+
+        <span class="c1"># find all lidar points in this bin</span>
+        <span class="n">lidar_pt_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">lidar_pts</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">lidar_pts</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">lidar_pt_bools</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">lidar_pt_angles</span> <span class="o">&gt;=</span> <span class="n">min_angle</span><span class="p">,</span> <span class="n">lidar_pt_angles</span> <span class="o">&lt;</span> <span class="n">max_angle</span><span class="p">)</span>
+        <span class="n">bin_lidar_pts</span> <span class="o">=</span> <span class="n">lidar_pts</span><span class="p">[</span><span class="n">lidar_pt_bools</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bin_lidar_pts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># dist to farthest lidar point</span>
+        <span class="n">max_visible_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">bin_lidar_pts</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># if the roi point is farther than the farthest</span>
+        <span class="n">invalid_egovehicle_bools</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">egovehicle_pts</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_visible_dist</span>
+        <span class="n">invalid_egovehicle_bools</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">egovehicle_pt_bools</span><span class="p">,</span> <span class="n">invalid_egovehicle_bools</span><span class="p">)</span>
+
+        <span class="n">visualize</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">visualize</span><span class="p">:</span>
+            <span class="n">viz_polar_bin_contents</span><span class="p">(</span>
+                <span class="n">bin_lidar_pts</span><span class="p">,</span> <span class="n">egovehicle_pts</span><span class="p">[</span><span class="n">invalid_egovehicle_bools</span><span class="p">],</span> <span class="n">filename</span><span class="o">=</span><span class="n">f</span><span class="s2">&quot;polar_bin_</span><span class="si">{i}</span><span class="s2">.jpg&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">egovehicle_pts</span> <span class="o">=</span> <span class="n">egovehicle_pts</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">invalid_egovehicle_bools</span><span class="p">)]</span>
+
+    <span class="k">return</span> <span class="n">egovehicle_pts</span></div>
+
+
+<div class="viewcode-block" id="viz_polar_bin_contents"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.city_visibility_utils.viz_polar_bin_contents">[docs]</a><span class="k">def</span> <span class="nf">viz_polar_bin_contents</span><span class="p">(</span><span class="n">bin_lidar_pts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">invalid_egovehicle_pts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Visualize what the utility is doing within each polar bin.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       bin_lidar_pts: array</span>
+<span class="sd">       invalid_egovehicle_pts: array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># visualize the contents of this polar bin</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">bin_lidar_pts</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">bin_lidar_pts</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">10</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">invalid_egovehicle_pts</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">invalid_egovehicle_pts</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">10</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

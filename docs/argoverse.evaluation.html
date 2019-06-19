@@ -1,0 +1,443 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.evaluation package &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">argoverse.evaluation package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-argoverse.evaluation.eval_forecasting">argoverse.evaluation.eval_forecasting module</a></li>
+<li><a class="reference internal" href="#module-argoverse.evaluation.eval_tracking">argoverse.evaluation.eval_tracking module</a></li>
+<li><a class="reference internal" href="#module-argoverse.evaluation.eval_utils">argoverse.evaluation.eval_utils module</a></li>
+<li><a class="reference internal" href="#module-argoverse.evaluation">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>argoverse.evaluation package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/argoverse.evaluation.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="argoverse-evaluation-package">
+<h1>argoverse.evaluation package<a class="headerlink" href="#argoverse-evaluation-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-argoverse.evaluation.eval_forecasting">
+<span id="argoverse-evaluation-eval-forecasting-module"></span><h2>argoverse.evaluation.eval_forecasting module<a class="headerlink" href="#module-argoverse.evaluation.eval_forecasting" title="Permalink to this headline">¶</a></h2>
+<p>Functions for evaluating error in forecasting.</p>
+<dl class="function">
+<dt id="argoverse.evaluation.eval_forecasting.compute_metric">
+<code class="sig-prename descclassname">argoverse.evaluation.eval_forecasting.</code><code class="sig-name descname">compute_metric</code><span class="sig-paren">(</span><em class="sig-param">output</em>, <em class="sig-param">target</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/evaluation/eval_forecasting.html#compute_metric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.evaluation.eval_forecasting.compute_metric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute ADE and FDE</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Predicted top-k trajectories with shape (num_tracks, 1), where each
+element is a list. Each list has &gt;= 1 predictions of shape (pred_len x 2).</p></li>
+<li><p><strong>target</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Ground Truth Trajectory of shape (num_tracks x pred_len x 2)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Average Displacement Error
+fde: Final Displacement Error
+min_ade_idx: index corresponding to the trajectory in top-k which gave minimum ade</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ade</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.evaluation.eval_forecasting.get_ade">
+<code class="sig-prename descclassname">argoverse.evaluation.eval_forecasting.</code><code class="sig-name descname">get_ade</code><span class="sig-paren">(</span><em class="sig-param">output</em>, <em class="sig-param">target</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/evaluation/eval_forecasting.html#get_ade"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.evaluation.eval_forecasting.get_ade" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Average Displacement Error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Predicted trajectory with shape (pred_len x 2)</p></li>
+<li><p><strong>target</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Ground truth trajectory with shape (pred_len x 2)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Average Displacement Error</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ade</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.evaluation.eval_forecasting.get_fde">
+<code class="sig-prename descclassname">argoverse.evaluation.eval_forecasting.</code><code class="sig-name descname">get_fde</code><span class="sig-paren">(</span><em class="sig-param">output</em>, <em class="sig-param">target</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/evaluation/eval_forecasting.html#get_fde"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.evaluation.eval_forecasting.get_fde" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Final Displacement Error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Predicted trajectory with shape (pred_len x 2)</p></li>
+<li><p><strong>target</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Ground truth trajectory with shape (pred_len x 2)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Final Displacement Error</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>fde</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.evaluation.eval_tracking">
+<span id="argoverse-evaluation-eval-tracking-module"></span><h2>argoverse.evaluation.eval_tracking module<a class="headerlink" href="#module-argoverse.evaluation.eval_tracking" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="argoverse.evaluation.eval_tracking.eval_tracks">
+<code class="sig-prename descclassname">argoverse.evaluation.eval_tracking.</code><code class="sig-name descname">eval_tracks</code><span class="sig-paren">(</span><em class="sig-param">path_tracker_output</em>, <em class="sig-param">path_dataset</em>, <em class="sig-param">d_min</em>, <em class="sig-param">d_max</em>, <em class="sig-param">out_file</em>, <em class="sig-param">centroid_method</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/evaluation/eval_tracking.html#eval_tracks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.evaluation.eval_tracking.eval_tracks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate tracking output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_tracker_output</strong> – path to tracker output</p></li>
+<li><p><strong>path_dataset</strong> – path to dataset</p></li>
+<li><p><strong>d_min</strong> – minimum distance range</p></li>
+<li><p><strong>d_max</strong> – maximum distance range</p></li>
+<li><p><strong>out_file</strong> – output file object</p></li>
+<li><p><strong>centroid_method</strong> – method for ground truth centroid estimation</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.evaluation.eval_tracking.get_distance">
+<code class="sig-prename descclassname">argoverse.evaluation.eval_tracking.</code><code class="sig-name descname">get_distance</code><span class="sig-paren">(</span><em class="sig-param">x1</em>, <em class="sig-param">x2</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/evaluation/eval_tracking.html#get_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.evaluation.eval_tracking.get_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the distance between two poses, returns nan if distance is larger than detection threshold.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x1</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – first pose</p></li>
+<li><p><strong>x2</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – second pose</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – name of the field to test</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A distance value or NaN</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.evaluation.eval_tracking.in_distance_range_pose">
+<code class="sig-prename descclassname">argoverse.evaluation.eval_tracking.</code><code class="sig-name descname">in_distance_range_pose</code><span class="sig-paren">(</span><em class="sig-param">ego_center</em>, <em class="sig-param">pose</em>, <em class="sig-param">d_min</em>, <em class="sig-param">d_max</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/evaluation/eval_tracking.html#in_distance_range_pose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.evaluation.eval_tracking.in_distance_range_pose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if a pose is within distance range or not.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ego_center</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – ego center pose (zero if bbox is in ego frame).</p></li>
+<li><p><strong>pose</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – pose to test.</p></li>
+<li><p><strong>d_min</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – minimum distance range</p></li>
+<li><p><strong>d_max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – maximum distance range</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A boolean saying if input pose is with specified distance range.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.evaluation.eval_utils">
+<span id="argoverse-evaluation-eval-utils-module"></span><h2>argoverse.evaluation.eval_utils module<a class="headerlink" href="#module-argoverse.evaluation.eval_utils" title="Permalink to this headline">¶</a></h2>
+<p>Utilities used in evaluation of performance.</p>
+<dl class="function">
+<dt id="argoverse.evaluation.eval_utils.get_pc_inside_bbox">
+<code class="sig-prename descclassname">argoverse.evaluation.eval_utils.</code><code class="sig-name descname">get_pc_inside_bbox</code><span class="sig-paren">(</span><em class="sig-param">pc_raw</em>, <em class="sig-param">bbox</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/evaluation/eval_utils.html#get_pc_inside_bbox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.evaluation.eval_utils.get_pc_inside_bbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get part of raw point cloud inside a given bounding box.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pc_raw</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – The raw point cloud</p></li>
+<li><p><strong>bbox</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – The bounding box to restrict into</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The part of the point cloud inside the bounding box</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.evaluation.eval_utils.in_between_matrix">
+<code class="sig-prename descclassname">argoverse.evaluation.eval_utils.</code><code class="sig-name descname">in_between_matrix</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">v1</em>, <em class="sig-param">v2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/evaluation/eval_utils.html#in_between_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.evaluation.eval_utils.in_between_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Element-by-element check to see if x_ij is between v1_ij and v2_ij, without knowing v1 &gt; v2 order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – matrix to check if is in bounds</p></li>
+<li><p><strong>v1</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – elements comprising one side of range check</p></li>
+<li><p><strong>v2</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – elements comprising other side of range check</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Matrix of whether x_ij is between v1_ij and v2_ij</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.evaluation.eval_utils.label_to_bbox">
+<code class="sig-prename descclassname">argoverse.evaluation.eval_utils.</code><code class="sig-name descname">label_to_bbox</code><span class="sig-paren">(</span><em class="sig-param">label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/evaluation/eval_utils.html#label_to_bbox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.evaluation.eval_utils.label_to_bbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a label into a bounding box.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – _LabelType</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>nupmy array for bounding box itself
+orientation: numpy array for bounding box orientation</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bbox</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.evaluation.eval_utils.leave_only_roi_region">
+<code class="sig-prename descclassname">argoverse.evaluation.eval_utils.</code><code class="sig-name descname">leave_only_roi_region</code><span class="sig-paren">(</span><em class="sig-param">lidar_pts</em>, <em class="sig-param">egovehicle_to_city_se3</em>, <em class="sig-param">ground_removal_method</em>, <em class="sig-param">city_name='MIA'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/evaluation/eval_utils.html#leave_only_roi_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.evaluation.eval_utils.leave_only_roi_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return points that are on driveable area, and (optionally) are not ground.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lidar_pts</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – The lidar points</p></li>
+<li><p><strong>egovehicle_to_city_se3</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Transformation from vehicle to map (city) frame</p></li>
+<li><p><strong>ground_removal_method</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – “map” is only supported value currently, otherwise will not run ground removal</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – city name, either ‘PIT’ or ‘MIA’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Modified point cloud reduced by driveable area and ground.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="argoverse.evaluation.eval_utils.transform_bounding_box_3d">
+<code class="sig-prename descclassname">argoverse.evaluation.eval_utils.</code><code class="sig-name descname">transform_bounding_box_3d</code><span class="sig-paren">(</span><em class="sig-param">bbox</em>, <em class="sig-param">R</em>, <em class="sig-param">t</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/evaluation/eval_utils.html#transform_bounding_box_3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.evaluation.eval_utils.transform_bounding_box_3d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform bounding box with rotation and translation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bbox</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – The bounding box</p></li>
+<li><p><strong>R</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – The rotation transformation</p></li>
+<li><p><strong>t</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – The translation transformation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The transformed bounding box</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.evaluation">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-argoverse.evaluation" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

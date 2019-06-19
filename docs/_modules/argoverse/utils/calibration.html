@@ -1,0 +1,830 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.utils.calibration &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>argoverse.utils.calibration</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for argoverse.utils.calibration</h1><div class="highlight"><pre>
+<span></span><span class="c1"># &lt;Copyright 2019, Argo AI, LLC. Released under the MIT license.&gt;</span>
+<span class="sd">&quot;&quot;&quot;make util to project RGB values onto the point cloud&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="k">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">overload</span>
+
+<span class="kn">import</span> <span class="nn">imageio</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">argoverse.data_loading.pose_loader</span> <span class="k">import</span> <span class="n">get_city_SE3_egovehicle_at_sensor_t</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.camera_stats</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">CAMERA_LIST</span><span class="p">,</span>
+    <span class="n">RING_CAMERA_LIST</span><span class="p">,</span>
+    <span class="n">RING_IMG_HEIGHT</span><span class="p">,</span>
+    <span class="n">RING_IMG_WIDTH</span><span class="p">,</span>
+    <span class="n">STEREO_CAMERA_LIST</span><span class="p">,</span>
+    <span class="n">STEREO_IMG_HEIGHT</span><span class="p">,</span>
+    <span class="n">STEREO_IMG_WIDTH</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.se3</span> <span class="k">import</span> <span class="n">SE3</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.transform</span> <span class="k">import</span> <span class="n">quat2rotmat</span>
+<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="k">import</span> <span class="n">Literal</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CameraConfig"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.CameraConfig">[docs]</a><span class="k">class</span> <span class="nc">CameraConfig</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Camera config for extrinsic matrix, intrinsic matrix, image width/height.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CameraConfig.__init__"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.CameraConfig.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">extrinsic</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">intrinsic</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">img_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">img_height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">distortion_coeffs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">           extrinsic: extrinsic matrix</span>
+<span class="sd">           intrinsic: intrinsic matrix</span>
+<span class="sd">           img_width: image width</span>
+<span class="sd">           img_height: image height</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extrinsic</span> <span class="o">=</span> <span class="n">extrinsic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intrinsic</span> <span class="o">=</span> <span class="n">intrinsic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img_width</span> <span class="o">=</span> <span class="n">img_width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img_height</span> <span class="o">=</span> <span class="n">img_height</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distortion_coeffs</span> <span class="o">=</span> <span class="n">distortion_coeffs</span></div></div>
+
+
+<div class="viewcode-block" id="Calibration"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.Calibration">[docs]</a><span class="k">class</span> <span class="nc">Calibration</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Calibration matrices and utils.</span>
+
+<span class="sd">    3d XYZ are in 3D egovehicle coord.</span>
+<span class="sd">    2d box xy are in image coord, normalized by width and height</span>
+<span class="sd">    Point cloud are in egovehicle coord</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">       xy_image = K * [R|T] * xyz_ego</span>
+
+<span class="sd">       xyz_image = [R|T] * xyz_ego</span>
+
+<span class="sd">       image coord:</span>
+<span class="sd">        ----&gt; x-axis (u)</span>
+<span class="sd">       |</span>
+<span class="sd">       |</span>
+<span class="sd">       v y-axis (v)</span>
+
+<span class="sd">    egovehicle coord:</span>
+<span class="sd">    front x, left y, up z</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Calibration.__init__"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.Calibration.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">camera_config</span><span class="p">:</span> <span class="n">CameraConfig</span><span class="p">,</span> <span class="n">calib</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Create a Calibration instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            camera_config: A camera config</span>
+<span class="sd">            calib: Calibration data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">camera_config</span> <span class="o">=</span> <span class="n">camera_config</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">calib_data</span> <span class="o">=</span> <span class="n">calib</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">extrinsic</span> <span class="o">=</span> <span class="n">get_camera_extrinsic_matrix</span><span class="p">(</span><span class="n">calib</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">R</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extrinsic</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extrinsic</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="o">=</span> <span class="n">get_camera_intrinsic_matrix</span><span class="p">(</span><span class="n">calib</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">=</span> <span class="n">camera_config</span><span class="o">.</span><span class="n">distortion_coeffs</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">camera</span> <span class="o">=</span> <span class="n">calib</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">][</span><span class="mi">10</span><span class="p">:]</span></div>
+
+<div class="viewcode-block" id="Calibration.cart2hom"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.Calibration.cart2hom">[docs]</a>    <span class="k">def</span> <span class="nf">cart2hom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pts_3d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Convert Cartesian coordinates to Homogeneous.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pts_3d: nx3 points in Cartesian</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            nx4 points in Homogeneous by appending 1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">pts_3d</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">pts_3d_hom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">pts_3d</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">))))</span>
+        <span class="k">return</span> <span class="n">pts_3d_hom</span></div>
+
+    <span class="c1"># ===========================</span>
+    <span class="c1"># ------- 3d to 2d ----------</span>
+    <span class="c1"># ===========================</span>
+<div class="viewcode-block" id="Calibration.project_ego_to_image"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.Calibration.project_ego_to_image">[docs]</a>    <span class="k">def</span> <span class="nf">project_ego_to_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pts_3d_ego</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Project egovehicle coordinate to image.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pts_3d_ego: nx3 points in egovehicle coord</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            nx2 points in image coord</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">uv_cam</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extrinsic</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cart2hom</span><span class="p">(</span><span class="n">pts_3d_ego</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
+        <span class="n">uv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">uv_cam</span><span class="p">)</span>
+        <span class="n">uv</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">/=</span> <span class="n">uv</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="k">return</span> <span class="n">uv</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Calibration.project_ego_to_cam"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.Calibration.project_ego_to_cam">[docs]</a>    <span class="k">def</span> <span class="nf">project_ego_to_cam</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pts_3d_ego</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Project egovehicle point onto camera frame.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pts_3d_ego: nx3 points in egovehicle coord.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            nx3 points in camera coord.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">uv_cam</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extrinsic</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cart2hom</span><span class="p">(</span><span class="n">pts_3d_ego</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="n">uv_cam</span><span class="o">.</span><span class="n">transpose</span><span class="p">()[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Calibration.project_cam_to_ego"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.Calibration.project_cam_to_ego">[docs]</a>    <span class="k">def</span> <span class="nf">project_cam_to_ego</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pts_3d_rect</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Project point in camera frame to egovehicle frame.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pts_3d_rect (np.array): nx3 points in cam coord.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.array: nx3 points in ego coord.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">extrinsic</span><span class="p">))</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cart2hom</span><span class="p">(</span><span class="n">pts_3d_rect</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span></div>
+
+    <span class="c1"># ===========================</span>
+    <span class="c1"># ------- 2d to 3d ----------</span>
+    <span class="c1"># ===========================</span>
+<div class="viewcode-block" id="Calibration.project_image_to_ego"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.Calibration.project_image_to_ego">[docs]</a>    <span class="k">def</span> <span class="nf">project_image_to_ego</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uv_depth</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot; Project 2D image with depth to egovehicle coordinate.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            uv_depth: nx3 first two channels are uv, 3rd channel</span>
+<span class="sd">               is depth in camera coord. So basically in image coordinate.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            nx3 points in ego coord.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extrinsic</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cart2hom</span><span class="p">(</span><span class="n">uv_depth</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Calibration.project_image_to_cam"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.Calibration.project_image_to_cam">[docs]</a>    <span class="k">def</span> <span class="nf">project_image_to_cam</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uv_depth</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot; Project 2D image with depth to camera coordinate.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            uv_depth: nx3 first two channels are uv, 3rd channel</span>
+<span class="sd">               is depth in camera coord.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            nx3 points in camera coord.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">uv_depth</span></div></div>
+
+
+<div class="viewcode-block" id="load_image"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.load_image">[docs]</a><span class="k">def</span> <span class="nf">load_image</span><span class="p">(</span><span class="n">img_filename</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Load image.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        img_filename (str): Image file name</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Image data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">imageio</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">img_filename</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_calib"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.load_calib">[docs]</a><span class="k">def</span> <span class="nf">load_calib</span><span class="p">(</span><span class="n">calib_filepath</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Calibration</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot; Load Calibration object for all camera from calibration filepath</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        calib_filepath (str): path to the calibration file</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list of Calibration object for all cameras</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">calib_filepath</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">calib</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="n">calib_list</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">camera</span> <span class="ow">in</span> <span class="n">CAMERA_LIST</span><span class="p">:</span>
+        <span class="n">cam_config</span> <span class="o">=</span> <span class="n">get_calibration_config</span><span class="p">(</span><span class="n">calib</span><span class="p">,</span> <span class="n">camera</span><span class="p">)</span>
+        <span class="n">calib_cam</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">calib</span><span class="p">[</span><span class="s2">&quot;camera_data_&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">f</span><span class="s2">&quot;image_raw_</span><span class="si">{camera}</span><span class="s2">&quot;</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">calib_cam</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="n">calib_</span> <span class="o">=</span> <span class="n">Calibration</span><span class="p">(</span><span class="n">cam_config</span><span class="p">,</span> <span class="n">calib_cam</span><span class="p">)</span>
+        <span class="n">calib_list</span><span class="p">[</span><span class="n">camera</span><span class="p">]</span> <span class="o">=</span> <span class="n">calib_</span>
+    <span class="k">return</span> <span class="n">calib_list</span></div>
+
+
+<div class="viewcode-block" id="get_camera_extrinsic_matrix"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.get_camera_extrinsic_matrix">[docs]</a><span class="k">def</span> <span class="nf">get_camera_extrinsic_matrix</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Load camera calibration rotation and translation.</span>
+
+<span class="sd">    Note that the camera calibration file contains the SE3 for sensor frame to the vehicle frame, i.e.</span>
+<span class="sd">        pt_egovehicle = egovehicle_SE3_sensor * pt_sensor</span>
+
+<span class="sd">    Then build extrinsic matrix from rotation matrix and translation, a member</span>
+<span class="sd">    of SE3. Then we return the inverse of the SE3 transformation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       config: Calibration config in json, or calibration file path.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       Camera rotation and translation matrix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vehicle_SE3_sensor</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;vehicle_SE3_camera_&quot;</span><span class="p">]</span>
+    <span class="n">egovehicle_t_camera</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vehicle_SE3_sensor</span><span class="p">[</span><span class="s2">&quot;translation&quot;</span><span class="p">])</span>
+    <span class="n">egovehicle_q_camera</span> <span class="o">=</span> <span class="n">vehicle_SE3_sensor</span><span class="p">[</span><span class="s2">&quot;rotation&quot;</span><span class="p">][</span><span class="s2">&quot;coefficients&quot;</span><span class="p">]</span>
+    <span class="n">egovehicle_R_camera</span> <span class="o">=</span> <span class="n">quat2rotmat</span><span class="p">(</span><span class="n">egovehicle_q_camera</span><span class="p">)</span>
+    <span class="n">egovehicle_T_camera</span> <span class="o">=</span> <span class="n">SE3</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="n">egovehicle_R_camera</span><span class="p">,</span> <span class="n">translation</span><span class="o">=</span><span class="n">egovehicle_t_camera</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">egovehicle_T_camera</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span><span class="o">.</span><span class="n">transform_matrix</span></div>
+
+
+<div class="viewcode-block" id="get_camera_intrinsic_matrix"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.get_camera_intrinsic_matrix">[docs]</a><span class="k">def</span> <span class="nf">get_camera_intrinsic_matrix</span><span class="p">(</span><span class="n">camera_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Load camera calibration data and constructs intrinsic matrix.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       camera_config: Calibration config in json</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       Camera intrinsic matrix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">intrinsic_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+    <span class="n">intrinsic_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">camera_config</span><span class="p">[</span><span class="s2">&quot;focal_length_x_px_&quot;</span><span class="p">]</span>
+    <span class="n">intrinsic_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">camera_config</span><span class="p">[</span><span class="s2">&quot;skew_&quot;</span><span class="p">]</span>
+    <span class="n">intrinsic_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">camera_config</span><span class="p">[</span><span class="s2">&quot;focal_center_x_px_&quot;</span><span class="p">]</span>
+    <span class="n">intrinsic_matrix</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">camera_config</span><span class="p">[</span><span class="s2">&quot;focal_length_y_px_&quot;</span><span class="p">]</span>
+    <span class="n">intrinsic_matrix</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">camera_config</span><span class="p">[</span><span class="s2">&quot;focal_center_y_px_&quot;</span><span class="p">]</span>
+    <span class="n">intrinsic_matrix</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">return</span> <span class="n">intrinsic_matrix</span></div>
+
+
+<div class="viewcode-block" id="get_calibration_config"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.get_calibration_config">[docs]</a><span class="k">def</span> <span class="nf">get_calibration_config</span><span class="p">(</span><span class="n">calibration</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">camera_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CameraConfig</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get calibration config dumped with log.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        calibration</span>
+<span class="sd">        camera_name: name of the camera.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       instance of CameraConfig class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">all_camera_data</span> <span class="o">=</span> <span class="n">calibration</span><span class="p">[</span><span class="s2">&quot;camera_data_&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">camera_data</span> <span class="ow">in</span> <span class="n">all_camera_data</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">camera_name</span> <span class="ow">in</span> <span class="n">camera_data</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">]:</span>
+            <span class="n">camera_calibration</span> <span class="o">=</span> <span class="n">camera_data</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+            <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unknown camera name: </span><span class="si">{camera_name}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">camera_extrinsic_matrix</span> <span class="o">=</span> <span class="n">get_camera_extrinsic_matrix</span><span class="p">(</span><span class="n">camera_calibration</span><span class="p">)</span>
+    <span class="n">camera_intrinsic_matrix</span> <span class="o">=</span> <span class="n">get_camera_intrinsic_matrix</span><span class="p">(</span><span class="n">camera_calibration</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">camera_name</span> <span class="ow">in</span> <span class="n">STEREO_CAMERA_LIST</span><span class="p">:</span>
+        <span class="n">img_width</span> <span class="o">=</span> <span class="n">STEREO_IMG_WIDTH</span>
+        <span class="n">img_height</span> <span class="o">=</span> <span class="n">STEREO_IMG_HEIGHT</span>
+    <span class="k">elif</span> <span class="n">camera_name</span> <span class="ow">in</span> <span class="n">RING_CAMERA_LIST</span><span class="p">:</span>
+        <span class="n">img_width</span> <span class="o">=</span> <span class="n">RING_IMG_WIDTH</span>
+        <span class="n">img_height</span> <span class="o">=</span> <span class="n">RING_IMG_HEIGHT</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unknown camera name: </span><span class="si">{camera_name}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">CameraConfig</span><span class="p">(</span>
+        <span class="n">camera_extrinsic_matrix</span><span class="p">,</span>
+        <span class="n">camera_intrinsic_matrix</span><span class="p">,</span>
+        <span class="n">img_width</span><span class="p">,</span>
+        <span class="n">img_height</span><span class="p">,</span>
+        <span class="n">camera_calibration</span><span class="p">[</span><span class="s2">&quot;distortion_coefficients_&quot;</span><span class="p">],</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="point_cloud_to_homogeneous"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.point_cloud_to_homogeneous">[docs]</a><span class="k">def</span> <span class="nf">point_cloud_to_homogeneous</span><span class="p">(</span><span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">        points: Numpy array of shape (N,3)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Numpy array of shape (N,4)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">num_pts</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">points</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">num_pts</span><span class="p">,</span> <span class="mi">1</span><span class="p">))])</span></div>
+
+
+<div class="viewcode-block" id="remove_nan_values"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.remove_nan_values">[docs]</a><span class="k">def</span> <span class="nf">remove_nan_values</span><span class="p">(</span><span class="n">uv</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">uv_cam</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Accept corrupt array&quot;&quot;&quot;</span>
+
+    <span class="n">uv</span> <span class="o">=</span> <span class="n">uv</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">uv_cam</span> <span class="o">=</span> <span class="n">uv_cam</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">x_valid_bool</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">uv</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]))</span>
+    <span class="n">y_valid_bool</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">uv</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))</span>
+    <span class="n">xy_valid_bool</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">x_valid_bool</span><span class="p">,</span> <span class="n">y_valid_bool</span><span class="p">)</span>
+
+    <span class="n">uv</span> <span class="o">=</span> <span class="n">uv</span><span class="p">[</span><span class="n">xy_valid_bool</span><span class="p">]</span>
+    <span class="n">uv_cam</span> <span class="o">=</span> <span class="n">uv_cam</span><span class="p">[</span><span class="n">xy_valid_bool</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">uv</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">uv_cam</span><span class="o">.</span><span class="n">T</span></div>
+
+
+<div class="viewcode-block" id="determine_valid_cam_coords"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.determine_valid_cam_coords">[docs]</a><span class="k">def</span> <span class="nf">determine_valid_cam_coords</span><span class="p">(</span><span class="n">uv</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">uv_cam</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">camera_config</span><span class="p">:</span> <span class="n">CameraConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a set of coordinates in the image plane and corresponding points</span>
+<span class="sd">    in the camera coordinate reference frame, determine those points</span>
+<span class="sd">    that have a valid projection into the image. 3d points with valid</span>
+<span class="sd">    projections have x coordinates in the range [0,img_width-1], y-coordinates</span>
+<span class="sd">    in the range [0,img_height-1], and a positive z-coordinate (lying in</span>
+<span class="sd">    front of the camera frustum).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">       uv: Numpy array of shape (N,2)</span>
+<span class="sd">       uv_cam: Numpy array of shape (N,3)</span>
+<span class="sd">       camera_config: A camera configuration</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       Numpy array of shape (N,) with dtype bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x_valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">uv</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">uv</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">camera_config</span><span class="o">.</span><span class="n">img_width</span><span class="p">)</span>
+    <span class="n">y_valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">uv</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">uv</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">camera_config</span><span class="o">.</span><span class="n">img_height</span><span class="p">)</span>
+    <span class="n">z_valid</span> <span class="o">=</span> <span class="n">uv_cam</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">valid_pts_bool</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">x_valid</span><span class="p">,</span> <span class="n">y_valid</span><span class="p">),</span> <span class="n">z_valid</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">valid_pts_bool</span></div>
+
+
+<span class="c1"># Make use of typing.overload so that we can robustly type-check the return</span>
+<span class="c1"># value of this function.</span>
+<span class="c1"># See https://mypy.readthedocs.io/en/latest/literal_types.html</span>
+
+<span class="c1"># These tuples are:</span>
+<span class="c1"># uv: Numpy array of shape (N,2) with dtype np.float32</span>
+<span class="c1"># uv_cam: Numpy array of shape (N,3) with dtype np.float32</span>
+<span class="c1"># valid_pts_bool: Numpy array of shape (N,) with dtype bool</span>
+<span class="c1"># camera configuration : (only if you asked for it).</span>
+<span class="n">_ReturnWithConfig</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">CameraConfig</span><span class="p">]</span>
+<span class="n">_ReturnWithoutConfig</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span> <span class="nf">project_lidar_to_img</span><span class="p">(</span>
+    <span class="n">lidar_points_h</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">calib_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">camera_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">return_camera_config</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">True</span><span class="p">],</span>
+    <span class="n">remove_nan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_ReturnWithConfig</span><span class="p">:</span>
+    <span class="o">...</span>
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span> <span class="nf">project_lidar_to_img</span><span class="p">(</span>
+    <span class="n">lidar_points_h</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">calib_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">camera_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">return_camera_config</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">False</span><span class="p">],</span>
+    <span class="n">remove_nan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_ReturnWithoutConfig</span><span class="p">:</span>
+    <span class="o">...</span>
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span> <span class="nf">project_lidar_to_img</span><span class="p">(</span>
+    <span class="n">lidar_points_h</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">calib_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">camera_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">return_camera_config</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">remove_nan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">_ReturnWithConfig</span><span class="p">,</span> <span class="n">_ReturnWithoutConfig</span><span class="p">]:</span>
+    <span class="o">...</span>
+
+
+<div class="viewcode-block" id="project_lidar_to_img"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.project_lidar_to_img">[docs]</a><span class="k">def</span> <span class="nf">project_lidar_to_img</span><span class="p">(</span>
+    <span class="n">lidar_points_h</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">calib_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">camera_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">return_camera_config</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">remove_nan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">_ReturnWithConfig</span><span class="p">,</span> <span class="n">_ReturnWithoutConfig</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">        lidar_points_h: Numpy array of shape (4,N)</span>
+<span class="sd">        calib_data: calibration data</span>
+<span class="sd">        camera_name: representing name of this camera sensor</span>
+<span class="sd">        return_camera_config: adds camera config to the return tuple</span>
+<span class="sd">        remove_nan: filter out nan values from uv and uv_cam</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       uv: Numpy array of shape (N,2) with dtype np.float32</span>
+<span class="sd">       uv_cam: Numpy array of shape (3,N) with dtype np.float32</span>
+<span class="sd">       valid_pts_bool: Numpy array of shape (N,) with dtype bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">camera_config</span> <span class="o">=</span> <span class="n">get_calibration_config</span><span class="p">(</span><span class="n">calib_data</span><span class="p">,</span> <span class="n">camera_name</span><span class="p">)</span>
+    <span class="n">uv_cam</span> <span class="o">=</span> <span class="n">camera_config</span><span class="o">.</span><span class="n">extrinsic</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lidar_points_h</span><span class="p">)</span>
+    <span class="n">uv</span> <span class="o">=</span> <span class="n">camera_config</span><span class="o">.</span><span class="n">intrinsic</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">uv_cam</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">remove_nan</span><span class="p">:</span>
+        <span class="n">uv</span><span class="p">,</span> <span class="n">uv_cam</span> <span class="o">=</span> <span class="n">remove_nan_values</span><span class="p">(</span><span class="n">uv</span><span class="p">,</span> <span class="n">uv_cam</span><span class="p">)</span>
+
+    <span class="n">uv</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">/=</span> <span class="n">uv</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">uv</span> <span class="o">=</span> <span class="n">uv</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">uv</span> <span class="o">=</span> <span class="n">uv</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">valid_pts_bool</span> <span class="o">=</span> <span class="n">determine_valid_cam_coords</span><span class="p">(</span><span class="n">uv</span><span class="p">,</span> <span class="n">uv_cam</span><span class="p">,</span> <span class="n">camera_config</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">return_camera_config</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">uv</span><span class="p">,</span> <span class="n">uv_cam</span><span class="p">,</span> <span class="n">valid_pts_bool</span><span class="p">,</span> <span class="n">camera_config</span>
+
+    <span class="k">return</span> <span class="n">uv</span><span class="p">,</span> <span class="n">uv_cam</span><span class="p">,</span> <span class="n">valid_pts_bool</span></div>
+
+
+<span class="n">SMALL_VALUE_THRESHOLD</span> <span class="o">=</span> <span class="mf">1e-9</span>
+
+
+<div class="viewcode-block" id="proj_cam_to_uv"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.proj_cam_to_uv">[docs]</a><span class="k">def</span> <span class="nf">proj_cam_to_uv</span><span class="p">(</span>
+    <span class="n">uv_cam</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">camera_config</span><span class="p">:</span> <span class="n">CameraConfig</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">CameraConfig</span><span class="p">]:</span>
+    <span class="n">num_points</span> <span class="o">=</span> <span class="n">uv_cam</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">uvh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_points</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="c1"># (x_transformed_m, y_transformed_m, z_transformed_m)</span>
+
+    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_points</span><span class="p">):</span>
+        <span class="n">x_transformed_m</span> <span class="o">=</span> <span class="n">uv_cam</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">y_transformed_m</span> <span class="o">=</span> <span class="n">uv_cam</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">z_transformed_m</span> <span class="o">=</span> <span class="n">uv_cam</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">z_transformed_fixed_m</span> <span class="o">=</span> <span class="n">z_transformed_m</span>
+
+        <span class="c1"># If we&#39;re behind the camera, z value (homogeneous coord w in image plane)</span>
+        <span class="c1"># will be negative. If we are on the camera, there would be division by zero</span>
+        <span class="c1"># later. To prevent that, move an epsilon away from zero.</span>
+
+        <span class="n">Z_EPSILON</span> <span class="o">=</span> <span class="mf">1.0e-4</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">z_transformed_m</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">Z_EPSILON</span><span class="p">:</span>
+            <span class="n">z_transformed_fixed_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">z_transformed_m</span><span class="p">)</span> <span class="o">*</span> <span class="n">Z_EPSILON</span>
+
+        <span class="n">pinhole_x</span> <span class="o">=</span> <span class="n">x_transformed_m</span> <span class="o">/</span> <span class="n">z_transformed_fixed_m</span>
+        <span class="n">pinhole_y</span> <span class="o">=</span> <span class="n">y_transformed_m</span> <span class="o">/</span> <span class="n">z_transformed_fixed_m</span>
+
+        <span class="n">K</span> <span class="o">=</span> <span class="n">camera_config</span><span class="o">.</span><span class="n">intrinsic</span>
+        <span class="n">u_px</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">pinhole_x</span> <span class="o">+</span> <span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">pinhole_y</span> <span class="o">+</span> <span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">v_px</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">pinhole_y</span> <span class="o">+</span> <span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">uvh</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">u_px</span><span class="p">,</span> <span class="n">v_px</span><span class="p">,</span> <span class="n">z_transformed_m</span><span class="p">])</span>
+
+    <span class="n">uv</span> <span class="o">=</span> <span class="n">uvh</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">valid_pts_bool</span> <span class="o">=</span> <span class="n">determine_valid_cam_coords</span><span class="p">(</span><span class="n">uv</span><span class="p">,</span> <span class="n">uv_cam</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">camera_config</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">uv</span><span class="p">,</span> <span class="n">uv_cam</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">valid_pts_bool</span><span class="p">,</span> <span class="n">camera_config</span></div>
+
+
+<div class="viewcode-block" id="distort_single"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.distort_single">[docs]</a><span class="k">def</span> <span class="nf">distort_single</span><span class="p">(</span><span class="n">radius_undist</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">distort_coeffs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate distortion for a single undistorted radius.</span>
+<span class="sd">    Note that we have 3 distortion parameters.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        radius_undist: undistorted radius</span>
+<span class="sd">        distort_coeffs: list of distortion coefficients</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        distortion radius</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">radius_dist</span> <span class="o">=</span> <span class="n">radius_undist</span>
+    <span class="n">r_u_pow</span> <span class="o">=</span> <span class="n">radius_undist</span>
+    <span class="k">for</span> <span class="n">distortion_coefficient</span> <span class="ow">in</span> <span class="n">distort_coeffs</span><span class="p">:</span>
+        <span class="n">r_u_pow</span> <span class="o">*=</span> <span class="n">radius_undist</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">radius_dist</span> <span class="o">+=</span> <span class="n">r_u_pow</span> <span class="o">*</span> <span class="n">distortion_coefficient</span>
+
+    <span class="k">return</span> <span class="n">radius_dist</span></div>
+
+
+<div class="viewcode-block" id="project_lidar_to_undistorted_img"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.project_lidar_to_undistorted_img">[docs]</a><span class="k">def</span> <span class="nf">project_lidar_to_undistorted_img</span><span class="p">(</span>
+    <span class="n">lidar_points_h</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">camera_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">remove_nan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">CameraConfig</span><span class="p">]:</span>
+    <span class="n">camera_config</span> <span class="o">=</span> <span class="n">get_calibration_config</span><span class="p">(</span><span class="n">calib_data</span><span class="p">,</span> <span class="n">camera_name</span><span class="p">)</span>
+
+    <span class="n">R</span> <span class="o">=</span> <span class="n">camera_config</span><span class="o">.</span><span class="n">extrinsic</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">camera_config</span><span class="o">.</span><span class="n">extrinsic</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="n">cam_SE3_egovehicle</span> <span class="o">=</span> <span class="n">SE3</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="n">R</span><span class="p">,</span> <span class="n">translation</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
+
+    <span class="n">points_egovehicle</span> <span class="o">=</span> <span class="n">lidar_points_h</span><span class="o">.</span><span class="n">T</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">uv_cam</span> <span class="o">=</span> <span class="n">cam_SE3_egovehicle</span><span class="o">.</span><span class="n">transform_point_cloud</span><span class="p">(</span><span class="n">points_egovehicle</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">proj_cam_to_uv</span><span class="p">(</span><span class="n">uv_cam</span><span class="p">,</span> <span class="n">camera_config</span><span class="p">)</span></div>
+
+
+<span class="c1"># Make use of typing.overload so that we can robustly type-check the return</span>
+<span class="c1"># value of this function.</span>
+<span class="c1"># See https://mypy.readthedocs.io/en/latest/literal_types.html</span>
+
+<span class="c1"># These tuples are:</span>
+<span class="c1"># uv: Numpy array of shape (N,2) with dtype np.float32</span>
+<span class="c1"># uv_cam: Numpy array of shape (N,3) with dtype np.float32</span>
+<span class="c1"># valid_pts_bool: Numpy array of shape (N,) with dtype bool</span>
+<span class="c1"># camera configuration : (only if you asked for it).</span>
+<span class="n">_ReturnWithOptConfig</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CameraConfig</span><span class="p">]]</span>
+<span class="n">_ReturnWithoutOptConfig</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span>
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span> <span class="nf">project_lidar_to_img_motion_compensated</span><span class="p">(</span>
+    <span class="n">pts_h_lidar_time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">calib_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">camera_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">cam_timestamp</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">lidar_timestamp</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">dataset_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">log_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">return_K</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">True</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_ReturnWithOptConfig</span><span class="p">:</span>
+    <span class="o">...</span>
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span> <span class="nf">project_lidar_to_img_motion_compensated</span><span class="p">(</span>
+    <span class="n">pts_h_lidar_time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">calib_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">camera_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">cam_timestamp</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">lidar_timestamp</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">dataset_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">log_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">return_K</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">False</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_ReturnWithoutOptConfig</span><span class="p">:</span>
+    <span class="o">...</span>
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span> <span class="nf">project_lidar_to_img_motion_compensated</span><span class="p">(</span>
+    <span class="n">pts_h_lidar_time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">calib_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">camera_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">cam_timestamp</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">lidar_timestamp</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">dataset_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">log_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">return_K</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">_ReturnWithOptConfig</span><span class="p">,</span> <span class="n">_ReturnWithoutOptConfig</span><span class="p">]:</span>
+    <span class="o">...</span>
+
+
+<div class="viewcode-block" id="project_lidar_to_img_motion_compensated"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.calibration.project_lidar_to_img_motion_compensated">[docs]</a><span class="k">def</span> <span class="nf">project_lidar_to_img_motion_compensated</span><span class="p">(</span>
+    <span class="n">pts_h_lidar_time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">calib_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">camera_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">cam_timestamp</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">lidar_timestamp</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">dataset_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">log_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">return_K</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">_ReturnWithOptConfig</span><span class="p">,</span> <span class="n">_ReturnWithoutOptConfig</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Because of the high frame rate, motion compensation&#39;s role between the</span>
+<span class="sd">    sensors is not very significant, moving points only by millimeters</span>
+<span class="sd">    to centimeters. If the vehicle is moving at 25 miles per hour, equivalent</span>
+<span class="sd">    to 11 meters/sec, then in 17 milliseconds (the max time between a lidar sweep</span>
+<span class="sd">    and camera image capture) we should be able to move up to 187 millimeters.</span>
+
+<span class="sd">    This can be verified in practice as the mean_change:</span>
+<span class="sd">        mean_change = np.amax(pts_h_cam_time.T[:,:3] - pts_h_lidar_time ,axis=0)</span>
+
+<span class="sd">    Adjust LiDAR points for ego-vehicle motion. This function accepts the</span>
+<span class="sd">    egovehicle&#39;s pose in the city map both at camera time and also at</span>
+<span class="sd">    the LiDAR time.</span>
+
+<span class="sd">    We perform the following transformation, where &quot;ego&quot; stands for</span>
+<span class="sd">    egovehicle reference frame</span>
+
+<span class="sd">        pt_ego_cam_t = ego_cam_t_SE3_map * map_SE3_ego_lidar_t * pt_ego_lidar_t</span>
+
+<span class="sd">    Note that both &quot;cam_time_pts_h&quot; and &quot;lidar_time_pts_h&quot; are 3D points in the</span>
+<span class="sd">    vehicle coordinate frame, but captured at different times. These LiDAR points</span>
+<span class="sd">    always live in the vehicle frame, but just in different timestamps. If we take</span>
+<span class="sd">    a lidar point in the egovehicle frame, captured at lidar time, and bring it into</span>
+<span class="sd">    the map at this lidar timestamp, then we know the transformation from map to</span>
+<span class="sd">    egovehicle reference frame at the time when the camera image was captured.</span>
+
+<span class="sd">    Thus, we move from egovehicle @ lidar time, to the map (which is time agnostic),</span>
+<span class="sd">    then we move from map to egovehicle @camera time. Now we suddenly have lidar points</span>
+<span class="sd">    living in the egovehicle frame @ camera time.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pts_h_lidar_time: Numpy array of shape (4,N)</span>
+<span class="sd">        calib_data: Python dictionary</span>
+<span class="sd">        camera_name: string, representing name of camera</span>
+<span class="sd">        cam_timestamp: integer, representing time in nanoseconds when</span>
+<span class="sd">           camera image was recorded</span>
+<span class="sd">        lidar_timestamp: integer, representing time in nanoseconds when</span>
+<span class="sd">            LiDAR sweep was recorded</span>
+<span class="sd">        dataset_dir: string, representing path to where dataset is stored</span>
+<span class="sd">        log_id: string, representing unique ID of vehicle log</span>
+<span class="sd">        return_K: return a copy of the</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        uv: Numpy array of shape (N,2) with dtype np.float32</span>
+<span class="sd">        uv_cam: Numpy array of shape (N,3) with dtype np.float32</span>
+<span class="sd">        valid_pts_bool: Numpy array of shape (N,) with dtype bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get transformation to bring point in egovehicle frame to city frame,</span>
+    <span class="c1"># at the time when camera image was recorded.</span>
+    <span class="n">city_SE3_ego_cam_t</span> <span class="o">=</span> <span class="n">get_city_SE3_egovehicle_at_sensor_t</span><span class="p">(</span><span class="n">cam_timestamp</span><span class="p">,</span> <span class="n">dataset_dir</span><span class="p">,</span> <span class="n">log_id</span><span class="p">)</span>
+
+    <span class="c1"># get transformation to bring point in egovehicle frame to city frame,</span>
+    <span class="c1"># at the time when the LiDAR sweep was recorded.</span>
+    <span class="n">city_SE3_ego_lidar_t</span> <span class="o">=</span> <span class="n">get_city_SE3_egovehicle_at_sensor_t</span><span class="p">(</span><span class="n">lidar_timestamp</span><span class="p">,</span> <span class="n">dataset_dir</span><span class="p">,</span> <span class="n">log_id</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">city_SE3_ego_cam_t</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">city_SE3_ego_lidar_t</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">return_K</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="c1"># convert back from homogeneous</span>
+    <span class="n">pts_h_lidar_time</span> <span class="o">=</span> <span class="n">pts_h_lidar_time</span><span class="o">.</span><span class="n">T</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">ego_cam_t_SE3_ego_lidar_t</span> <span class="o">=</span> <span class="n">city_SE3_ego_cam_t</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span><span class="o">.</span><span class="n">right_multiply_with_se3</span><span class="p">(</span><span class="n">city_SE3_ego_lidar_t</span><span class="p">)</span>
+    <span class="n">pts_h_cam_time</span> <span class="o">=</span> <span class="n">ego_cam_t_SE3_ego_lidar_t</span><span class="o">.</span><span class="n">transform_point_cloud</span><span class="p">(</span><span class="n">pts_h_lidar_time</span><span class="p">)</span>
+    <span class="n">pts_h_cam_time</span> <span class="o">=</span> <span class="n">point_cloud_to_homogeneous</span><span class="p">(</span><span class="n">pts_h_cam_time</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">return</span> <span class="n">project_lidar_to_img</span><span class="p">(</span><span class="n">pts_h_cam_time</span><span class="p">,</span> <span class="n">calib_data</span><span class="p">,</span> <span class="n">camera_name</span><span class="p">,</span> <span class="n">return_K</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

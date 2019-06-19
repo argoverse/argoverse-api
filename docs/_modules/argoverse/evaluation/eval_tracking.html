@@ -1,0 +1,434 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.evaluation.eval_tracking &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>argoverse.evaluation.eval_tracking</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for argoverse.evaluation.eval_tracking</h1><div class="highlight"><pre>
+<span></span><span class="c1"># &lt;Copyright 2019, Argo AI, LLC. Released under the MIT license.&gt;</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">motmetrics</span> <span class="k">as</span> <span class="nn">mm</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">argoverse.evaluation.eval_utils</span> <span class="k">import</span> <span class="n">get_pc_inside_bbox</span><span class="p">,</span> <span class="n">label_to_bbox</span><span class="p">,</span> <span class="n">leave_only_roi_region</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.json_utils</span> <span class="k">import</span> <span class="n">read_json_file</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.ply_loader</span> <span class="k">import</span> <span class="n">load_ply</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.se3</span> <span class="k">import</span> <span class="n">SE3</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.transform</span> <span class="k">import</span> <span class="n">quat2rotmat</span>
+
+<span class="n">min_point_num</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">mh</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="n">_PathLike</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;os.PathLike[str]&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="in_distance_range_pose"><a class="viewcode-back" href="../../../argoverse.evaluation.html#argoverse.evaluation.eval_tracking.in_distance_range_pose">[docs]</a><span class="k">def</span> <span class="nf">in_distance_range_pose</span><span class="p">(</span><span class="n">ego_center</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pose</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">d_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">d_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Determine if a pose is within distance range or not.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ego_center: ego center pose (zero if bbox is in ego frame).</span>
+<span class="sd">        pose:  pose to test.</span>
+<span class="sd">        d_min: minimum distance range</span>
+<span class="sd">        d_max: maximum distance range</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A boolean saying if input pose is with specified distance range.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">dist</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">pose</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">ego_center</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]))</span>
+
+    <span class="k">return</span> <span class="n">dist</span> <span class="o">&gt;</span> <span class="n">d_min</span> <span class="ow">and</span> <span class="n">dist</span> <span class="o">&lt;</span> <span class="n">d_max</span></div>
+
+
+<div class="viewcode-block" id="get_distance"><a class="viewcode-back" href="../../../argoverse.evaluation.html#argoverse.evaluation.eval_tracking.get_distance">[docs]</a><span class="k">def</span> <span class="nf">get_distance</span><span class="p">(</span><span class="n">x1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">x2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Get the distance between two poses, returns nan if distance is larger than detection threshold.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x1: first pose</span>
+<span class="sd">        x2: second pose</span>
+<span class="sd">        name: name of the field to test</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A distance value or NaN</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">dist</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x1</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">x2</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">dist</span> <span class="k">if</span> <span class="n">dist</span> <span class="o">&lt;</span> <span class="mf">2.25</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="eval_tracks"><a class="viewcode-back" href="../../../argoverse.evaluation.html#argoverse.evaluation.eval_tracking.eval_tracks">[docs]</a><span class="k">def</span> <span class="nf">eval_tracks</span><span class="p">(</span>
+    <span class="n">path_tracker_output</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">path_dataset</span><span class="p">:</span> <span class="n">_PathLike</span><span class="p">,</span>
+    <span class="n">d_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">d_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">out_file</span><span class="p">:</span> <span class="n">TextIO</span><span class="p">,</span>
+    <span class="n">centroid_method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Evaluate tracking output.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path_tracker_output: path to tracker output</span>
+<span class="sd">        path_dataset: path to dataset</span>
+<span class="sd">        d_min: minimum distance range</span>
+<span class="sd">        d_max: maximum distance range</span>
+<span class="sd">        out_file: output file object</span>
+<span class="sd">        centroid_method: method for ground truth centroid estimation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">acc</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">MOTAccumulator</span><span class="p">(</span><span class="n">auto_id</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">path_track_data</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fspath</span><span class="p">(</span><span class="n">path_tracker_output</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;/*&quot;</span><span class="p">))</span>
+
+    <span class="n">log_id</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">path_dataset</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;log_id = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">log_id</span><span class="p">)</span>
+
+    <span class="n">city_info_fpath</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{path_dataset}</span><span class="s2">/city_info.json&quot;</span>
+    <span class="n">city_info</span> <span class="o">=</span> <span class="n">read_json_file</span><span class="p">(</span><span class="n">city_info_fpath</span><span class="p">)</span>
+    <span class="n">city_name</span> <span class="o">=</span> <span class="n">city_info</span><span class="p">[</span><span class="s2">&quot;city_name&quot;</span><span class="p">]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;city name = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span>
+
+    <span class="n">ID_gt_all</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">ind_frame</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">path_track_data</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">ind_frame</span> <span class="o">%</span> <span class="mi">50</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">/</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ind_frame</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">path_track_data</span><span class="p">)))</span>
+
+        <span class="n">timestamp_lidar</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">path_track_data</span><span class="p">[</span><span class="n">ind_frame</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">path_gt</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">path_dataset</span><span class="p">,</span> <span class="s2">&quot;per_sweep_annotations_amodal&quot;</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;tracked_object_labels_</span><span class="si">{timestamp_lidar}</span><span class="s2">.json&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path_gt</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Missing &quot;</span><span class="p">,</span> <span class="n">path_gt</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">gt_data</span> <span class="o">=</span> <span class="n">read_json_file</span><span class="p">(</span><span class="n">path_gt</span><span class="p">)</span>
+
+        <span class="n">pose_data</span> <span class="o">=</span> <span class="n">read_json_file</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{path_dataset}</span><span class="s2">/poses/city_SE3_egovehicle_</span><span class="si">{timestamp_lidar}</span><span class="s2">.json&quot;</span><span class="p">)</span>
+        <span class="n">rotation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pose_data</span><span class="p">[</span><span class="s2">&quot;rotation&quot;</span><span class="p">])</span>
+        <span class="n">translation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pose_data</span><span class="p">[</span><span class="s2">&quot;translation&quot;</span><span class="p">])</span>
+        <span class="n">ego_R</span> <span class="o">=</span> <span class="n">quat2rotmat</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span>
+        <span class="n">ego_t</span> <span class="o">=</span> <span class="n">translation</span>
+        <span class="n">egovehicle_to_city_se3</span> <span class="o">=</span> <span class="n">SE3</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="n">ego_R</span><span class="p">,</span> <span class="n">translation</span><span class="o">=</span><span class="n">ego_t</span><span class="p">)</span>
+
+        <span class="n">pc_raw0</span> <span class="o">=</span> <span class="n">load_ply</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_dataset</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;lidar/PC_</span><span class="si">{timestamp_lidar}</span><span class="s2">.ply&quot;</span><span class="p">))</span>
+        <span class="n">pc_raw_roi</span> <span class="o">=</span> <span class="n">leave_only_roi_region</span><span class="p">(</span>
+            <span class="n">pc_raw0</span><span class="p">,</span> <span class="n">egovehicle_to_city_se3</span><span class="p">,</span> <span class="n">ground_removal_method</span><span class="o">=</span><span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="n">city_name</span><span class="o">=</span><span class="n">city_name</span>
+        <span class="p">)</span>
+
+        <span class="n">gt</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">id_gts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gt_data</span><span class="p">)):</span>
+
+            <span class="k">if</span> <span class="n">gt_data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;label_class&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;VEHICLE&quot;</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">bbox</span><span class="p">,</span> <span class="n">orientation</span> <span class="o">=</span> <span class="n">label_to_bbox</span><span class="p">(</span><span class="n">gt_data</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">pc_segment</span> <span class="o">=</span> <span class="n">get_pc_inside_bbox</span><span class="p">(</span><span class="n">pc_raw_roi</span><span class="p">,</span> <span class="n">bbox</span><span class="p">)</span>
+
+            <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">gt_data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;center&quot;</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">gt_data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;center&quot;</span><span class="p">][</span><span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="n">gt_data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;center&quot;</span><span class="p">][</span><span class="s2">&quot;z&quot;</span><span class="p">]])</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">pc_segment</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">min_point_num</span>
+                <span class="ow">and</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="ow">and</span> <span class="n">in_distance_range_pose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">center</span><span class="p">,</span> <span class="n">d_min</span><span class="p">,</span> <span class="n">d_max</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="n">track_label_uuid</span> <span class="o">=</span> <span class="n">gt_data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;track_label_uuid&quot;</span><span class="p">]</span>
+                <span class="n">gt</span><span class="p">[</span><span class="n">track_label_uuid</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">if</span> <span class="n">centroid_method</span> <span class="o">==</span> <span class="s2">&quot;average&quot;</span><span class="p">:</span>
+                    <span class="n">gt</span><span class="p">[</span><span class="n">track_label_uuid</span><span class="p">][</span><span class="s2">&quot;centroid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pc_segment</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">pc_segment</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">centroid_method</span> <span class="o">==</span> <span class="s2">&quot;label_center&quot;</span><span class="p">:</span>
+                    <span class="n">gt</span><span class="p">[</span><span class="n">track_label_uuid</span><span class="p">][</span><span class="s2">&quot;centroid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">center</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Not implemented&quot;</span><span class="p">)</span>
+
+                <span class="n">gt</span><span class="p">[</span><span class="n">track_label_uuid</span><span class="p">][</span><span class="s2">&quot;bbox&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bbox</span>
+                <span class="n">gt</span><span class="p">[</span><span class="n">track_label_uuid</span><span class="p">][</span><span class="s2">&quot;orientation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">orientation</span>
+
+                <span class="k">if</span> <span class="n">track_label_uuid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ID_gt_all</span><span class="p">:</span>
+                    <span class="n">ID_gt_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">track_label_uuid</span><span class="p">)</span>
+
+                <span class="n">id_gts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">track_label_uuid</span><span class="p">)</span>
+
+        <span class="n">tracks</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">id_tracks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">track_data</span> <span class="o">=</span> <span class="n">read_json_file</span><span class="p">(</span><span class="n">path_track_data</span><span class="p">[</span><span class="n">ind_frame</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">track</span> <span class="ow">in</span> <span class="n">track_data</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">track</span><span class="p">[</span><span class="s2">&quot;track_label_uuid&quot;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">track</span><span class="p">[</span><span class="s2">&quot;label_class&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;VEHICLE&quot;</span> <span class="ow">or</span> <span class="n">track</span><span class="p">[</span><span class="s2">&quot;height&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">track</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">track</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">][</span><span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="n">track</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">][</span><span class="s2">&quot;z&quot;</span><span class="p">]])</span>
+
+            <span class="k">if</span> <span class="n">in_distance_range_pose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">center</span><span class="p">,</span> <span class="n">d_min</span><span class="p">,</span> <span class="n">d_max</span><span class="p">):</span>
+                <span class="n">tracks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">tracks</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;centroid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">center</span>
+
+                <span class="n">id_tracks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="n">dists</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">gt_key</span><span class="p">,</span> <span class="n">gt_value</span> <span class="ow">in</span> <span class="n">gt</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">gt_track_data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">dists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gt_track_data</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">track_key</span><span class="p">,</span> <span class="n">track_value</span> <span class="ow">in</span> <span class="n">tracks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">gt_track_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_distance</span><span class="p">(</span><span class="n">gt_value</span><span class="p">,</span> <span class="n">track_value</span><span class="p">,</span> <span class="s2">&quot;centroid&quot;</span><span class="p">))</span>
+
+        <span class="n">acc</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">id_gts</span><span class="p">,</span> <span class="n">id_tracks</span><span class="p">,</span> <span class="n">dists</span><span class="p">)</span>
+
+    <span class="n">mh</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="n">mh</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+        <span class="n">acc</span><span class="p">,</span>
+        <span class="n">metrics</span><span class="o">=</span><span class="p">[</span>
+            <span class="s2">&quot;num_frames&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mota&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;motp&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;idf1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mostly_tracked&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mostly_lost&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;num_false_positives&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;num_misses&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;num_switches&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;num_fragmentations&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;acc&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;summary = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">summary</span><span class="p">)</span>
+    <span class="n">num_tracks</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ID_gt_all</span><span class="p">)</span>
+
+    <span class="n">fn</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path_tracker_output</span><span class="p">)</span>
+    <span class="n">num_frames</span> <span class="o">=</span> <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;num_frames&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">mota</span> <span class="o">=</span> <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;mota&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span>
+    <span class="n">motp</span> <span class="o">=</span> <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;motp&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">idf1</span> <span class="o">=</span> <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;idf1&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">most_track</span> <span class="o">=</span> <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;mostly_tracked&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">num_tracks</span>
+    <span class="n">most_lost</span> <span class="o">=</span> <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;mostly_lost&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">num_tracks</span>
+    <span class="n">num_fp</span> <span class="o">=</span> <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;num_false_positives&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">num_miss</span> <span class="o">=</span> <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;num_misses&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">num_switch</span> <span class="o">=</span> <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;num_switches&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">num_flag</span> <span class="o">=</span> <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;num_fragmentations&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">out_string</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">f</span><span class="s2">&quot;</span><span class="si">{fn}</span><span class="s2"> </span><span class="si">{num_frames}</span><span class="s2"> </span><span class="si">{mota:.2f}</span><span class="s2"> </span><span class="si">{motp:.2f}</span><span class="s2"> </span><span class="si">{idf1:.2f}</span><span class="s2"> </span><span class="si">{most_track:.2f}</span><span class="s2"> &quot;</span>
+        <span class="n">f</span><span class="s2">&quot;</span><span class="si">{most_lost:.2f}</span><span class="s2"> </span><span class="si">{num_fp}</span><span class="s2"> </span><span class="si">{num_miss}</span><span class="s2"> </span><span class="si">{num_switch}</span><span class="s2"> </span><span class="si">{num_flag}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+    <span class="n">out_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out_string</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="vm">__doc__</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--path_tracker_output&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;../../argodataset_30Hz/test_label/028d5cb1-f74d-366c-85ad-84fde69b0fd3&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--path_labels&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;../../argodataset_30Hz/labels_v32/028d5cb1-f74d-366c-85ad-84fde69b0fd3&quot;</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--path_dataset&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;../../argodataset_30Hz/cvpr_test_set&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--centroid_method&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;average&quot;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;label_center&quot;</span><span class="p">,</span> <span class="s2">&quot;average&quot;</span><span class="p">])</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--flag&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--d_min&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--d_max&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;args = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+    <span class="n">tracker_basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">path_tracker_output</span><span class="p">)</span>
+
+    <span class="n">out_filename</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{tracker_basename}</span><span class="s2">_</span><span class="si">{args.flag}</span><span class="s2">_{int(args.d_min)}_{int(args.d_max)}_</span><span class="si">{args.centroid_method}</span><span class="s2">.txt&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;output file name = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">out_filename</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">out_filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">out_file</span><span class="p">:</span>
+        <span class="n">eval_tracks</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">path_tracker_output</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">path_dataset</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">d_min</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">d_max</span><span class="p">,</span> <span class="n">out_file</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">centroid_method</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

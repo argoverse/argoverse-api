@@ -1,0 +1,362 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.utils.plane_visualization_utils &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>argoverse.utils.plane_visualization_utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for argoverse.utils.plane_visualization_utils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># &lt;Copyright 2019, Argo AI, LLC. Released under the MIT license.&gt;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.mesh_grid</span> <span class="k">import</span> <span class="n">get_mesh_grid_as_point_cloud</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils</span> <span class="k">import</span> <span class="n">mayavi_wrapper</span>
+<span class="kn">from</span> <span class="nn">argoverse.visualization.mayavi_utils</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">Figure</span><span class="p">,</span>
+    <span class="n">draw_mayavi_line_segment</span><span class="p">,</span>
+    <span class="n">plot_3d_clipped_bbox_mayavi</span><span class="p">,</span>
+    <span class="n">plot_bbox_3d_mayavi</span><span class="p">,</span>
+    <span class="n">plot_points_3D_mayavi</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="populate_frustum_voxels"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.plane_visualization_utils.populate_frustum_voxels">[docs]</a><span class="k">def</span> <span class="nf">populate_frustum_voxels</span><span class="p">(</span><span class="n">planes</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">fig</span><span class="p">:</span> <span class="n">Figure</span><span class="p">,</span> <span class="n">axis_pair</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Figure</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate grid in xy plane, and then treat it as grid in xz (ground) plane</span>
+<span class="sd">    in camera coordinate system.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        planes: list of length 5. Each list element is a Numpy array</span>
+<span class="sd">            of shape (4,) representing the equation of a plane,</span>
+<span class="sd">            e.g. (a,b,c,d) in ax+by+cz=d</span>
+<span class="sd">        fig: Mayavi figure to draw on</span>
+<span class="sd">        axis_pair: Either &quot;xz&quot; or &quot;yz&quot;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Mayavi figure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sparse_xz_voxel_grid</span> <span class="o">=</span> <span class="n">get_mesh_grid_as_point_cloud</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="n">downsample_factor</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="n">sparse_voxel_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">sparse_xz_voxel_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">3</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">axis_pair</span> <span class="o">==</span> <span class="s2">&quot;xz&quot;</span><span class="p">:</span>
+        <span class="n">sparse_voxel_grid</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">sparse_xz_voxel_grid</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">sparse_voxel_grid</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">sparse_xz_voxel_grid</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">axis_pair</span> <span class="o">==</span> <span class="s2">&quot;yz&quot;</span><span class="p">:</span>
+        <span class="n">sparse_voxel_grid</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">sparse_xz_voxel_grid</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">sparse_voxel_grid</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">sparse_xz_voxel_grid</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># keep only the points that have signed distance &gt; 0 (inside the frustum, plane</span>
+    <span class="c1"># normals also point into the frustum)</span>
+    <span class="k">for</span> <span class="n">plane</span> <span class="ow">in</span> <span class="n">planes</span><span class="p">:</span>
+        <span class="n">signed_d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">sparse_voxel_grid</span><span class="p">,</span> <span class="n">plane</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span> <span class="o">+</span> <span class="n">plane</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">sparse_voxel_grid</span> <span class="o">=</span> <span class="n">sparse_voxel_grid</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">signed_d</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)]</span>
+
+    <span class="n">plot_points_3D_mayavi</span><span class="p">(</span><span class="n">sparse_voxel_grid</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">fixed_color</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+
+<div class="viewcode-block" id="plot_frustum_planes_and_normals"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.plane_visualization_utils.plot_frustum_planes_and_normals">[docs]</a><span class="k">def</span> <span class="nf">plot_frustum_planes_and_normals</span><span class="p">(</span>
+    <span class="n">planes</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">cuboid_verts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">near_clip_dist</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">        planes: list of length 5. Each list element is a Numpy array</span>
+<span class="sd">            of shape (4,) representing the equation of a plane,</span>
+<span class="sd">            e.g. (a,b,c,d) in ax+by+cz=d</span>
+<span class="sd">        cuboid_verts: Numpy array of shape (N,3) representing</span>
+<span class="sd">            cuboid vertices</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">bgcolor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">cuboid_verts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># fig = plot_bbox_3d_mayavi(fig, cuboid_verts)</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_3d_clipped_bbox_mayavi</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">cuboid_verts</span><span class="p">)</span>
+
+    <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">plane</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">planes</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span> <span class="o">=</span> <span class="n">plane</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># red left</span>
+        <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># blue right</span>
+        <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># near yellow</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">near_clip_dist</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># low is green</span>
+        <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># top is teal</span>
+
+        <span class="n">plane_pts</span> <span class="o">=</span> <span class="n">generate_grid_on_plane</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_points_3D_mayavi</span><span class="p">(</span><span class="n">plane_pts</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">color</span><span class="p">)</span>
+        <span class="c1"># plot the normals at (0,0,0.5) and normal vector (u,v,w) given by (a,b,c)</span>
+        <span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">quiver3d</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">a</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">b</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">c</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">figure</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span> <span class="n">line_width</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+
+    <span class="c1"># draw teal line at top below the camera</span>
+    <span class="n">pt1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">])</span>
+    <span class="n">pt2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">])</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">draw_mayavi_line_segment</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="p">[</span><span class="n">pt1</span><span class="p">,</span> <span class="n">pt2</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">line_width</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+
+    <span class="c1"># draw blue line in middle</span>
+    <span class="n">pt1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">])</span>
+    <span class="n">pt2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">])</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">draw_mayavi_line_segment</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="p">[</span><span class="n">pt1</span><span class="p">,</span> <span class="n">pt2</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">line_width</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+
+    <span class="c1"># draw yellow, lowest line (+y axis is down)</span>
+    <span class="n">pt1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">])</span>
+    <span class="n">pt2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">])</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">draw_mayavi_line_segment</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="p">[</span><span class="n">pt1</span><span class="p">,</span> <span class="n">pt2</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">line_width</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">populate_frustum_voxels</span><span class="p">(</span><span class="n">planes</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="s2">&quot;xz&quot;</span><span class="p">)</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">populate_frustum_voxels</span><span class="p">(</span><span class="n">planes</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="s2">&quot;yz&quot;</span><span class="p">)</span>
+
+    <span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+    <span class="n">mayavi_wrapper</span><span class="o">.</span><span class="n">mlab</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="get_perpendicular"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.plane_visualization_utils.get_perpendicular">[docs]</a><span class="k">def</span> <span class="nf">get_perpendicular</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    n guarantees that dot(n, getPerpendicular(n)) is zero, which is the</span>
+<span class="sd">    orthogonality condition, while also keeping the magnitude of the vector</span>
+<span class="sd">    as high as possible. Note that setting the component with the smallest</span>
+<span class="sd">    magnitude to 0 also guarantees that you don&#39;t get a 0,0,0 vector as a</span>
+<span class="sd">    result, unless that is already your input.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        n: Numpy array of shape (3,)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        result: Numpy array of shape (3,)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># find smallest component</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+    <span class="c1"># get the other two indices</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">result</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span><span class="p">[</span><span class="n">b</span><span class="p">]</span>
+    <span class="n">result</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">n</span><span class="p">[</span><span class="n">a</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="generate_grid_on_plane"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.plane_visualization_utils.generate_grid_on_plane">[docs]</a><span class="k">def</span> <span class="nf">generate_grid_on_plane</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">P</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">15</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">        a,b,c,d: Coefficients of ``ax + by + cz = d`` defining plane</span>
+<span class="sd">        P: Numpy array of shape (3,) representing point on the plane</span>
+<span class="sd">        radius: Radius (default 15)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        plane_pts: Numpy array of shape (N,3) with points on the input plane</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">])</span>  <span class="c1"># a,b,c from your equation</span>
+    <span class="n">perp</span> <span class="o">=</span> <span class="n">get_perpendicular</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">perp</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">perp</span><span class="p">)</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="c1"># delta and epsilon are floats:</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">/</span> <span class="n">N</span>  <span class="c1"># N is how many points you want max in one direction</span>
+    <span class="n">epsilon</span> <span class="o">=</span> <span class="n">delta</span> <span class="o">*</span> <span class="mf">0.5</span>
+
+    <span class="n">n_pts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">radius</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span> <span class="o">/</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="n">pts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">radius</span><span class="p">,</span> <span class="n">radius</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">n_pts</span><span class="p">)</span>
+
+    <span class="n">plane_pts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">pts</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pts</span><span class="p">:</span>
+            <span class="c1"># if (x*x+y*y &lt; radius*radius): # only in the circle:</span>
+            <span class="n">plane_pts</span> <span class="o">+=</span> <span class="p">[</span><span class="n">P</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">u</span> <span class="o">+</span> <span class="n">y</span> <span class="o">*</span> <span class="n">v</span><span class="p">]</span>  <span class="c1"># P is the point on the plane</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">plane_pts</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

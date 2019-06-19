@@ -1,0 +1,6 @@
+demo_usage/* linguist-vendored
+test_data/* linguist-vendored
+*.md linguist-vendored
+*.ini linguist-vendored
+*.in linguist-vendored
+*.yml linguist-vendored

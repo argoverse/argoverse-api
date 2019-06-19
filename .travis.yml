@@ -1,0 +1,26 @@
+language: python
+python:
+    - 3.6
+
+before_install:
+    - sudo apt-get update
+
+    - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+    - bash miniconda.sh -b -p $HOME/miniconda
+    - export PATH="$HOME/miniconda/bin:$PATH"
+    - conda update --yes conda
+    - conda config --add channels conda-forge
+install:
+    - conda install --yes python=$TRAVIS_PYTHON_VERSION pip numpy scipy matplotlib
+    #- pip install -r requirements.txt
+
+# command to run tests
+script:
+    - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then pytest tests/*; fi
+
+notifications:
+    email:
+        recipients:
+            - psangkloy@argo.ai
+        on_success: change
+        on_failure: change

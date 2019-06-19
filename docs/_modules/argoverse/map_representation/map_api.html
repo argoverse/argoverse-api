@@ -1,0 +1,1199 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.map_representation.map_api &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>argoverse.map_representation.map_api</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for argoverse.map_representation.map_api</h1><div class="highlight"><pre>
+<span></span><span class="c1"># &lt;Copyright 2019, Argo AI, LLC. Released under the MIT license.&gt;</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="k">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">argoverse.data_loading.vector_map_loader</span> <span class="k">import</span> <span class="n">load_lane_segments_from_xml</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.centerline_utils</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">centerline_to_polygon</span><span class="p">,</span>
+    <span class="n">filter_candidate_centerlines</span><span class="p">,</span>
+    <span class="n">get_centerlines_most_aligned_with_trajectory</span><span class="p">,</span>
+    <span class="n">lane_waypt_to_query_dist</span><span class="p">,</span>
+    <span class="n">remove_overlapping_lane_seq</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.cv2_plotting_utils</span> <span class="k">import</span> <span class="n">get_img_contours</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.dilation_utils</span> <span class="k">import</span> <span class="n">dilate_by_l2</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.geometry</span> <span class="k">import</span> <span class="n">point_inside_polygon</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.json_utils</span> <span class="k">import</span> <span class="n">read_json_file</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.manhattan_search</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">compute_polygon_bboxes</span><span class="p">,</span>
+    <span class="n">find_all_polygon_bboxes_overlapping_query_bbox</span><span class="p">,</span>
+    <span class="n">find_local_polygons</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.mpl_plotting_utils</span> <span class="k">import</span> <span class="n">plot_lane_segment_patch</span><span class="p">,</span> <span class="n">visualize_centerline</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.pkl_utils</span> <span class="k">import</span> <span class="n">load_pkl_dictionary</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.se2</span> <span class="k">import</span> <span class="n">SE2</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="k">import</span> <span class="n">LineString</span>
+
+<span class="kn">from</span> <span class="nn">.lane_segment</span> <span class="k">import</span> <span class="n">LaneSegment</span>
+<span class="kn">from</span> <span class="nn">.map_viz_helper</span> <span class="k">import</span> <span class="n">render_global_city_map_bev</span>
+
+<span class="n">GROUND_HEIGHT_THRESHOLD</span> <span class="o">=</span> <span class="mf">0.3</span>  <span class="c1"># 30 centimeters</span>
+<span class="n">MAX_LABEL_DIST_TO_LANE</span> <span class="o">=</span> <span class="mi">20</span>  <span class="c1"># meters</span>
+<span class="n">OUT_OF_RANGE_LANE_DIST_THRESHOLD</span> <span class="o">=</span> <span class="mf">5.0</span>  <span class="c1"># 5 meters</span>
+<span class="n">ROI_ISOCONTOUR</span> <span class="o">=</span> <span class="mf">5.0</span>
+
+<span class="c1"># known City IDs from newest to oldest</span>
+<span class="n">MIAMI_ID</span> <span class="o">=</span> <span class="mi">10316</span>
+<span class="n">PITTSBURGH_ID</span> <span class="o">=</span> <span class="mi">10314</span>
+
+<span class="n">ROOT</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span>  <span class="c1"># ../../..</span>
+<span class="n">MAP_FILES_ROOT</span> <span class="o">=</span> <span class="n">ROOT</span> <span class="o">/</span> <span class="s2">&quot;map_files&quot;</span>
+
+<span class="c1"># Any numeric type</span>
+<span class="n">Number</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="ArgoverseMap"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap">[docs]</a><span class="k">class</span> <span class="nc">ArgoverseMap</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class provides the interface to our vector maps and rasterized maps. Exact lane boundaries</span>
+<span class="sd">    are not provided, but can be hallucinated if one considers an average lane width.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ArgoverseMap.__init__"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot; Initialize the Argoverse Map. &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">city_name_to_city_id_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;PIT&quot;</span><span class="p">:</span> <span class="n">PITTSBURGH_ID</span><span class="p">,</span> <span class="s2">&quot;MIA&quot;</span><span class="p">:</span> <span class="n">MIAMI_ID</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">render_window_radius</span> <span class="o">=</span> <span class="mi">150</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">im_scale_factor</span> <span class="o">=</span> <span class="mi">50</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">city_lane_centerlines_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_centerline_index</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">city_halluc_bbox_table</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_halluc_tableidx_to_laneid_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_hallucinated_lane_bbox_index</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">city_rasterized_da_roi_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_city_driveable_area_roi_index</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">city_rasterized_ground_height_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_city_ground_height_index</span><span class="p">()</span>
+
+        <span class="c1"># get hallucinated lane extends and driveable area from binary img</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">city_to_lane_polygons_dict</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">city_to_driveable_areas_dict</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">city_to_lane_bboxes_dict</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">city_to_da_bboxes_dict</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">city_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_name_to_city_id_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">lane_polygons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_vector_map_lane_polygons</span><span class="p">(</span><span class="n">city_name</span><span class="p">))</span>
+            <span class="n">driveable_areas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_vector_map_driveable_areas</span><span class="p">(</span><span class="n">city_name</span><span class="p">))</span>
+            <span class="n">lane_bboxes</span> <span class="o">=</span> <span class="n">compute_polygon_bboxes</span><span class="p">(</span><span class="n">lane_polygons</span><span class="p">)</span>
+            <span class="n">da_bboxes</span> <span class="o">=</span> <span class="n">compute_polygon_bboxes</span><span class="p">(</span><span class="n">driveable_areas</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">city_to_lane_polygons_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">lane_polygons</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">city_to_driveable_areas_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">driveable_areas</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">city_to_lane_bboxes_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">lane_bboxes</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">city_to_da_bboxes_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">da_bboxes</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_vector_map_lane_polygons"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_vector_map_lane_polygons">[docs]</a>    <span class="k">def</span> <span class="nf">get_vector_map_lane_polygons</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get list of lane polygons for a specified city</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">           city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">           Numpy array of polygons</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lane_polygons</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lane_segments</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_lane_centerlines_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">lane_id</span><span class="p">,</span> <span class="n">lane_segment</span> <span class="ow">in</span> <span class="n">lane_segments</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">lane_polygon_xyz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lane_segment_polygon</span><span class="p">(</span><span class="n">lane_segment</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span>
+            <span class="n">lane_polygons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lane_polygon_xyz</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lane_polygons</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_vector_map_driveable_areas"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_vector_map_driveable_areas">[docs]</a>    <span class="k">def</span> <span class="nf">get_vector_map_driveable_areas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get driveable area for a specified city</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">           city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">           das: driveable areas as n-d array of NumPy objects of shape (n,3)</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">         &#39;z_min&#39;, &#39;z_max&#39; were removed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_da_contours</span><span class="p">(</span><span class="n">city_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_da_contours"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_da_contours">[docs]</a>    <span class="k">def</span> <span class="nf">get_da_contours</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        We threshold the binary driveable area or ROI image and obtain contour lines. These</span>
+<span class="sd">        contour lines represent the boundary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Drivable area contours</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">da_imgray</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_rasterized_da_roi_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="s2">&quot;da_mat&quot;</span><span class="p">]</span>
+
+        <span class="n">contours</span> <span class="o">=</span> <span class="n">get_img_contours</span><span class="p">(</span><span class="n">da_imgray</span><span class="p">)</span>
+        <span class="n">city_contours</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">contour_im_coords</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">contours</span><span class="p">):</span>
+            <span class="n">contour_im_coords</span> <span class="o">=</span> <span class="n">contour_im_coords</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+            <span class="n">contour_im_coords</span> <span class="o">=</span> <span class="n">contour_im_coords</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="n">npyimage_to_city_se2_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_rasterized_da_roi_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="s2">&quot;npyimage_to_city_se2&quot;</span><span class="p">]</span>
+
+            <span class="n">se2_rotation</span> <span class="o">=</span> <span class="n">npyimage_to_city_se2_mat</span><span class="p">[:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">se2_trans</span> <span class="o">=</span> <span class="n">npyimage_to_city_se2_mat</span><span class="p">[:</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+            <span class="n">npyimage_to_city_se2</span> <span class="o">=</span> <span class="n">SE2</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="n">se2_rotation</span><span class="p">,</span> <span class="n">translation</span><span class="o">=</span><span class="n">se2_trans</span><span class="p">)</span>
+            <span class="n">contour_city_coords</span> <span class="o">=</span> <span class="n">npyimage_to_city_se2</span><span class="o">.</span><span class="n">inverse_transform_point_cloud</span><span class="p">(</span><span class="n">contour_im_coords</span><span class="p">)</span>
+            <span class="n">city_contours</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">append_height_to_2d_city_pt_cloud</span><span class="p">(</span><span class="n">contour_city_coords</span><span class="p">,</span> <span class="n">city_name</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">city_contours</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.build_centerline_index"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.build_centerline_index">[docs]</a>    <span class="k">def</span> <span class="nf">build_centerline_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">LaneSegment</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build dictionary of centerline for each city, with lane_id as key</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            city_lane_centerlines_dict:  Keys are city names, values are dictionaries</span>
+<span class="sd">                                        (k=lane_id, v=lane info)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">city_lane_centerlines_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">city_name</span><span class="p">,</span> <span class="n">city_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_name_to_city_id_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">xml_fpath</span> <span class="o">=</span> <span class="n">MAP_FILES_ROOT</span> <span class="o">/</span> <span class="n">f</span><span class="s2">&quot;pruned_argoverse_</span><span class="si">{city_name}</span><span class="s2">_</span><span class="si">{city_id}</span><span class="s2">_vector_map.xml&quot;</span>
+            <span class="n">city_lane_centerlines_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">load_lane_segments_from_xml</span><span class="p">(</span><span class="n">xml_fpath</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">city_lane_centerlines_dict</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.build_city_driveable_area_roi_index"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.build_city_driveable_area_roi_index">[docs]</a>    <span class="k">def</span> <span class="nf">build_city_driveable_area_roi_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load driveable area files from disk. Dilate driveable area to get ROI (takes about 1/2 second).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            city_rasterized_da_dict: a dictionary of dictionaries. Key is city_name, and</span>
+<span class="sd">                    value is a dictionary with driveable area info. For example, includes da_matrix: Numpy array of</span>
+<span class="sd">                    shape (M,N) representing binary values for driveable area</span>
+<span class="sd">                    city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.</span>
+<span class="sd">                    p_city = city_Transformation_pklimage * p_pklimage</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">city_rasterized_da_roi_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">city_name</span><span class="p">,</span> <span class="n">city_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_name_to_city_id_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">city_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_name_to_city_id_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span>
+            <span class="n">city_rasterized_da_roi_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">npy_fpath</span> <span class="o">=</span> <span class="n">MAP_FILES_ROOT</span> <span class="o">/</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{city_name}</span><span class="s2">_</span><span class="si">{city_id}</span><span class="s2">_driveable_area_mat_2019_05_28.npy&quot;</span>
+            <span class="n">city_rasterized_da_roi_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="s2">&quot;da_mat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">npy_fpath</span><span class="p">)</span>
+
+            <span class="n">se2_npy_fpath</span> <span class="o">=</span> <span class="n">MAP_FILES_ROOT</span> <span class="o">/</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{city_name}</span><span class="s2">_</span><span class="si">{city_id}</span><span class="s2">_npyimage_to_city_se2_2019_05_28.npy&quot;</span>
+            <span class="n">city_rasterized_da_roi_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="s2">&quot;npyimage_to_city_se2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">se2_npy_fpath</span><span class="p">)</span>
+            <span class="n">da_mat</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">city_rasterized_da_roi_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="s2">&quot;da_mat&quot;</span><span class="p">])</span>
+            <span class="n">city_rasterized_da_roi_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="s2">&quot;roi_mat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dilate_by_l2</span><span class="p">(</span><span class="n">da_mat</span><span class="p">,</span> <span class="n">dilation_thresh</span><span class="o">=</span><span class="n">ROI_ISOCONTOUR</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">city_rasterized_da_roi_dict</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.build_city_ground_height_index"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.build_city_ground_height_index">[docs]</a>    <span class="k">def</span> <span class="nf">build_city_ground_height_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build index of rasterized ground height.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            city_ground_height_index: a dictionary of dictionaries. Key is city_name, and values</span>
+<span class="sd">                    are dictionaries that store the &quot;ground_height_matrix&quot; and also the</span>
+<span class="sd">                    city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city</span>
+<span class="sd">                    coordinates, e.g. p_city = city_Transformation_pklimage * p_pklimage</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">city_rasterized_ground_height_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">city_name</span><span class="p">,</span> <span class="n">city_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_name_to_city_id_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">city_rasterized_ground_height_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">npy_fpath</span> <span class="o">=</span> <span class="n">MAP_FILES_ROOT</span> <span class="o">/</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{city_name}</span><span class="s2">_</span><span class="si">{city_id}</span><span class="s2">_ground_height_mat_2019_05_28.npy&quot;</span>
+
+            <span class="c1"># load the file with rasterized values</span>
+            <span class="n">city_rasterized_ground_height_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="s2">&quot;ground_height&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">npy_fpath</span><span class="p">)</span>
+
+            <span class="n">se2_npy_fpath</span> <span class="o">=</span> <span class="n">MAP_FILES_ROOT</span> <span class="o">/</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{city_name}</span><span class="s2">_</span><span class="si">{city_id}</span><span class="s2">_npyimage_to_city_se2_2019_05_28.npy&quot;</span>
+            <span class="n">city_rasterized_ground_height_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="s2">&quot;npyimage_to_city_se2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">se2_npy_fpath</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">city_rasterized_ground_height_dict</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_rasterized_driveable_area"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_rasterized_driveable_area">[docs]</a>    <span class="k">def</span> <span class="nf">get_rasterized_driveable_area</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the driveable area.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            da_matrix: Numpy array of shape (M,N) representing binary values for driveable area</span>
+<span class="sd">            city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.</span>
+<span class="sd">                    p_city = city_Transformation_pklimage * p_pklimage</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">da_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_rasterized_da_roi_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="s2">&quot;da_mat&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">da_mat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_rasterized_da_roi_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="s2">&quot;npyimage_to_city_se2&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_rasterized_roi"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_rasterized_roi">[docs]</a>    <span class="k">def</span> <span class="nf">get_rasterized_roi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the driveable area.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            city_name: string, either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            da_matrix: Numpy array of shape (M,N) representing binary values for driveable area</span>
+<span class="sd">            city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.</span>
+<span class="sd">                    p_city = city_Transformation_pklimage * p_pklimage</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">roi_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_rasterized_da_roi_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="s2">&quot;roi_mat&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">roi_mat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_rasterized_da_roi_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="s2">&quot;npyimage_to_city_se2&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.build_hallucinated_lane_bbox_index"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.build_hallucinated_lane_bbox_index">[docs]</a>    <span class="k">def</span> <span class="nf">build_hallucinated_lane_bbox_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Populate the pre-computed hallucinated extent of each lane polygon, to allow for fast</span>
+<span class="sd">        queries.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            city_halluc_bbox_table</span>
+<span class="sd">            city_id_to_halluc_tableidx_map</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">city_halluc_bbox_table</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">city_halluc_tableidx_to_laneid_map</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">city_name</span><span class="p">,</span> <span class="n">city_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_name_to_city_id_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">json_fpath</span> <span class="o">=</span> <span class="n">MAP_FILES_ROOT</span> <span class="o">/</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{city_name}</span><span class="s2">_</span><span class="si">{city_id}</span><span class="s2">_tableidx_to_laneid_map.json&quot;</span>
+            <span class="n">city_halluc_tableidx_to_laneid_map</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_json_file</span><span class="p">(</span><span class="n">json_fpath</span><span class="p">)</span>
+
+            <span class="n">npy_fpath</span> <span class="o">=</span> <span class="n">MAP_FILES_ROOT</span> <span class="o">/</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{city_name}</span><span class="s2">_</span><span class="si">{city_id}</span><span class="s2">_halluc_bbox_table.npy&quot;</span>
+            <span class="n">city_halluc_bbox_table</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">npy_fpath</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">city_halluc_bbox_table</span><span class="p">,</span> <span class="n">city_halluc_tableidx_to_laneid_map</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.render_city_centerlines"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.render_city_centerlines">[docs]</a>    <span class="k">def</span> <span class="nf">render_city_centerlines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Draw centerlines for the entire city_name</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lane_centerlines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_lane_centerlines_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span>
+        <span class="n">das</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_to_driveable_areas_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span>
+        <span class="n">render_global_city_map_bev</span><span class="p">(</span><span class="n">lane_centerlines</span><span class="p">,</span> <span class="n">das</span><span class="p">,</span> <span class="n">city_name</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">centerline_color_scheme</span><span class="o">=</span><span class="s2">&quot;indegree&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_rasterized_ground_height"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_rasterized_ground_height">[docs]</a>    <span class="k">def</span> <span class="nf">get_rasterized_ground_height</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get ground height matrix along with se2 that convert to city coordinate</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ground_height_matrix</span>
+<span class="sd">            city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.</span>
+<span class="sd">                    p_city = city_Transformation_pklimage * p_pklimage</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ground_height_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_rasterized_ground_height_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="s2">&quot;ground_height&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">ground_height_mat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_rasterized_ground_height_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="s2">&quot;npyimage_to_city_se2&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.remove_ground_surface"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.remove_ground_surface">[docs]</a>    <span class="k">def</span> <span class="nf">remove_ground_surface</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">point_cloud</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">return_logicals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a lidar point, snap it to the grid, perform the O(1) raster map query.</span>
+<span class="sd">        If our z-height is within THRESHOLD of that grid&#39;s z-height, then we keep it; otherwise, discard it</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            point_cloud: NumPy n-d array of shape (n,3)</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+<span class="sd">            return_logicals: whether to return pointwise boolean of function result</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            subset of original point cloud, with ground points removed</span>
+<span class="sd">            optionally, pass boolean array where `True` indicates point was not part of &quot;ground&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">is_ground_boolean_arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ground_points_boolean</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span>
+        <span class="n">not_ground_logicals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">is_ground_boolean_arr</span><span class="p">)</span>
+        <span class="n">not_ground_indxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">not_ground_logicals</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">return_logicals</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">point_cloud</span><span class="p">[</span><span class="n">not_ground_indxs</span><span class="p">],</span> <span class="n">not_ground_logicals</span>
+
+        <span class="k">return</span> <span class="n">point_cloud</span><span class="p">[</span><span class="n">not_ground_indxs</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.remove_non_driveable_area_points"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.remove_non_driveable_area_points">[docs]</a>    <span class="k">def</span> <span class="nf">remove_non_driveable_area_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_cloud</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a lidar point, snap it to the grid, perform the O(1) raster map query.</span>
+<span class="sd">        If our z-height is within THRESHOLD of that grid&#39;s z-height, then we keep it; otherwise, discard it</span>
+
+<span class="sd">        Decimate the point cloud to the driveable area only.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            point_cloud: NumPy n-d array of shape (n,3)</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            lidar_point_cloud: subset of original point cloud, with non-driveable area removed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">is_da_boolean_arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_raster_layer_points_boolean</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">,</span> <span class="n">city_name</span><span class="p">,</span> <span class="s2">&quot;driveable_area&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">point_cloud</span><span class="p">[</span><span class="n">is_da_boolean_arr</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.remove_non_roi_points"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.remove_non_roi_points">[docs]</a>    <span class="k">def</span> <span class="nf">remove_non_roi_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_cloud</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove any points that does&#39;t fall within the region of interest (ROI)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            point_cloud: NumPy n-d array of shape (n,3)</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            lidar_point_cloud: subset of original point cloud, with ROI points removed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">is_roi_boolean_arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_raster_layer_points_boolean</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">,</span> <span class="n">city_name</span><span class="p">,</span> <span class="s2">&quot;roi&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">point_cloud</span><span class="p">[</span><span class="n">is_roi_boolean_arr</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_ground_points_boolean"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_ground_points_boolean">[docs]</a>    <span class="k">def</span> <span class="nf">get_ground_points_boolean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_cloud</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check whether each point is likely to be from the ground surface</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            point_cloud: Numpy array of shape (N,3)</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            is_ground_boolean_arr: Numpy array of shape (N,) where ith entry is True if the LiDAR return</span>
+<span class="sd">                is likely a hit from the ground surface.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ground_height_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ground_height_at_xy</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span>
+        <span class="n">is_ground_boolean_arr</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">ground_height_values</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">GROUND_HEIGHT_THRESHOLD</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">ground_height_values</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">is_ground_boolean_arr</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_ground_height_at_xy"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_ground_height_at_xy">[docs]</a>    <span class="k">def</span> <span class="nf">get_ground_height_at_xy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_cloud</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get ground height for each of the xy location in point_cloud</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            point_cloud: Numpy array of shape (k,2) or (k,3)</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ground_height_values: Numpy array of shape (k,)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ground_height_mat</span><span class="p">,</span> <span class="n">npyimage_to_city_se2_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rasterized_ground_height</span><span class="p">(</span><span class="n">city_name</span><span class="p">)</span>
+        <span class="n">city_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+        <span class="n">se2_rotation</span> <span class="o">=</span> <span class="n">npyimage_to_city_se2_mat</span><span class="p">[:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">se2_trans</span> <span class="o">=</span> <span class="n">npyimage_to_city_se2_mat</span><span class="p">[:</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">npyimage_to_city_se2</span> <span class="o">=</span> <span class="n">SE2</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="n">se2_rotation</span><span class="p">,</span> <span class="n">translation</span><span class="o">=</span><span class="n">se2_trans</span><span class="p">)</span>
+        <span class="n">npyimage_coords</span> <span class="o">=</span> <span class="n">npyimage_to_city_se2</span><span class="o">.</span><span class="n">transform_point_cloud</span><span class="p">(</span><span class="n">city_coords</span><span class="p">)</span>
+        <span class="n">npyimage_coords</span> <span class="o">=</span> <span class="n">npyimage_coords</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+        <span class="c1"># index in at (x,y) locations, which are (y,x) in the image</span>
+        <span class="n">ground_height_values</span> <span class="o">=</span> <span class="n">ground_height_mat</span><span class="p">[</span><span class="n">npyimage_coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">npyimage_coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="n">ground_height_values</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.append_height_to_2d_city_pt_cloud"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.append_height_to_2d_city_pt_cloud">[docs]</a>    <span class="k">def</span> <span class="nf">append_height_to_2d_city_pt_cloud</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pt_cloud_xy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Accept 2d point cloud in xy plane and return 3d point cloud (xyz)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pt_cloud_xy: Numpy array of shape (N,2)</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pt_cloud_xyz: Numpy array of shape (N,3)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pts_z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ground_height_at_xy</span><span class="p">(</span><span class="n">pt_cloud_xy</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">pt_cloud_xy</span><span class="p">,</span> <span class="n">pts_z</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]])</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_raster_layer_points_boolean"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_raster_layer_points_boolean">[docs]</a>    <span class="k">def</span> <span class="nf">get_raster_layer_points_boolean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_cloud</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">layer_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        driveable area is &quot;da&quot;</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            point_cloud: Numpy array of shape (N,3)</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+<span class="sd">            layer_name: indicating layer name, either &quot;roi&quot; or &quot;driveable area&quot;</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            is_ground_boolean_arr: Numpy array of shape (N,) where ith entry is True if the LiDAR return</span>
+<span class="sd">                is likely a hit from the ground surface.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">layer_name</span> <span class="o">==</span> <span class="s2">&quot;roi&quot;</span><span class="p">:</span>
+            <span class="n">layer_raster_mat</span><span class="p">,</span> <span class="n">npyimage_to_city_se2_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rasterized_roi</span><span class="p">(</span><span class="n">city_name</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">layer_name</span> <span class="o">==</span> <span class="s2">&quot;driveable_area&quot;</span><span class="p">:</span>
+            <span class="n">layer_raster_mat</span><span class="p">,</span> <span class="n">npyimage_to_city_se2_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rasterized_driveable_area</span><span class="p">(</span><span class="n">city_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;layer_name should be wither roi or driveable_area.&quot;</span><span class="p">)</span>
+
+        <span class="n">city_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+        <span class="n">se2_rotation</span> <span class="o">=</span> <span class="n">npyimage_to_city_se2_mat</span><span class="p">[:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">se2_trans</span> <span class="o">=</span> <span class="n">npyimage_to_city_se2_mat</span><span class="p">[:</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">npyimage_to_city_se2</span> <span class="o">=</span> <span class="n">SE2</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="n">se2_rotation</span><span class="p">,</span> <span class="n">translation</span><span class="o">=</span><span class="n">se2_trans</span><span class="p">)</span>
+        <span class="n">npyimage_coords</span> <span class="o">=</span> <span class="n">npyimage_to_city_se2</span><span class="o">.</span><span class="n">transform_point_cloud</span><span class="p">(</span><span class="n">city_coords</span><span class="p">)</span>
+        <span class="n">npyimage_coords</span> <span class="o">=</span> <span class="n">npyimage_coords</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+        <span class="c1"># index in at (x,y) locations, which are (y,x) in the image</span>
+        <span class="n">layer_values</span> <span class="o">=</span> <span class="n">layer_raster_mat</span><span class="p">[</span><span class="n">npyimage_coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">npyimage_coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]]</span>
+        <span class="n">is_layer_boolean_arr</span> <span class="o">=</span> <span class="n">layer_values</span> <span class="o">==</span> <span class="mf">1.0</span>
+        <span class="k">return</span> <span class="n">is_layer_boolean_arr</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_nearest_centerline"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_nearest_centerline">[docs]</a>    <span class="k">def</span> <span class="nf">get_nearest_centerline</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">query_xy_city_coords</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">visualize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">LaneSegment</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        KD Tree with k-closest neighbors or a fixed radius search on the lane centroids</span>
+<span class="sd">        is unreliable since (1) there is highly variable density throughout the map and (2)</span>
+<span class="sd">        lane lengths differ enormously, meaning the centroid is not indicative of nearby points.</span>
+<span class="sd">        If no lanes are found with MAX_LABEL_DIST_TO_LANE, we increase the search radius.</span>
+
+<span class="sd">        A correct approach is to compare centerline-to-query point distances, e.g. as done</span>
+<span class="sd">        in Shapely. Instead of looping over all points, we precompute the bounding boxes of</span>
+<span class="sd">        each lane.</span>
+
+<span class="sd">        We use the closest_waypoint as our criterion. Using the smallest sum to waypoints</span>
+<span class="sd">        does not work in many cases with disproportionately shaped lane segments.</span>
+
+<span class="sd">        and then choose the lane centerline with the smallest sum of 3-5</span>
+<span class="sd">        closest waypoints.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query_xy_city_coords: Numpy array of shape (2,) representing xy position of query in city coordinates</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+<span class="sd">            visualize:</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            lane_object: Python dictionary with fields describing a lane.</span>
+<span class="sd">                Keys include: &#39;centerline&#39;, &#39;predecessor&#39;, &#39;successor&#39;, &#39;turn_direction&#39;,</span>
+<span class="sd">                             &#39;is_intersection&#39;, &#39;has_traffic_control&#39;, &#39;is_autonomous&#39;, &#39;is_routable&#39;</span>
+<span class="sd">            conf: real-valued confidence. less than 0.85 is almost always unreliable</span>
+<span class="sd">            dense_centerline: numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query_x</span> <span class="o">=</span> <span class="n">query_xy_city_coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">query_y</span> <span class="o">=</span> <span class="n">query_xy_city_coords</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">lane_centerlines_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_lane_centerlines_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span>
+
+        <span class="n">search_radius</span> <span class="o">=</span> <span class="n">MAX_LABEL_DIST_TO_LANE</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">nearby_lane_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lane_ids_in_xy_bbox</span><span class="p">(</span>
+                <span class="n">query_x</span><span class="p">,</span> <span class="n">query_y</span><span class="p">,</span> <span class="n">city_name</span><span class="p">,</span> <span class="n">query_search_range_manhattan</span><span class="o">=</span><span class="n">search_radius</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">nearby_lane_ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">search_radius</span> <span class="o">*=</span> <span class="mi">2</span>  <span class="c1"># double search radius</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="n">nearby_lane_objs</span> <span class="o">=</span> <span class="p">[</span><span class="n">lane_centerlines_dict</span><span class="p">[</span><span class="n">lane_id</span><span class="p">]</span> <span class="k">for</span> <span class="n">lane_id</span> <span class="ow">in</span> <span class="n">nearby_lane_ids</span><span class="p">]</span>
+
+        <span class="n">cache</span> <span class="o">=</span> <span class="n">lane_waypt_to_query_dist</span><span class="p">(</span><span class="n">query_xy_city_coords</span><span class="p">,</span> <span class="n">nearby_lane_objs</span><span class="p">)</span>
+        <span class="n">per_lane_dists</span><span class="p">,</span> <span class="n">min_dist_nn_indices</span><span class="p">,</span> <span class="n">dense_centerlines</span> <span class="o">=</span> <span class="n">cache</span>
+
+        <span class="n">closest_lane_obj</span> <span class="o">=</span> <span class="n">nearby_lane_objs</span><span class="p">[</span><span class="n">min_dist_nn_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">dense_centerline</span> <span class="o">=</span> <span class="n">dense_centerlines</span><span class="p">[</span><span class="n">min_dist_nn_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+        <span class="c1"># estimate confidence</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="p">(</span><span class="n">per_lane_dists</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">/</span> <span class="n">OUT_OF_RANGE_LANE_DIST_THRESHOLD</span><span class="p">)</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">conf</span><span class="p">)</span>  <span class="c1"># clip to ensure positive value</span>
+
+        <span class="k">if</span> <span class="n">visualize</span><span class="p">:</span>
+            <span class="c1"># visualize dists to nearby centerlines</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">22.5</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+
+            <span class="p">(</span><span class="n">query_x</span><span class="p">,</span> <span class="n">query_y</span><span class="p">)</span> <span class="o">=</span> <span class="n">query_xy_city_coords</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">([</span><span class="n">query_x</span><span class="p">],</span> <span class="p">[</span><span class="n">query_y</span><span class="p">],</span> <span class="mi">100</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+            <span class="c1"># make another plot now!</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">plot_nearby_halluc_lanes</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">city_name</span><span class="p">,</span> <span class="n">query_x</span><span class="p">,</span> <span class="n">query_y</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dense_centerlines</span><span class="p">):</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">line</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">line</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">line</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">line</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="nb">str</span><span class="p">(</span><span class="n">per_lane_dists</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+
+            <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">closest_lane_obj</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">dense_centerline</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_lane_direction"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_lane_direction">[docs]</a>    <span class="k">def</span> <span class="nf">get_lane_direction</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">query_xy_city_coords</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">visualize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get vector direction of the lane you&#39;re in.</span>
+<span class="sd">        We ignore the sparse version of the centerline that we could</span>
+<span class="sd">        trivially pull from lane_obj[&#39;centerline&#39;].</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query_xy_city_coords: Numpy array of shape (2,) representing (x,y) position in city coordinates</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+<span class="sd">            visualize: to also visualize the result</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            lane_dir_vector: Numpy array of shape (2,) representing the direction (as a vector) of the closest</span>
+<span class="sd">                lane to the provided position in city coordinates</span>
+<span class="sd">            conf: real-valued confidence. less than 0.85 is almost always unreliable</span>
+
+<span class="sd">        We have access to all of the following fields in &quot;lane_obj&quot;:</span>
+<span class="sd">            &#39;centerline&#39;, &#39;predecessor&#39;, &#39;successor&#39;, &#39;turn_direction&#39;,</span>
+<span class="sd">            &#39;is_intersection&#39;, &#39;has_traffic_control&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nearest_centerline</span><span class="p">(</span><span class="n">query_xy_city_coords</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span>
+        <span class="n">lane_obj</span><span class="p">,</span> <span class="n">confidence</span><span class="p">,</span> <span class="n">dense_centerline</span> <span class="o">=</span> <span class="n">cache</span>
+        <span class="n">centerline</span> <span class="o">=</span> <span class="n">dense_centerline</span>
+
+        <span class="n">waypoint_dists</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">centerline</span> <span class="o">-</span> <span class="n">query_xy_city_coords</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">closest_waypt_indxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">waypoint_dists</span><span class="p">)[:</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">prev_waypoint_id</span> <span class="o">=</span> <span class="n">closest_waypt_indxs</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">next_waypoint_id</span> <span class="o">=</span> <span class="n">closest_waypt_indxs</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="n">prev_waypoint</span> <span class="o">=</span> <span class="n">centerline</span><span class="p">[</span><span class="n">prev_waypoint_id</span><span class="p">]</span>
+        <span class="n">next_waypoint</span> <span class="o">=</span> <span class="n">centerline</span><span class="p">[</span><span class="n">next_waypoint_id</span><span class="p">]</span>
+
+        <span class="n">lane_dir_vector</span> <span class="o">=</span> <span class="n">next_waypoint</span> <span class="o">-</span> <span class="n">prev_waypoint</span>
+        <span class="k">if</span> <span class="n">visualize</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">centerline</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">centerline</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">query_xy_city_coords</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">query_xy_city_coords</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">200</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">)</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="n">lane_dir_vector</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span>
+            <span class="n">dy</span> <span class="o">=</span> <span class="n">lane_dir_vector</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="n">query_xy_city_coords</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">query_xy_city_coords</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">centerline_length</span> <span class="o">=</span> <span class="n">centerline</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">centerline_length</span><span class="p">):</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">centerline</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">centerline</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">i</span> <span class="o">/</span> <span class="mf">5.0</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lane_dir_vector</span><span class="p">,</span> <span class="n">confidence</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_lane_ids_in_xy_bbox"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_lane_ids_in_xy_bbox">[docs]</a>    <span class="k">def</span> <span class="nf">get_lane_ids_in_xy_bbox</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">query_x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">query_y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">query_search_range_manhattan</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prune away all lane segments based on Manhattan distance. We vectorize this instead</span>
+<span class="sd">        of using a for-loop. Get all lane IDs within a bounding box in the xy plane.</span>
+<span class="sd">        This is a approximation of a bubble search for point-to-polygon distance.</span>
+
+<span class="sd">        The bounding boxes of small point clouds (lane centerline waypoints) are precomputed in the map.</span>
+<span class="sd">        We then can perform an efficient search based on manhattan distance search radius from a</span>
+<span class="sd">        given 2D query point.</span>
+
+<span class="sd">        We pre-assign lane segment IDs to indices inside a big lookup array, with precomputed</span>
+<span class="sd">        hallucinated lane polygon extents.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query_x: representing x coordinate of xy query location</span>
+<span class="sd">            query_y: representing y coordinate of xy query location</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+<span class="sd">            query_search_range_manhattan: search radius along axes</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            lane_ids: lane segment IDs that live within a bubble</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query_min_x</span> <span class="o">=</span> <span class="n">query_x</span> <span class="o">-</span> <span class="n">query_search_range_manhattan</span>
+        <span class="n">query_max_x</span> <span class="o">=</span> <span class="n">query_x</span> <span class="o">+</span> <span class="n">query_search_range_manhattan</span>
+        <span class="n">query_min_y</span> <span class="o">=</span> <span class="n">query_y</span> <span class="o">-</span> <span class="n">query_search_range_manhattan</span>
+        <span class="n">query_max_y</span> <span class="o">=</span> <span class="n">query_y</span> <span class="o">+</span> <span class="n">query_search_range_manhattan</span>
+
+        <span class="n">overlap_indxs</span> <span class="o">=</span> <span class="n">find_all_polygon_bboxes_overlapping_query_bbox</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">city_halluc_bbox_table</span><span class="p">[</span><span class="n">city_name</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">query_min_x</span><span class="p">,</span> <span class="n">query_min_y</span><span class="p">,</span> <span class="n">query_max_x</span><span class="p">,</span> <span class="n">query_max_y</span><span class="p">])</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">overlap_indxs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">neighborhood_lane_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">overlap_idx</span> <span class="ow">in</span> <span class="n">overlap_indxs</span><span class="p">:</span>
+            <span class="n">lane_segment_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_halluc_tableidx_to_laneid_map</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="nb">str</span><span class="p">(</span><span class="n">overlap_idx</span><span class="p">)]</span>
+            <span class="n">neighborhood_lane_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lane_segment_id</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">neighborhood_lane_ids</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_lane_segment_predecessor_ids"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_lane_segment_predecessor_ids">[docs]</a>    <span class="k">def</span> <span class="nf">get_lane_segment_predecessor_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lane_segment_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get land id for the lane predecessor of the specified lane_segment_id</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lane_segment_id: unique identifier for a lane segment within a city</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            predecessor_ids: list of integers, representing lane segment IDs of predecessors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">predecessor_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_lane_centerlines_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="n">lane_segment_id</span><span class="p">]</span><span class="o">.</span><span class="n">predecessors</span>
+        <span class="k">return</span> <span class="n">predecessor_ids</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_lane_segment_successor_ids"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_lane_segment_successor_ids">[docs]</a>    <span class="k">def</span> <span class="nf">get_lane_segment_successor_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lane_segment_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get land id for the lane sucessor of the specified lane_segment_id</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lane_segment_id: unique identifier for a lane segment within a city</span>
+<span class="sd">            city_name: either &#39;MIA&#39; or &#39;PIT&#39; for Miami or Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            successor_ids: list of integers, representing lane segment IDs of successors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">successor_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_lane_centerlines_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="n">lane_segment_id</span><span class="p">]</span><span class="o">.</span><span class="n">successors</span>
+        <span class="k">return</span> <span class="n">successor_ids</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_lane_segment_adjacent_ids"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_lane_segment_adjacent_ids">[docs]</a>    <span class="k">def</span> <span class="nf">get_lane_segment_adjacent_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lane_segment_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get land id for the lane adjacent left/right neighbor of the specified lane_segment_id</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lane_segment_id: unique identifier for a lane segment within a city</span>
+<span class="sd">            city_name: either &#39;MIA&#39; or &#39;PIT&#39; for Miami or Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            adjacent_ids: list of integers, representing lane segment IDs of adjacent</span>
+<span class="sd">                            left/right neighbor lane segments</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">r_neighbor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_lane_centerlines_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="n">lane_segment_id</span><span class="p">]</span><span class="o">.</span><span class="n">r_neighbor_id</span>
+        <span class="n">l_neighbor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_lane_centerlines_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="n">lane_segment_id</span><span class="p">]</span><span class="o">.</span><span class="n">l_neighbor_id</span>
+        <span class="n">adjacent_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">r_neighbor</span><span class="p">,</span> <span class="n">l_neighbor</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">adjacent_ids</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_lane_segment_centerline"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_lane_segment_centerline">[docs]</a>    <span class="k">def</span> <span class="nf">get_lane_segment_centerline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lane_segment_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        We return a 3D centerline for any particular lane segment.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lane_segment_id: unique identifier for a lane segment within a city</span>
+<span class="sd">            city_name: either &#39;MIA&#39; or &#39;PIT&#39; for Miami or Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            lane_centerline: Numpy array of shape (N,3)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lane_centerline</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_lane_centerlines_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="n">lane_segment_id</span><span class="p">]</span><span class="o">.</span><span class="n">centerline</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lane_centerline</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">lane_centerline</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">append_height_to_2d_city_pt_cloud</span><span class="p">(</span><span class="n">lane_centerline</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lane_centerline</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_lane_segment_polygon"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_lane_segment_polygon">[docs]</a>    <span class="k">def</span> <span class="nf">get_lane_segment_polygon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lane_segment_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Hallucinate a 3d lane polygon based around the centerline. We rely on the average</span>
+<span class="sd">        lane width within our cities to hallucinate the boundaries. We rely upon the</span>
+<span class="sd">        rasterized maps to provide heights to points in the xy plane.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lane_segment_id: unique identifier for a lane segment within a city</span>
+<span class="sd">            city_name: either &#39;MIA&#39; or &#39;PIT&#39; for Miami or Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            lane_polygon: Array of polygon boundary (K,3), with identical and last boundary points</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lane_centerline</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_lane_centerlines_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="n">lane_segment_id</span><span class="p">]</span><span class="o">.</span><span class="n">centerline</span>
+        <span class="n">lane_polygon</span> <span class="o">=</span> <span class="n">centerline_to_polygon</span><span class="p">(</span><span class="n">lane_centerline</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">append_height_to_2d_city_pt_cloud</span><span class="p">(</span><span class="n">lane_polygon</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.lane_is_in_intersection"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.lane_is_in_intersection">[docs]</a>    <span class="k">def</span> <span class="nf">lane_is_in_intersection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lane_segment_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the specified lane_segment_id falls within an intersection</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lane_segment_id: unique identifier for a lane segment within a city</span>
+<span class="sd">            city_name: either &#39;MIA&#39; or &#39;PIT&#39; for Miami or Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            is_intersection: indicating if lane segment falls within an</span>
+<span class="sd">                intersection</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_lane_centerlines_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="n">lane_segment_id</span><span class="p">]</span><span class="o">.</span><span class="n">is_intersection</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_lane_turn_direction"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_lane_turn_direction">[docs]</a>    <span class="k">def</span> <span class="nf">get_lane_turn_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lane_segment_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get left/right/none direction of the specified lane_segment_id</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lane_segment_id: unique identifier for a lane segment within a city</span>
+<span class="sd">            city_name: either &#39;MIA&#39; or &#39;PIT&#39; for Miami or Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            turn_direction: string, can be &#39;RIGHT&#39;, &#39;LEFT&#39;, or &#39;NONE&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_lane_centerlines_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="n">lane_segment_id</span><span class="p">]</span><span class="o">.</span><span class="n">turn_direction</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.lane_has_traffic_control_measure"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.lane_has_traffic_control_measure">[docs]</a>    <span class="k">def</span> <span class="nf">lane_has_traffic_control_measure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lane_segment_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        You can have an intersection without a control measure.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lane_segment_id: unique identifier for a lane segment within a city</span>
+<span class="sd">            city_name: either &#39;MIA&#39; or &#39;PIT&#39; for Miami or Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            has_traffic_control: indicating if lane segment has a</span>
+<span class="sd">                traffic control measure</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_lane_centerlines_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">][</span><span class="n">lane_segment_id</span><span class="p">]</span><span class="o">.</span><span class="n">has_traffic_control</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.remove_extended_predecessors"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.remove_extended_predecessors">[docs]</a>    <span class="k">def</span> <span class="nf">remove_extended_predecessors</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">lane_seqs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span> <span class="n">xy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove lane_ids which are obtained by finding way too many predecessors from lane sequences.</span>
+<span class="sd">        If any lane id is an occupied lane id for the first coordinate of the trajectory, ignore all the</span>
+<span class="sd">        lane ids that occured before that</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lane_seqs: List of sequence of lane ids (Eg. [[12345, 12346, 12347], [12345, 12348]])</span>
+<span class="sd">            xy: trajectory coordinates</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            filtered_lane_seq (list of list of integers): List of sequence of lane ids obtained after filtering</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">filtered_lane_seq</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">occupied_lane_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lane_segments_containing_xy</span><span class="p">(</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">city_name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">lane_seq</span> <span class="ow">in</span> <span class="n">lane_seqs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lane_seq</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">lane_seq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">in</span> <span class="n">occupied_lane_ids</span><span class="p">:</span>
+                    <span class="n">new_lane_seq</span> <span class="o">=</span> <span class="n">lane_seq</span><span class="p">[</span><span class="n">i</span><span class="p">:]</span>
+                    <span class="k">break</span>
+                <span class="n">new_lane_seq</span> <span class="o">=</span> <span class="n">lane_seq</span>
+            <span class="n">filtered_lane_seq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_lane_seq</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">filtered_lane_seq</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_cl_from_lane_seq"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_cl_from_lane_seq">[docs]</a>    <span class="k">def</span> <span class="nf">get_cl_from_lane_seq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lane_seqs</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get centerlines corresponding to each lane sequence in lane_sequences</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lane_seqs: Iterable of sequence of lane ids (Eg. [[12345, 12346, 12347], [12345, 12348]])</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            candidate_cl: list of numpy arrays for centerline corresponding to each lane sequence</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">candidate_cl</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">lanes</span> <span class="ow">in</span> <span class="n">lane_seqs</span><span class="p">:</span>
+            <span class="n">curr_candidate_cl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">curr_lane</span> <span class="ow">in</span> <span class="n">lanes</span><span class="p">:</span>
+                <span class="n">curr_candidate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lane_segment_centerline</span><span class="p">(</span><span class="n">curr_lane</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">curr_candidate_cl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">curr_candidate_cl</span><span class="p">,</span> <span class="n">curr_candidate</span><span class="p">))</span>
+            <span class="n">candidate_cl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">curr_candidate_cl</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">candidate_cl</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_candidate_centerlines_for_traj"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_candidate_centerlines_for_traj">[docs]</a>    <span class="k">def</span> <span class="nf">get_candidate_centerlines_for_traj</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">xy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">viz</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">max_search_radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot; Get centerline candidates upto a threshold. .</span>
+
+<span class="sd">        Algorithm:</span>
+<span class="sd">        1. Take the lanes in the bubble of last obs coordinate</span>
+<span class="sd">        2. Extend before and after considering all possible candidates</span>
+<span class="sd">        3. Get centerlines with max distance along centerline</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            xy: trajectory of shape (N, 2).</span>
+<span class="sd">            city_name</span>
+<span class="sd">            viz: Visualize</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            candidate_centerlines: List of candidate centerlines</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Get all lane candidates within a bubble</span>
+        <span class="n">manhattan_threshold</span> <span class="o">=</span> <span class="mf">2.5</span>
+        <span class="n">curr_lane_candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lane_ids_in_xy_bbox</span><span class="p">(</span><span class="n">xy</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">xy</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">city_name</span><span class="p">,</span> <span class="n">manhattan_threshold</span><span class="p">)</span>
+
+        <span class="c1"># Keep expanding the bubble until at least 1 lane is found</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">curr_lane_candidates</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">manhattan_threshold</span> <span class="o">&lt;</span> <span class="n">max_search_radius</span><span class="p">:</span>
+            <span class="n">manhattan_threshold</span> <span class="o">*=</span> <span class="mi">2</span>
+            <span class="n">curr_lane_candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lane_ids_in_xy_bbox</span><span class="p">(</span><span class="n">xy</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">xy</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">city_name</span><span class="p">,</span> <span class="n">manhattan_threshold</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">curr_lane_candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;No nearby lanes found!!&quot;</span>
+
+        <span class="c1"># Set dfs threshold</span>
+        <span class="n">displacement</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">xy</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">xy</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">xy</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">dfs_threshold</span> <span class="o">=</span> <span class="n">displacement</span> <span class="o">*</span> <span class="mf">2.0</span>
+
+        <span class="c1"># DFS to get all successor and predecessor candidates</span>
+        <span class="n">obs_pred_lanes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">lane</span> <span class="ow">in</span> <span class="n">curr_lane_candidates</span><span class="p">:</span>
+            <span class="n">candidates_future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dfs</span><span class="p">(</span><span class="n">lane</span><span class="p">,</span> <span class="n">city_name</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dfs_threshold</span><span class="p">)</span>
+            <span class="n">candidates_past</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dfs</span><span class="p">(</span><span class="n">lane</span><span class="p">,</span> <span class="n">city_name</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dfs_threshold</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># Merge past and future</span>
+            <span class="k">for</span> <span class="n">past_lane_seq</span> <span class="ow">in</span> <span class="n">candidates_past</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">future_lane_seq</span> <span class="ow">in</span> <span class="n">candidates_future</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="n">past_lane_seq</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">future_lane_seq</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;Incorrect DFS for candidate lanes past and future&quot;</span>
+                    <span class="n">obs_pred_lanes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">past_lane_seq</span> <span class="o">+</span> <span class="n">future_lane_seq</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+        <span class="c1"># Removing overlapping lanes</span>
+        <span class="n">obs_pred_lanes</span> <span class="o">=</span> <span class="n">remove_overlapping_lane_seq</span><span class="p">(</span><span class="n">obs_pred_lanes</span><span class="p">)</span>
+
+        <span class="c1"># Remove unnecessary extended predecessors</span>
+        <span class="n">obs_pred_lanes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_extended_predecessors</span><span class="p">(</span><span class="n">obs_pred_lanes</span><span class="p">,</span> <span class="n">xy</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span>
+
+        <span class="c1"># Getting candidate centerlines</span>
+        <span class="n">candidate_cl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cl_from_lane_seq</span><span class="p">(</span><span class="n">obs_pred_lanes</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span>
+
+        <span class="c1"># Reduce the number of candidates based on distance travelled along the centerline</span>
+        <span class="n">candidate_centerlines</span> <span class="o">=</span> <span class="n">filter_candidate_centerlines</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="n">candidate_cl</span><span class="p">)</span>
+
+        <span class="c1"># If no candidate found using above criteria, take the onces along with travel is the maximum</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidate_centerlines</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">candidate_centerlines</span> <span class="o">=</span> <span class="n">get_centerlines_most_aligned_with_trajectory</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="n">candidate_cl</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">viz</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">centerline_coords</span> <span class="ow">in</span> <span class="n">candidate_centerlines</span><span class="p">:</span>
+                <span class="n">visualize_centerline</span><span class="p">(</span><span class="n">centerline_coords</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xy</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">xy</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#d33e4c&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+
+            <span class="n">final_x</span> <span class="o">=</span> <span class="n">xy</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">final_y</span> <span class="o">=</span> <span class="n">xy</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">final_x</span><span class="p">,</span> <span class="n">final_y</span><span class="p">,</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#d33e4c&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Map X&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Map Y&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Number of candidates = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">candidate_centerlines</span><span class="p">)))</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">candidate_centerlines</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.dfs"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.dfs">[docs]</a>    <span class="k">def</span> <span class="nf">dfs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">lane_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">dist</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
+        <span class="n">extend_along_predecessor</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform depth first search over lane graph up to the threshold.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lane_id: Starting lane_id (Eg. 12345)</span>
+<span class="sd">            city_name</span>
+<span class="sd">            dist: Distance of the current path</span>
+<span class="sd">            threshold: Threshold after which to stop the search</span>
+<span class="sd">            extend_along_predecessor: if true, dfs over predecessors, else successors</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            lanes_to_return (list of list of integers): List of sequence of lane ids</span>
+<span class="sd">                Eg. [[12345, 12346, 12347], [12345, 12348]]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dist</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[[</span><span class="n">lane_id</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">traversed_lanes</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">child_lanes</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get_lane_segment_predecessor_ids</span><span class="p">(</span><span class="n">lane_id</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">extend_along_predecessor</span>
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lane_segment_successor_ids</span><span class="p">(</span><span class="n">lane_id</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">child_lanes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">child_lanes</span><span class="p">:</span>
+                    <span class="n">centerline</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lane_segment_centerline</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span>
+                    <span class="n">cl_length</span> <span class="o">=</span> <span class="n">LineString</span><span class="p">(</span><span class="n">centerline</span><span class="p">)</span><span class="o">.</span><span class="n">length</span>
+                    <span class="n">curr_lane_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dfs</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">city_name</span><span class="p">,</span> <span class="n">dist</span> <span class="o">+</span> <span class="n">cl_length</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">extend_along_predecessor</span><span class="p">)</span>
+                    <span class="n">traversed_lanes</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">curr_lane_ids</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">traversed_lanes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[[</span><span class="n">lane_id</span><span class="p">]]</span>
+            <span class="n">lanes_to_return</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">lane_seq</span> <span class="ow">in</span> <span class="n">traversed_lanes</span><span class="p">:</span>
+                <span class="n">lanes_to_return</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lane_seq</span> <span class="o">+</span> <span class="p">[</span><span class="n">lane_id</span><span class="p">]</span> <span class="k">if</span> <span class="n">extend_along_predecessor</span> <span class="k">else</span> <span class="p">[</span><span class="n">lane_id</span><span class="p">]</span> <span class="o">+</span> <span class="n">lane_seq</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">lanes_to_return</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.draw_lane"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.draw_lane">[docs]</a>    <span class="k">def</span> <span class="nf">draw_lane</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lane_segment_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">legend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Draw the given lane.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lane_segment_id: lane ID</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+<span class="sd">            legend: True if legends specifying lane IDs are to shown as well</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lane_segment_polygon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lane_segment_polygon</span><span class="p">(</span><span class="n">lane_segment_id</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">legend</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lane_segment_polygon</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">lane_segment_polygon</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;dimgray&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">lane_segment_id</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lane_segment_polygon</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">lane_segment_polygon</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;lightgrey&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.get_lane_segments_containing_xy"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.get_lane_segments_containing_xy">[docs]</a>    <span class="k">def</span> <span class="nf">get_lane_segments_containing_xy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query_x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">query_y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Get the occupied lane ids, i.e. given (x,y), list those lane IDs whose hallucinated</span>
+<span class="sd">        lane polygon contains this (x,y) query point.</span>
+
+<span class="sd">        This function performs a &quot;point-in-polygon&quot; test.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query_x: representing x coordinate of xy query location</span>
+<span class="sd">            query_y: representing y coordinate of xy query location</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            occupied_lane_ids: list of integers, representing lane segment IDs containing (x,y)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">neighborhood_lane_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lane_ids_in_xy_bbox</span><span class="p">(</span><span class="n">query_x</span><span class="p">,</span> <span class="n">query_y</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span>
+
+        <span class="n">occupied_lane_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">neighborhood_lane_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">lane_id</span> <span class="ow">in</span> <span class="n">neighborhood_lane_ids</span><span class="p">:</span>
+                <span class="n">lane_polygon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lane_segment_polygon</span><span class="p">(</span><span class="n">lane_id</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span>
+                <span class="n">inside</span> <span class="o">=</span> <span class="n">point_inside_polygon</span><span class="p">(</span>
+                    <span class="n">lane_polygon</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lane_polygon</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">lane_polygon</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">query_x</span><span class="p">,</span> <span class="n">query_y</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">inside</span><span class="p">:</span>
+                    <span class="n">occupied_lane_ids</span> <span class="o">+=</span> <span class="p">[</span><span class="n">lane_id</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">occupied_lane_ids</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.plot_nearby_halluc_lanes"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.plot_nearby_halluc_lanes">[docs]</a>    <span class="k">def</span> <span class="nf">plot_nearby_halluc_lanes</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">query_x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">query_y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">patch_color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot lane segment for nearby lanes of the specified x, y location</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query_bbox: An array of shape (4,) representing a 2d axis-aligned bounding box, with order</span>
+<span class="sd">                        [xmin,xmax,ymin,ymax]</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nearby_lane_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lane_ids_in_xy_bbox</span><span class="p">(</span><span class="n">query_x</span><span class="p">,</span> <span class="n">query_y</span><span class="p">,</span> <span class="n">city_name</span><span class="p">,</span> <span class="n">radius</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">nearby_lane_id</span> <span class="ow">in</span> <span class="n">nearby_lane_ids</span><span class="p">:</span>
+            <span class="n">halluc_lane_polygon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lane_segment_polygon</span><span class="p">(</span><span class="n">nearby_lane_id</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span>
+            <span class="n">plot_lane_segment_patch</span><span class="p">(</span><span class="n">halluc_lane_polygon</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">patch_color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.find_local_lane_polygons"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.find_local_lane_polygons">[docs]</a>    <span class="k">def</span> <span class="nf">find_local_lane_polygons</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query_bbox</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find land polygons within specified area</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query_bbox: An array of shape (4,) representing a 2d axis-aligned bounding box, with order</span>
+<span class="sd">                        [xmin,xmax,ymin,ymax]</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">            local_lane_polygons: Array of arrays, representing local hallucinated lane polygons</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lane_polygons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_to_lane_polygons_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span>
+        <span class="n">lane_bboxes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_to_lane_bboxes_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span>
+        <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">query_bbox</span>
+        <span class="n">local_lane_polygons</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">find_local_polygons</span><span class="p">(</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">lane_polygons</span><span class="p">),</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">lane_bboxes</span><span class="p">),</span> <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">local_lane_polygons</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.find_local_driveable_areas"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.find_local_driveable_areas">[docs]</a>    <span class="k">def</span> <span class="nf">find_local_driveable_areas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query_bbox</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find local driveable areas within specified area</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query_bbox: An array of shape (4,) representing a 2d axis-aligned bounding box, with order</span>
+<span class="sd">                        [xmin,xmax,ymin,ymax]</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">            local_das: Array of arrays, representing local driveable area polygons</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">driveable_areas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_to_driveable_areas_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span>
+        <span class="n">da_bboxes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">city_to_da_bboxes_dict</span><span class="p">[</span><span class="n">city_name</span><span class="p">]</span>
+        <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">query_bbox</span>
+        <span class="n">local_das</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">find_local_polygons</span><span class="p">(</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">driveable_areas</span><span class="p">),</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">da_bboxes</span><span class="p">),</span> <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">local_das</span></div>
+
+<div class="viewcode-block" id="ArgoverseMap.find_local_lane_centerlines"><a class="viewcode-back" href="../../../argoverse.map_representation.html#argoverse.map_representation.map_api.ArgoverseMap.find_local_lane_centerlines">[docs]</a>    <span class="k">def</span> <span class="nf">find_local_lane_centerlines</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">query_x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">query_y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">city_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">query_search_range_manhattan</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">80.0</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find local lane centerline to the specified x,y location</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query_x: x-coordinate of map query</span>
+<span class="sd">            query_y: x-coordinate of map query</span>
+<span class="sd">            city_name: either &#39;MIA&#39; for Miami or &#39;PIT&#39; for Pittsburgh</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">            local_lane_centerlines: Array of arrays, representing an array of lane centerlines, each a polyline</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lane_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lane_ids_in_xy_bbox</span><span class="p">(</span><span class="n">query_x</span><span class="p">,</span> <span class="n">query_y</span><span class="p">,</span> <span class="n">city_name</span><span class="p">,</span> <span class="n">query_search_range_manhattan</span><span class="p">)</span>
+        <span class="n">local_lane_centerlines</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_lane_segment_centerline</span><span class="p">(</span><span class="n">lane_id</span><span class="p">,</span> <span class="n">city_name</span><span class="p">)</span> <span class="k">for</span> <span class="n">lane_id</span> <span class="ow">in</span> <span class="n">lane_ids</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">local_lane_centerlines</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

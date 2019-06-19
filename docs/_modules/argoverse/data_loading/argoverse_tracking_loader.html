@@ -1,0 +1,834 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.data_loading.argoverse_tracking_loader &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>argoverse.data_loading.argoverse_tracking_loader</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for argoverse.data_loading.argoverse_tracking_loader</h1><div class="highlight"><pre>
+<span></span><span class="c1"># &lt;Copyright 2019, Argo AI, LLC. Released under the MIT license.&gt;</span>
+
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">lru_cache</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">import</span> <span class="nn">argoverse.data_loading.object_label_record</span> <span class="k">as</span> <span class="nn">object_label</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">argoverse.data_loading.object_label_record</span> <span class="k">import</span> <span class="n">ObjectLabelRecord</span>
+<span class="kn">from</span> <span class="nn">argoverse.data_loading.pose_loader</span> <span class="k">import</span> <span class="n">get_city_SE3_egovehicle_at_sensor_t</span>
+<span class="kn">from</span> <span class="nn">argoverse.data_loading.synchronization_database</span> <span class="k">import</span> <span class="n">SynchronizationDB</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.calibration</span> <span class="k">import</span> <span class="n">Calibration</span><span class="p">,</span> <span class="n">load_calib</span><span class="p">,</span> <span class="n">load_image</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.camera_stats</span> <span class="k">import</span> <span class="n">CAMERA_LIST</span><span class="p">,</span> <span class="n">RING_CAMERA_LIST</span><span class="p">,</span> <span class="n">STEREO_CAMERA_LIST</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.ply_loader</span> <span class="k">import</span> <span class="n">load_ply</span>
+<span class="kn">from</span> <span class="nn">argoverse.utils.se3</span> <span class="k">import</span> <span class="n">SE3</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="nd">@lru_cache</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">_read_city_name</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;read city name from json file in the log folder</span>
+<span class="sd">    Args:</span>
+<span class="sd">        path: path to the json city_name in the log folder</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        city_name: city name of the current log, either &#39;PIT&#39; or &#39;MIA&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">city_name</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)[</span><span class="s2">&quot;city_name&quot;</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">city_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">city_name</span>
+
+
+<div class="viewcode-block" id="ArgoverseTrackingLoader"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader">[docs]</a><span class="k">class</span> <span class="nc">ArgoverseTrackingLoader</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># initialize class member</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CAMERA_LIST</span> <span class="o">=</span> <span class="n">CAMERA_LIST</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_list</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_image_list</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_image_list_sync</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_list</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timestamp_image_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list_sync</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timestamp_lidar_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label_list</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calib</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Calibration</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># { log_name: { camera_name: Calibration } }</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_city_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lidar_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">root_dir</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_log</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="p">]</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="c1"># load calibration file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calib_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_log</span><span class="p">,</span> <span class="s2">&quot;vehicle_calibration_info.json&quot;</span><span class="p">)</span>
+
+        <span class="c1"># lidar @10hz, ring camera @30hz, stereo camera @5hz</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_lidar_frame</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lidar_timestamp_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_ring_camera_frame</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_timestamp_list</span><span class="p">[</span><span class="n">RING_CAMERA_LIST</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_stereo_camera_frame</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_timestamp_list</span><span class="p">[</span><span class="n">STEREO_CAMERA_LIST</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sync</span><span class="p">:</span> <span class="n">SynchronizationDB</span> <span class="o">=</span> <span class="n">SynchronizationDB</span><span class="p">(</span><span class="n">root_dir</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_list_sync</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">calib</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">city_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;get city name of the current log</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            city_name: city name of the current log, either &#39;PIT&#39; or &#39;MIA&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_read_city_name</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_log</span><span class="p">,</span> <span class="s2">&quot;city_info.json&quot;</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">calib</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Calibration</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;get calibration dict for current log</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            calib: Calibration object for the current log</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_calib_is_populated</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calib</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calib</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">current_log</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_ensure_calib_is_populated</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;load up calibration object for all logs</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calib</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_calib</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_list</span><span class="p">:</span>
+                <span class="n">calib_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="s2">&quot;vehicle_calibration_info.json&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_calib</span><span class="p">[</span><span class="n">log</span><span class="p">]</span> <span class="o">=</span> <span class="n">load_calib</span><span class="p">(</span><span class="n">calib_filename</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">log_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;return list of log (str) in the current dataset directory</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            log_list: list of string representing log id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">valid_log</span><span class="p">(</span><span class="n">log</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="s2">&quot;vehicle_calibration_info.json&quot;</span><span class="p">))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">valid_log</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_list</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">image_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;return list of all image path (str) for all cameras for the current log</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            image_list: dictionary of list of image, with camera name as key</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_image_list</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_list</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_image_list</span><span class="p">[</span><span class="n">log</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">camera</span> <span class="ow">in</span> <span class="n">CAMERA_LIST</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_image_list</span><span class="p">[</span><span class="n">log</span><span class="p">][</span><span class="n">camera</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                        <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">((</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="s2">&quot;*.jpg&quot;</span><span class="p">)))</span>
+                    <span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">image_count</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_image_list</span><span class="p">[</span><span class="n">log</span><span class="p">][</span><span class="n">camera</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">current_log</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">image_list_sync</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;return list of image path (str) for all cameras for the current log.</span>
+
+<span class="sd">        The different between image_list and image_list_sync is that image_list_sync</span>
+<span class="sd">        syncronizes the image to lidar frame.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            image_list_sync: dictionary of list of image, with camera name as key. Each camera will have the same</span>
+<span class="sd">                             number of images as #lidar frame.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;syncronizing camera and lidar sensor...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_lidar_timestamp_list_populated</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_list_sync</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_image_list_sync</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list_sync</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_list</span><span class="p">:</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">_image_list_sync</span><span class="p">[</span><span class="n">log</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list_sync</span><span class="p">[</span><span class="n">log</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+                <span class="k">for</span> <span class="n">camera</span> <span class="ow">in</span> <span class="n">CAMERA_LIST</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list_sync</span><span class="p">[</span><span class="n">log</span><span class="p">][</span><span class="n">camera</span><span class="p">]</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span>
+                        <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+                        <span class="nb">list</span><span class="p">(</span>
+                            <span class="nb">filter</span><span class="p">(</span>
+                                <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                                <span class="p">(</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">sync</span><span class="o">.</span><span class="n">get_closest_cam_channel_timestamp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="n">log</span><span class="p">)</span>
+                                    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span><span class="p">[</span><span class="n">log</span><span class="p">]</span>
+                                <span class="p">),</span>
+                            <span class="p">)</span>
+                        <span class="p">),</span>
+                    <span class="p">)</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_image_list_sync</span><span class="p">[</span><span class="n">log</span><span class="p">][</span><span class="n">camera</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">get_image_at_timestamp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">camera</span><span class="o">=</span><span class="n">camera</span><span class="p">,</span> <span class="n">log_id</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list_sync</span><span class="p">[</span><span class="n">log</span><span class="p">][</span><span class="n">camera</span><span class="p">]</span>
+                    <span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_list_sync</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">current_log</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">image_timestamp_list_sync</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;return list of image timestamp (str) for all cameras for the current log.</span>
+
+<span class="sd">        The different between image_timestamp and image_timestamp_list_sync is that image_timestamp_list_sync</span>
+<span class="sd">        syncronize the image to lidar frame.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            image_timestamp_list_sync: dictionary of list of image timestamp, with camera name as key.</span>
+<span class="sd">                                       Each camera will have the same number of image timestamps as #lidar frame.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_list_sync</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list_sync</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list_sync</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">current_log</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">lidar_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;return list of lidar path (str) of the current log</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            lidar_list: list of lidar path for the current log</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_list</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_list</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_list</span><span class="p">[</span><span class="n">log</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="s2">&quot;lidar&quot;</span><span class="p">,</span> <span class="s2">&quot;*.ply&quot;</span><span class="p">)))</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">lidar_count</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lidar_list</span><span class="p">[</span><span class="n">log</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">current_log</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">label_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;return list of label path (str) of the current log</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            label: list of label path for the current log</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_label_list</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_list</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_label_list</span><span class="p">[</span><span class="n">log</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                    <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="s2">&quot;per_sweep_annotations_amodal&quot;</span><span class="p">,</span> <span class="s2">&quot;*.json&quot;</span><span class="p">))</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">current_log</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">image_timestamp_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;return dict of list of image timestamp (str) for all cameras for the current log.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            image_timestamp_list: dictionary of list of image timestamp for all cameras</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_list</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list</span><span class="p">[</span><span class="n">log</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">camera</span> <span class="ow">in</span> <span class="n">CAMERA_LIST</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list</span><span class="p">[</span><span class="n">log</span><span class="p">][</span><span class="n">camera</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">][:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_list</span><span class="p">[</span><span class="n">log</span><span class="p">][</span><span class="n">camera</span><span class="p">]</span>
+                    <span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">current_log</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">timestamp_image_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;return dict of list of image path (str) for all cameras for the current log, index by timestamp.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            timestamp_image_dict: dictionary of list of image path for all cameras, with timestamp as key</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timestamp_image_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_timestamp_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_timestamp_image_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_list</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timestamp_image_dict</span><span class="p">[</span><span class="n">log</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">camera</span> <span class="ow">in</span> <span class="n">CAMERA_LIST</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_timestamp_image_dict</span><span class="p">[</span><span class="n">log</span><span class="p">][</span><span class="n">camera</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list</span><span class="p">[</span><span class="n">log</span><span class="p">][</span><span class="n">camera</span><span class="p">][</span><span class="n">i</span><span class="p">]:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_list</span><span class="p">[</span><span class="n">log</span><span class="p">][</span><span class="n">camera</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list</span><span class="p">[</span><span class="n">log</span><span class="p">][</span><span class="n">camera</span><span class="p">]))</span>
+                    <span class="p">}</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timestamp_image_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">current_log</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">timestamp_lidar_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;return dict of list of lidar path (str) for the current log, index by timestamp.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            timestamp_lidar_dict: dictionary of list of lidar path, with timestamp as key</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timestamp_lidar_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_timestamp_lidar_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_list</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timestamp_lidar_dict</span><span class="p">[</span><span class="n">log</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span><span class="p">[</span><span class="n">log</span><span class="p">][</span><span class="n">i</span><span class="p">]:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_list</span><span class="p">[</span><span class="n">log</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span><span class="p">[</span><span class="n">log</span><span class="p">]))</span>
+                <span class="p">}</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timestamp_lidar_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">current_log</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">lidar_timestamp_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;return list of lidar timestamp</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            lidar_timestamp_list: list of lidar timestamp (at 10hz)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_lidar_timestamp_list_populated</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">current_log</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_ensure_lidar_timestamp_list_populated</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;load up lidar timestamp for all logs</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_list</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span><span class="p">[</span><span class="n">log</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">][:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_list</span><span class="p">[</span><span class="n">log</span><span class="p">]</span>
+                <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="s2">&quot;ArgoverseTrackingLoader&quot;</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ArgoverseTrackingLoader&quot;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">StopIteration</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_log</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_lidar_frame</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lidar_timestamp_list</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_ring_camera_frame</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_timestamp_list</span><span class="p">[</span><span class="n">RING_CAMERA_LIST</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_stereo_camera_frame</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_timestamp_list</span><span class="p">[</span><span class="n">STEREO_CAMERA_LIST</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_list</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">frame_lidar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_lidar_frame</span>
+        <span class="n">frame_image_ring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_ring_camera_frame</span>
+        <span class="n">frame_image_stereo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_stereo_camera_frame</span>
+
+        <span class="n">num_images</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_list</span><span class="p">[</span><span class="n">cam</span><span class="p">])</span> <span class="k">for</span> <span class="n">cam</span> <span class="ow">in</span> <span class="n">CAMERA_LIST</span><span class="p">]</span>
+
+        <span class="n">num_annotations</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">object_label</span><span class="o">.</span><span class="n">read_label</span><span class="p">(</span><span class="n">label</span><span class="p">))</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_list</span><span class="p">]</span>
+
+        <span class="n">start_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_timestamp_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">end_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_timestamp_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">time_in_sec</span> <span class="o">=</span> <span class="p">(</span><span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mi">9</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">--------------------------------------------------------------------</span>
+<span class="s2">------Log id: </span><span class="si">{self.current_log}</span><span class="s2"></span>
+<span class="s2">--------------------------------------------------------------------</span>
+<span class="s2">Time: </span><span class="si">{time_in_sec}</span><span class="s2"> sec</span>
+<span class="s2"># frame lidar (@10hz): </span><span class="si">{frame_lidar}</span><span class="s2"></span>
+<span class="s2"># frame ring camera (@30hz): </span><span class="si">{frame_image_ring}</span><span class="s2"></span>
+<span class="s2"># frame stereo camera (@5hz): </span><span class="si">{frame_image_stereo}</span><span class="s2"></span>
+
+<span class="s2">Total images: {sum(num_images)}</span>
+<span class="s2">Total bounding box: {sum(num_annotations)}</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ArgoverseTrackingLoader&quot;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_log</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_lidar_frame</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lidar_timestamp_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_ring_camera_frame</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_timestamp_list</span><span class="p">[</span><span class="n">RING_CAMERA_LIST</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_stereo_camera_frame</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_timestamp_list</span><span class="p">[</span><span class="n">STEREO_CAMERA_LIST</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+<div class="viewcode-block" id="ArgoverseTrackingLoader.get"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ArgoverseTrackingLoader&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;get ArgoverseTrackingLoader object with current_log set to specified log_id</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            log_id: log id</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            ArgoverseTrackingLoader: with current_log set to log_id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_log</span> <span class="o">=</span> <span class="n">log_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_lidar_frame</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lidar_timestamp_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_ring_camera_frame</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_timestamp_list</span><span class="p">[</span><span class="n">RING_CAMERA_LIST</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_stereo_camera_frame</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_timestamp_list</span><span class="p">[</span><span class="n">STEREO_CAMERA_LIST</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="ArgoverseTrackingLoader.get_image_list"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_image_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_image_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">log_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">load</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get list of image/or image path</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            camera: camera based on camera_stats.CAMERA_LIST</span>
+<span class="sd">            log_id: log_id, if not specified will use self.current_log</span>
+<span class="sd">            load: whether to return image array (True) or image path (False)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.array: list of image path (str or np.array)),</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">log_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_log</span>
+        <span class="k">if</span> <span class="n">load</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">camera</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_image_list</span><span class="p">[</span><span class="n">log_id</span><span class="p">][</span><span class="n">camera</span><span class="p">]))]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_list</span><span class="p">[</span><span class="n">log_id</span><span class="p">][</span><span class="n">camera</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ArgoverseTrackingLoader.get_image_list_sync"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_image_list_sync">[docs]</a>    <span class="k">def</span> <span class="nf">get_image_list_sync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">log_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">load</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get list of image/or image path in lidar index</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            camera: camera based on camera_stats.CAMERA_LIST</span>
+<span class="sd">            log_id: log_id, if not specified will use self.current_log</span>
+<span class="sd">            load: whether to return image array (True) or image path (False)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.array: list of image path (str or np.array)),</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_list_sync</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_list_sync</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">log_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_log</span>
+
+        <span class="k">if</span> <span class="n">load</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_image_sync</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">camera</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_image_list_sync</span><span class="p">[</span><span class="n">log_id</span><span class="p">][</span><span class="n">camera</span><span class="p">]))]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_list_sync</span><span class="p">[</span><span class="n">log_id</span><span class="p">][</span><span class="n">camera</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ArgoverseTrackingLoader.get_image_at_timestamp"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_image_at_timestamp">[docs]</a>    <span class="k">def</span> <span class="nf">get_image_at_timestamp</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">log_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">load</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;get image or image path at a specific timestamp</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            timestamp: timestamp</span>
+<span class="sd">            camera: camera based on camera_stats.CAMERA_LIST</span>
+<span class="sd">            log_id: log_id, if not specified will use self.current_log</span>
+<span class="sd">            load: whether to return image array (True) or image path (False)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.array: list of image path (str or np.array)),</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestamp_image_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timestamp_image_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">log_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_log</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestamp_image_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">image_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timestamp_image_dict</span><span class="p">[</span><span class="n">log_id</span><span class="p">][</span><span class="n">camera</span><span class="p">][</span><span class="n">timestamp</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Cannot find </span><span class="si">{camera}</span><span class="s2"> image at timestamp </span><span class="si">{timestamp}</span><span class="s2"> in log </span><span class="si">{log_id}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">load</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">load_image</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">image_path</span></div>
+
+<div class="viewcode-block" id="ArgoverseTrackingLoader.get_image"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_image">[docs]</a>    <span class="k">def</span> <span class="nf">get_image</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">log_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">load</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;get image or image path at a specific index (in image index)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            idx: image based 0-index</span>
+<span class="sd">            camera: camera based on camera_stats.CAMERA_LIST</span>
+<span class="sd">            log_id: log_id, if not specified will use self.current_log</span>
+<span class="sd">            load: whether to return image array (True) or image path (False)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.array: list of image path (str or np.array)),</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_timestamp_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">log_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_log</span>
+
+        <span class="k">assert</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list</span><span class="p">[</span><span class="n">log_id</span><span class="p">][</span><span class="n">camera</span><span class="p">])</span>
+        <span class="n">image_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_list</span><span class="p">[</span><span class="n">log_id</span><span class="p">][</span><span class="n">camera</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">load</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">load_image</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">image_path</span></div>
+
+<div class="viewcode-block" id="ArgoverseTrackingLoader.get_image_sync"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_image_sync">[docs]</a>    <span class="k">def</span> <span class="nf">get_image_sync</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">log_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">load</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;get image or image path at a specific index (in lidar index)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            idx: lidar based 0-index</span>
+<span class="sd">            camera: camera based on camera_stats.CAMERA_LIST</span>
+<span class="sd">            log_id: log_id, if not specified will use self.current_log</span>
+<span class="sd">            load: whether to return image array (True) or image path (False)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.array: list of image path (str or np.array)),</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_timestamp_list_sync</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list_sync</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_list_sync</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_list_sync</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">log_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_log</span>
+
+        <span class="k">assert</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_image_timestamp_list_sync</span><span class="p">[</span><span class="n">log_id</span><span class="p">][</span><span class="n">camera</span><span class="p">])</span>
+        <span class="n">image_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_list_sync</span><span class="p">[</span><span class="n">log_id</span><span class="p">][</span><span class="n">camera</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">load</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">load_image</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">image_path</span></div>
+
+<div class="viewcode-block" id="ArgoverseTrackingLoader.get_lidar"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_lidar">[docs]</a>    <span class="k">def</span> <span class="nf">get_lidar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">log_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">load</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get lidar corresponding to frame index idx (in lidar frame).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            idx: Lidar frame index</span>
+<span class="sd">            log_id: ID of log to search (default: current log)</span>
+<span class="sd">            load: whether to load up the data, will return path to the lidar file if set to false</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Either path to lidar at a specific index, or point cloud data if load is set to True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_timestamp_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">log_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_log</span>
+
+        <span class="k">assert</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span><span class="p">[</span><span class="n">log_id</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">load</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">load_ply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lidar_list</span><span class="p">[</span><span class="n">log_id</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_list</span><span class="p">[</span><span class="n">log_id</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ArgoverseTrackingLoader.get_label_object"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_label_object">[docs]</a>    <span class="k">def</span> <span class="nf">get_label_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">log_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ObjectLabelRecord</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get label corresponding to frame index idx (in lidar frame).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            idx: Lidar frame index</span>
+<span class="sd">            log_id: ID of log to search (default: current log)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of ObjectLabelRecord info for a particular index</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_timestamp_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">log_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_log</span>
+
+        <span class="k">assert</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span><span class="p">[</span><span class="n">log_id</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">object_label</span><span class="o">.</span><span class="n">read_label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_label_list</span><span class="p">[</span><span class="n">log_id</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="ArgoverseTrackingLoader.get_calibration"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_calibration">[docs]</a>    <span class="k">def</span> <span class="nf">get_calibration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">log_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Calibration</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get calibration corresponding to the camera.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            camera: name of the camera; one of::</span>
+
+<span class="sd">               [&quot;ring_front_center&quot;,</span>
+<span class="sd">                &quot;ring_front_left&quot;,</span>
+<span class="sd">                &quot;ring_front_right&quot;,</span>
+<span class="sd">                &quot;ring_rear_left&quot;,</span>
+<span class="sd">                &quot;ring_rear_right&quot;,</span>
+<span class="sd">                &quot;ring_side_left&quot;,</span>
+<span class="sd">                &quot;ring_side_right&quot;,</span>
+<span class="sd">                &quot;stereo_front_left&quot;,</span>
+<span class="sd">                &quot;stereo_front_right&quot;]</span>
+
+<span class="sd">            log_id: ID of log to search (default: current log)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Calibration info for a particular index</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_calib_is_populated</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calib</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">log_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_log</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calib</span><span class="p">[</span><span class="n">log_id</span><span class="p">][</span><span class="n">camera</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ArgoverseTrackingLoader.get_pose"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_pose">[docs]</a>    <span class="k">def</span> <span class="nf">get_pose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">log_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SE3</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get pose corresponding to an index in a particular log_id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            idx: Lidar frame index</span>
+<span class="sd">            log_id: ID of log to search (default: current log)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Pose for a particular index</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">log_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_log</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_lidar_timestamp_list_populated</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span><span class="p">[</span><span class="n">log_id</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">get_city_SE3_egovehicle_at_sensor_t</span><span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span><span class="p">,</span> <span class="n">log_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ArgoverseTrackingLoader.get_idx_from_timestamp"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.get_idx_from_timestamp">[docs]</a>    <span class="k">def</span> <span class="nf">get_idx_from_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">log_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get index corresponding to a timestamp in a particular log_id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            timestamp: Timestamp to search for</span>
+<span class="sd">            log_id: ID of log to search (default: current log)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Index in the log if found, or None if not found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">log_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_log</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_lidar_timestamp_list_populated</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span><span class="p">[</span><span class="n">log_id</span><span class="p">])):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lidar_timestamp_list</span><span class="p">[</span><span class="n">log_id</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">timestamp</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">i</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="ArgoverseTrackingLoader.print_all"><a class="viewcode-back" href="../../../argoverse.data_loading.html#argoverse.data_loading.argoverse_tracking_loader.ArgoverseTrackingLoader.print_all">[docs]</a>    <span class="k">def</span> <span class="nf">print_all</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_timestamp_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_timestamp_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#images:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_count</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#lidar:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lidar_count</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

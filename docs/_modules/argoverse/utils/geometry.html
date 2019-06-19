@@ -1,0 +1,259 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.utils.geometry &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>argoverse.utils.geometry</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for argoverse.utils.geometry</h1><div class="highlight"><pre>
+<span></span><span class="c1"># &lt;Copyright 2019, Argo AI, LLC. Released under the MIT license.&gt;</span>
+<span class="sd">&quot;&quot;&quot;Collection of functions that handle filtering a point cloud to a 2D polygon.</span>
+
+<span class="sd">For filtering to 3D polygons, please see cuboid_interior.py or iou_3d.py instead.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="k">import</span> <span class="n">Point</span><span class="p">,</span> <span class="n">Polygon</span>
+
+
+<div class="viewcode-block" id="rotate_polygon_about_pt"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.geometry.rotate_polygon_about_pt">[docs]</a><span class="k">def</span> <span class="nf">rotate_polygon_about_pt</span><span class="p">(</span><span class="n">pts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rotmat</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">center_pt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Rotate a polygon about a point with a given rotation matrix.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pts: Array of shape (N, 3) representing a polygon or point cloud</span>
+<span class="sd">        rotmat: Array of shape (3, 3) representing a rotation matrix</span>
+<span class="sd">        center_pt: Array of shape (3,) representing point about which we rotate the polygon</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        rot_pts: Array of shape (N, 3) representing a ROTATED polygon or point cloud</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pts</span> <span class="o">-=</span> <span class="n">center_pt</span>
+    <span class="n">rot_pts</span> <span class="o">=</span> <span class="n">pts</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">rotmat</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">rot_pts</span> <span class="o">+=</span> <span class="n">center_pt</span>
+    <span class="k">return</span> <span class="n">rot_pts</span></div>
+
+
+<div class="viewcode-block" id="filter_point_cloud_to_polygon"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.geometry.filter_point_cloud_to_polygon">[docs]</a><span class="k">def</span> <span class="nf">filter_point_cloud_to_polygon</span><span class="p">(</span><span class="n">polygon</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">point_cloud</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Filter a point cloud to the points within a polygon.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        polygon: Array of shape (K, 2) representing points of a polygon</span>
+<span class="sd">        point_cloud: Array of shape (N, 2) or (N, 3) representing points in a point cloud</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        interior_pts: Array of shape (N, 3) representing filtered points.</span>
+<span class="sd">        Returns None if no point falls within the polygon.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">is_inside</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">point_cloud</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">pt_idx</span><span class="p">,</span> <span class="n">lidar_pt</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">point_cloud</span><span class="p">):</span>
+        <span class="n">is_inside</span><span class="p">[</span><span class="n">pt_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">point_inside_polygon</span><span class="p">(</span>
+            <span class="n">polygon</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">polygon</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">polygon</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">lidar_pt</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lidar_pt</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">is_inside</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">interior_pts</span> <span class="o">=</span> <span class="n">point_cloud</span><span class="p">[</span><span class="n">is_inside</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">interior_pts</span></div>
+
+
+<div class="viewcode-block" id="point_inside_polygon"><a class="viewcode-back" href="../../../argoverse.utils.html#argoverse.utils.geometry.point_inside_polygon">[docs]</a><span class="k">def</span> <span class="nf">point_inside_polygon</span><span class="p">(</span>
+    <span class="n">n_vertices</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">poly_x_pts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">poly_y_pts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">test_x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">test_y</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Check whether a point is inside a polygon.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        n_vertices: number of vertices in the polygon</span>
+<span class="sd">        vert_x_pts, Array containing the x-coordinates of the polygon&#39;s vertices.</span>
+<span class="sd">        vert_y_pts: Array containing the y-coordinates of the polygon&#39;s vertices.</span>
+<span class="sd">        test_x, test_y: the x- and y-coordinate of the test point</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        inside: boolean, whether point lies inside polygon</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">poly_x_pts</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">poly_y_pts</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">poly_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">poly_x_pts</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">poly_y_pts</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)])</span>
+    <span class="k">assert</span> <span class="n">poly_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_vertices</span>
+    <span class="n">polygon</span> <span class="o">=</span> <span class="n">Polygon</span><span class="p">(</span><span class="n">poly_arr</span><span class="p">)</span>
+    <span class="n">pt</span> <span class="o">=</span> <span class="n">Point</span><span class="p">([</span><span class="n">test_x</span><span class="p">,</span> <span class="n">test_y</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">polygon</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">pt</span><span class="p">))</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+fail_fast: false
+
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks.git
+    rev: 0b70e28
+    hooks:
+    - id: check-json
+    - id: mixed-line-ending
+      args: ['--fix=lf']
+    - id: end-of-file-fixer
+    - id: debug-statements
+-   repo: https://github.com/pre-commit/mirrors-isort.git
+    rev: dc9ed97
+    hooks:
+    - id: isort
+      args: ["-w", "120", "--multi-line=3", "--trailing-comma", "--force-grid-wrap=0", "--use-parentheses"]
+-   repo: https://github.com/python/black.git
+    rev: 1bbb01b
+    hooks:
+    - id: black
+      args: ["-l", "120"]

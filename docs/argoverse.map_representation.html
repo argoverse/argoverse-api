@@ -1,0 +1,1156 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>argoverse.map_representation package &mdash; argoverse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> argoverse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">argoverse.map_representation package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-argoverse.map_representation.lane_segment">argoverse.map_representation.lane_segment module</a></li>
+<li><a class="reference internal" href="#module-argoverse.map_representation.map_api">argoverse.map_representation.map_api module</a></li>
+<li><a class="reference internal" href="#module-argoverse.map_representation.map_viz_helper">argoverse.map_representation.map_viz_helper module</a></li>
+<li><a class="reference internal" href="#module-argoverse.map_representation">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">argoverse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>argoverse.map_representation package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/argoverse.map_representation.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="argoverse-map-representation-package">
+<h1>argoverse.map_representation package<a class="headerlink" href="#argoverse-map-representation-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-argoverse.map_representation.lane_segment">
+<span id="argoverse-map-representation-lane-segment-module"></span><h2>argoverse.map_representation.lane_segment module<a class="headerlink" href="#module-argoverse.map_representation.lane_segment" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="argoverse.map_representation.lane_segment.LaneSegment">
+<em class="property">class </em><code class="sig-prename descclassname">argoverse.map_representation.lane_segment.</code><code class="sig-name descname">LaneSegment</code><span class="sig-paren">(</span><em class="sig-param">id</em>, <em class="sig-param">has_traffic_control</em>, <em class="sig-param">turn_direction</em>, <em class="sig-param">is_intersection</em>, <em class="sig-param">l_neighbor_id</em>, <em class="sig-param">r_neighbor_id</em>, <em class="sig-param">predecessors</em>, <em class="sig-param">successors</em>, <em class="sig-param">centerline</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/lane_segment.html#LaneSegment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.lane_segment.LaneSegment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="argoverse.map_representation.lane_segment.LaneSegment.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">id</em>, <em class="sig-param">has_traffic_control</em>, <em class="sig-param">turn_direction</em>, <em class="sig-param">is_intersection</em>, <em class="sig-param">l_neighbor_id</em>, <em class="sig-param">r_neighbor_id</em>, <em class="sig-param">predecessors</em>, <em class="sig-param">successors</em>, <em class="sig-param">centerline</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/lane_segment.html#LaneSegment.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.lane_segment.LaneSegment.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the lane segment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Unique lane ID that serves as identifier for this “Way”</p></li>
+<li><p><strong>has_traffic_control</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – </p></li>
+<li><p><strong>turn_direction</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – ‘RIGHT’, ‘LEFT’, or ‘NONE’</p></li>
+<li><p><strong>is_intersection</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – Whether or not this lane segment is an intersection</p></li>
+<li><p><strong>l_neighbor_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – Unique ID for left neighbor</p></li>
+<li><p><strong>r_neighbor_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – Unique ID for right neighbor</p></li>
+<li><p><strong>predecessors</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – The IDs of the lane segments that come after this one</p></li>
+<li><p><strong>successors</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]]) – The IDs of the lane segments that come before this one.</p></li>
+<li><p><strong>centerline</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – The coordinates of the lane segment’s center line.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.map_representation.map_api">
+<span id="argoverse-map-representation-map-api-module"></span><h2>argoverse.map_representation.map_api module<a class="headerlink" href="#module-argoverse.map_representation.map_api" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap">
+<em class="property">class </em><code class="sig-prename descclassname">argoverse.map_representation.map_api.</code><code class="sig-name descname">ArgoverseMap</code><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>This class provides the interface to our vector maps and rasterized maps. Exact lane boundaries
+are not provided, but can be hallucinated if one considers an average lane width.</p>
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the Argoverse Map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.append_height_to_2d_city_pt_cloud">
+<code class="sig-name descname">append_height_to_2d_city_pt_cloud</code><span class="sig-paren">(</span><em class="sig-param">pt_cloud_xy</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.append_height_to_2d_city_pt_cloud"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.append_height_to_2d_city_pt_cloud" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accept 2d point cloud in xy plane and return 3d point cloud (xyz)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pt_cloud_xy</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Numpy array of shape (N,2)</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Numpy array of shape (N,3)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pt_cloud_xyz</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.build_centerline_index">
+<code class="sig-name descname">build_centerline_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.build_centerline_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.build_centerline_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build dictionary of centerline for each city, with lane_id as key</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Keys are city names, values are dictionaries</dt><dd><p>(k=lane_id, v=lane info)</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>city_lane_centerlines_dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.build_city_driveable_area_roi_index">
+<code class="sig-name descname">build_city_driveable_area_roi_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.build_city_driveable_area_roi_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.build_city_driveable_area_roi_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load driveable area files from disk. Dilate driveable area to get ROI (takes about 1/2 second).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>a dictionary of dictionaries. Key is city_name, and</dt><dd><p>value is a dictionary with driveable area info. For example, includes da_matrix: Numpy array of
+shape (M,N) representing binary values for driveable area
+city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.
+p_city = city_Transformation_pklimage * p_pklimage</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>city_rasterized_da_dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.build_city_ground_height_index">
+<code class="sig-name descname">build_city_ground_height_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.build_city_ground_height_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.build_city_ground_height_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build index of rasterized ground height.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>a dictionary of dictionaries. Key is city_name, and values</dt><dd><p>are dictionaries that store the “ground_height_matrix” and also the
+city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city
+coordinates, e.g. p_city = city_Transformation_pklimage * p_pklimage</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>city_ground_height_index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.build_hallucinated_lane_bbox_index">
+<code class="sig-name descname">build_hallucinated_lane_bbox_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.build_hallucinated_lane_bbox_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.build_hallucinated_lane_bbox_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Populate the pre-computed hallucinated extent of each lane polygon, to allow for fast
+queries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>city_halluc_bbox_table
+city_id_to_halluc_tableidx_map</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.dfs">
+<code class="sig-name descname">dfs</code><span class="sig-paren">(</span><em class="sig-param">lane_id</em>, <em class="sig-param">city_name</em>, <em class="sig-param">dist=0</em>, <em class="sig-param">threshold=30</em>, <em class="sig-param">extend_along_predecessor=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.dfs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.dfs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform depth first search over lane graph up to the threshold.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lane_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Starting lane_id (Eg. 12345)</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – </p></li>
+<li><p><strong>dist</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Distance of the current path</p></li>
+<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Threshold after which to stop the search</p></li>
+<li><p><strong>extend_along_predecessor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – if true, dfs over predecessors, else successors</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>List of sequence of lane ids</dt><dd><p>Eg. [[12345, 12346, 12347], [12345, 12348]]</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>lanes_to_return (list of list of integers)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.draw_lane">
+<code class="sig-name descname">draw_lane</code><span class="sig-paren">(</span><em class="sig-param">lane_segment_id</em>, <em class="sig-param">city_name</em>, <em class="sig-param">legend=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.draw_lane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.draw_lane" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw the given lane.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lane_segment_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – lane ID</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+<li><p><strong>legend</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – True if legends specifying lane IDs are to shown as well</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.find_local_driveable_areas">
+<code class="sig-name descname">find_local_driveable_areas</code><span class="sig-paren">(</span><em class="sig-param">query_bbox</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.find_local_driveable_areas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.find_local_driveable_areas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find local driveable areas within specified area</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query_bbox</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – An array of shape (4,) representing a 2d axis-aligned bounding box, with order
+[xmin,xmax,ymin,ymax]</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Returns</dt><dd><p>local_das: Array of arrays, representing local driveable area polygons</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.find_local_lane_centerlines">
+<code class="sig-name descname">find_local_lane_centerlines</code><span class="sig-paren">(</span><em class="sig-param">query_x</em>, <em class="sig-param">query_y</em>, <em class="sig-param">city_name</em>, <em class="sig-param">query_search_range_manhattan=80.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.find_local_lane_centerlines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.find_local_lane_centerlines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find local lane centerline to the specified x,y location</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query_x</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – x-coordinate of map query</p></li>
+<li><p><strong>query_y</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – x-coordinate of map query</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Returns</dt><dd><p>local_lane_centerlines: Array of arrays, representing an array of lane centerlines, each a polyline</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.find_local_lane_polygons">
+<code class="sig-name descname">find_local_lane_polygons</code><span class="sig-paren">(</span><em class="sig-param">query_bbox</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.find_local_lane_polygons"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.find_local_lane_polygons" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find land polygons within specified area</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query_bbox</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – An array of shape (4,) representing a 2d axis-aligned bounding box, with order
+[xmin,xmax,ymin,ymax]</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Returns</dt><dd><p>local_lane_polygons: Array of arrays, representing local hallucinated lane polygons</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_candidate_centerlines_for_traj">
+<code class="sig-name descname">get_candidate_centerlines_for_traj</code><span class="sig-paren">(</span><em class="sig-param">xy</em>, <em class="sig-param">city_name</em>, <em class="sig-param">viz=False</em>, <em class="sig-param">max_search_radius=50.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_candidate_centerlines_for_traj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_candidate_centerlines_for_traj" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get centerline candidates upto a threshold. .</p>
+<p>Algorithm:
+1. Take the lanes in the bubble of last obs coordinate
+2. Extend before and after considering all possible candidates
+3. Get centerlines with max distance along centerline</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xy</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – trajectory of shape (N, 2).</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – </p></li>
+<li><p><strong>viz</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – Visualize</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of candidate centerlines</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>candidate_centerlines</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_cl_from_lane_seq">
+<code class="sig-name descname">get_cl_from_lane_seq</code><span class="sig-paren">(</span><em class="sig-param">lane_seqs</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_cl_from_lane_seq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_cl_from_lane_seq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get centerlines corresponding to each lane sequence in lane_sequences</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lane_seqs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]]) – Iterable of sequence of lane ids (Eg. [[12345, 12346, 12347], [12345, 12348]])</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of numpy arrays for centerline corresponding to each lane sequence</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>candidate_cl</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_da_contours">
+<code class="sig-name descname">get_da_contours</code><span class="sig-paren">(</span><em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_da_contours"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_da_contours" title="Permalink to this definition">¶</a></dt>
+<dd><p>We threshold the binary driveable area or ROI image and obtain contour lines. These
+contour lines represent the boundary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[&lt;function hstack at 0x7f496d011620&gt;]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Drivable area contours</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_ground_height_at_xy">
+<code class="sig-name descname">get_ground_height_at_xy</code><span class="sig-paren">(</span><em class="sig-param">point_cloud</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_ground_height_at_xy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_ground_height_at_xy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get ground height for each of the xy location in point_cloud</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_cloud</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Numpy array of shape (k,2) or (k,3)</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Numpy array of shape (k,)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ground_height_values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_ground_points_boolean">
+<code class="sig-name descname">get_ground_points_boolean</code><span class="sig-paren">(</span><em class="sig-param">point_cloud</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_ground_points_boolean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_ground_points_boolean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether each point is likely to be from the ground surface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_cloud</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Numpy array of shape (N,3)</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Numpy array of shape (N,) where ith entry is True if the LiDAR return</dt><dd><p>is likely a hit from the ground surface.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>is_ground_boolean_arr</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_lane_direction">
+<code class="sig-name descname">get_lane_direction</code><span class="sig-paren">(</span><em class="sig-param">query_xy_city_coords</em>, <em class="sig-param">city_name</em>, <em class="sig-param">visualize=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_lane_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_lane_direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get vector direction of the lane you’re in.
+We ignore the sparse version of the centerline that we could
+trivially pull from lane_obj[‘centerline’].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query_xy_city_coords</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Numpy array of shape (2,) representing (x,y) position in city coordinates</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+<li><p><strong>visualize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – to also visualize the result</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Numpy array of shape (2,) representing the direction (as a vector) of the closest</dt><dd><p>lane to the provided position in city coordinates</p>
+</dd>
+</dl>
+<p>conf: real-valued confidence. less than 0.85 is almost always unreliable</p>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>lane_dir_vector</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>We have access to all of the following fields in “lane_obj”:</dt><dd><p>‘centerline’, ‘predecessor’, ‘successor’, ‘turn_direction’,
+‘is_intersection’, ‘has_traffic_control’</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_lane_ids_in_xy_bbox">
+<code class="sig-name descname">get_lane_ids_in_xy_bbox</code><span class="sig-paren">(</span><em class="sig-param">query_x</em>, <em class="sig-param">query_y</em>, <em class="sig-param">city_name</em>, <em class="sig-param">query_search_range_manhattan=5.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_lane_ids_in_xy_bbox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_lane_ids_in_xy_bbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prune away all lane segments based on Manhattan distance. We vectorize this instead
+of using a for-loop. Get all lane IDs within a bounding box in the xy plane.
+This is a approximation of a bubble search for point-to-polygon distance.</p>
+<p>The bounding boxes of small point clouds (lane centerline waypoints) are precomputed in the map.
+We then can perform an efficient search based on manhattan distance search radius from a
+given 2D query point.</p>
+<p>We pre-assign lane segment IDs to indices inside a big lookup array, with precomputed
+hallucinated lane polygon extents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query_x</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – representing x coordinate of xy query location</p></li>
+<li><p><strong>query_y</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – representing y coordinate of xy query location</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+<li><p><strong>query_search_range_manhattan</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – search radius along axes</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>lane segment IDs that live within a bubble</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>lane_ids</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_lane_segment_adjacent_ids">
+<code class="sig-name descname">get_lane_segment_adjacent_ids</code><span class="sig-paren">(</span><em class="sig-param">lane_segment_id</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_lane_segment_adjacent_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_lane_segment_adjacent_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get land id for the lane adjacent left/right neighbor of the specified lane_segment_id</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lane_segment_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – unique identifier for a lane segment within a city</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ or ‘PIT’ for Miami or Pittsburgh</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>list of integers, representing lane segment IDs of adjacent</dt><dd><p>left/right neighbor lane segments</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>adjacent_ids</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_lane_segment_centerline">
+<code class="sig-name descname">get_lane_segment_centerline</code><span class="sig-paren">(</span><em class="sig-param">lane_segment_id</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_lane_segment_centerline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_lane_segment_centerline" title="Permalink to this definition">¶</a></dt>
+<dd><p>We return a 3D centerline for any particular lane segment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lane_segment_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – unique identifier for a lane segment within a city</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ or ‘PIT’ for Miami or Pittsburgh</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Numpy array of shape (N,3)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>lane_centerline</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_lane_segment_polygon">
+<code class="sig-name descname">get_lane_segment_polygon</code><span class="sig-paren">(</span><em class="sig-param">lane_segment_id</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_lane_segment_polygon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_lane_segment_polygon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hallucinate a 3d lane polygon based around the centerline. We rely on the average
+lane width within our cities to hallucinate the boundaries. We rely upon the
+rasterized maps to provide heights to points in the xy plane.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lane_segment_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – unique identifier for a lane segment within a city</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ or ‘PIT’ for Miami or Pittsburgh</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Array of polygon boundary (K,3), with identical and last boundary points</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>lane_polygon</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_lane_segment_predecessor_ids">
+<code class="sig-name descname">get_lane_segment_predecessor_ids</code><span class="sig-paren">(</span><em class="sig-param">lane_segment_id</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_lane_segment_predecessor_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_lane_segment_predecessor_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get land id for the lane predecessor of the specified lane_segment_id</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lane_segment_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – unique identifier for a lane segment within a city</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of integers, representing lane segment IDs of predecessors</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>predecessor_ids</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_lane_segment_successor_ids">
+<code class="sig-name descname">get_lane_segment_successor_ids</code><span class="sig-paren">(</span><em class="sig-param">lane_segment_id</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_lane_segment_successor_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_lane_segment_successor_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get land id for the lane sucessor of the specified lane_segment_id</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lane_segment_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – unique identifier for a lane segment within a city</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ or ‘PIT’ for Miami or Pittsburgh</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of integers, representing lane segment IDs of successors</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>successor_ids</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_lane_segments_containing_xy">
+<code class="sig-name descname">get_lane_segments_containing_xy</code><span class="sig-paren">(</span><em class="sig-param">query_x</em>, <em class="sig-param">query_y</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_lane_segments_containing_xy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_lane_segments_containing_xy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the occupied lane ids, i.e. given (x,y), list those lane IDs whose hallucinated
+lane polygon contains this (x,y) query point.</p>
+<p>This function performs a “point-in-polygon” test.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query_x</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – representing x coordinate of xy query location</p></li>
+<li><p><strong>query_y</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – representing y coordinate of xy query location</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of integers, representing lane segment IDs containing (x,y)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>occupied_lane_ids</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_lane_turn_direction">
+<code class="sig-name descname">get_lane_turn_direction</code><span class="sig-paren">(</span><em class="sig-param">lane_segment_id</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_lane_turn_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_lane_turn_direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get left/right/none direction of the specified lane_segment_id</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lane_segment_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – unique identifier for a lane segment within a city</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ or ‘PIT’ for Miami or Pittsburgh</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>string, can be ‘RIGHT’, ‘LEFT’, or ‘NONE’</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>turn_direction</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_nearest_centerline">
+<code class="sig-name descname">get_nearest_centerline</code><span class="sig-paren">(</span><em class="sig-param">query_xy_city_coords</em>, <em class="sig-param">city_name</em>, <em class="sig-param">visualize=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_nearest_centerline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_nearest_centerline" title="Permalink to this definition">¶</a></dt>
+<dd><p>KD Tree with k-closest neighbors or a fixed radius search on the lane centroids
+is unreliable since (1) there is highly variable density throughout the map and (2)
+lane lengths differ enormously, meaning the centroid is not indicative of nearby points.
+If no lanes are found with MAX_LABEL_DIST_TO_LANE, we increase the search radius.</p>
+<p>A correct approach is to compare centerline-to-query point distances, e.g. as done
+in Shapely. Instead of looping over all points, we precompute the bounding boxes of
+each lane.</p>
+<p>We use the closest_waypoint as our criterion. Using the smallest sum to waypoints
+does not work in many cases with disproportionately shaped lane segments.</p>
+<p>and then choose the lane centerline with the smallest sum of 3-5
+closest waypoints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query_xy_city_coords</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Numpy array of shape (2,) representing xy position of query in city coordinates</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+<li><p><strong>visualize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Python dictionary with fields describing a lane.</dt><dd><dl class="simple">
+<dt>Keys include: ‘centerline’, ‘predecessor’, ‘successor’, ‘turn_direction’,</dt><dd><p>’is_intersection’, ‘has_traffic_control’, ‘is_autonomous’, ‘is_routable’</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>conf: real-valued confidence. less than 0.85 is almost always unreliable
+dense_centerline: numpy array</p>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>lane_object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_raster_layer_points_boolean">
+<code class="sig-name descname">get_raster_layer_points_boolean</code><span class="sig-paren">(</span><em class="sig-param">point_cloud</em>, <em class="sig-param">city_name</em>, <em class="sig-param">layer_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_raster_layer_points_boolean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_raster_layer_points_boolean" title="Permalink to this definition">¶</a></dt>
+<dd><p>driveable area is “da”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_cloud</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Numpy array of shape (N,3)</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+<li><p><strong>layer_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – indicating layer name, either “roi” or “driveable area”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Numpy array of shape (N,) where ith entry is True if the LiDAR return</dt><dd><p>is likely a hit from the ground surface.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>is_ground_boolean_arr</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_rasterized_driveable_area">
+<code class="sig-name descname">get_rasterized_driveable_area</code><span class="sig-paren">(</span><em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_rasterized_driveable_area"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_rasterized_driveable_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the driveable area.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>Numpy array of shape (M,N) representing binary values for driveable area
+city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.</p>
+<blockquote>
+<div><p>p_city = city_Transformation_pklimage * p_pklimage</p>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>da_matrix</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_rasterized_ground_height">
+<code class="sig-name descname">get_rasterized_ground_height</code><span class="sig-paren">(</span><em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_rasterized_ground_height"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_rasterized_ground_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get ground height matrix along with se2 that convert to city coordinate</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><p>ground_height_matrix
+city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.</p>
+<blockquote>
+<div><p>p_city = city_Transformation_pklimage * p_pklimage</p>
+</div></blockquote>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_rasterized_roi">
+<code class="sig-name descname">get_rasterized_roi</code><span class="sig-paren">(</span><em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_rasterized_roi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_rasterized_roi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the driveable area.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – string, either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>Numpy array of shape (M,N) representing binary values for driveable area
+city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.</p>
+<blockquote>
+<div><p>p_city = city_Transformation_pklimage * p_pklimage</p>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>da_matrix</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_vector_map_driveable_areas">
+<code class="sig-name descname">get_vector_map_driveable_areas</code><span class="sig-paren">(</span><em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_vector_map_driveable_areas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_vector_map_driveable_areas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get driveable area for a specified city</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>driveable areas as n-d array of NumPy objects of shape (n,3)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>das</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>‘z_min’, ‘z_max’ were removed</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.get_vector_map_lane_polygons">
+<code class="sig-name descname">get_vector_map_lane_polygons</code><span class="sig-paren">(</span><em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.get_vector_map_lane_polygons"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.get_vector_map_lane_polygons" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get list of lane polygons for a specified city</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Numpy array of polygons</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.lane_has_traffic_control_measure">
+<code class="sig-name descname">lane_has_traffic_control_measure</code><span class="sig-paren">(</span><em class="sig-param">lane_segment_id</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.lane_has_traffic_control_measure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.lane_has_traffic_control_measure" title="Permalink to this definition">¶</a></dt>
+<dd><p>You can have an intersection without a control measure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lane_segment_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – unique identifier for a lane segment within a city</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ or ‘PIT’ for Miami or Pittsburgh</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>indicating if lane segment has a</dt><dd><p>traffic control measure</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>has_traffic_control</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.lane_is_in_intersection">
+<code class="sig-name descname">lane_is_in_intersection</code><span class="sig-paren">(</span><em class="sig-param">lane_segment_id</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.lane_is_in_intersection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.lane_is_in_intersection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the specified lane_segment_id falls within an intersection</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lane_segment_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – unique identifier for a lane segment within a city</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ or ‘PIT’ for Miami or Pittsburgh</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>indicating if lane segment falls within an</dt><dd><p>intersection</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>is_intersection</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.plot_nearby_halluc_lanes">
+<code class="sig-name descname">plot_nearby_halluc_lanes</code><span class="sig-paren">(</span><em class="sig-param">ax</em>, <em class="sig-param">city_name</em>, <em class="sig-param">query_x</em>, <em class="sig-param">query_y</em>, <em class="sig-param">patch_color='r'</em>, <em class="sig-param">radius=20</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.plot_nearby_halluc_lanes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.plot_nearby_halluc_lanes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot lane segment for nearby lanes of the specified x, y location</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query_bbox</strong> – An array of shape (4,) representing a 2d axis-aligned bounding box, with order
+[xmin,xmax,ymin,ymax]</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.remove_extended_predecessors">
+<code class="sig-name descname">remove_extended_predecessors</code><span class="sig-paren">(</span><em class="sig-param">lane_seqs</em>, <em class="sig-param">xy</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.remove_extended_predecessors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.remove_extended_predecessors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove lane_ids which are obtained by finding way too many predecessors from lane sequences.
+If any lane id is an occupied lane id for the first coordinate of the trajectory, ignore all the
+lane ids that occured before that</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lane_seqs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]]) – List of sequence of lane ids (Eg. [[12345, 12346, 12347], [12345, 12348]])</p></li>
+<li><p><strong>xy</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – trajectory coordinates</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of sequence of lane ids obtained after filtering</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>filtered_lane_seq (list of list of integers)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.remove_ground_surface">
+<code class="sig-name descname">remove_ground_surface</code><span class="sig-paren">(</span><em class="sig-param">point_cloud</em>, <em class="sig-param">city_name</em>, <em class="sig-param">return_logicals=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.remove_ground_surface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.remove_ground_surface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a lidar point, snap it to the grid, perform the O(1) raster map query.
+If our z-height is within THRESHOLD of that grid’s z-height, then we keep it; otherwise, discard it</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_cloud</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – NumPy n-d array of shape (n,3)</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+<li><p><strong>return_logicals</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – whether to return pointwise boolean of function result</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>]]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>subset of original point cloud, with ground points removed
+optionally, pass boolean array where <cite>True</cite> indicates point was not part of “ground”</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.remove_non_driveable_area_points">
+<code class="sig-name descname">remove_non_driveable_area_points</code><span class="sig-paren">(</span><em class="sig-param">point_cloud</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.remove_non_driveable_area_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.remove_non_driveable_area_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a lidar point, snap it to the grid, perform the O(1) raster map query.
+If our z-height is within THRESHOLD of that grid’s z-height, then we keep it; otherwise, discard it</p>
+<p>Decimate the point cloud to the driveable area only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_cloud</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – NumPy n-d array of shape (n,3)</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>subset of original point cloud, with non-driveable area removed</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>lidar_point_cloud</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.remove_non_roi_points">
+<code class="sig-name descname">remove_non_roi_points</code><span class="sig-paren">(</span><em class="sig-param">point_cloud</em>, <em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.remove_non_roi_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.remove_non_roi_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove any points that does’t fall within the region of interest (ROI)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_cloud</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – NumPy n-d array of shape (n,3)</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>subset of original point cloud, with ROI points removed</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>lidar_point_cloud</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="argoverse.map_representation.map_api.ArgoverseMap.render_city_centerlines">
+<code class="sig-name descname">render_city_centerlines</code><span class="sig-paren">(</span><em class="sig-param">city_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_api.html#ArgoverseMap.render_city_centerlines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_api.ArgoverseMap.render_city_centerlines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw centerlines for the entire city_name</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – either ‘MIA’ for Miami or ‘PIT’ for Pittsburgh</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.map_representation.map_viz_helper">
+<span id="argoverse-map-representation-map-viz-helper-module"></span><h2>argoverse.map_representation.map_viz_helper module<a class="headerlink" href="#module-argoverse.map_representation.map_viz_helper" title="Permalink to this headline">¶</a></h2>
+<p>Map visualization helper functions.</p>
+<dl class="function">
+<dt id="argoverse.map_representation.map_viz_helper.render_global_city_map_bev">
+<code class="sig-prename descclassname">argoverse.map_representation.map_viz_helper.</code><code class="sig-name descname">render_global_city_map_bev</code><span class="sig-paren">(</span><em class="sig-param">lane_centerlines</em>, <em class="sig-param">driveable_areas</em>, <em class="sig-param">city_name</em>, <em class="sig-param">avm</em>, <em class="sig-param">plot_rasterized_roi=True</em>, <em class="sig-param">plot_vectormap_roi=False</em>, <em class="sig-param">centerline_color_scheme='constant'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argoverse/map_representation/map_viz_helper.html#render_global_city_map_bev"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#argoverse.map_representation.map_viz_helper.render_global_city_map_bev" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assume indegree and outdegree are always less than 7.
+Since 1 pixel-per meter resolution is very low, we upsample the resolution
+by some constant factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lane_centerlines</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference internal" href="#argoverse.map_representation.lane_segment.LaneSegment" title="argoverse.map_representation.lane_segment.LaneSegment"><code class="xref py py-class docutils literal notranslate"><span class="pre">LaneSegment</span></code></a>]) – Line centerline data</p></li>
+<li><p><strong>driveable_areas</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Driveable area data</p></li>
+<li><p><strong>city_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The city name (eg. “PIT”)</p></li>
+<li><p><strong>avm</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">MapProtocol</span></code>) – The map</p></li>
+<li><p><strong>plot_rasterized_roi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – Whether to show the rasterized ROI</p></li>
+<li><p><strong>plot_vectormap_roi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – Whether to show the vector map ROI</p></li>
+<li><p><strong>centerline_color_scheme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – <cite>“indegree”</cite>, <cite>“outdegree”</cite>, or <cite>“constant”</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-argoverse.map_representation">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-argoverse.map_representation" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Argo AI, LLC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
