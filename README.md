@@ -28,7 +28,7 @@ Requires Linux/MacOS, git, and Python 3.6+
 ### 1) Clone
 
 - Clone this repo to your local machine using:
-```git clone git@github.com/argoai/argoverse-api/argodataset.git```
+```git clone https://github.com/argoai/argoverse-api.git```
 
 ### 2) Download HD map data
 
