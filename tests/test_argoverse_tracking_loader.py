@@ -126,6 +126,6 @@ def test_pose(data_loader: ArgoverseTrackingLoader) -> None:
         )
 
 
-def test_idx_from_tiemstamp(data_loader: ArgoverseTrackingLoader) -> None:
+def test_idx_from_timestamp(data_loader: ArgoverseTrackingLoader) -> None:
     for i in range(len(data_loader.lidar_list)):
         assert data_loader.get_idx_from_timestamp(i) == i
