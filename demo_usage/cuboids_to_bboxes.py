@@ -80,7 +80,6 @@ def plot_lane_centerlines_in_img(
         valid_idx = np.isnan(ground_heights)
         centerline_city_fr = centerline_city_fr[~valid_idx]
 
-
         centerline_egovehicle_fr = city_to_egovehicle_se3.inverse().transform_point_cloud(centerline_city_fr)
         centerline_uv_cam = cam_SE3_egovehicle.transform_point_cloud(centerline_egovehicle_fr)
 
