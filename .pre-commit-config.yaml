@@ -19,3 +19,4 @@ repos:
     hooks:
     - id: black
       args: ["-l", "120"]
+exclude: "docs/.*$"
