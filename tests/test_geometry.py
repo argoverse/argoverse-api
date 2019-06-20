@@ -1,6 +1,7 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
 import numpy as np
+
 from argoverse.utils.geometry import filter_point_cloud_to_polygon, point_inside_polygon, rotate_polygon_about_pt
 
 

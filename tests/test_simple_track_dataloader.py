@@ -4,6 +4,7 @@ import os
 import pathlib
 
 import pytest
+
 from argoverse.data_loading.simple_track_dataloader import SimpleArgoverseTrackingDataLoader
 
 _TEST_DATA = pathlib.Path(__file__).parent / "test_data" / "tracking"

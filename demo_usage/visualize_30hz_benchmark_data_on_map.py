@@ -11,9 +11,12 @@ from pathlib import Path
 from typing import Any
 
 import imageio
-import matplotlib.pyplot as plt
+# all mayavi imports MUST come before matplotlib, else Tkinter exceptions
+# will be thrown, e.g. "unrecognized selector sent to instance"
 import mayavi
+import matplotlib.pyplot as plt
 import numpy as np
+
 from argoverse.data_loading.frame_label_accumulator import PerFrameLabelAccumulator
 from argoverse.data_loading.synchronization_database import SynchronizationDB
 from argoverse.map_representation.map_api import ArgoverseMap
@@ -26,12 +29,7 @@ from argoverse.utils.pkl_utils import load_pkl_dictionary
 from argoverse.utils.ply_loader import load_ply
 from argoverse.utils.se3 import SE3
 from argoverse.visualization.ground_visualization import draw_ground_pts_in_image
-
-# all mayavi imports MUST come before matplotlib, else Tkinter exceptions
-# will be thrown, e.g. "unrecognized selector sent to instance"
 from argoverse.visualization.mayavi_utils import draw_lidar
-
-#
 from argoverse.visualization.mpl_point_cloud_vis import draw_point_cloud_bev
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)

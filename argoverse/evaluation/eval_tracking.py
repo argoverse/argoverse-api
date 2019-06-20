@@ -9,6 +9,7 @@ from typing import Any, Dict, List, TextIO, Union
 
 import motmetrics as mm
 import numpy as np
+
 from argoverse.evaluation.eval_utils import get_pc_inside_bbox, label_to_bbox, leave_only_roi_region
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.ply_loader import load_ply
@@ -241,7 +242,7 @@ if __name__ == "__main__":
 
     tracker_basename = os.path.basename(args.path_tracker_output)
 
-    out_filename = (f"{tracker_basename}_{args.flag}_{int(args.d_min)}_{int(args.d_max)}_{args.centroid_method}.txt")
+    out_filename = f"{tracker_basename}_{args.flag}_{int(args.d_min)}_{int(args.d_max)}_{args.centroid_method}.txt"
     logger.info("output file name = %s", out_filename)
 
     with open(out_filename, "w") as out_file:

@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+
 from argoverse.data_loading.synchronization_database import SynchronizationDB
 from argoverse.map_representation.map_api import ArgoverseMap
 from argoverse.utils.camera_stats import CAMERA_LIST

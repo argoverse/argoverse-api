@@ -18,8 +18,9 @@ Mayavi Examples
 from typing import Any, Iterable, List, Optional, Tuple, Union, cast
 
 import numpy as np
-from argoverse.utils.frustum_clipping import clip_segment_v3_plane_n
+
 from argoverse.utils import mayavi_wrapper
+from argoverse.utils.frustum_clipping import clip_segment_v3_plane_n
 
 __all__ = [
     "Figure",

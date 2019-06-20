@@ -3,6 +3,7 @@
 
 try:
     import mayavi.mlab
+
     MISSING_MAYAVI = False
 
 except ImportError:
@@ -14,7 +15,6 @@ import numpy as np
 import pytest
 
 from argoverse.utils import mayavi_wrapper
-
 
 _TEST_DIR = pathlib.Path(__file__).parent.parent / "tests"
 
