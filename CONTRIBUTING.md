@@ -1,8 +1,8 @@
 # Contributing to Argoverse
 
-Contributions to Argoverse are welcome!  If you find a bug please [open an issue](https://github.com/argoai/argoverse-api/issues) describing the problem with steps to reproduce.  Better yet, if you figure out a fix, please open a pull request!
+Contributions to Argoverse are welcome!  If you find a bug, please [open an issue](https://github.com/argoai/argoverse-api/issues) describing the problem with steps to reproduce.  Better yet, if you figure out a fix, please open a pull request!
 
-To open a pull request here are some steps to get you started:
+To open a pull request, here are some steps to get you started:
 
 - [Fork the Argoverse repository](https://help.github.com/en/articles/fork-a-repo) and [clone to your machine](https://help.github.com/en/articles/cloning-a-repository).
 
@@ -27,7 +27,7 @@ To open a pull request here are some steps to get you started:
 
 ## Helpful documentation
 
-Making a contribution to Argoverse will require some basic knowledge of Git and Github.  If these tools are new to you, here are is some documentation that might be helpful.
+Making a contribution to Argoverse will require some basic knowledge of Git and Github.  If these tools are new to you, here is some documentation that might be helpful.
 
 - Basic tutorial for using Git and Github: https://guides.github.com/activities/hello-world/
 - Forking a repository: https://help.github.com/en/articles/fork-a-repo
