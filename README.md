@@ -28,7 +28,7 @@ Requires Linux/MacOS, git, and Python 3.6+
 ### 1) Clone
 
 - Clone this repo to your local machine using:
-```git clone git@github.com/argoai/argoverse-api/argodataset.git```
+```git clone https://github.com/argoai/argoverse-api.git```
 
 ### 2) Download HD map data
 
@@ -54,7 +54,7 @@ We provide both the full dataset and the sample version of the dataset for testi
 * **Argoverse-Tracking** provides track annotations and raw data from camera (@30hz) and lidar sensors (@10hz) as well as two stereo cameras (@5hz). We've released a total 113 scenes/logs, separated into 65 logs for training, 24 logs for validating, and 24 logs for testing. We've separated training data into smaller files to make it easier to download, but you should extract them all into one folder.
     We also provide sample data (1 log) in `tracking_sample.tar.gz`.
 
-* **Argoverse-Forecasting** contains 327790 sequences of interesting scenarios. Each sequence follows the trajectory of the main agent for 5 seconds, while keeping track of all other actors (e.g car, pedestrian). We've separated them into 208272 training sequences, 40127 validation sequences, and 79391 test sequences.
+* **Argoverse-Forecasting** contains 327793 sequences of interesting scenarios. Each sequence follows the trajectory of the main agent for 5 seconds, while keeping track of all other actors (e.g car, pedestrian). We've separated them into 79392 test sequences, 40128 validation sequences, and 208273 training sequences.
     We also provide sample data (5 sequences) in `forecasting_sample.tar.gz`.
 
 Note that you need to download HD map data (and extract them into project root folder) for the API to function properly. You can selectively download either **Argoverse-Tracking** or **Argoverse-Forecasting** or both, depending on what type of data you need. The data can be extracted to any location in your local machine.
