@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 import numpy as np
 
 
-def colormap(rgb=False):
+def colormap(rgb: bool = False) -> np.ndarray:
     color_list = np.array(
         [
             0.000, 0.447, 0.741,
