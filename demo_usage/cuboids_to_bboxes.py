@@ -94,7 +94,6 @@ def dump_clipped_3d_cuboids_to_images(
     max_num_images_to_render: int,
     data_dir: str,
     experiment_prefix: str,
-    is_shrinkwrap: bool,
     motion_compensate: bool = True,
 ) -> List[str]:
     """
@@ -105,7 +104,6 @@ def dump_clipped_3d_cuboids_to_images(
         max_num_images_to_render: maximum numbers of images to render.
         data_dir: path to dataset with the latest data
         experiment_prefix: Output directory
-        is_shrinkwrap: Whether to place in a `"shrinkwrap"` output directory
         motion_compensate: Whether to motion compensate when projecting
 
     Returns:
@@ -225,7 +223,7 @@ def main(args: Any):
     """Run the example."""
     log_ids = [log_id.strip() for log_id in args.log_ids.split(",")]
     dump_clipped_3d_cuboids_to_images(
-        log_ids, args.max_num_images_to_render * 9, args.dataset_dir, args.experiment_prefix, True
+        log_ids, args.max_num_images_to_render * 9, args.dataset_dir, args.experiment_prefix
     )
 
 if __name__ == "__main__":
