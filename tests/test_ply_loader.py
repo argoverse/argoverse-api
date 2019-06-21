@@ -3,6 +3,7 @@
 import pathlib
 
 import numpy as np
+
 from argoverse.utils.ply_loader import load_ply
 
 _TEST_DIR = pathlib.Path(__file__).parent

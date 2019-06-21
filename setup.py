@@ -8,9 +8,7 @@ https://github.com/pypa/sampleproject
 
 import platform
 import sys
-
-# To use a consistent encoding
-from codecs import open
+from codecs import open  # To use a consistent encoding
 from os import path
 
 # Always prefer setuptools over distutils

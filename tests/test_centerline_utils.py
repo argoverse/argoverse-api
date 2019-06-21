@@ -1,6 +1,8 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
 import numpy as np
+from numpy.testing import assert_almost_equal
+
 from argoverse.utils.centerline_utils import (
     centerline_to_polygon,
     filter_candidate_centerlines,
@@ -8,7 +10,6 @@ from argoverse.utils.centerline_utils import (
     get_nt_distance,
     is_overlapping_lane_seq,
 )
-from numpy.testing import assert_almost_equal
 
 
 def temp_test_straight_centerline_to_polygon():

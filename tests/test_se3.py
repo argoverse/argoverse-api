@@ -4,6 +4,7 @@
 from typing import Union
 
 import numpy as np
+
 from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat2rotmat
 

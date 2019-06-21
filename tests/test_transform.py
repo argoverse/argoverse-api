@@ -6,6 +6,7 @@ utility yields the correct result given the swapped argument order.
 """
 
 import numpy as np
+
 from argoverse.utils.transform import quat2rotmat
 
 EPSILON = 1e-10

@@ -4,8 +4,9 @@ import sys
 from typing import List, Optional, Sequence
 
 import numpy as np
-from argoverse.utils.mesh_grid import get_mesh_grid_as_point_cloud
+
 from argoverse.utils import mayavi_wrapper
+from argoverse.utils.mesh_grid import get_mesh_grid_as_point_cloud
 from argoverse.visualization.mayavi_utils import (
     Figure,
     draw_mayavi_line_segment,

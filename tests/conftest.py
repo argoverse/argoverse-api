@@ -3,6 +3,7 @@
 """Configure pytest."""
 
 import logging
+
 import pytest
 
 
