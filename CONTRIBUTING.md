@@ -1,6 +1,6 @@
 # Contributing to Argoverse
 
-Contributions to Argoverse are welcomed!  If you find a bug please open an issue on the github page describing the problem with steps to reproduce.  Better yet, if you figure out a fix, please open a pull request!
+Contributions to Argoverse are welcome!  If you find a bug please [open an issue](https://github.com/argoai/argoverse-api/issues) describing the problem with steps to reproduce.  Better yet, if you figure out a fix, please open a pull request!
 
 To open a pull request here are some steps to get you started:
 
@@ -36,4 +36,4 @@ Making a contribution to Argoverse will require some basic knowledge of Git and 
 
 ## License
 
-By contributing to this project you are acknowledging and agreeing that all contributions made by you are submitted under the terms of the [MIT license](./LICENSE).
+By contributing to this project you are acknowledging and agreeing that all contributions made by you are submitted under the terms of the [MIT license](https://opensource.org/licenses/MIT).  See our [LICENSE](./LICENSE) for details.
