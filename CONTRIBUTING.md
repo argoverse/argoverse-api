@@ -36,4 +36,4 @@ Making a contribution to Argoverse will require some basic knowledge of Git and 
 
 ## License
 
-By contributing to this project you are acknowledging and agreeing that all contributions made by you are submitted under the terms of the [MIT license](./LICENSE).
+By contributing to this project you are acknowledging and agreeing that all contributions made by you are submitted under the terms of the [MIT license](https://opensource.org/licenses/MIT).
