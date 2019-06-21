@@ -4,10 +4,10 @@
 
 import glob
 import logging
-import pdb
 from typing import Dict, Iterable, List, Optional, Tuple, cast
 
 import numpy as np
+
 from argoverse.utils.camera_stats import RING_CAMERA_LIST, STEREO_CAMERA_LIST
 from argoverse.utils.json_utils import read_json_file
 
@@ -31,7 +31,7 @@ def get_timestamps_from_sensor_folder(sensor_folder_wildcard: str) -> np.ndarray
     return np.array([int(jpg_fpath.split("/")[-1].split(".")[0].split("_")[-1]) for jpg_fpath in path_generator])
 
 
-def find_closest_integer_in_ref_arr(query_int: int, ref_arr: np.ndarray) -> Tuple[int,int]:
+def find_closest_integer_in_ref_arr(query_int: int, ref_arr: np.ndarray) -> Tuple[int, int]:
     """
     Find the closest integer to any integer inside a reference array, and the corresponding
     difference.
@@ -53,8 +53,6 @@ def find_closest_integer_in_ref_arr(query_int: int, ref_arr: np.ndarray) -> Tupl
     return closest_int, int_diff
 
 
-
-
 class SynchronizationDB:
 
     # Camera is 30 Hz (once per 33.3 milliseconds)
@@ -66,12 +64,11 @@ class SynchronizationDB:
     # LiDAR is 10 Hz
     # Since Stereo is more sparse, we look for 200 millisecond on either side
     # then convert milliseconds to nanoseconds
-    MAX_LIDAR_STEREO_CAM_TIMESTAMP_DIFF = 200 * (1.0/ 2) * (1.0 / 1000) * 1e9
+    MAX_LIDAR_STEREO_CAM_TIMESTAMP_DIFF = 200 * (1.0 / 2) * (1.0 / 1000) * 1e9
     # LiDAR is 10 Hz (once per 100 milliseconds)
     # At any point we sample, we shouldn't be more than 50 ms away.
     # then convert milliseconds to nanoseconds
-    MAX_LIDAR_ANYCAM_TIMESTAMP_DIFF = 100 * (1.0/ 2) * (1.0 / 1000) * 1e9
-
+    MAX_LIDAR_ANYCAM_TIMESTAMP_DIFF = 100 * (1.0 / 2) * (1.0 / 1000) * 1e9
 
     def __init__(self, dataset_dir: str, collect_single_log_id: Optional[str] = None) -> None:
         """ Build the SynchronizationDB.
@@ -129,7 +126,9 @@ class SynchronizationDB:
         if timestamp_diff > self.MAX_LIDAR_ANYCAM_TIMESTAMP_DIFF:
             # convert to nanoseconds->milliseconds for readability
             logger.error(
-                "No corresponding LiDAR sweep: %s > %s ms", timestamp_diff / 1e6, self.MAX_LIDAR_ANYCAM_TIMESTAMP_DIFF / 1e6
+                "No corresponding LiDAR sweep: %s > %s ms",
+                timestamp_diff / 1e6,
+                self.MAX_LIDAR_ANYCAM_TIMESTAMP_DIFF / 1e6,
             )
             return None
         return closest_lidar_timestamp
@@ -149,7 +148,10 @@ class SynchronizationDB:
             Returns:
                 closest_cam_ch_timestamp: closest timestamp
         """
-        if log_id not in self.per_log_camtimestamps_index or camera_name not in self.per_log_camtimestamps_index[log_id]:
+        if (
+            log_id not in self.per_log_camtimestamps_index
+            or camera_name not in self.per_log_camtimestamps_index[log_id]
+        ):
             return None
 
         cam_timestamps = self.per_log_camtimestamps_index[log_id][camera_name]
