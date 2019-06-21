@@ -12,6 +12,7 @@ from typing import Any, Iterable, List, Mapping, Sequence, Tuple, Union
 import cv2
 import imageio
 import numpy as np
+
 from argoverse.data_loading.object_label_record import json_label_dict_to_obj_record
 from argoverse.data_loading.simple_track_dataloader import SimpleArgoverseTrackingDataLoader
 from argoverse.map_representation.map_api import ArgoverseMap
@@ -120,7 +121,7 @@ def dump_clipped_3d_cuboids_to_images(
 
         city_name = dl.get_city_name(log_id)
         log_calib_data = dl.get_log_calibration_data(log_id)
-        
+
         flag_done = False
         for cam_idx, camera_name in enumerate(RING_CAMERA_LIST + STEREO_CAMERA_LIST):
             cam_im_fpaths = dl.get_ordered_log_cam_fpaths(log_id, camera_name)
@@ -130,7 +131,7 @@ def dump_clipped_3d_cuboids_to_images(
 
                 cam_timestamp = im_fpath.split("/")[-1].split(".")[0].split("_")[-1]
                 cam_timestamp = int(cam_timestamp)
-            
+
                 # load PLY file path, e.g. 'PC_315978406032859416.ply'
                 ply_fpath = dl.get_closest_lidar_fpath(log_id, cam_timestamp)
                 if ply_fpath is None:
@@ -143,7 +144,7 @@ def dump_clipped_3d_cuboids_to_images(
                         flag_done = True
                         break
                     continue
-                
+
                 city_to_egovehicle_se3 = dl.get_city_to_egovehicle_se3(log_id, cam_timestamp)
                 if city_to_egovehicle_se3 is None:
                     continue
@@ -226,6 +227,7 @@ def main(args: Any):
         log_ids, args.max_num_images_to_render * 9, args.dataset_dir, args.experiment_prefix
     )
 
+
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser()
@@ -237,8 +239,8 @@ if __name__ == "__main__":
         "--log-ids",
         type=str,
         required=True,
-        help="comma seperated list of log ids, this is the folder name in "\
-        " {args.dataset-dir}/argoverse-tracking/train/{log_id} or "\
+        help="comma seperated list of log ids, each log_id represents a log directory, e.g. found at "
+        " {args.dataset-dir}/argoverse-tracking/train/{log_id} or "
         " {args.dataset-dir}/argoverse-tracking/sample/{log_id} or ",
     )
     parser.add_argument(
