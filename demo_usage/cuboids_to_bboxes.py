@@ -95,7 +95,7 @@ def dump_clipped_3d_cuboids_to_images(
     data_dir: str,
     experiment_prefix: str,
     is_shrinkwrap: bool,
-    motion_compensate: bool = False,
+    motion_compensate: bool = True,
 ) -> List[str]:
     """
     We bring the 3D points into each camera coordinate system, and do the clipping there in 3D.
@@ -224,11 +224,9 @@ def dump_clipped_3d_cuboids_to_images(
 def main(args: Any):
     """Run the example."""
     log_ids = [log_id.strip() for log_id in args.log_ids.split(",")]
-
     dump_clipped_3d_cuboids_to_images(
         log_ids, args.max_num_images_to_render * 9, args.dataset_dir, args.experiment_prefix, True
     )
-
 
 if __name__ == "__main__":
     # Parse command line arguments
