@@ -239,7 +239,7 @@ if __name__ == "__main__":
         "--log-ids",
         type=str,
         required=True,
-        help="comma seperated list of log ids, each log_id represents a log directory, e.g. found at "
+        help="comma separated list of log ids, each log_id represents a log directory, e.g. found at "
         " {args.dataset-dir}/argoverse-tracking/train/{log_id} or "
         " {args.dataset-dir}/argoverse-tracking/sample/{log_id} or ",
     )

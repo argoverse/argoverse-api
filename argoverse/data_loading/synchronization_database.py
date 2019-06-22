@@ -66,9 +66,10 @@ class SynchronizationDB:
     # then convert milliseconds to nanoseconds
     MAX_LIDAR_STEREO_CAM_TIMESTAMP_DIFF = 200 * (1.0 / 2) * (1.0 / 1000) * 1e9
     # LiDAR is 10 Hz (once per 100 milliseconds)
-    # At any point we sample, we shouldn't be more than 50 ms away.
+    # We give an extra 2 ms buffer for the message to arrive, totaling 102 ms.
+    # At any point we sample, we shouldn't be more than 51 ms away.
     # then convert milliseconds to nanoseconds
-    MAX_LIDAR_ANYCAM_TIMESTAMP_DIFF = 100 * (1.0 / 2) * (1.0 / 1000) * 1e9
+    MAX_LIDAR_ANYCAM_TIMESTAMP_DIFF = 102 * (1.0 / 2) * (1.0 / 1000) * 1e9
 
     def __init__(self, dataset_dir: str, collect_single_log_id: Optional[str] = None) -> None:
         """ Build the SynchronizationDB.
