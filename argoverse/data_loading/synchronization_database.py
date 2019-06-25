@@ -4,6 +4,7 @@
 
 import glob
 import logging
+from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple, cast
 
 import numpy as np
@@ -28,7 +29,7 @@ def get_timestamps_from_sensor_folder(sensor_folder_wildcard: str) -> np.ndarray
     path_generator = glob.glob(sensor_folder_wildcard)
     path_generator.sort()
 
-    return np.array([int(jpg_fpath.split("/")[-1].split(".")[0].split("_")[-1]) for jpg_fpath in path_generator])
+    return np.array([int(Path(jpg_fpath).stem.split("_")[-1]) for jpg_fpath in path_generator])
 
 
 def find_closest_integer_in_ref_arr(query_int: int, ref_arr: np.ndarray) -> Tuple[int, int]:
@@ -93,7 +94,7 @@ class SynchronizationDB:
         self.per_log_lidartimestamps_index: Dict[str, np.ndarray] = {}
 
         for log_fpath in log_fpaths:
-            log_id = log_fpath.split("/")[-1]
+            log_id = Path(log_fpath).name
 
             self.per_log_camtimestamps_index[log_id] = {}
             for camera_name in STEREO_CAMERA_LIST + RING_CAMERA_LIST:
