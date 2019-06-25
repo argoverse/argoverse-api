@@ -127,9 +127,9 @@ def dump_clipped_3d_cuboids_to_images(
             cam_im_fpaths = dl.get_ordered_log_cam_fpaths(log_id, camera_name)
             for i, im_fpath in enumerate(cam_im_fpaths):
                 if i % 50 == 0:
-                    logging.info(f"\tOn file {i} of camera {camera_name} of {log_id}")
+                    logging.info("\tOn file %s of camera %s of %s", i, camera_name, log_id)
 
-                cam_timestamp = im_fpath.split("/")[-1].split(".")[0].split("_")[-1]
+                cam_timestamp = Path(im_fpath).stem.split("_")[-1]
                 cam_timestamp = int(cam_timestamp)
 
                 # load PLY file path, e.g. 'PC_315978406032859416.ply'
@@ -149,11 +149,11 @@ def dump_clipped_3d_cuboids_to_images(
                 if city_to_egovehicle_se3 is None:
                     continue
 
-                lidar_timestamp = ply_fpath.split("/")[-1].split(".")[0].split("_")[-1]
+                lidar_timestamp = Path(ply_fpath).stem.split("_")[-1]
                 lidar_timestamp = int(lidar_timestamp)
                 labels = dl.get_labels_at_lidar_timestamp(log_id, lidar_timestamp)
                 if labels is None:
-                    logger.info(f"\tLabels missing at t={lidar_timestamp}")
+                    logging.info("\tLabels missing at t=%s", lidar_timestamp)
                     continue
 
                 # Swap channel order as OpenCV expects it -- BGR not RGB
