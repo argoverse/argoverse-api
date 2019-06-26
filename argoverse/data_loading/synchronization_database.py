@@ -34,11 +34,14 @@ def get_timestamps_from_sensor_folder(sensor_folder_wildcard: str) -> np.ndarray
 
 def find_closest_integer_in_ref_arr(query_int: int, ref_arr: np.ndarray) -> Tuple[int, int]:
     """
-    Find the closest integer to any integer inside a reference array, and the corresponding
-    difference.
+        Find the closest integer to any integer inside a reference array, and the corresponding
+        difference.
 
-    In our use case, the query integer represents a nanosecond-discretized timestamp, and the
-    reference array represents a numpy array of nanosecond-discretized timestamps.
+        In our use case, the query integer represents a nanosecond-discretized timestamp, and the
+        reference array represents a numpy array of nanosecond-discretized timestamps.
+
+        Instead of sorting the whole array of timestamp differences, we just
+        take the minimum value (to speed up this function).
 
         Args:
             query_int: query integer, 
@@ -114,7 +117,15 @@ class SynchronizationDB:
         return self.per_log_camtimestamps_index.keys()
 
     def get_closest_lidar_timestamp(self, cam_timestamp: int, log_id: str) -> Optional[int]:
-        """
+        """ Given an image timestamp, find the synchronized corresponding LiDAR timestamp.
+            This LiDAR timestamp should have the closest absolute timestamp to the image timestamp.
+
+            Args:
+                cam_timestamp: integer
+                log_id: string
+
+            Returns:
+                closest_lidar_timestamp: closest timestamp
         """
         if log_id not in self.per_log_lidartimestamps_index:
             return None
@@ -136,11 +147,8 @@ class SynchronizationDB:
         return closest_lidar_timestamp
 
     def get_closest_cam_channel_timestamp(self, lidar_timestamp: int, camera_name: str, log_id: str) -> Optional[int]:
-        """ Grab the LiDAR pose file. Get its timestamp, and then find the pose message
-            with the closest absolute timestamp.
-
-            Instead of sorting the whole array of timestamp differences, we just
-            take the minimum value (to speed up this function).
+        """ Given a LiDAR timestamp, find the synchronized corresponding image timestamp for a particular camera.
+            This image timestamp should have the closest absolute timestamp.
 
             Args:
                 lidar_timestamp: integer
