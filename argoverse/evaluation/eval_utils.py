@@ -12,7 +12,7 @@ from argoverse.utils.transform import quat2rotmat
 #                                         "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
 #                                         "height": 0.0, "width": 0.0, "depth": 0.0}
 _LabelType = Dict[str, Any]
-
+avm = ArgoverseMap()
 
 def get_pc_inside_bbox(pc_raw: np.ndarray, bbox: np.ndarray) -> np.ndarray:
     """Get part of raw point cloud inside a given bounding box.
@@ -162,11 +162,8 @@ def leave_only_roi_region(
 
     """
 
-    avm = ArgoverseMap()
-
     driveable_area_pts = copy.deepcopy(lidar_pts)
     driveable_area_pts = egovehicle_to_city_se3.transform_point_cloud(driveable_area_pts)  # put into city coords
-
     driveable_area_pts = avm.remove_non_roi_points(driveable_area_pts, city_name)
 
     if ground_removal_method == "map":
