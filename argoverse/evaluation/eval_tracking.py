@@ -15,11 +15,13 @@ from argoverse.utils.ply_loader import load_ply
 from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat2rotmat
 
+
 min_point_num = 0
 mh = mm.metrics.create()
 logger = logging.getLogger(__name__)
 
 _PathLike = Union[str, "os.PathLike[str]"]
+
 
 def in_distance_range_pose(ego_center: np.ndarray, pose: np.ndarray, d_min: float, d_max: float) -> bool:
     """Determine if a pose is within distance range or not.
@@ -53,6 +55,7 @@ def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
 
     dist = float(np.linalg.norm(x1[name][0:2] - x2[name][0:2]))
     return dist if dist < 2.25 else float(np.nan)
+
 
 def eval_tracks(
     path_tracker_output: str,
@@ -213,6 +216,7 @@ def eval_tracks(
     )
     out_file.write(out_string)
 
+    
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description=__doc__)
