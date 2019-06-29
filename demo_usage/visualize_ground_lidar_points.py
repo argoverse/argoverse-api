@@ -82,7 +82,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--log-ids",
         type=str,
-        help="Comma seperated list of log ids, this is the folder name in argoverse-tracking/*/[log_id]",
+        help="Comma separated list of log ids, this is the directory name, i.e. as found in {args.dataset-dir}/argoverse-tracking/sample/[log_id]",
     )
     parser.add_argument(
         "--experiment-prefix",

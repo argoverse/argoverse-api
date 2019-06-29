@@ -55,16 +55,16 @@ class SimpleArgoverseTrackingDataLoader:
         assert isinstance(log_calib_data, dict)
         return log_calib_data
 
-    def get_city_to_egovehicle_se3(self, log_id: str, lidar_timestamp: int) -> Optional[SE3]:
+    def get_city_to_egovehicle_se3(self, log_id: str, timestamp: int) -> Optional[SE3]:
         """
         Args:
             log_id: str, unique ID of vehicle log
-            lidar_timestamp: int, timestamp of LiDAR sweep capture, in nanoseconds
+            timestamp: int, timestamp of sensor observation, in nanoseconds
 
         Returns:
             city_to_egovehicle_se3: SE3 transformation to bring egovehicle frame point into city frame.
         """
-        pose_fpath = f"{self.data_dir}/{log_id}/poses/city_SE3_egovehicle_{lidar_timestamp}.json"
+        pose_fpath = f"{self.data_dir}/{log_id}/poses/city_SE3_egovehicle_{timestamp}.json"
         if not Path(pose_fpath).exists():
             return None
         pose_data = read_json_file(pose_fpath)
@@ -91,6 +91,23 @@ class SimpleArgoverseTrackingDataLoader:
         im_fpath = f"{im_dir}/{im_fname}"
         return im_fpath
 
+    def get_closest_lidar_fpath(self, log_id: str, cam_timestamp: int) -> Optional[str]:
+        """
+        Args:
+            log_id: str, unique ID of vehicle log
+            cam_timestamp: int, timestamp of image capture, in nanoseconds
+
+        Returns:
+            ply_fpath: str, string representing path to PLY file, or else None.
+        """
+        lidar_timestamp = self.sdb.get_closest_lidar_timestamp(cam_timestamp, log_id)
+        if lidar_timestamp is None:
+            return None
+        lidar_dir = f"{self.data_dir}/{log_id}/lidar"
+        ply_fname = f"PC_{lidar_timestamp}.ply"
+        ply_fpath = f"{lidar_dir}/{ply_fname}"
+        return ply_fpath
+
     def get_ordered_log_ply_fpaths(self, log_id: str) -> List[str]:
         """
         Args:
@@ -100,6 +117,18 @@ class SimpleArgoverseTrackingDataLoader:
             """
         ply_fpaths = sorted(glob.glob(f"{self.data_dir}/{log_id}/lidar/PC_*.ply"))
         return ply_fpaths
+
+    def get_ordered_log_cam_fpaths(self, log_id: str, camera_name: str) -> List[str]:
+        """
+        Args
+            log_id: str, unique ID of vehicle log
+
+        Returns
+            cam_img_fpaths: List of strings, representing paths to JPEG files in this log,
+                for a specific camera
+        """
+        cam_img_fpaths = sorted(glob.glob(f"{self.data_dir}/{log_id}/{camera_name}/{camera_name}_*.jpg"))
+        return cam_img_fpaths
 
     def get_labels_at_lidar_timestamp(self, log_id: str, lidar_timestamp: int) -> Optional[List[Mapping[str, Any]]]:
         """
