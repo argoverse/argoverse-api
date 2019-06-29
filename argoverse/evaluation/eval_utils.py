@@ -14,6 +14,7 @@ from argoverse.utils.transform import quat2rotmat
 _LabelType = Dict[str, Any]
 avm = ArgoverseMap()
 
+
 def get_pc_inside_bbox(pc_raw: np.ndarray, bbox: np.ndarray) -> np.ndarray:
     """Get part of raw point cloud inside a given bounding box.
 
