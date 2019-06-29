@@ -12,6 +12,7 @@ from argoverse.utils.transform import quat2rotmat
 # Label dictionary should be of the form {"center": {"x": 0.0, "y": 0.0, "z": 0.0},
 #                                         "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
 #                                         "height": 0.0, "width": 0.0, "depth": 0.0}
+avm = ArgoverseMap()
 _LabelType = Dict[str, Any]
 
 
@@ -163,11 +164,8 @@ def leave_only_roi_region(
 
     """
 
-    avm = ArgoverseMap()
-
     driveable_area_pts = copy.deepcopy(lidar_pts)
     driveable_area_pts = egovehicle_to_city_se3.transform_point_cloud(driveable_area_pts)  # put into city coords
-
     driveable_area_pts = avm.remove_non_roi_points(driveable_area_pts, city_name)
 
     if ground_removal_method == "map":

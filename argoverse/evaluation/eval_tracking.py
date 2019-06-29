@@ -16,12 +16,9 @@ from argoverse.utils.ply_loader import load_ply
 from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat2rotmat
 
-min_point_num = 50
+min_point_num = 0
 mh = mm.metrics.create()
-
-
 logger = logging.getLogger(__name__)
-
 
 _PathLike = Union[str, "os.PathLike[str]"]
 
