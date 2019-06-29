@@ -2,6 +2,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 from argoverse.utils.mpl_plotting_utils import (
     animate_polyline,
     draw_lane_polygons,
@@ -69,6 +70,7 @@ def test_plot_nearby_centerlines_smokescreen():
     color = "g"
     plot_nearby_centerlines(lane_centerlines, ax, nearby_lane_ids, color)
     plt.close("all")
+
 
 def test_animate_polyline_smokescreen():
     """

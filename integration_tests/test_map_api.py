@@ -5,6 +5,7 @@ import glob
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 from argoverse.map_representation.map_api import ArgoverseMap
 from argoverse.utils.datetime_utils import generate_datetime_string
 from argoverse.utils.geometry import point_inside_polygon

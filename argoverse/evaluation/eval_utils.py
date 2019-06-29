@@ -5,6 +5,7 @@ import copy
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
+
 from argoverse.map_representation.map_api import ArgoverseMap
 from argoverse.utils.transform import quat2rotmat
 

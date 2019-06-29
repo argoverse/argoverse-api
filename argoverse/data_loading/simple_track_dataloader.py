@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, List, Mapping, Optional, Sequence
 
 import numpy as np
+
 from argoverse.data_loading.synchronization_database import SynchronizationDB
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.se3 import SE3

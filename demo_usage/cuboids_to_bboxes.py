@@ -12,6 +12,7 @@ from typing import Any, Iterable, List, Mapping, Sequence, Tuple, Union
 import cv2
 import imageio
 import numpy as np
+
 from argoverse.data_loading.object_label_record import json_label_dict_to_obj_record
 from argoverse.data_loading.simple_track_dataloader import SimpleArgoverseTrackingDataLoader
 from argoverse.map_representation.map_api import ArgoverseMap
@@ -76,6 +77,9 @@ def plot_lane_centerlines_in_img(
         color = [intensity + np.random.randint(0, LANE_COLOR_NOISE) - LANE_COLOR_NOISE // 2 for intensity in color]
 
         ground_heights = avm.get_ground_height_at_xy(centerline_city_fr, city_name)
+
+        valid_idx = np.isnan(ground_heights)
+        centerline_city_fr = centerline_city_fr[~valid_idx]
 
         centerline_egovehicle_fr = city_to_egovehicle_se3.inverse().transform_point_cloud(centerline_city_fr)
         centerline_uv_cam = cam_SE3_egovehicle.transform_point_cloud(centerline_egovehicle_fr)

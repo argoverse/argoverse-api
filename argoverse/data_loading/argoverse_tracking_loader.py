@@ -7,8 +7,9 @@ import os
 from functools import lru_cache
 from typing import Dict, Iterator, List, Optional, Union, cast
 
-import argoverse.data_loading.object_label_record as object_label
 import numpy as np
+
+import argoverse.data_loading.object_label_record as object_label
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
 from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
 from argoverse.data_loading.synchronization_database import SynchronizationDB

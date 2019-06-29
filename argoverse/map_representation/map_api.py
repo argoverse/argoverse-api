@@ -6,6 +6,8 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+from shapely.geometry import LineString
+
 from argoverse.data_loading.vector_map_loader import load_lane_segments_from_xml
 from argoverse.utils.centerline_utils import (
     centerline_to_polygon,
@@ -26,7 +28,6 @@ from argoverse.utils.manhattan_search import (
 from argoverse.utils.mpl_plotting_utils import plot_lane_segment_patch, visualize_centerline
 from argoverse.utils.pkl_utils import load_pkl_dictionary
 from argoverse.utils.se2 import SE2
-from shapely.geometry import LineString
 
 from .lane_segment import LaneSegment
 from .map_viz_helper import render_global_city_map_bev

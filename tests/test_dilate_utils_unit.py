@@ -2,6 +2,7 @@
 """Unit tests for dilation_utils.py."""
 
 import numpy as np
+
 from argoverse.utils.dilation_utils import dilate_by_l2
 
 

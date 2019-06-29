@@ -238,7 +238,7 @@ if __name__ == "__main__":
 
     tracker_basename = os.path.basename(args.path_tracker_output)
 
-    out_filename = (f"{tracker_basename}_{args.flag}_{int(args.d_min)}_{int(args.d_max)}_{args.centroid_method}.txt")
+    out_filename = f"{tracker_basename}_{args.flag}_{int(args.d_min)}_{int(args.d_max)}_{args.centroid_method}.txt"
     logger.info("output file name = %s", out_filename)
 
     with open(out_filename, "w") as out_file:

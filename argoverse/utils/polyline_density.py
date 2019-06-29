@@ -3,6 +3,7 @@
 from typing import Tuple
 
 import numpy as np
+
 from argoverse.utils.interpolate import interp_arc
 
 NUM_PTS_PER_TRAJ = 50

@@ -1,8 +1,9 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
 import numpy as np
-from argoverse.evaluation.eval_forecasting import compute_metric
 from numpy.testing import assert_almost_equal
+
+from argoverse.evaluation.eval_forecasting import compute_metric
 
 
 def test_compute_metric():
