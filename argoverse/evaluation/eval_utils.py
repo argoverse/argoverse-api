@@ -11,8 +11,8 @@ from argoverse.utils.transform import quat2rotmat
 # Label dictionary should be of the form {"center": {"x": 0.0, "y": 0.0, "z": 0.0},
 #                                         "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
 #                                         "height": 0.0, "width": 0.0, "depth": 0.0}
-_LabelType = Dict[str, Any]
 avm = ArgoverseMap()
+_LabelType = Dict[str, Any]
 
 
 def get_pc_inside_bbox(pc_raw: np.ndarray, bbox: np.ndarray) -> np.ndarray:
