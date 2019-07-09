@@ -378,7 +378,7 @@ class ArgoverseMap:
         npyimage_coords = npyimage_to_city_se2.transform_point_cloud(city_coords)
         npyimage_coords = npyimage_coords.astype(np.int64)
 
-        # index in at (x,y) locations, which are (y,x) in the image
+        # index at (x,y) locations, which are (y,x) in the image
         max_x = np.max(npyimage_coords[:, 1])
         max_y = np.max(npyimage_coords[:, 0])
 
