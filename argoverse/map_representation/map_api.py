@@ -384,7 +384,9 @@ class ArgoverseMap:
 
         height_y, height_x = np.shape(ground_height_mat)
 
-        assert np.all(npyimage_coords[:, 1] > 0) and np.all(npyimage_coords[:, 0] > 0), "Invalid coordinates, please make sure the query location is in a valid city coordinate"
+        assert np.all(npyimage_coords[:, 1] > 0) and np.all(
+            npyimage_coords[:, 0] > 0
+        ), "Invalid coordinates, please make sure the query location is in a valid city coordinate"
 
         if max_x > height_x or max_y > height_y:
             # expand ground height npy image, fill with NaN
