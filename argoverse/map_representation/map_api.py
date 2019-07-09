@@ -388,8 +388,7 @@ class ArgoverseMap:
 
         if max_x > height_x or max_y > height_y:
             # expand ground height npy image, fill with NaN
-            ground_height_mat_pad = np.empty((max_y, max_x))
-            ground_height_mat_pad[:] = np.nan
+            ground_height_mat_pad = np.full((max_y, max_x), np.nan)
             ground_height_mat_pad[0:max_y, 0:max_x] = ground_height_mat
             ground_height_mat = copy.deepcopy(ground_height_mat_pad)
 
