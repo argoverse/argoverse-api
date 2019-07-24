@@ -91,10 +91,10 @@ class Calibration:
 
         self.K = get_camera_intrinsic_matrix(calib["value"])
 
-        self.cu = self.calib_data['value']['focal_center_x_px_']
-        self.cv = self.calib_data['value']['focal_center_y_px_']
-        self.fu = self.calib_data['value']['focal_length_x_px_']
-        self.fv = self.calib_data['value']['focal_length_y_px_']
+        self.cu = self.calib_data["value"]["focal_center_x_px_"]
+        self.cv = self.calib_data["value"]["focal_center_y_px_"]
+        self.fu = self.calib_data["value"]["focal_length_x_px_"]
+        self.fv = self.calib_data["value"]["focal_length_y_px_"]
 
         self.bx = self.K[0, 3] / (-self.fu)
         self.by = self.K[1, 3] / (-self.fv)
@@ -152,7 +152,7 @@ class Calibration:
         Returns:
             np.array: nx3 points in ego coord.
         """
-        return np.linalg.inv((self.extrinsic)).dot(self.cart2hom(pts_3d_rect).transpose()).transpose()[:,0:3]
+        return np.linalg.inv((self.extrinsic)).dot(self.cart2hom(pts_3d_rect).transpose()).transpose()[:, 0:3]
 
     def project_image_to_ego(self, uv_depth: np.array) -> np.ndarray:
         """ Project 2D image with depth to egovehicle coordinate.
@@ -165,7 +165,7 @@ class Calibration:
             nx3 points in ego coord.
         """
         uv_cam = self.project_image_to_cam(uv_depth)
-        return  self.project_cam_to_ego(uv_cam)
+        return self.project_cam_to_ego(uv_cam)
 
     def project_image_to_cam(self, uv_depth: np.array) -> np.ndarray:
         """ Project 2D image with depth to camera coordinate.

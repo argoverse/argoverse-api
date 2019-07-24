@@ -24,7 +24,7 @@ def test_get_city_name(data_loader: ArgoverseTrackingLoader) -> None:
 
 def test_calib(data_loader: ArgoverseTrackingLoader) -> None:
     assert data_loader.calib
-    camera = 'ring_front_center'
+    camera = "ring_front_center"
     calib = data_loader.get_calibration(camera)
     pc = data_loader.get_lidar(0)
 
