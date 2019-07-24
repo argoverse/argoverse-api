@@ -121,10 +121,7 @@ def eval_tracks(
             bbox, orientation = label_to_bbox(gt_data[i])
 
             center = np.array([gt_data[i]["center"]["x"], gt_data[i]["center"]["y"], gt_data[i]["center"]["z"]])
-            if (
-                bbox[3] > 0
-                and in_distance_range_pose(np.zeros(3), center, d_min, d_max)
-            ):
+            if bbox[3] > 0 and in_distance_range_pose(np.zeros(3), center, d_min, d_max):
                 track_label_uuid = gt_data[i]["track_label_uuid"]
                 gt[track_label_uuid] = {}
                 gt[track_label_uuid]["centroid"] = center
