@@ -54,7 +54,7 @@ def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
     """
 
     dist = float(np.linalg.norm(x1[name][0:2] - x2[name][0:2]))
-    return dist if dist < 2.25 else float(np.nan)
+    return dist if dist < 2 else float(np.nan)
 
 
 def eval_tracks(
