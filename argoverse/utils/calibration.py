@@ -123,7 +123,7 @@ class Calibration:
             pts_3d_ego: nx3 points in egovehicle coord
 
         Returns:
-            nx2 points in image coord
+            nx3 points in image coord + depth
         """
 
         uv_cam = self.project_ego_to_cam(pts_3d_ego)
@@ -189,7 +189,7 @@ class Calibration:
         pts_3d_cam[:, 2] = uv_depth[:, 2]
         return pts_3d_cam
 
-    def project_cam_to_image(self, pts_3d_rect):
+    def project_cam_to_image(self, pts_3d_rect: np.array) -> np.ndarray:
         """Project camera coordinate to image.
 
         Args:
