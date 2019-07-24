@@ -111,11 +111,6 @@ def eval_tracks(
         ego_t = translation
         egovehicle_to_city_se3 = SE3(rotation=ego_R, translation=ego_t)
 
-        pc_raw0 = load_ply(os.path.join(path_dataset, f"lidar/PC_{timestamp_lidar}.ply"))
-        pc_raw_roi = leave_only_roi_region(
-            pc_raw0, egovehicle_to_city_se3, ground_removal_method="no", city_name=city_name
-        )
-
         gt: Dict[str, Dict[str, Any]] = {}
         id_gts = []
         for i in range(len(gt_data)):
@@ -124,23 +119,15 @@ def eval_tracks(
                 continue
 
             bbox, orientation = label_to_bbox(gt_data[i])
-            pc_segment = get_pc_inside_bbox(pc_raw_roi, bbox)
 
             center = np.array([gt_data[i]["center"]["x"], gt_data[i]["center"]["y"], gt_data[i]["center"]["z"]])
             if (
-                len(pc_segment) >= min_point_num
-                and bbox[3] > 0
+                bbox[3] > 0
                 and in_distance_range_pose(np.zeros(3), center, d_min, d_max)
             ):
                 track_label_uuid = gt_data[i]["track_label_uuid"]
                 gt[track_label_uuid] = {}
-                if centroid_method == "average":
-                    gt[track_label_uuid]["centroid"] = pc_segment.sum(axis=0) / len(pc_segment)
-                elif centroid_method == "label_center":
-                    gt[track_label_uuid]["centroid"] = center
-
-                else:
-                    logger.warning("Not implemented")
+                gt[track_label_uuid]["centroid"] = center
 
                 gt[track_label_uuid]["bbox"] = bbox
                 gt[track_label_uuid]["orientation"] = orientation
