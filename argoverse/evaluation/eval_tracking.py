@@ -75,7 +75,7 @@ def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
         return 1 - inter / union
 
     elif name == 'orientation':
-        return np.abs(x1[name]-x2[name])*180/np.pi
+        return min( np.abs(x1[name]-x2[name]), np.abs(np.pi+x1[name]-x2[name]),np.abs(-np.pi+x1[name]-x2[name])  )*180/np.pi
     else:
         raise ValueError('Not implemented..')
 
