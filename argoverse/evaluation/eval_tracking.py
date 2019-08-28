@@ -59,7 +59,7 @@ def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
     """
     if name == 'centroid':
         dist = float(np.linalg.norm(x1[name][0:3] - x2[name][0:3]))
-        return dist if dist < 2.25 else float(np.nan)
+        return dist if dist < 2 else float(np.nan)
     elif name == 'iou':
         w1 = x1['width']
         l1 = x1['length']
