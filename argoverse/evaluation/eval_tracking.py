@@ -91,6 +91,7 @@ def eval_tracks(
     d_max: float,
     out_file: TextIO,
     centroid_method: str,
+    category: str = 'VEHICLE'
 ) -> None:
     """Evaluate tracking output.
 
@@ -145,7 +146,7 @@ def eval_tracks(
         id_gts = []
         for i in range(len(gt_data)):
 
-            if gt_data[i]["label_class"] != "VEHICLE":
+            if gt_data[i]["label_class"] != category:
                 continue
 
             bbox, orientation = label_to_bbox(gt_data[i])
@@ -175,7 +176,7 @@ def eval_tracks(
         for track in track_data:
             key = track["track_label_uuid"]
 
-            if track["label_class"] != "VEHICLE" or track["height"] == 0:
+            if track["label_class"] != category or track["height"] == 0:
                 continue
 
             center = np.array([track["center"]["x"], track["center"]["y"], track["center"]["z"]])
