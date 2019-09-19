@@ -9,7 +9,6 @@ from typing import Any, Dict, List, TextIO, Union
 
 import motmetrics as mm
 import numpy as np
-
 from shapely.geometry.polygon import Polygon
 
 from argoverse.evaluation.eval_utils import get_pc_inside_bbox, label_to_bbox, leave_only_roi_region
@@ -41,10 +40,12 @@ def in_distance_range_pose(ego_center: np.ndarray, pose: np.ndarray, d_min: floa
 
     return dist > d_min and dist < d_max
 
+
 def iou_polygon(poly1, poly2):
     inter = poly1.intersection(poly2).area
     union = poly1.union(poly2).area
     return 1 - inter / union
+
 
 def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
     """Get the distance between two poses, returns nan if distance is larger than detection threshold.
@@ -57,32 +58,38 @@ def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
     Returns:
         A distance value or NaN
     """
-    if name == 'centroid':
+    if name == "centroid":
         dist = float(np.linalg.norm(x1[name][0:3] - x2[name][0:3]))
         return dist if dist < 2 else float(np.nan)
-    elif name == 'iou':
-        w1 = x1['width']
-        l1 = x1['length']
+    elif name == "iou":
+        w1 = x1["width"]
+        l1 = x1["length"]
 
-        w2 = x2['width']
-        l2 = x2['length']
+        w2 = x2["width"]
+        l2 = x2["length"]
 
-        poly1 = Polygon([(-l1/2, -w1/2),(-l1/2, w1/2), (l1/2, w1/2) , (l1/2, -w1/2)])
-        poly2 = Polygon([(-l2/2, -w2/2),(-l2/2, w2/2), (l2/2, w1/2) , (l2/2, -w2/2)])
+        poly1 = Polygon([(-l1 / 2, -w1 / 2), (-l1 / 2, w1 / 2), (l1 / 2, w1 / 2), (l1 / 2, -w1 / 2)])
+        poly2 = Polygon([(-l2 / 2, -w2 / 2), (-l2 / 2, w2 / 2), (l2 / 2, w1 / 2), (l2 / 2, -w2 / 2)])
 
         inter = poly1.intersection(poly2).area
         union = poly1.union(poly2).area
         return 1 - inter / union
 
-    elif name == 'orientation':
-        return min( np.abs(x1[name]-x2[name]), np.abs(np.pi+x1[name]-x2[name]),np.abs(-np.pi+x1[name]-x2[name])  )*180/np.pi
+    elif name == "orientation":
+        return (
+            min(np.abs(x1[name] - x2[name]), np.abs(np.pi + x1[name] - x2[name]), np.abs(-np.pi + x1[name] - x2[name]))
+            * 180
+            / np.pi
+        )
     else:
-        raise ValueError('Not implemented..')
+        raise ValueError("Not implemented..")
+
 
 def get_forth_vertex_rect(p1, p2, p3):
     x = p2[0] - p1[0] + p3[0]
     y = p3[1] - p1[1] + p2[1]
     return [x, y]
+
 
 def eval_tracks(
     path_tracker_output: str,
@@ -91,7 +98,7 @@ def eval_tracks(
     d_max: float,
     out_file: TextIO,
     centroid_method: str,
-    category: str = 'VEHICLE'
+    category: str = "VEHICLE",
 ) -> None:
     """Evaluate tracking output.
 
@@ -106,7 +113,6 @@ def eval_tracks(
     acc_c = mm.MOTAccumulator(auto_id=True)
     acc_i = mm.MOTAccumulator(auto_id=True)
     acc_o = mm.MOTAccumulator(auto_id=True)
-
 
     path_track_data = sorted(glob.glob(os.fspath(path_tracker_output) + "/*"))
 
@@ -242,29 +248,17 @@ def eval_tracks(
     num_switch = summary["num_switches"][0]
     num_flag = summary["num_fragmentations"][0]
 
-    acc_c.events.loc[acc_c.events.Type != 'RAW','D'] = acc_i.events.loc[acc_c.events.Type != 'RAW','D']
+    acc_c.events.loc[acc_c.events.Type != "RAW", "D"] = acc_i.events.loc[acc_c.events.Type != "RAW", "D"]
 
-    sum_motp_i = mh.compute(
-        acc_c,
-        metrics=[
-            "motp",
-        ],
-        name="acc",
-    )
+    sum_motp_i = mh.compute(acc_c, metrics=["motp"], name="acc")
     logger.info("MOTP-I = %s", sum_motp_i)
     num_tracks = len(ID_gt_all)
 
     fn = os.path.basename(path_tracker_output)
     motp_i = sum_motp_i["motp"][0]
 
-    acc_c.events.loc[acc_c.events.Type != 'RAW','D'] = acc_o.events.loc[acc_c.events.Type != 'RAW','D']
-    sum_motp_o = mh.compute(
-        acc_c,
-        metrics=[
-            "motp",
-        ],
-        name="acc",
-    )
+    acc_c.events.loc[acc_c.events.Type != "RAW", "D"] = acc_o.events.loc[acc_c.events.Type != "RAW", "D"]
+    sum_motp_o = mh.compute(acc_c, metrics=["motp"], name="acc")
     logger.info("MOTP-O = %s", sum_motp_o)
     num_tracks = len(ID_gt_all)
 

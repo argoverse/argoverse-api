@@ -44,7 +44,7 @@ def find_closest_integer_in_ref_arr(query_int: int, ref_arr: np.ndarray) -> Tupl
         take the minimum value (to speed up this function).
 
         Args:
-            query_int: query integer, 
+            query_int: query integer,
             ref_arr: Numpy array of integers
 
         Returns:
@@ -172,14 +172,18 @@ class SynchronizationDB:
         closest_cam_ch_timestamp, timestamp_diff = find_closest_integer_in_ref_arr(lidar_timestamp, cam_timestamps)
         if timestamp_diff > self.MAX_LIDAR_RING_CAM_TIMESTAMP_DIFF and camera_name in RING_CAMERA_LIST:
             # convert to nanoseconds->milliseconds for readability
-            logger.error(
-                "No corresponding image: %s > %s ms", timestamp_diff / 1e6, self.MAX_LIDAR_RING_CAM_TIMESTAMP_DIFF / 1e6
+            logger.warning(
+                "No corresponding ring image at %s: %s > %s ms",
+                lidar_timestamp,
+                timestamp_diff / 1e6,
+                self.MAX_LIDAR_RING_CAM_TIMESTAMP_DIFF / 1e6,
             )
             return None
         elif timestamp_diff > self.MAX_LIDAR_STEREO_CAM_TIMESTAMP_DIFF and camera_name in STEREO_CAMERA_LIST:
             # convert to nanoseconds->milliseconds for readability
-            logger.error(
-                "No corresponding image: %s > %s ms",
+            logger.warning(
+                "No corresponding stereo image at %s: %s > %s ms",
+                lidar_timestamp,
                 timestamp_diff / 1e6,
                 self.MAX_LIDAR_STEREO_CAM_TIMESTAMP_DIFF / 1e6,
             )

@@ -2,6 +2,7 @@
 
 import os
 from typing import Dict
+
 import h5py
 import tempfile
 import shutil
@@ -9,7 +10,11 @@ import zipfile
 import numpy as np
 
 NUM_TEST_SEQUENCE = 79391
-def generate_forecasting_h5(data: Dict[int, np.ndarray], output_path: str, filename: str ='argoverse_forecasting_baseline'):
+
+
+def generate_forecasting_h5(
+    data: Dict[int, np.ndarray], output_path: str, filename: str = "argoverse_forecasting_baseline"
+):
     """
     Helper function to generate the result h5 file for argoverse forecasting challenge
     
@@ -21,29 +26,36 @@ def generate_forecasting_h5(data: Dict[int, np.ndarray], output_path: str, filen
     Returns:
         
     """
-    
+
     if not os.path.exists(output_path):
         os.makedirs(output_path)
-    hf = h5py.File(os.path.join(output_path,filename+'.h5'), 'w')
-    
+    hf = h5py.File(os.path.join(output_path, filename + ".h5"), "w")
+
     d_all = []
     counter = 0
-    for key,value in data.items():
-        print('\r'+str(counter+1)+'/'+str(len(data)),end="")
-        assert type(key) == int, f'ERROR: The dict key should be of type int representing the sequence ID, currently getting {type(key)}'
-        assert value.shape == (9,30,2), f'ERROR: the data should be of shape (9,30,2), currently getting {value.shape}'
-        
-        value = value.reshape(270,2)
-        
-        d = np.array([[key,np.float32(x),np.float32(y)] for x,y in value])
-        
+    for key, value in data.items():
+        print("\r" + str(counter + 1) + "/" + str(len(data)), end="")
+        assert (
+            type(key) == int
+        ), f"ERROR: The dict key should be of type int representing the sequence ID, currently getting {type(key)}"
+        assert value.shape == (
+            9,
+            30,
+            2,
+        ), f"ERROR: the data should be of shape (9,30,2), currently getting {value.shape}"
+
+        value = value.reshape(270, 2)
+
+        d = np.array([[key, np.float32(x), np.float32(y)] for x, y in value])
+
         if len(d_all) == 0:
             d_all = d
         else:
-            d_all = np.concatenate([d_all,d],0)
+            d_all = np.concatenate([d_all, d], 0)
         counter += 1
-    hf.create_dataset('argoverse_forecasting', data=d_all, compression="gzip", compression_opts=9)
+    hf.create_dataset("argoverse_forecasting", data=d_all, compression="gzip", compression_opts=9)
     hf.close()
+    
     
 def generate_tracking_zip(input_path: str, output_path: str, filename: str ='argoverse_tracking'):
     """
