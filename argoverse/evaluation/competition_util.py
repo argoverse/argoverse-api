@@ -1,13 +1,14 @@
 """Utilities for submitting to Argoverse tracking and forecasting competitions"""
 
 import os
+import shutil
+import tempfile
+import zipfile
 from typing import Dict
 
-import h5py
-import tempfile
-import shutil
-import zipfile
 import numpy as np
+
+import h5py
 
 NUM_TEST_SEQUENCE = 79391
 
@@ -55,9 +56,9 @@ def generate_forecasting_h5(
         counter += 1
     hf.create_dataset("argoverse_forecasting", data=d_all, compression="gzip", compression_opts=9)
     hf.close()
-    
-    
-def generate_tracking_zip(input_path: str, output_path: str, filename: str ='argoverse_tracking'):
+
+
+def generate_tracking_zip(input_path: str, output_path: str, filename: str = "argoverse_tracking"):
     """
     Helper function to generate the result zip file for argoverse tracking challenge
     
@@ -69,7 +70,7 @@ def generate_tracking_zip(input_path: str, output_path: str, filename: str ='arg
     Returns:
         
     """
-    
+
     if not os.path.exists(output_path):
         os.makedirs(output_path)
     dirpath = tempfile.mkdtemp()
@@ -78,9 +79,12 @@ def generate_tracking_zip(input_path: str, output_path: str, filename: str ='arg
         os.makedirs(output_path)
 
     for log_id in os.listdir(input_path):
-        if log_id.startswith('.'):
+        if log_id.startswith("."):
             continue
-        shutil.copytree(os.path.join(input_path,log_id,'per_sweep_annotations_amodal'),os.path.join(dirpath,log_id,'per_sweep_annotations_amodal'))
+        shutil.copytree(
+            os.path.join(input_path, log_id, "per_sweep_annotations_amodal"),
+            os.path.join(dirpath, log_id, "per_sweep_annotations_amodal"),
+        )
 
-    shutil.make_archive(os.path.join(output_path,'argoverse_tracking'), 'zip',dirpath)
+    shutil.make_archive(os.path.join(output_path, "argoverse_tracking"), "zip", dirpath)
     shutil.rmtree(dirpath)
