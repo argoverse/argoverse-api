@@ -2,6 +2,7 @@
 
 import os
 from typing import Dict
+
 import h5py
 import tempfile
 import shutil
@@ -17,55 +18,66 @@ import json
 
 
 NUM_TEST_SEQUENCE = 79391
-def generate_forecasting_h5(data: Dict[int, np.ndarray], output_path: str, filename: str ='argoverse_forecasting_baseline'):
+
+
+def generate_forecasting_h5(
+    data: Dict[int, np.ndarray], output_path: str, filename: str = "argoverse_forecasting_baseline"
+):
     """
     Helper function to generate the result h5 file for argoverse forecasting challenge
-    
+
     Args:
         data: a dictionary of trajectory, with the key being the sequence ID. For each sequence, the trajectory should be stored in a (9,30,2) np.ndarray
         output_path: path to the output directory to store the output h5 file
         filename: to be used as the name of the file
-        
+
     Returns:
-        
+
     """
-    
+
     if not os.path.exists(output_path):
         os.makedirs(output_path)
-    hf = h5py.File(os.path.join(output_path,filename+'.h5'), 'w')
-    
+    hf = h5py.File(os.path.join(output_path, filename + ".h5"), "w")
+
     d_all = []
     counter = 0
-    for key,value in data.items():
-        print('\r'+str(counter+1)+'/'+str(len(data)),end="")
-        assert type(key) == int, f'ERROR: The dict key should be of type int representing the sequence ID, currently getting {type(key)}'
-        assert value.shape == (9,30,2), f'ERROR: the data should be of shape (9,30,2), currently getting {value.shape}'
-        
-        value = value.reshape(270,2)
-        
-        d = np.array([[key,np.float32(x),np.float32(y)] for x,y in value])
-        
+    for key, value in data.items():
+        print("\r" + str(counter + 1) + "/" + str(len(data)), end="")
+        assert (
+            type(key) == int
+        ), f"ERROR: The dict key should be of type int representing the sequence ID, currently getting {type(key)}"
+        assert value.shape == (
+            9,
+            30,
+            2,
+        ), f"ERROR: the data should be of shape (9,30,2), currently getting {value.shape}"
+
+        value = value.reshape(270, 2)
+
+        d = np.array([[key, np.float32(x), np.float32(y)] for x, y in value])
+
         if len(d_all) == 0:
             d_all = d
         else:
-            d_all = np.concatenate([d_all,d],0)
+            d_all = np.concatenate([d_all, d], 0)
         counter += 1
-    hf.create_dataset('argoverse_forecasting', data=d_all, compression="gzip", compression_opts=9)
+    hf.create_dataset("argoverse_forecasting", data=d_all, compression="gzip", compression_opts=9)
     hf.close()
-    
+
+
 def generate_tracking_zip(input_path: str, output_path: str, filename: str ='argoverse_tracking'):
     """
     Helper function to generate the result zip file for argoverse tracking challenge
-    
+
     Args:
         input path: path to the input directory which contain per_sweep_annotations_amodal/
         output_path: path to the output directory to store the output zip file
         filename: to be used as the name of the file
-        
+
     Returns:
-        
+
     """
-    
+
     if not os.path.exists(output_path):
         os.makedirs(output_path)
     dirpath = tempfile.mkdtemp()
@@ -84,33 +96,33 @@ def generate_tracking_zip(input_path: str, output_path: str, filename: str ='arg
 def get_polygon_from_points(points: np.ndarray) -> Polygon:
     """
     function to generate (convex hull) shapely polygon from set of points
-    
+
     Args:
         points: list of 2d coordinate points
-        
+
     Returns:
         polygon: shapely polygon representing the results
     """
     points = points
     hull = ConvexHull(points)
-    
+
     poly = []
-    
+
     for simplex in hull.simplices:
         poly.append([points[simplex, 0][0], points[simplex, 1][0], points[simplex, 2][0]])
-        poly.append([points[simplex, 0][1], points[simplex, 1][1], points[simplex, 2][1]])    
-        
+        poly.append([points[simplex, 0][1], points[simplex, 1][1], points[simplex, 2][1]])
+
         #plt.plot(points[simplex, 0], points[simplex, 1], 'k-')
-    
+
     return Polygon(poly)
 
 def get_rotated_bbox_from_points(points: np.ndarray) -> Polygon:
     """
     function to generate mininum_rotated_rectangle from list of point coordinate
-    
+
     Args:
         points: list of 2d coordinate points
-        
+
     Returns:
         polygon: shapely polygon representing the results
     """
@@ -127,34 +139,34 @@ def dist(p1,p2):
 
 def poly_to_label(poly, category="VEHICLE", track_id=None):
     #poly in polygon format
-    
+
     bbox = poly.minimum_rotated_rectangle
-    
+
     x = bbox.exterior.xy[0]
     y = bbox.exterior.xy[1]
     z = np.array([z for _,_,z in poly.exterior.coords])
-    
+
     #z = poly.exterior.xy[2]
-    
+
     d1 = dist((x[0],y[0]),(x[1],y[1]))
     d2 = dist((x[1],y[1]),(x[2],y[2]))
-    
+
     width = min(d1,d2)
     length = max(d1,d2)
-    
+
     if max(d1,d2) == d2:
         unit_v = unit_vector((x[1],y[1]),(x[2],y[2]))
     else:
         unit_v = unit_vector((x[0],y[0]),(x[1],y[1]))
-    
+
     angle = math.atan2(unit_v[1],unit_v[0])
-    
+
     height = max(z) - min(z)
-    
-    
+
+
     #translation = center
     center = np.array([bbox.centroid.xy[0][0],bbox.centroid.xy[1][0], min(z) + height/2])
-                       
+
     R = np.array(
                 [
                     [np.cos(angle), -np.sin(angle), 0],
@@ -162,20 +174,20 @@ def poly_to_label(poly, category="VEHICLE", track_id=None):
                     [0, 0, 1],
                 ]
             )
-    
-                       
+
+
     q = quaternion.from_rotation_matrix(R)
-                       
+
     return ObjectLabelRecord(quaternion=quaternion.as_float_array(q), translation=center, length=length, width=width, height=height, occlusion=0,label_class=category, track_id=track_id)
 
 def get_objects(clustering,pts,category="VEHICLE"):
-    
+
     core_samples_mask = np.zeros_like(clustering.labels_, dtype=bool)
     core_samples_mask[clustering.core_sample_indices_] = True
     labels = clustering.labels_
 
     objects = []
-    
+
     unique_labels = set(labels)
     for k in unique_labels:
         if k == -1:
@@ -199,20 +211,20 @@ def get_objects(clustering,pts,category="VEHICLE"):
 
 def save_label(argoverse_data,labels,idx):
     #save label data at index idx
-    
+
     data_dir = argoverse_data.root_dir
-    
+
     log = argoverse_data.current_log
-    
+
     label_dir = os.path.join(data_dir,log,'per_sweep_annotations_amodal')
-    
+
     if not os.path.exists(label_dir):
         os.makedirs(label_dir)
-        
+
     labels_json_data = []
-    
+
     timestamp = argoverse_data.lidar_timestamp_list[idx]
-    
+
     for label in labels:
         json_data = {
         "center": {
@@ -236,15 +248,15 @@ def save_label(argoverse_data,labels,idx):
         "track_label_uuid": label.track_id
     }
         labels_json_data.append(json_data)
-        
+
     fn = f'tracked_object_labels_{timestamp}.json'
     with open(os.path.join(label_dir,fn), 'w') as json_file:
         json.dump(labels_json_data, json_file)
 
 def transform_xyz(xyz,pose1, pose2):
     #transform xyz from pose1 to pose2
-    
+
     #convert to city coordinate
     city_coord = pose1.transform_point_cloud(xyz)
-    
+
     return pose2.inverse_transform_point_cloud(city_coord)
