@@ -41,7 +41,7 @@ def in_distance_range_pose(ego_center: np.ndarray, pose: np.ndarray, d_min: floa
     return dist > d_min and dist < d_max
 
 
-def iou_polygon(poly1, poly2):
+def iou_polygon(poly1: Polygon, poly2: Polygon) -> float:
     inter = poly1.intersection(poly2).area
     union = poly1.union(poly2).area
     return 1 - inter / union

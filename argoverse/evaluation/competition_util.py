@@ -7,7 +7,7 @@ import shutil
 import tempfile
 import uuid
 import zipfile
-from typing import Dict
+from typing import Dict, Tuple, List
 
 import numpy as np
 from scipy.spatial import ConvexHull
@@ -16,13 +16,16 @@ from shapely.geometry import Polygon
 import h5py
 import quaternion
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
+from argoverse.utils.se3 import SE3
+from sklearn.cluster.dbscan_ import DBSCAN
+from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 
 NUM_TEST_SEQUENCE = 79391
 
 
 def generate_forecasting_h5(
     data: Dict[int, np.ndarray], output_path: str, filename: str = "argoverse_forecasting_baseline"
-):
+) -> None:
     """
     Helper function to generate the result h5 file for argoverse forecasting challenge
 
@@ -66,7 +69,7 @@ def generate_forecasting_h5(
     hf.close()
 
 
-def generate_tracking_zip(input_path: str, output_path: str, filename: str = "argoverse_tracking"):
+def generate_tracking_zip(input_path: str, output_path: str, filename: str = "argoverse_tracking") -> None:
     """
     Helper function to generate the result zip file for argoverse tracking challenge
 
@@ -135,17 +138,17 @@ def get_rotated_bbox_from_points(points: np.ndarray) -> Polygon:
     return get_polygon_from_points(points).minimum_rotated_rectangle
 
 
-def unit_vector(pt0, pt1):
+def unit_vector(pt0: Tuple[float, float], pt1: Tuple[float, float]) -> Tuple[float, float]:
     # returns an unit vector that points in the direction of pt0 to pt1
     dis_0_to_1 = math.sqrt((pt0[0] - pt1[0]) ** 2 + (pt0[1] - pt1[1]) ** 2)
     return (pt1[0] - pt0[0]) / dis_0_to_1, (pt1[1] - pt0[1]) / dis_0_to_1
 
 
-def dist(p1, p2):
+def dist(p1: Tuple[float, float], p2: Tuple[float, float]) -> float:
     return math.sqrt(((p1[0] - p2[0]) ** 2) + ((p1[1] - p2[1]) ** 2))
 
 
-def poly_to_label(poly, category="VEHICLE", track_id=None):
+def poly_to_label(poly: Polygon, category: str ="VEHICLE", track_id: str='') -> ObjectLabelRecord:
     # poly in polygon format
 
     bbox = poly.minimum_rotated_rectangle
@@ -190,7 +193,7 @@ def poly_to_label(poly, category="VEHICLE", track_id=None):
     )
 
 
-def get_objects(clustering, pts, category="VEHICLE"):
+def get_objects(clustering: DBSCAN, pts: np.ndarray, category: str="VEHICLE") -> List:
 
     core_samples_mask = np.zeros_like(clustering.labels_, dtype=bool)
     core_samples_mask[clustering.core_sample_indices_] = True
@@ -220,7 +223,7 @@ def get_objects(clustering, pts, category="VEHICLE"):
     return objects
 
 
-def save_label(argoverse_data, labels, idx):
+def save_label(argoverse_data: ArgoverseTrackingLoader, labels: List, idx: int) -> None:
     # save label data at index idx
 
     data_dir = argoverse_data.root_dir
@@ -261,7 +264,7 @@ def save_label(argoverse_data, labels, idx):
         json.dump(labels_json_data, json_file)
 
 
-def transform_xyz(xyz, pose1, pose2):
+def transform_xyz(xyz: np.ndarray, pose1: SE3 , pose2: SE3) -> None:
     # transform xyz from pose1 to pose2
 
     # convert to city coordinate
