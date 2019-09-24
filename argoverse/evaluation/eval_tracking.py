@@ -90,7 +90,7 @@ def get_forth_vertex_rect(
 ) -> Tuple[float, float]:
     x = p2[0] - p1[0] + p3[0]
     y = p3[1] - p1[1] + p2[1]
-    return [x, y]
+    return (x, y)
 
 
 def eval_tracks(

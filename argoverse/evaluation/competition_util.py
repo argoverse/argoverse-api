@@ -193,7 +193,7 @@ def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") 
     )
 
 
-def get_objects(clustering: DBSCAN, pts: np.ndarray, category: str = "VEHICLE") -> List[List[np.ndarray, str]]:
+def get_objects(clustering: DBSCAN, pts: np.ndarray, category: str = "VEHICLE") -> List[Tuple[np.ndarray, str]]:
 
     core_samples_mask = np.zeros_like(clustering.labels_, dtype=bool)
     core_samples_mask[clustering.core_sample_indices_] = True
