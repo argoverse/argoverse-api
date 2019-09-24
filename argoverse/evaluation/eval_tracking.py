@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import pathlib
-from typing import Any, Dict, List, TextIO, Union, Tuple
+from typing import Any, Dict, List, TextIO, Tuple, Union
 
 import motmetrics as mm
 import numpy as np
@@ -85,7 +85,9 @@ def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
         raise ValueError("Not implemented..")
 
 
-def get_forth_vertex_rect(p1: Tuple[float, float], p2: Tuple[float, float], p3: Tuple[float, float]) -> Tuple[float, float]:
+def get_forth_vertex_rect(
+    p1: Tuple[float, float], p2: Tuple[float, float], p3: Tuple[float, float]
+) -> Tuple[float, float]:
     x = p2[0] - p1[0] + p3[0]
     y = p3[1] - p1[1] + p2[1]
     return [x, y]
