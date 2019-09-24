@@ -213,13 +213,13 @@ def get_objects(clustering: DBSCAN, pts: np.ndarray, category: str = "VEHICLE") 
                 poly = get_polygon_from_points(xyz)
                 label = poly_to_label(poly, category="VEHICLE")
                 if label.length < 7 and label.length > 1 and label.height < 2.5:
-                    objects.append([xyz, uuid.uuid4()])
+                    objects.append((xyz, uuid.uuid4()))
         elif category == "PEDESTRIAN":
             if len(xyz) >= 10:
                 poly = get_polygon_from_points(xyz)
                 label = poly_to_label(poly, category="PEDESTRIAN")
                 if label.width < 1 and label.length < 1 and label.height > 1 and label.height < 2.5:
-                    objects.append([xyz, uuid.uuid4()])
+                    objects.append((xyz, uuid.uuid4()))
     return objects
 
 
