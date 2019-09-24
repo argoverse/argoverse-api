@@ -1,22 +1,21 @@
 """Utilities for submitting to Argoverse tracking and forecasting competitions"""
 
+import json
+import math
 import os
 import shutil
 import tempfile
+import uuid
 import zipfile
 from typing import Dict
 
 import numpy as np
 from scipy.spatial import ConvexHull
 from shapely.geometry import Polygon
-import math
-import quaternion
-from argoverse.data_loading.object_label_record import ObjectLabelRecord
-import uuid
-import json
-
 
 import h5py
+import quaternion
+from argoverse.data_loading.object_label_record import ObjectLabelRecord
 
 NUM_TEST_SEQUENCE = 79391
 
@@ -97,6 +96,7 @@ def generate_tracking_zip(input_path: str, output_path: str, filename: str = "ar
     shutil.make_archive(os.path.join(output_path, "argoverse_tracking"), "zip", dirpath)
     shutil.rmtree(dirpath)
 
+
 def get_polygon_from_points(points: np.ndarray) -> Polygon:
     """
     function to generate (convex hull) shapely polygon from set of points
@@ -116,9 +116,10 @@ def get_polygon_from_points(points: np.ndarray) -> Polygon:
         poly.append([points[simplex, 0][0], points[simplex, 1][0], points[simplex, 2][0]])
         poly.append([points[simplex, 0][1], points[simplex, 1][1], points[simplex, 2][1]])
 
-        #plt.plot(points[simplex, 0], points[simplex, 1], 'k-')
+        # plt.plot(points[simplex, 0], points[simplex, 1], 'k-')
 
     return Polygon(poly)
+
 
 def get_rotated_bbox_from_points(points: np.ndarray) -> Polygon:
     """
@@ -132,59 +133,63 @@ def get_rotated_bbox_from_points(points: np.ndarray) -> Polygon:
     """
     return get_polygon_from_points(points).minimum_rotated_rectangle
 
+
 def unit_vector(pt0, pt1):
     # returns an unit vector that points in the direction of pt0 to pt1
-    dis_0_to_1 = math.sqrt((pt0[0] - pt1[0])**2 + (pt0[1] - pt1[1])**2)
-    return (pt1[0] - pt0[0]) / dis_0_to_1, \
-           (pt1[1] - pt0[1]) / dis_0_to_1
+    dis_0_to_1 = math.sqrt((pt0[0] - pt1[0]) ** 2 + (pt0[1] - pt1[1]) ** 2)
+    return (pt1[0] - pt0[0]) / dis_0_to_1, (pt1[1] - pt0[1]) / dis_0_to_1
 
-def dist(p1,p2):
-    return math.sqrt( ((p1[0]-p2[0])**2)+((p1[1]-p2[1])**2) )
+
+def dist(p1, p2):
+    return math.sqrt(((p1[0] - p2[0]) ** 2) + ((p1[1] - p2[1]) ** 2))
+
 
 def poly_to_label(poly, category="VEHICLE", track_id=None):
-    #poly in polygon format
+    # poly in polygon format
 
     bbox = poly.minimum_rotated_rectangle
 
     x = bbox.exterior.xy[0]
     y = bbox.exterior.xy[1]
-    z = np.array([z for _,_,z in poly.exterior.coords])
+    z = np.array([z for _, _, z in poly.exterior.coords])
 
-    #z = poly.exterior.xy[2]
+    # z = poly.exterior.xy[2]
 
-    d1 = dist((x[0],y[0]),(x[1],y[1]))
-    d2 = dist((x[1],y[1]),(x[2],y[2]))
+    d1 = dist((x[0], y[0]), (x[1], y[1]))
+    d2 = dist((x[1], y[1]), (x[2], y[2]))
 
-    width = min(d1,d2)
-    length = max(d1,d2)
+    width = min(d1, d2)
+    length = max(d1, d2)
 
-    if max(d1,d2) == d2:
-        unit_v = unit_vector((x[1],y[1]),(x[2],y[2]))
+    if max(d1, d2) == d2:
+        unit_v = unit_vector((x[1], y[1]), (x[2], y[2]))
     else:
-        unit_v = unit_vector((x[0],y[0]),(x[1],y[1]))
+        unit_v = unit_vector((x[0], y[0]), (x[1], y[1]))
 
-    angle = math.atan2(unit_v[1],unit_v[0])
+    angle = math.atan2(unit_v[1], unit_v[0])
 
     height = max(z) - min(z)
 
+    # translation = center
+    center = np.array([bbox.centroid.xy[0][0], bbox.centroid.xy[1][0], min(z) + height / 2])
 
-    #translation = center
-    center = np.array([bbox.centroid.xy[0][0],bbox.centroid.xy[1][0], min(z) + height/2])
-
-    R = np.array(
-                [
-                    [np.cos(angle), -np.sin(angle), 0],
-                    [np.sin(angle), np.cos(angle), 0],
-                    [0, 0, 1],
-                ]
-            )
-
+    R = np.array([[np.cos(angle), -np.sin(angle), 0], [np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
 
     q = quaternion.from_rotation_matrix(R)
 
-    return ObjectLabelRecord(quaternion=quaternion.as_float_array(q), translation=center, length=length, width=width, height=height, occlusion=0,label_class=category, track_id=track_id)
+    return ObjectLabelRecord(
+        quaternion=quaternion.as_float_array(q),
+        translation=center,
+        length=length,
+        width=width,
+        height=height,
+        occlusion=0,
+        label_class=category,
+        track_id=track_id,
+    )
 
-def get_objects(clustering,pts,category="VEHICLE"):
+
+def get_objects(clustering, pts, category="VEHICLE"):
 
     core_samples_mask = np.zeros_like(clustering.labels_, dtype=bool)
     core_samples_mask[clustering.core_sample_indices_] = True
@@ -197,15 +202,15 @@ def get_objects(clustering,pts,category="VEHICLE"):
         if k == -1:
             # noise
             continue
-        class_member_mask = (labels == k)
+        class_member_mask = labels == k
         xyz = pts[class_member_mask & core_samples_mask]
-        if category == 'VEHICLE':
+        if category == "VEHICLE":
             if len(xyz) >= 20:
                 poly = get_polygon_from_points(xyz)
                 label = poly_to_label(poly, category="VEHICLE")
                 if label.length < 7 and label.length > 1 and label.height < 2.5:
                     objects.append([xyz, uuid.uuid4()])
-        elif category == 'PEDESTRIAN':
+        elif category == "PEDESTRIAN":
             if len(xyz) >= 10:
                 poly = get_polygon_from_points(xyz)
                 label = poly_to_label(poly, category="PEDESTRIAN")
@@ -213,14 +218,15 @@ def get_objects(clustering,pts,category="VEHICLE"):
                     objects.append([xyz, uuid.uuid4()])
     return objects
 
-def save_label(argoverse_data,labels,idx):
-    #save label data at index idx
+
+def save_label(argoverse_data, labels, idx):
+    # save label data at index idx
 
     data_dir = argoverse_data.root_dir
 
     log = argoverse_data.current_log
 
-    label_dir = os.path.join(data_dir,log,'per_sweep_annotations_amodal')
+    label_dir = os.path.join(data_dir, log, "per_sweep_annotations_amodal")
 
     if not os.path.exists(label_dir):
         os.makedirs(label_dir)
@@ -231,36 +237,33 @@ def save_label(argoverse_data,labels,idx):
 
     for label in labels:
         json_data = {
-        "center": {
-            "x": label.translation[0],
-            "y": label.translation[1],
-            "z": label.translation[2]
-        },
-        "rotation": {
-            "x": label.quaternion[0],
-            "y": label.quaternion[1],
-            "z": label.quaternion[2],
-            "w": label.quaternion[3]
-        },
-        "length": label.length,
-        "width": label.width,
-        "height": label.height,
-        "occlusion": 0,
-        "tracked": True,
-        "timestamp": timestamp,
-        "label_class": label.label_class,
-        "track_label_uuid": label.track_id
-    }
+            "center": {"x": label.translation[0], "y": label.translation[1], "z": label.translation[2]},
+            "rotation": {
+                "x": label.quaternion[0],
+                "y": label.quaternion[1],
+                "z": label.quaternion[2],
+                "w": label.quaternion[3],
+            },
+            "length": label.length,
+            "width": label.width,
+            "height": label.height,
+            "occlusion": 0,
+            "tracked": True,
+            "timestamp": timestamp,
+            "label_class": label.label_class,
+            "track_label_uuid": label.track_id,
+        }
         labels_json_data.append(json_data)
 
-    fn = f'tracked_object_labels_{timestamp}.json'
-    with open(os.path.join(label_dir,fn), 'w') as json_file:
+    fn = f"tracked_object_labels_{timestamp}.json"
+    with open(os.path.join(label_dir, fn), "w") as json_file:
         json.dump(labels_json_data, json_file)
 
-def transform_xyz(xyz,pose1, pose2):
-    #transform xyz from pose1 to pose2
 
-    #convert to city coordinate
+def transform_xyz(xyz, pose1, pose2):
+    # transform xyz from pose1 to pose2
+
+    # convert to city coordinate
     city_coord = pose1.transform_point_cloud(xyz)
 
     return pose2.inverse_transform_point_cloud(city_coord)
