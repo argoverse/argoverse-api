@@ -7,18 +7,18 @@ import shutil
 import tempfile
 import uuid
 import zipfile
-from typing import Dict, Tuple, List
+from typing import Dict, List, Tuple
 
 import numpy as np
 from scipy.spatial import ConvexHull
 from shapely.geometry import Polygon
+from sklearn.cluster.dbscan_ import DBSCAN
 
 import h5py
 import quaternion
+from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
 from argoverse.utils.se3 import SE3
-from sklearn.cluster.dbscan_ import DBSCAN
-from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 
 NUM_TEST_SEQUENCE = 79391
 
@@ -148,7 +148,7 @@ def dist(p1: Tuple[float, float], p2: Tuple[float, float]) -> float:
     return math.sqrt(((p1[0] - p2[0]) ** 2) + ((p1[1] - p2[1]) ** 2))
 
 
-def poly_to_label(poly: Polygon, category: str ="VEHICLE", track_id: str='') -> ObjectLabelRecord:
+def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") -> ObjectLabelRecord:
     # poly in polygon format
 
     bbox = poly.minimum_rotated_rectangle
@@ -193,7 +193,7 @@ def poly_to_label(poly: Polygon, category: str ="VEHICLE", track_id: str='') -> 
     )
 
 
-def get_objects(clustering: DBSCAN, pts: np.ndarray, category: str="VEHICLE") -> List:
+def get_objects(clustering: DBSCAN, pts: np.ndarray, category: str = "VEHICLE") -> List:
 
     core_samples_mask = np.zeros_like(clustering.labels_, dtype=bool)
     core_samples_mask[clustering.core_sample_indices_] = True
@@ -264,7 +264,7 @@ def save_label(argoverse_data: ArgoverseTrackingLoader, labels: List, idx: int) 
         json.dump(labels_json_data, json_file)
 
 
-def transform_xyz(xyz: np.ndarray, pose1: SE3 , pose2: SE3) -> None:
+def transform_xyz(xyz: np.ndarray, pose1: SE3, pose2: SE3) -> None:
     # transform xyz from pose1 to pose2
 
     # convert to city coordinate
