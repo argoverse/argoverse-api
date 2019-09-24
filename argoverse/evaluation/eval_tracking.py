@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import pathlib
-from typing import Any, Dict, List, TextIO, Union
+from typing import Any, Dict, List, TextIO, Union, Tuple
 
 import motmetrics as mm
 import numpy as np
@@ -44,7 +44,7 @@ def in_distance_range_pose(ego_center: np.ndarray, pose: np.ndarray, d_min: floa
 def iou_polygon(poly1: Polygon, poly2: Polygon) -> float:
     inter = poly1.intersection(poly2).area
     union = poly1.union(poly2).area
-    return 1 - inter / union
+    return float(1 - inter / union)
 
 
 def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
@@ -73,10 +73,10 @@ def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
 
         inter = poly1.intersection(poly2).area
         union = poly1.union(poly2).area
-        return 1 - inter / union
+        return float(1 - inter / union)
 
     elif name == "orientation":
-        return (
+        return float(
             min(np.abs(x1[name] - x2[name]), np.abs(np.pi + x1[name] - x2[name]), np.abs(-np.pi + x1[name] - x2[name]))
             * 180
             / np.pi
@@ -85,7 +85,7 @@ def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
         raise ValueError("Not implemented..")
 
 
-def get_forth_vertex_rect(p1, p2, p3):
+def get_forth_vertex_rect(p1: Tuple[float, float], p2: Tuple[float, float], p3: Tuple[float, float]) -> Tuple[float, float]:
     x = p2[0] - p1[0] + p3[0]
     y = p3[1] - p1[1] + p2[1]
     return [x, y]

@@ -43,7 +43,7 @@ def generate_forecasting_h5(
         os.makedirs(output_path)
     hf = h5py.File(os.path.join(output_path, filename + ".h5"), "w")
 
-    d_all = []
+    d_all: List[np.ndarray] = []
     counter = 0
     for key, value in data.items():
         print("\r" + str(counter + 1) + "/" + str(len(data)), end="")
@@ -193,7 +193,7 @@ def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") 
     )
 
 
-def get_objects(clustering: DBSCAN, pts: np.ndarray, category: str = "VEHICLE") -> List:
+def get_objects(clustering: DBSCAN, pts: np.ndarray, category: str = "VEHICLE") -> List[List[np.ndarray,str]]:
 
     core_samples_mask = np.zeros_like(clustering.labels_, dtype=bool)
     core_samples_mask[clustering.core_sample_indices_] = True
@@ -223,7 +223,7 @@ def get_objects(clustering: DBSCAN, pts: np.ndarray, category: str = "VEHICLE") 
     return objects
 
 
-def save_label(argoverse_data: ArgoverseTrackingLoader, labels: List, idx: int) -> None:
+def save_label(argoverse_data: ArgoverseTrackingLoader, labels: List[ObjectLabelRecord], idx: int) -> None:
     # save label data at index idx
 
     data_dir = argoverse_data.root_dir
@@ -264,7 +264,7 @@ def save_label(argoverse_data: ArgoverseTrackingLoader, labels: List, idx: int) 
         json.dump(labels_json_data, json_file)
 
 
-def transform_xyz(xyz: np.ndarray, pose1: SE3, pose2: SE3) -> None:
+def transform_xyz(xyz: np.ndarray, pose1: SE3, pose2: SE3) -> np.ndarray:
     # transform xyz from pose1 to pose2
 
     # convert to city coordinate
