@@ -27,7 +27,8 @@ def generate_forecasting_h5(
     Helper function to generate the result h5 file for argoverse forecasting challenge
 
     Args:
-        data: a dictionary of trajectory, with the key being the sequence ID. For each sequence, the trajectory should be stored in a (9,30,2) np.ndarray
+        data: a dictionary of trajectory, with the key being the sequence ID. For each sequence, the 
+              trajectory should be stored in a (9,30,2) np.ndarray
         output_path: path to the output directory to store the output h5 file
         filename: to be used as the name of the file
 
