@@ -151,6 +151,7 @@ def compute_forecasting_metrics(
         city_names: Dict mapping sequence id to city name.
         max_n_guesses: Number of guesses allowed
         horizon: Prediction horizon
+        miss_threshold: Miss threshold
 
      Returns:
         mean_min_ade: Mean of min_ade for all the trajectories. 
