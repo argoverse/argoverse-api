@@ -6,6 +6,8 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+from shapely.geometry import LineString
+
 from argoverse.data_loading.vector_map_loader import load_lane_segments_from_xml
 from argoverse.utils.centerline_utils import (
     centerline_to_polygon,
@@ -26,7 +28,6 @@ from argoverse.utils.manhattan_search import (
 from argoverse.utils.mpl_plotting_utils import plot_lane_segment_patch, visualize_centerline
 from argoverse.utils.pkl_utils import load_pkl_dictionary
 from argoverse.utils.se2 import SE2
-from shapely.geometry import LineString
 
 from .lane_segment import LaneSegment
 from .map_viz_helper import render_global_city_map_bev
@@ -377,7 +378,22 @@ class ArgoverseMap:
         npyimage_coords = npyimage_to_city_se2.transform_point_cloud(city_coords)
         npyimage_coords = npyimage_coords.astype(np.int64)
 
-        # index in at (x,y) locations, which are (y,x) in the image
+        # index at (x,y) locations, which are (y,x) in the image
+        max_y = np.max(npyimage_coords[:, 1])
+        max_x = np.max(npyimage_coords[:, 0])
+
+        height_y, height_x = np.shape(ground_height_mat)
+
+        assert np.all(npyimage_coords[:, 1] > 0) and np.all(
+            npyimage_coords[:, 0] > 0
+        ), "Invalid coordinates, please make sure the query location is in a valid city coordinate"
+
+        if max_x > height_x or max_y > height_y:
+            # expand ground height npy image, fill with NaN
+            ground_height_mat_pad = np.full((max_y, max_x), np.nan)
+            ground_height_mat_pad[0:max_y, 0:max_x] = ground_height_mat
+            ground_height_mat = copy.deepcopy(ground_height_mat_pad)
+
         ground_height_values = ground_height_mat[npyimage_coords[:, 1], npyimage_coords[:, 0]]
         return ground_height_values
 

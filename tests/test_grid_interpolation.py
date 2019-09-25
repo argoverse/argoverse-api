@@ -1,6 +1,7 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
 import numpy as np
+
 from argoverse.utils.grid_interpolation import interp_square_grid
 
 

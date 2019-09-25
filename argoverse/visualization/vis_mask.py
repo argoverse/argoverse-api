@@ -24,8 +24,9 @@ from typing import Any, List, Optional, Sequence, Tuple, Union
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from argoverse.visualization.colormap import colormap
 from matplotlib.patches import Polygon
+
+from argoverse.visualization.colormap import colormap
 
 plt.rcParams["pdf.fonttype"] = 42  # For editing in Adobe Illustrator
 

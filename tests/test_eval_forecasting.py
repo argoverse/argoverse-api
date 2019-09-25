@@ -7,7 +7,6 @@ from numpy.testing import assert_almost_equal
 
 from argoverse.evaluation.eval_forecasting import compute_forecasting_metrics
 
-
 def test_compute_forecasting_metric():
     """Test computation of motion forecasting metrics."""
     # Test Case:

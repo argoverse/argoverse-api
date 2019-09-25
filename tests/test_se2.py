@@ -4,6 +4,7 @@
 
 import numpy as np
 import pytest
+
 from argoverse.utils.se2 import SE2
 
 

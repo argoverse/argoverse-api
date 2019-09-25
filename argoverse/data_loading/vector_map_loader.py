@@ -47,6 +47,7 @@ import xml.etree.ElementTree as ET
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union, cast
 
 import numpy as np
+
 from argoverse.map_representation.lane_segment import LaneSegment
 
 logger = logging.getLogger(__name__)
