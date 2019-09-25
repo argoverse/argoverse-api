@@ -94,8 +94,8 @@ def get_forth_vertex_rect(
 
 
 def eval_tracks(
-    path_tracker_output: str,
-    path_dataset: _PathLike,
+    path_tracker_outputs: List[_PathLike],
+    path_datasets: List[_PathLike],
     d_min: float,
     d_max: float,
     out_file: TextIO,
@@ -105,7 +105,7 @@ def eval_tracks(
     """Evaluate tracking output.
 
     Args:
-        path_tracker_output: path to tracker output
+        path_tracker_output: list of path to tracker output, one for each log
         path_dataset: path to dataset
         d_min: minimum distance range
         d_max: maximum distance range
@@ -115,110 +115,111 @@ def eval_tracks(
     acc_c = mm.MOTAccumulator(auto_id=True)
     acc_i = mm.MOTAccumulator(auto_id=True)
     acc_o = mm.MOTAccumulator(auto_id=True)
+    for path_tracker_output, path_dataset in zip(path_tracker_outputs,path_datasets):
 
-    path_track_data = sorted(glob.glob(os.fspath(path_tracker_output) + "/*"))
+        path_track_data = sorted(glob.glob(os.fspath(path_tracker_output) + "/*"))
 
-    log_id = pathlib.Path(path_dataset).name
-    logger.info("log_id = %s", log_id)
+        log_id = pathlib.Path(path_dataset).name
+        logger.info("log_id = %s", log_id)
 
-    city_info_fpath = f"{path_dataset}/city_info.json"
-    city_info = read_json_file(city_info_fpath)
-    city_name = city_info["city_name"]
-    logger.info("city name = %s", city_name)
+        city_info_fpath = f"{path_dataset}/city_info.json"
+        city_info = read_json_file(city_info_fpath)
+        city_name = city_info["city_name"]
+        logger.info("city name = %s", city_name)
 
-    ID_gt_all: List[str] = []
+        ID_gt_all: List[str] = []
 
-    count_all: int = 0
-    for ind_frame in range(len(path_track_data)):
-        if ind_frame % 50 == 0:
-            logger.info("%d/%d" % (ind_frame, len(path_track_data)))
+        count_all: int = 0
+        for ind_frame in range(len(path_track_data)):
+            if ind_frame % 50 == 0:
+                logger.info("%d/%d" % (ind_frame, len(path_track_data)))
 
-        timestamp_lidar = int(path_track_data[ind_frame].split("/")[-1].split("_")[-1].split(".")[0])
-        path_gt = os.path.join(
-            path_dataset, "per_sweep_annotations_amodal", f"tracked_object_labels_{timestamp_lidar}.json"
-        )
+            timestamp_lidar = int(path_track_data[ind_frame].split("/")[-1].split("_")[-1].split(".")[0])
+            path_gt = os.path.join(
+                path_dataset, "per_sweep_annotations_amodal", f"tracked_object_labels_{timestamp_lidar}.json"
+            )
 
-        if not os.path.exists(path_gt):
-            logger.warning("Missing ", path_gt)
-            continue
-
-        gt_data = read_json_file(path_gt)
-
-        pose_data = read_json_file(f"{path_dataset}/poses/city_SE3_egovehicle_{timestamp_lidar}.json")
-        rotation = np.array(pose_data["rotation"])
-        translation = np.array(pose_data["translation"])
-        ego_R = quat2rotmat(rotation)
-        ego_t = translation
-        egovehicle_to_city_se3 = SE3(rotation=ego_R, translation=ego_t)
-
-        gt: Dict[str, Dict[str, Any]] = {}
-        id_gts = []
-        for i in range(len(gt_data)):
-
-            if gt_data[i]["label_class"] != category:
+            if not os.path.exists(path_gt):
+                logger.warning("Missing ", path_gt)
                 continue
 
-            bbox, orientation = label_to_bbox(gt_data[i])
+            gt_data = read_json_file(path_gt)
 
-            center = np.array([gt_data[i]["center"]["x"], gt_data[i]["center"]["y"], gt_data[i]["center"]["z"]])
-            if bbox[3] > 0 and in_distance_range_pose(np.zeros(3), center, d_min, d_max):
-                track_label_uuid = gt_data[i]["track_label_uuid"]
-                gt[track_label_uuid] = {}
-                gt[track_label_uuid]["centroid"] = center
+            pose_data = read_json_file(f"{path_dataset}/poses/city_SE3_egovehicle_{timestamp_lidar}.json")
+            rotation = np.array(pose_data["rotation"])
+            translation = np.array(pose_data["translation"])
+            ego_R = quat2rotmat(rotation)
+            ego_t = translation
+            egovehicle_to_city_se3 = SE3(rotation=ego_R, translation=ego_t)
 
-                gt[track_label_uuid]["bbox"] = bbox
-                gt[track_label_uuid]["orientation"] = orientation
-                gt[track_label_uuid]["width"] = gt_data[i]["width"]
-                gt[track_label_uuid]["length"] = gt_data[i]["length"]
-                gt[track_label_uuid]["height"] = gt_data[i]["height"]
+            gt: Dict[str, Dict[str, Any]] = {}
+            id_gts = []
+            for i in range(len(gt_data)):
 
-                if track_label_uuid not in ID_gt_all:
-                    ID_gt_all.append(track_label_uuid)
+                if gt_data[i]["label_class"] != category:
+                    continue
 
-                id_gts.append(track_label_uuid)
+                bbox, orientation = label_to_bbox(gt_data[i])
 
-        tracks: Dict[str, Dict[str, Any]] = {}
-        id_tracks: List[str] = []
+                center = np.array([gt_data[i]["center"]["x"], gt_data[i]["center"]["y"], gt_data[i]["center"]["z"]])
+                if bbox[3] > 0 and in_distance_range_pose(np.zeros(3), center, d_min, d_max):
+                    track_label_uuid = gt_data[i]["track_label_uuid"]
+                    gt[track_label_uuid] = {}
+                    gt[track_label_uuid]["centroid"] = center
 
-        track_data = read_json_file(path_track_data[ind_frame])
+                    gt[track_label_uuid]["bbox"] = bbox
+                    gt[track_label_uuid]["orientation"] = orientation
+                    gt[track_label_uuid]["width"] = gt_data[i]["width"]
+                    gt[track_label_uuid]["length"] = gt_data[i]["length"]
+                    gt[track_label_uuid]["height"] = gt_data[i]["height"]
 
-        for track in track_data:
-            key = track["track_label_uuid"]
+                    if track_label_uuid not in ID_gt_all:
+                        ID_gt_all.append(track_label_uuid)
 
-            if track["label_class"] != category or track["height"] == 0:
-                continue
+                    id_gts.append(track_label_uuid)
 
-            center = np.array([track["center"]["x"], track["center"]["y"], track["center"]["z"]])
-            bbox, orientation = label_to_bbox(track)
-            if in_distance_range_pose(np.zeros(3), center, d_min, d_max):
-                tracks[key] = {}
-                tracks[key]["centroid"] = center
-                tracks[key]["bbox"] = bbox
-                tracks[key]["orientation"] = orientation
-                tracks[key]["width"] = track["width"]
-                tracks[key]["length"] = track["length"]
-                tracks[key]["height"] = track["height"]
+            tracks: Dict[str, Dict[str, Any]] = {}
+            id_tracks: List[str] = []
 
-                id_tracks.append(key)
+            track_data = read_json_file(path_track_data[ind_frame])
 
-        dists_c: List[List[float]] = []
-        dists_i: List[List[float]] = []
-        dists_o: List[List[float]] = []
-        for gt_key, gt_value in gt.items():
-            gt_track_data_c: List[float] = []
-            gt_track_data_i: List[float] = []
-            gt_track_data_o: List[float] = []
-            dists_c.append(gt_track_data_c)
-            dists_i.append(gt_track_data_i)
-            dists_o.append(gt_track_data_o)
-            for track_key, track_value in tracks.items():
-                gt_track_data_c.append(get_distance(gt_value, track_value, "centroid"))
-                gt_track_data_i.append(get_distance(gt_value, track_value, "iou"))
-                gt_track_data_o.append(get_distance(gt_value, track_value, "orientation"))
+            for track in track_data:
+                key = track["track_label_uuid"]
 
-        acc_c.update(id_gts, id_tracks, dists_c)
-        acc_i.update(id_gts, id_tracks, dists_i)
-        acc_o.update(id_gts, id_tracks, dists_o)
+                if track["label_class"] != category or track["height"] == 0:
+                    continue
+
+                center = np.array([track["center"]["x"], track["center"]["y"], track["center"]["z"]])
+                bbox, orientation = label_to_bbox(track)
+                if in_distance_range_pose(np.zeros(3), center, d_min, d_max):
+                    tracks[key] = {}
+                    tracks[key]["centroid"] = center
+                    tracks[key]["bbox"] = bbox
+                    tracks[key]["orientation"] = orientation
+                    tracks[key]["width"] = track["width"]
+                    tracks[key]["length"] = track["length"]
+                    tracks[key]["height"] = track["height"]
+
+                    id_tracks.append(key)
+
+            dists_c: List[List[float]] = []
+            dists_i: List[List[float]] = []
+            dists_o: List[List[float]] = []
+            for gt_key, gt_value in gt.items():
+                gt_track_data_c: List[float] = []
+                gt_track_data_i: List[float] = []
+                gt_track_data_o: List[float] = []
+                dists_c.append(gt_track_data_c)
+                dists_i.append(gt_track_data_i)
+                dists_o.append(gt_track_data_o)
+                for track_key, track_value in tracks.items():
+                    gt_track_data_c.append(get_distance(gt_value, track_value, "centroid"))
+                    gt_track_data_i.append(get_distance(gt_value, track_value, "iou"))
+                    gt_track_data_o.append(get_distance(gt_value, track_value, "orientation"))
+
+            acc_c.update(id_gts, id_tracks, dists_c)
+            acc_i.update(id_gts, id_tracks, dists_i)
+            acc_o.update(id_gts, id_tracks, dists_o)
     if count_all == 0:
         # fix for when all hypothesis is empty,
         # pymotmetric currently doesn't support this, see https://github.com/cheind/py-motmetrics/issues/49
@@ -305,4 +306,4 @@ if __name__ == "__main__":
     logger.info("output file name = %s", out_filename)
 
     with open(out_filename, "w") as out_file:
-        eval_tracks(args.path_tracker_output, args.path_dataset, args.d_min, args.d_max, out_file, args.centroid_method)
+        eval_tracks([args.path_tracker_output], [args.path_dataset], args.d_min, args.d_max, out_file, args.centroid_method)
