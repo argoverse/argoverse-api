@@ -11,7 +11,11 @@ import motmetrics as mm
 import numpy as np
 from shapely.geometry.polygon import Polygon
 
-from argoverse.evaluation.eval_utils import get_pc_inside_bbox, label_to_bbox, leave_only_roi_region
+from argoverse.evaluation.eval_utils import (
+    get_pc_inside_bbox,
+    label_to_bbox,
+    leave_only_roi_region,
+)
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.ply_loader import load_ply
 from argoverse.utils.se3 import SE3
@@ -23,7 +27,9 @@ logger = logging.getLogger(__name__)
 _PathLike = Union[str, "os.PathLike[str]"]
 
 
-def in_distance_range_pose(ego_center: np.ndarray, pose: np.ndarray, d_min: float, d_max: float) -> bool:
+def in_distance_range_pose(
+    ego_center: np.ndarray, pose: np.ndarray, d_min: float, d_max: float
+) -> bool:
     """Determine if a pose is within distance range or not.
 
     Args:
@@ -68,8 +74,12 @@ def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
         w2 = x2["width"]
         l2 = x2["length"]
 
-        poly1 = Polygon([(-l1 / 2, -w1 / 2), (-l1 / 2, w1 / 2), (l1 / 2, w1 / 2), (l1 / 2, -w1 / 2)])
-        poly2 = Polygon([(-l2 / 2, -w2 / 2), (-l2 / 2, w2 / 2), (l2 / 2, w1 / 2), (l2 / 2, -w2 / 2)])
+        poly1 = Polygon(
+            [(-l1 / 2, -w1 / 2), (-l1 / 2, w1 / 2), (l1 / 2, w1 / 2), (l1 / 2, -w1 / 2)]
+        )
+        poly2 = Polygon(
+            [(-l2 / 2, -w2 / 2), (-l2 / 2, w2 / 2), (l2 / 2, w1 / 2), (l2 / 2, -w2 / 2)]
+        )
 
         inter = poly1.intersection(poly2).area
         union = poly1.union(poly2).area
@@ -77,7 +87,11 @@ def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
 
     elif name == "orientation":
         return float(
-            min(np.abs(x1[name] - x2[name]), np.abs(np.pi + x1[name] - x2[name]), np.abs(-np.pi + x1[name] - x2[name]))
+            min(
+                np.abs(x1[name] - x2[name]),
+                np.abs(np.pi + x1[name] - x2[name]),
+                np.abs(-np.pi + x1[name] - x2[name]),
+            )
             * 180
             / np.pi
         )
@@ -115,7 +129,7 @@ def eval_tracks(
     acc_c = mm.MOTAccumulator(auto_id=True)
     acc_i = mm.MOTAccumulator(auto_id=True)
     acc_o = mm.MOTAccumulator(auto_id=True)
-    for path_tracker_output, path_dataset in zip(path_tracker_outputs,path_datasets):
+    for path_tracker_output, path_dataset in zip(path_tracker_outputs, path_datasets):
 
         path_track_data = sorted(glob.glob(os.fspath(path_tracker_output) + "/*"))
 
@@ -134,9 +148,13 @@ def eval_tracks(
             if ind_frame % 50 == 0:
                 logger.info("%d/%d" % (ind_frame, len(path_track_data)))
 
-            timestamp_lidar = int(path_track_data[ind_frame].split("/")[-1].split("_")[-1].split(".")[0])
+            timestamp_lidar = int(
+                path_track_data[ind_frame].split("/")[-1].split("_")[-1].split(".")[0]
+            )
             path_gt = os.path.join(
-                path_dataset, "per_sweep_annotations_amodal", f"tracked_object_labels_{timestamp_lidar}.json"
+                path_dataset,
+                "per_sweep_annotations_amodal",
+                f"tracked_object_labels_{timestamp_lidar}.json",
             )
 
             if not os.path.exists(path_gt):
@@ -145,7 +163,9 @@ def eval_tracks(
 
             gt_data = read_json_file(path_gt)
 
-            pose_data = read_json_file(f"{path_dataset}/poses/city_SE3_egovehicle_{timestamp_lidar}.json")
+            pose_data = read_json_file(
+                f"{path_dataset}/poses/city_SE3_egovehicle_{timestamp_lidar}.json"
+            )
             rotation = np.array(pose_data["rotation"])
             translation = np.array(pose_data["translation"])
             ego_R = quat2rotmat(rotation)
@@ -161,8 +181,16 @@ def eval_tracks(
 
                 bbox, orientation = label_to_bbox(gt_data[i])
 
-                center = np.array([gt_data[i]["center"]["x"], gt_data[i]["center"]["y"], gt_data[i]["center"]["z"]])
-                if bbox[3] > 0 and in_distance_range_pose(np.zeros(3), center, d_min, d_max):
+                center = np.array(
+                    [
+                        gt_data[i]["center"]["x"],
+                        gt_data[i]["center"]["y"],
+                        gt_data[i]["center"]["z"],
+                    ]
+                )
+                if bbox[3] > 0 and in_distance_range_pose(
+                    np.zeros(3), center, d_min, d_max
+                ):
                     track_label_uuid = gt_data[i]["track_label_uuid"]
                     gt[track_label_uuid] = {}
                     gt[track_label_uuid]["centroid"] = center
@@ -189,7 +217,9 @@ def eval_tracks(
                 if track["label_class"] != category or track["height"] == 0:
                     continue
 
-                center = np.array([track["center"]["x"], track["center"]["y"], track["center"]["z"]])
+                center = np.array(
+                    [track["center"]["x"], track["center"]["y"], track["center"]["z"]]
+                )
                 bbox, orientation = label_to_bbox(track)
                 if in_distance_range_pose(np.zeros(3), center, d_min, d_max):
                     tracks[key] = {}
@@ -213,9 +243,13 @@ def eval_tracks(
                 dists_i.append(gt_track_data_i)
                 dists_o.append(gt_track_data_o)
                 for track_key, track_value in tracks.items():
-                    gt_track_data_c.append(get_distance(gt_value, track_value, "centroid"))
+                    gt_track_data_c.append(
+                        get_distance(gt_value, track_value, "centroid")
+                    )
                     gt_track_data_i.append(get_distance(gt_value, track_value, "iou"))
-                    gt_track_data_o.append(get_distance(gt_value, track_value, "orientation"))
+                    gt_track_data_o.append(
+                        get_distance(gt_value, track_value, "orientation")
+                    )
 
             acc_c.update(id_gts, id_tracks, dists_c)
             acc_i.update(id_gts, id_tracks, dists_i)
@@ -256,7 +290,9 @@ def eval_tracks(
     num_switch = summary["num_switches"][0]
     num_flag = summary["num_fragmentations"][0]
 
-    acc_c.events.loc[acc_c.events.Type != "RAW", "D"] = acc_i.events.loc[acc_c.events.Type != "RAW", "D"]
+    acc_c.events.loc[acc_c.events.Type != "RAW", "D"] = acc_i.events.loc[
+        acc_c.events.Type != "RAW", "D"
+    ]
 
     sum_motp_i = mh.compute(acc_c, metrics=["motp"], name="acc")
     logger.info("MOTP-I = %s", sum_motp_i)
@@ -265,7 +301,9 @@ def eval_tracks(
     fn = os.path.basename(path_tracker_output)
     motp_i = sum_motp_i["motp"][0]
 
-    acc_c.events.loc[acc_c.events.Type != "RAW", "D"] = acc_o.events.loc[acc_c.events.Type != "RAW", "D"]
+    acc_c.events.loc[acc_c.events.Type != "RAW", "D"] = acc_o.events.loc[
+        acc_c.events.Type != "RAW", "D"
+    ]
     sum_motp_o = mh.compute(acc_c, metrics=["motp"], name="acc")
     logger.info("MOTP-O = %s", sum_motp_o)
     num_tracks = len(ID_gt_all)
@@ -289,10 +327,19 @@ if __name__ == "__main__":
         default="../../argodataset_30Hz/test_label/028d5cb1-f74d-366c-85ad-84fde69b0fd3",
     )
     parser.add_argument(
-        "--path_labels", type=str, default="../../argodataset_30Hz/labels_v32/028d5cb1-f74d-366c-85ad-84fde69b0fd3"
+        "--path_labels",
+        type=str,
+        default="../../argodataset_30Hz/labels_v32/028d5cb1-f74d-366c-85ad-84fde69b0fd3",
     )
-    parser.add_argument("--path_dataset", type=str, default="../../argodataset_30Hz/cvpr_test_set")
-    parser.add_argument("--centroid_method", type=str, default="average", choices=["label_center", "average"])
+    parser.add_argument(
+        "--path_dataset", type=str, default="../../argodataset_30Hz/cvpr_test_set"
+    )
+    parser.add_argument(
+        "--centroid_method",
+        type=str,
+        default="average",
+        choices=["label_center", "average"],
+    )
     parser.add_argument("--flag", type=str, default="")
     parser.add_argument("--d_min", type=float, default=0)
     parser.add_argument("--d_max", type=float, default=100, required=True)
@@ -306,4 +353,11 @@ if __name__ == "__main__":
     logger.info("output file name = %s", out_filename)
 
     with open(out_filename, "w") as out_file:
-        eval_tracks([args.path_tracker_output], [args.path_dataset], args.d_min, args.d_max, out_file, args.centroid_method)
+        eval_tracks(
+            [args.path_tracker_output],
+            [args.path_dataset],
+            args.d_min,
+            args.d_max,
+            out_file,
+            args.centroid_method,
+        )
