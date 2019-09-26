@@ -123,6 +123,11 @@ def eval_tracks(
     acc_c = mm.MOTAccumulator(auto_id=True)
     acc_i = mm.MOTAccumulator(auto_id=True)
     acc_o = mm.MOTAccumulator(auto_id=True)
+
+    ID_gt_all: List[str] = []
+
+    count_all: int = 0
+
     for path_tracker_output, path_dataset in zip(path_tracker_outputs, path_datasets):
 
         path_track_data = sorted(glob.glob(os.fspath(path_tracker_output) + "/*"))
@@ -134,8 +139,6 @@ def eval_tracks(
         city_info = read_json_file(city_info_fpath)
         city_name = city_info["city_name"]
         logger.info("city name = %s", city_name)
-
-        ID_gt_all: List[str] = []
 
         for ind_frame in range(len(path_track_data)):
             if ind_frame % 50 == 0:
@@ -220,6 +223,7 @@ def eval_tracks(
                 dists_i.append(gt_track_data_i)
                 dists_o.append(gt_track_data_o)
                 for track_key, track_value in tracks.items():
+                    count_all += 1
                     gt_track_data_c.append(get_distance(gt_value, track_value, "centroid"))
                     gt_track_data_i.append(get_distance(gt_value, track_value, "iou"))
                     gt_track_data_o.append(get_distance(gt_value, track_value, "orientation"))
@@ -227,7 +231,7 @@ def eval_tracks(
             acc_c.update(id_gts, id_tracks, dists_c)
             acc_i.update(id_gts, id_tracks, dists_i)
             acc_o.update(id_gts, id_tracks, dists_o)
-    if len(id_tracks) == 0:
+    if count_all == 0:
         # fix for when all hypothesis is empty,
         # pymotmetric currently doesn't support this, see https://github.com/cheind/py-motmetrics/issues/49
         acc_c.update(id_gts, ["dummy_id"], np.ones(np.shape(id_gts)) * np.inf)
