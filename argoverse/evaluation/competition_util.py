@@ -20,8 +20,10 @@ from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLo
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
 from argoverse.utils.se3 import SE3
 
+TYPE_LIST = Union[List[np.ndarray], np.ndarray]
+
 def generate_forecasting_h5(
-    data: Dict[int, np.ndarray], output_path: str, filename: str = "argoverse_forecasting_baseline"
+    data: Dict[int, TYPE_LIST], output_path: str, filename: str = "argoverse_forecasting_baseline"
 ) -> None:
     """
     Helper function to generate the result h5 file for argoverse forecasting challenge
@@ -36,6 +38,9 @@ def generate_forecasting_h5(
 
     """
 
+    if isinstance(data,List):
+        data = np.array(data)
+
     if not os.path.exists(output_path):
         os.makedirs(output_path)
     hf = h5py.File(os.path.join(output_path, filename + ".h5"), "w")
@@ -45,7 +50,7 @@ def generate_forecasting_h5(
     for key, value in data.items():
         print("\r" + str(counter + 1) + "/" + str(len(data)), end="")
         assert (
-            type(key) == int
+            isinstance(key, (int, np.integer))
         ), f"ERROR: The dict key should be of type int representing the sequence ID, currently getting {type(key)}"
         assert value.shape[1:3] == (
             future_frames,
