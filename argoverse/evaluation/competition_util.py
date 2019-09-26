@@ -7,7 +7,7 @@ import shutil
 import tempfile
 import uuid
 import zipfile
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 from scipy.spatial import ConvexHull
@@ -21,6 +21,7 @@ from argoverse.data_loading.object_label_record import ObjectLabelRecord
 from argoverse.utils.se3 import SE3
 
 TYPE_LIST = Union[List[np.ndarray], np.ndarray]
+
 
 def generate_forecasting_h5(
     data: Dict[int, TYPE_LIST], output_path: str, filename: str = "argoverse_forecasting_baseline"
@@ -46,7 +47,7 @@ def generate_forecasting_h5(
     counter = 0
     for key, value in data.items():
         print("\r" + str(counter + 1) + "/" + str(len(data)), end="")
-        
+
         if isinstance(value, List):
             value = np.array(value)
         assert value.shape[1:3] == (
@@ -54,7 +55,7 @@ def generate_forecasting_h5(
             2,
         ), f"ERROR: the data should be of shape (n,30,2), currently getting {value.shape}"
         n = value.shape[0]
-        value = value.reshape(n*future_frames, 2)
+        value = value.reshape(n * future_frames, 2)
 
         d = np.array([[key, np.float32(x), np.float32(y)] for x, y in value])
 
