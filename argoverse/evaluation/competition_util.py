@@ -38,9 +38,6 @@ def generate_forecasting_h5(
 
     """
 
-    if isinstance(data,List):
-        data = np.array(data)
-
     if not os.path.exists(output_path):
         os.makedirs(output_path)
     hf = h5py.File(os.path.join(output_path, filename + ".h5"), "w")
@@ -49,9 +46,9 @@ def generate_forecasting_h5(
     counter = 0
     for key, value in data.items():
         print("\r" + str(counter + 1) + "/" + str(len(data)), end="")
-        assert (
-            isinstance(key, (int, np.integer))
-        ), f"ERROR: The dict key should be of type int representing the sequence ID, currently getting {type(key)}"
+        
+        if isinstance(value, List):
+            value = np.array(value)
         assert value.shape[1:3] == (
             future_frames,
             2,
