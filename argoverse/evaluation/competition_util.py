@@ -20,9 +20,6 @@ from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLo
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
 from argoverse.utils.se3 import SE3
 
-NUM_TEST_SEQUENCE = 79391
-
-
 def generate_forecasting_h5(
     data: Dict[int, np.ndarray], output_path: str, filename: str = "argoverse_forecasting_baseline"
 ) -> None:
@@ -30,7 +27,7 @@ def generate_forecasting_h5(
     Helper function to generate the result h5 file for argoverse forecasting challenge
 
     Args:
-        data: a dictionary of trajectory, with the key being the sequence ID. For each sequence, the 
+        data: a dictionary of trajectory, with the key being the sequence ID. For each sequence, the
               trajectory should be stored in a (9,30,2) np.ndarray
         output_path: path to the output directory to store the output h5 file
         filename: to be used as the name of the file
@@ -42,7 +39,7 @@ def generate_forecasting_h5(
     if not os.path.exists(output_path):
         os.makedirs(output_path)
     hf = h5py.File(os.path.join(output_path, filename + ".h5"), "w")
-
+    future_frames = 30
     d_all: List[np.ndarray] = []
     counter = 0
     for key, value in data.items():
@@ -50,13 +47,12 @@ def generate_forecasting_h5(
         assert (
             type(key) == int
         ), f"ERROR: The dict key should be of type int representing the sequence ID, currently getting {type(key)}"
-        assert value.shape == (
-            9,
-            30,
+        assert value.shape[1:3] == (
+            future_frames,
             2,
-        ), f"ERROR: the data should be of shape (9,30,2), currently getting {value.shape}"
-
-        value = value.reshape(270, 2)
+        ), f"ERROR: the data should be of shape (n,30,2), currently getting {value.shape}"
+        n = value.shape[0]
+        value = value.reshape(n*future_frames, 2)
 
         d = np.array([[key, np.float32(x), np.float32(y)] for x, y in value])
 
