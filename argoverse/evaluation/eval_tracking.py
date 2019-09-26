@@ -46,6 +46,25 @@ def iou_polygon(poly1: Polygon, poly2: Polygon) -> float:
     union = poly1.union(poly2).area
     return float(1 - inter / union)
 
+def get_distance_iou_3d(x1: np.ndarray, x2: np.ndarray, name: str = 'bbox') -> float:
+
+   w1 = x1['width']
+   l1 = x1['length']
+   h1 = x1['height']
+
+   w2 = x2['width']
+   l2 = x2['length']
+   h2 = x2['height']
+
+   poly1 = Polygon([(-l1/2, -w1/2),(-l1/2, w1/2), (l1/2, w1/2) , (l1/2, -w1/2)])
+   poly2 = Polygon([(-l2/2, -w2/2),(-l2/2, w2/2), (l2/2, w1/2) , (l2/2, -w2/2)])
+
+   inter = poly1.intersection(poly2).area * min(h1,h2)
+   union = w1*l1*h1 + w2*l2*h2 -inter
+   score =  1 - inter / union
+
+   return float(score)
+
 
 def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
     """Get the distance between two poses, returns nan if distance is larger than detection threshold.
@@ -62,19 +81,7 @@ def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
         dist = float(np.linalg.norm(x1[name][0:3] - x2[name][0:3]))
         return dist if dist < 2 else float(np.nan)
     elif name == "iou":
-        w1 = x1["width"]
-        l1 = x1["length"]
-
-        w2 = x2["width"]
-        l2 = x2["length"]
-
-        poly1 = Polygon([(-l1 / 2, -w1 / 2), (-l1 / 2, w1 / 2), (l1 / 2, w1 / 2), (l1 / 2, -w1 / 2)])
-        poly2 = Polygon([(-l2 / 2, -w2 / 2), (-l2 / 2, w2 / 2), (l2 / 2, w1 / 2), (l2 / 2, -w2 / 2)])
-
-        inter = poly1.intersection(poly2).area
-        union = poly1.union(poly2).area
-        return float(1 - inter / union)
-
+        return get_distance_iou_3d(x1,x2,name)
     elif name == "orientation":
         return float(
             min(np.abs(x1[name] - x2[name]), np.abs(np.pi + x1[name] - x2[name]), np.abs(-np.pi + x1[name] - x2[name]))
