@@ -3,7 +3,7 @@ import subprocess
 from typing import Optional, Tuple
 
 
-def run_command(cmd: str, return_output: bool = False) -> Optional[Tuple[byte, byte]]:
+def run_command(cmd: str, return_output: bool = False) -> Optional[Tuple[bytes, bytes]]:
     """
     Block until system call completes
 
