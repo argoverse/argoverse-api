@@ -64,6 +64,9 @@ setup(
         "shapely",
         "sklearn",
         "typing_extensions",
+        "h5py",
+        "numpy-quaternion",
+        "lap",
     ],
     # for older pip version, use with --process-dependency-links
     dependency_links=["git+https://github.com/daavoo/pyntcloud#egg=pyntcloud-0.1.0"],

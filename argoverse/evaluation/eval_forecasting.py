@@ -66,9 +66,9 @@ def get_displacement_errors_and_miss_rate(
     Note: Both min_fde and min_ade values correspond to the trajectory which has minimum fde.
 
     Args:
-        forecasted_trajectories: Predicted top-k trajectory dict with key as seq_id and value as list of trajectories. 
-                Each element of the list is of shape (pred_len x 2).  
-        gt_trajectories: Ground Truth Trajectory dict with key as seq_id and values as trajectory of 
+        forecasted_trajectories: Predicted top-k trajectory dict with key as seq_id and value as list of trajectories.
+                Each element of the list is of shape (pred_len x 2).
+        gt_trajectories: Ground Truth Trajectory dict with key as seq_id and values as trajectory of
                 shape (pred_len x 2)
         max_guesses: Number of guesses allowed
         horizon: Prediction horizon
@@ -106,8 +106,8 @@ def get_drivable_area_compliance(
     """Compute drivable area compliance metric.
 
     Args:
-        forecasted_trajectories: Predicted top-k trajectory dict with key as seq_id and value as list of trajectories. 
-                Each element of the list is of shape (pred_len x 2).  
+        forecasted_trajectories: Predicted top-k trajectory dict with key as seq_id and value as list of trajectories.
+                Each element of the list is of shape (pred_len x 2).
         city_names: Dict mapping sequence id to city name.
         max_n_guesses: Maximum number of guesses allowed.
 
@@ -144,9 +144,9 @@ def compute_forecasting_metrics(
     """Compute all the forecasting metrics.
 
     Args:
-        forecasted_trajectories: Predicted top-k trajectory dict with key as seq_id and value as list of trajectories. 
-                Each element of the list is of shape (pred_len x 2).  
-        gt_trajectories: Ground Truth Trajectory dict with key as seq_id and values as trajectory of 
+        forecasted_trajectories: Predicted top-k trajectory dict with key as seq_id and value as list of trajectories.
+                Each element of the list is of shape (pred_len x 2).
+        gt_trajectories: Ground Truth Trajectory dict with key as seq_id and values as trajectory of
                 shape (pred_len x 2)
         city_names: Dict mapping sequence id to city name.
         max_n_guesses: Number of guesses allowed
@@ -154,11 +154,11 @@ def compute_forecasting_metrics(
         miss_threshold: Miss threshold
 
      Returns:
-        mean_min_ade: Mean of min_ade for all the trajectories. 
+        mean_min_ade: Mean of min_ade for all the trajectories.
         mean_min_fde: Mean of min_fde for all the trajectories.
         mean_dac: Mean drivable area compliance for all the trajectories.
         miss_rate: Miss rate.
-        
+
     """
     mean_min_ade, mean_min_fde, miss_rate = get_displacement_errors_and_miss_rate(
         forecasted_trajectories, gt_trajectories, max_n_guesses, horizon, miss_threshold

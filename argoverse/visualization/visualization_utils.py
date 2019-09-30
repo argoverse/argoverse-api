@@ -95,7 +95,7 @@ def draw_point_cloud_trajectory(
 ) -> None:
     axes = _get_axes_or_default(axes)
     unique_id_list = set()
-    for i in range(len(argoverse_data.label_list)):
+    for i in range(len(argoverse_data.lidar_list)):
         for label in argoverse_data.get_label_object(i):
             unique_id_list.add(label.track_id)
     color_map = {
