@@ -16,10 +16,11 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [Demo](#demo)
+- [Baselines](#baselines)
 - [Contributing](#contributing)
 - [Disclaimer](#disclaimer)
 - [License](#license)
-- [Baselines](#baselines)
+
 
 ---
 
