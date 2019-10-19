@@ -19,6 +19,7 @@
 - [Contributing](#contributing)
 - [Disclaimer](#disclaimer)
 - [License](#license)
+- [Baselines](#baselines)
 
 ---
 
@@ -132,6 +133,13 @@ This will produce images and videos will be in the directory `<experiment prefix
 
 ### Stereo correspondence
 For all log segments, accurate calibration between LiDAR and cameras enables sensor fusion approaches, but the calibration may not register the stereo images into perfect epipolar correspondence.
+
+---
+
+## Baselines
+
+We have also released the baseline codes for both 3D tracking and motion forecasting tasks. 
+3D Tracking code can be found at https://github.com/alliecc/argoverse_baselinetracker and Motion Forecasting code at https://github.com/jagjeet-singh/argoverse-forecasting
 
 ---
 
