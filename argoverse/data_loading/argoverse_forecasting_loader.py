@@ -31,9 +31,6 @@ class ArgoverseForecastingLoader:
         Args:
             root_dir: Path to the folder having sequence csv files
         """
-        self._track_id_list: Optional[Mapping[str, Sequence[int]]] = None
-        self._city_list: Optional[Mapping[str, str]] = None
-
         self.counter: int = 0
 
         root_dir = Path(root_dir)
@@ -48,7 +45,8 @@ class ArgoverseForecastingLoader:
         Returns:
             list of track ids in the current sequence
         """
-        return np.unique(self.seq_df["TRACK_ID"].values).tolist()
+        _track_id_list: Sequence[int] = np.unique(self.seq_df["TRACK_ID"].values).tolist()
+        return _track_id_list
 
     @property
     def city(self) -> str:
@@ -57,7 +55,8 @@ class ArgoverseForecastingLoader:
         Returns:
             city name, i.e., either 'PIT' or 'MIA'
         """
-        return self.seq_df["CITY_NAME"].values[0]
+        _city: str = self.seq_df["CITY_NAME"].values[0]
+        return _city
 
     @property
     def num_tracks(self) -> int:
