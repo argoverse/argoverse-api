@@ -48,13 +48,7 @@ class ArgoverseForecastingLoader:
         Returns:
             list of track ids in the current sequence
         """
-        if self._track_id_list is None:
-            self._track_id_list = {}
-            for seq in self.seq_list:
-                seq_df = _read_csv(seq)
-                self._track_id_list[str(seq)] = np.unique(seq_df["TRACK_ID"].values).tolist()
-
-        return self._track_id_list[str(self.current_seq)]
+        return np.unique(self.seq_df["TRACK_ID"].values).tolist()
 
     @property
     def city(self) -> str:
@@ -63,13 +57,7 @@ class ArgoverseForecastingLoader:
         Returns:
             city name, i.e., either 'PIT' or 'MIA'
         """
-        if self._city_list is None:
-            self._city_list = {}
-            for seq in self.seq_list:
-                seq_df = _read_csv(seq)
-                self._city_list[str(seq)] = seq_df["CITY_NAME"].values[0]
-
-        return self._city_list[str(self.current_seq)]
+        return self.seq_df["CITY_NAME"].values[0]
 
     @property
     def num_tracks(self) -> int:
