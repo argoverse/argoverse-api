@@ -138,7 +138,7 @@ class SynchronizationDB:
         closest_lidar_timestamp, timestamp_diff = find_closest_integer_in_ref_arr(cam_timestamp, lidar_timestamps)
         if timestamp_diff > self.MAX_LIDAR_ANYCAM_TIMESTAMP_DIFF:
             # convert to nanoseconds->milliseconds for readability
-            logger.error(
+            logger.warning(
                 "No corresponding LiDAR sweep: %s > %s ms",
                 timestamp_diff / 1e6,
                 self.MAX_LIDAR_ANYCAM_TIMESTAMP_DIFF / 1e6,
