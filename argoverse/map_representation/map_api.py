@@ -486,7 +486,7 @@ class ArgoverseMap:
             nearby_lane_ids = self.get_lane_ids_in_xy_bbox(
                 query_x, query_y, city_name, query_search_range_manhattan=search_radius
             )
-            if nearby_lane_ids is None:
+            if not nearby_lane_ids:
                 search_radius *= 2  # double search radius
             else:
                 break
