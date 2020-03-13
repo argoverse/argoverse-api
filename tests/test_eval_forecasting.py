@@ -1,23 +1,23 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
-​
+
 """This module tests the motion forecasting metric evaluation."""
-​
+
 import numpy as np
 from numpy.testing import assert_almost_equal
-​
+
 from argoverse.evaluation.eval_forecasting import compute_forecasting_metrics
-​
-​
+
+
 def test_compute_forecasting_metric():
     """Test computation of motion forecasting metrics."""
     # Test Case:
-​
+
     #   x: Ground Truth Trajectory
     #   *: Predicted Trajectory 1
     #   o: Predicted Trajectory 2
-​
+
     #   90   91   92   93   94   95   96   97   98   99   100  101  102
-​
+
     # 3980       |       x   *   o            |
     #            |       x   *   o            |
     #            |       x   *   o            |
@@ -43,7 +43,7 @@ def test_compute_forecasting_metric():
     #            |               x   *        |
     #            |               x   *        |
     # 3950       |               x   *        |
-​
+
     ground_truth = np.array(
         [
             [93, 3979],
@@ -78,7 +78,7 @@ def test_compute_forecasting_metric():
             [95, 3952],
         ]
     )
-​
+
     forecasted_1 = np.array(
         [
             [94, 3979],
@@ -113,7 +113,7 @@ def test_compute_forecasting_metric():
             [96, 3952],
         ]
     )
-​
+
     forecasted_2 = np.array(
         [
             [95, 3979],
@@ -148,17 +148,17 @@ def test_compute_forecasting_metric():
             [103, 3960],
         ]
     )
-​
+
     city_names = {1: "MIA"}
     max_n_guesses = 2
     horizon = 30
     miss_threshold = 1.0
-​
+
     # Case 1
     forecasted_trajectories = {1: [forecasted_1, forecasted_2]}
     forecasted_probabilities = {1: [0.80, 0.20]}
     ground_truth_trajectories = {1: ground_truth}
-​
+
     metrics = compute_forecasting_metrics(
         forecasted_trajectories,
         ground_truth_trajectories,
@@ -168,7 +168,7 @@ def test_compute_forecasting_metric():
         miss_threshold,
         forecasted_probabilities,
     )
-​
+
     expected_min_ade = 1.0
     expected_min_fde = 1.0
     expected_dac = 1.0
@@ -183,12 +183,12 @@ def test_compute_forecasting_metric():
     assert_almost_equal(expected_p_min_ade, round(metrics["p-minADE"], 2), 2)
     assert_almost_equal(expected_p_min_fde, round(metrics["p-minFDE"], 2), 2)
     assert_almost_equal(expected_p_miss_rate, round(metrics["p-MR"], 2), 2)
-​
+
     # Case 2
     forecasted_trajectories = {1: [forecasted_2]}
     forecasted_probabilities = {1: [1.0]}
     ground_truth_trajectories = {1: ground_truth}
-​
+
     metrics = compute_forecasting_metrics(
         forecasted_trajectories,
         ground_truth_trajectories,
@@ -198,7 +198,7 @@ def test_compute_forecasting_metric():
         miss_threshold,
         forecasted_probabilities,
     )
-​
+
     expected_min_ade = 3.23
     expected_min_fde = 11.31
     expected_dac = 1.0
@@ -206,7 +206,7 @@ def test_compute_forecasting_metric():
     expected_p_min_ade = 3.23
     expected_p_min_fde = 11.31
     expected_p_miss_rate = 1.0
-​
+
     assert_almost_equal(expected_min_ade, round(metrics["minADE"], 2), 2)
     assert_almost_equal(expected_min_fde, round(metrics["minFDE"], 2), 2)
     assert_almost_equal(expected_dac, round(metrics["DAC"], 2), 2)
