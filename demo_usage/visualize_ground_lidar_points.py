@@ -70,7 +70,10 @@ def visualize_ground_lidar_pts(log_id: str, dataset_dir: str, experiment_prefix:
             fps = 5
         else:
             fps = 10
-        cmd = f"ffmpeg -r {fps} -f image2 -i '{experiment_prefix}_ground_viz/{log_id}/{camera_name}/%*.jpg' {experiment_prefix}_ground_viz/{experiment_prefix}_{log_id}_{camera_name}_{fps}fps.mp4"
+        cmd = (
+            f"ffmpeg -r {fps} -f image2 -i '{experiment_prefix}_ground_viz/{log_id}/{camera_name}/%*.jpg'"
+            + f" {experiment_prefix}_ground_viz/{experiment_prefix}_{log_id}_{camera_name}_{fps}fps.mp4"
+        )
 
         print(cmd)
         run_command(cmd)
@@ -82,7 +85,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--log-ids",
         type=str,
-        help="Comma separated list of log ids, this is the directory name, i.e. as found in {args.dataset-dir}/argoverse-tracking/sample/[log_id]",
+        help="Comma separated list of log ids, as found in {args.dataset-dir}/argoverse-tracking/sample/[log_id]",
     )
     parser.add_argument(
         "--experiment-prefix",
