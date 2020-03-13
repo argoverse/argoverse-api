@@ -156,36 +156,61 @@ def test_compute_forecasting_metric():
 
     # Case 1
     forecasted_trajectories = {1: [forecasted_1, forecasted_2]}
+    forecasted_probabilities = {1: [0.80, 0.20]}
     ground_truth_trajectories = {1: ground_truth}
 
-    min_ade, min_fde, dac, miss_rate = compute_forecasting_metrics(
-        forecasted_trajectories, ground_truth_trajectories, city_names, max_n_guesses, horizon, miss_threshold
+    metrics = compute_forecasting_metrics(
+        forecasted_trajectories,
+        ground_truth_trajectories,
+        city_names,
+        max_n_guesses,
+        horizon,
+        miss_threshold,
+        forecasted_probabilities,
     )
 
     expected_min_ade = 1.0
     expected_min_fde = 1.0
     expected_dac = 1.0
     expected_miss_rate = 0.0
-
-    assert_almost_equal(expected_min_ade, min_ade, 3)
-    assert_almost_equal(expected_min_fde, min_fde, 3)
-    assert_almost_equal(expected_dac, dac, 3)
-    assert_almost_equal(expected_miss_rate, miss_rate, 3)
+    expected_p_min_ade = 1.22
+    expected_p_min_fde = 1.22
+    expected_p_miss_rate = 0.20
+    assert_almost_equal(expected_min_ade, round(metrics["minADE"], 2), 2)
+    assert_almost_equal(expected_min_fde, round(metrics["minFDE"], 2), 2)
+    assert_almost_equal(expected_dac, round(metrics["DAC"], 2), 2)
+    assert_almost_equal(expected_miss_rate, round(metrics["MR"], 2), 2)
+    assert_almost_equal(expected_p_min_ade, round(metrics["p-minADE"], 2), 2)
+    assert_almost_equal(expected_p_min_fde, round(metrics["p-minFDE"], 2), 2)
+    assert_almost_equal(expected_p_miss_rate, round(metrics["p-MR"], 2), 2)
 
     # Case 2
     forecasted_trajectories = {1: [forecasted_2]}
+    forecasted_probabilities = {1: [1.0]}
     ground_truth_trajectories = {1: ground_truth}
 
-    min_ade, min_fde, dac, miss_rate = compute_forecasting_metrics(
-        forecasted_trajectories, ground_truth_trajectories, city_names, max_n_guesses, horizon, miss_threshold
+    metrics = compute_forecasting_metrics(
+        forecasted_trajectories,
+        ground_truth_trajectories,
+        city_names,
+        max_n_guesses,
+        horizon,
+        miss_threshold,
+        forecasted_probabilities,
     )
 
     expected_min_ade = 3.23
     expected_min_fde = 11.31
     expected_dac = 1.0
     expected_miss_rate = 1.0
+    expected_p_min_ade = 3.23
+    expected_p_min_fde = 11.31
+    expected_p_miss_rate = 1.0
 
-    assert_almost_equal(expected_min_ade, min_ade, 1)
-    assert_almost_equal(expected_min_fde, min_fde, 1)
-    assert_almost_equal(expected_dac, dac, 1)
-    assert_almost_equal(expected_miss_rate, miss_rate, 1)
+    assert_almost_equal(expected_min_ade, round(metrics["minADE"], 2), 2)
+    assert_almost_equal(expected_min_fde, round(metrics["minFDE"], 2), 2)
+    assert_almost_equal(expected_dac, round(metrics["DAC"], 2), 2)
+    assert_almost_equal(expected_miss_rate, round(metrics["MR"], 2), 2)
+    assert_almost_equal(expected_p_min_ade, round(metrics["p-minADE"], 2), 2)
+    assert_almost_equal(expected_p_min_fde, round(metrics["p-minFDE"], 2), 2)
+    assert_almost_equal(expected_p_miss_rate, round(metrics["p-MR"], 2), 2)
