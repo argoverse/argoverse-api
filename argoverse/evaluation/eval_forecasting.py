@@ -92,23 +92,13 @@ def get_displacement_errors_and_miss_rate(
             if fde < curr_min_fde:
                 min_idx = j
                 curr_min_fde = fde
-        curr_min_ade = get_ade(
-            forecasted_trajectories[k][min_idx][:horizon], v[:horizon]
-        )
+        curr_min_ade = get_ade(forecasted_trajectories[k][min_idx][:horizon], v[:horizon])
         min_ade.append(curr_min_ade)
         min_fde.append(curr_min_fde)
         n_misses.append(curr_min_fde > miss_threshold)
-        prob_n_misses.append(
-            1.0
-            if curr_min_fde > miss_threshold
-            else (1.0 - forecasted_probabilities[k][min_idx])
-        )
-        prob_min_ade.append(
-            -np.log(forecasted_probabilities[k][min_idx]) + curr_min_ade
-        )
-        prob_min_fde.append(
-            -np.log(forecasted_probabilities[k][min_idx]) + curr_min_fde
-        )
+        prob_n_misses.append(1.0 if curr_min_fde > miss_threshold else (1.0 - forecasted_probabilities[k][min_idx]))
+        prob_min_ade.append(-np.log(forecasted_probabilities[k][min_idx]) + curr_min_ade)
+        prob_min_fde.append(-np.log(forecasted_probabilities[k][min_idx]) + curr_min_fde)
     metric_results["minADE"] = sum(min_ade) / len(min_ade)
     metric_results["minFDE"] = sum(min_fde) / len(min_fde)
     metric_results["MR"] = sum(n_misses) / len(n_misses)
@@ -119,9 +109,7 @@ def get_displacement_errors_and_miss_rate(
 
 
 def get_drivable_area_compliance(
-    forecasted_trajectories: Dict[int, List[np.ndarray]],
-    city_names: Dict[int, str],
-    max_n_guesses: int,
+    forecasted_trajectories: Dict[int, List[np.ndarray]], city_names: Dict[int, str], max_n_guesses: int
 ) -> float:
     """Compute drivable area compliance metric.
 
@@ -144,9 +132,7 @@ def get_drivable_area_compliance(
         num_dac_trajectories = 0
         n_guesses = min(max_n_guesses, len(trajectories))
         for trajectory in trajectories[:n_guesses]:
-            raster_layer = avm.get_raster_layer_points_boolean(
-                trajectory, city_name, "driveable_area"
-            )
+            raster_layer = avm.get_raster_layer_points_boolean(trajectory, city_name, "driveable_area")
             if np.sum(raster_layer) == raster_layer.shape[0]:
                 num_dac_trajectories += 1
 
@@ -181,16 +167,9 @@ def compute_forecasting_metrics(
         metric_results: Dictionary containing values for all metrics.
     """
     metric_results = get_displacement_errors_and_miss_rate(
-        forecasted_trajectories,
-        gt_trajectories,
-        max_n_guesses,
-        horizon,
-        miss_threshold,
-        forecasted_probabilities,
+        forecasted_trajectories, gt_trajectories, max_n_guesses, horizon, miss_threshold, forecasted_probabilities
     )
-    metric_results["DAC"] = get_drivable_area_compliance(
-        forecasted_trajectories, city_names, max_n_guesses
-    )
+    metric_results["DAC"] = get_drivable_area_compliance(forecasted_trajectories, city_names, max_n_guesses)
 
     print("------------------------------------------------")
     print(f"Prediction Horizon : {horizon}, Max #guesses (K): {max_n_guesses}")
