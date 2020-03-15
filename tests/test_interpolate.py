@@ -282,7 +282,8 @@ def test_compute_midpoint_line_curved_maintain_4_waypts():
     Make sure that if we provide left and right boundary polylines,
     we can get the correct centerline by averaging left and right waypoints.
 
-    Note that because of the curve and the arc interpolation, the land width and centerline in the middle points will be shifted.
+    Note that because of the curve and the arc interpolation, the land width and centerline in the middle points 
+    will be shifted.
     """
     right_ln_bnds = np.array([[-1, 3], [1, 3], [4, 0], [4, -2]])
     left_ln_bnds = np.array([[-1, 1], [1, 1], [2, 0], [2, -2]])

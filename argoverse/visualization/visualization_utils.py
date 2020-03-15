@@ -1,5 +1,4 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
-
 import copy
 import logging
 from collections import defaultdict
