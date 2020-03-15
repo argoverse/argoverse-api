@@ -4,11 +4,11 @@
 
 import math
 import pickle as pkl
-from typing import Dict, List, Tuple\
-
-from argoverse.map_representation.map_api import ArgoverseMap
+from typing import Dict, List, Tuple
 
 import numpy as np
+
+from argoverse.map_representation.map_api import ArgoverseMap
 
 
 def get_ade(forecasted_trajectory: np.ndarray, gt_trajectory: np.ndarray) -> float:
@@ -61,7 +61,7 @@ def get_displacement_errors_and_miss_rate(
     horizon: int,
     miss_threshold: float,
     forecasted_probabilities: Dict[int, List[float]],
-) -> Tuple[float, float, float]:
+) -> Dict[str, float]:
     """Compute min fde and ade for each sample.
 
     Note: Both min_fde and min_ade values correspond to the trajectory which has minimum fde.
