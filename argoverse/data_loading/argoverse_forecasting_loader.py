@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence, Union
 
 import numpy as np
-
 import pandas as pd
 
 __all__ = ["ArgoverseForecastingLoader"]

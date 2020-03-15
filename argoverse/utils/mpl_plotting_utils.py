@@ -3,14 +3,11 @@
 
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from descartes.patch import PolygonPatch
-
 import matplotlib.pyplot as plt
+import numpy as np
+from descartes.patch import PolygonPatch
 from matplotlib.animation import FuncAnimation
 from matplotlib.lines import Line2D
-
-import numpy as np
-
 from shapely.geometry import LineString, Polygon
 
 

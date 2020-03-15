@@ -4,11 +4,11 @@ import logging
 from pathlib import Path
 from typing import Optional
 
+import numpy as np
+
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat2rotmat
-
-import numpy as np
 
 logger = logging.getLogger(__name__)
 

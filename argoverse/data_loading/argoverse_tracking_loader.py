@@ -7,6 +7,8 @@ import os
 from functools import lru_cache
 from typing import Dict, Iterator, List, Optional, Union, cast
 
+import numpy as np
+
 import argoverse.data_loading.object_label_record as object_label
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
 from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
@@ -15,8 +17,6 @@ from argoverse.utils.calibration import Calibration, load_calib, load_image
 from argoverse.utils.camera_stats import CAMERA_LIST, RING_CAMERA_LIST, STEREO_CAMERA_LIST
 from argoverse.utils.ply_loader import load_ply
 from argoverse.utils.se3 import SE3
-
-import numpy as np
 
 logger = logging.getLogger(__name__)
 

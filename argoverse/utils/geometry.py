@@ -7,7 +7,6 @@ For filtering to 3D polygons, please see cuboid_interior.py or iou_3d.py instead
 from typing import Optional, cast
 
 import numpy as np
-
 from shapely.geometry import Point, Polygon
 
 

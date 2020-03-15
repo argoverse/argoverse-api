@@ -5,18 +5,14 @@ import math
 import warnings
 from typing import Mapping, Tuple
 
-from argoverse.utils.cv2_plotting_utils import (draw_polygon_cv2,
-                                                draw_polyline_cv2)
+import cv2
+import numpy as np
+from colour import Color
+
+from argoverse.utils.cv2_plotting_utils import draw_polygon_cv2, draw_polyline_cv2
 from argoverse.utils.datetime_utils import generate_datetime_string
 from argoverse.utils.mesh_grid import get_mesh_grid_as_point_cloud
 from argoverse.utils.se2 import SE2
-
-from colour import Color
-
-import cv2
-
-import numpy as np
-
 from typing_extensions import Protocol
 
 from .lane_segment import LaneSegment

@@ -4,19 +4,16 @@ import logging
 from collections import defaultdict
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
-from PIL import Image
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
 
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
 from argoverse.utils.calibration import Calibration, determine_valid_cam_coords, proj_cam_to_uv
 from argoverse.utils.frustum_clipping import generate_frustum_planes
-
-import cv2
-
-import matplotlib.pyplot as plt
-
-import numpy as np
+from PIL import Image
 
 point_size = 0.01
 axes_limits = [[-10, 10], [-10, 10], [-3, 10]]  # X axis range  # Y axis range  # Z axis range

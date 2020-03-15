@@ -3,6 +3,8 @@
 import sys
 from typing import List, Optional, Sequence
 
+import numpy as np
+
 from argoverse.utils import mayavi_wrapper
 from argoverse.utils.mesh_grid import get_mesh_grid_as_point_cloud
 from argoverse.visualization.mayavi_utils import (
@@ -12,8 +14,6 @@ from argoverse.visualization.mayavi_utils import (
     plot_bbox_3d_mayavi,
     plot_points_3D_mayavi,
 )
-
-import numpy as np
 
 
 def populate_frustum_voxels(planes: Sequence[np.ndarray], fig: Figure, axis_pair: str) -> Figure:

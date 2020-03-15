@@ -9,10 +9,10 @@ import copy
 import sys
 from typing import Any, Iterable, List, Optional, Tuple
 
+import numpy as np
+
 from argoverse.utils.camera_stats import get_image_dims_for_camera
 from argoverse.utils.manhattan_search import compute_point_cloud_bbox
-
-import numpy as np
 
 
 def fit_plane_to_point_cloud(pc: np.ndarray) -> Tuple[Any, Any, Any, Any]:

@@ -8,7 +8,6 @@ We require that the quaternions are normalized beforehand to be unit-length.
 """
 
 import numpy as np
-
 from scipy.spatial.transform import Rotation
 
 
