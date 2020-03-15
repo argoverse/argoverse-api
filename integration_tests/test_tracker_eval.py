@@ -4,6 +4,7 @@ import os
 import pathlib
 
 import numpy as np
+
 from argoverse.evaluation import eval_tracking, eval_utils
 from argoverse.utils import ply_loader
 from argoverse.utils.json_utils import read_json_file
@@ -95,6 +96,6 @@ def test_evaluation_track():
     # sanity check, gt and results exactly the same
     track_results_location = log_location / "per_sweep_annotations_amodal"
     cm = centroid_methods[1]
-    eval_tracking.eval_tracks(track_results_location, os.fspath(log_location), D_MIN, D_MAX, out_file, cm)
+    eval_tracking.eval_tracks([track_results_location], [os.fspath(log_location)], D_MIN, D_MAX, out_file, cm)
     # _,n_frame,mota,motp, idf1, mostly_tracked,mostly_lost,num_false_positives, num_misses,num_switches,num_fragmentations = out_file.read().strip().split(' ')
     out_file.close()

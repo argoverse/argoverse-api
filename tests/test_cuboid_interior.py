@@ -1,12 +1,14 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
 import numpy as np
+
 from argoverse.utils.cuboid_interior import (
     extract_pc_in_box3d_hull,
-    filter_point_cloud_to_bbox_3D_vectorized,
-    filter_point_cloud_to_bbox_2D_vectorized,
     filter_point_cloud_to_bbox,
+    filter_point_cloud_to_bbox_2D_vectorized,
+    filter_point_cloud_to_bbox_3D_vectorized,
 )
+
 
 """
 Run it with "pytest tracker_tools_tests.py"
@@ -121,10 +123,10 @@ def test_2d_cuboid_interior_test1():
     """
     pc_raw, bbox_3d, gt_segment, gt_is_valid = get_scenario_1()
 
-    to_2d = lambda array : array[:, :2]
+    to_2d = lambda array: array[:, :2]
 
     pc_raw_2d = np.unique(to_2d(pc_raw), axis=0)
-    bbox_2d = to_2d(bbox_3d)[(0,1,4,5), :]
+    bbox_2d = to_2d(bbox_3d)[(0, 1, 4, 5), :]
     gt_segment_2d = np.unique(to_2d(gt_segment), axis=0)
 
     filtered_points, _ = filter_point_cloud_to_bbox_2D_vectorized(bbox_2d, pc_raw_2d)

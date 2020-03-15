@@ -1,6 +1,7 @@
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Build Status](https://travis-ci.org/argoai/argoverse-api.svg?branch=master)](https://travis-ci.org/argoai/argoverse-api)
 
 # Argoverse API
 
@@ -15,9 +16,11 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [Demo](#demo)
+- [Baselines](#baselines)
 - [Contributing](#contributing)
 - [Disclaimer](#disclaimer)
 - [License](#license)
+
 
 ---
 
@@ -64,17 +67,17 @@ Note that you need to download HD map data (and extract them into project root f
 * `argoverse` can be installed as a python package using
 
         pip install -e /path_to_root_directory_of_the_repo/
-* if you recieve any error about `No matching distribution found for pyntcloud`, upgrade your pip using `pip install --upgrade pip` or pip install with `--process-dependency-links`
+* if you receive any error about `No matching distribution found for pyntcloud`, upgrade your pip using `pip install --upgrade pip` or pip install with `--process-dependency-links`
 
-Make sure that you can `import argoverse` in python, and you are good to go!
+Make sure that you can run `import argoverse` in python, and you are good to go!
 
 ### (optional) Install mayavi
-* Some visualization may require `mayavi`. See instructions on how to install [here](https://docs.enthought.com/mayavi/mayavi/installation.html)
+* Some visualizations may require `mayavi`. See instructions on how to install Mayavi [here](https://docs.enthought.com/mayavi/mayavi/installation.html).
 
 ---
 
 ## Usage
-The Argoverse API provides useful functionality to interact with 3 main components of our dataset: HD Map, Argoverse Tracking Dataset and Argoverse Forecasting Dataset.
+The Argoverse API provides useful functionality to interact with the 3 main components of our dataset: the HD Map, the Argoverse Tracking Dataset and the Argoverse Forecasting Dataset.
 
 ```python
 from argoverse.map_representation.map_api import ArgoverseMap
@@ -91,7 +94,7 @@ API documentation is available [here](https://argoai.github.io/argoverse-api/). 
 ## Demo
 To make it easier to use our API, we provide demo tutorials in the form of Jupyter Notebooks.
 
-To run, you'll need to first install Jupyter Notebook `pip install jupyter`. Then navigate to the repo directory and open a server with `jupyter notebook`. When you run the command, it will open your browser automatically. If you lose the page, you can click on the link in your terminal to re-open the Jupyter notebook.
+To run them, you'll need to first install Jupyter Notebook `pip install jupyter`. Then navigate to the repo directory and open a server with `jupyter notebook`. When you run the command, it will open your browser automatically. If you lose the page, you can click on the link in your terminal to re-open the Jupyter notebook.
 
 Once it's running, just navigate to the `demo_usage` folder and open any tutorial! Note that to use the tracking and forecasting tutorials, you'll need to download the tracking and forecasting sample data from [our website](https://www.argoverse.org/data.html#download-link) and extract the folders into the root of the repo.
 
@@ -130,7 +133,14 @@ $ python visualize_ground_lidar_points.py --dataset-dir <path/to/logs> --log-ids
 This will produce images and videos will be in the directory `<experiment prefix>_ground_viz/<log id>`.  Here is an example image: ![](images/ring_front_center_315966392920007000.jpg)
 
 ### Stereo correspondence
-For all log segments, accurate calibration between liDAR and cameras enables sensor fusion approaches, but the calibration may not register the stereo images into perfect epipolar correspondence.
+For all log segments, accurate calibration between LiDAR and cameras enables sensor fusion approaches, but the calibration may not register the stereo images into perfect epipolar correspondence.
+
+---
+
+## Baselines
+
+We have also released the baseline codes for both 3D tracking and motion forecasting tasks. 
+3D Tracking code can be found at https://github.com/alliecc/argoverse_baselinetracker and Motion Forecasting code at https://github.com/jagjeet-singh/argoverse-forecasting
 
 ---
 

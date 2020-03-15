@@ -1,16 +1,15 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 """Ground visualization utilities."""
 
-from pathlib import Path
 import copy
 import os
 from pathlib import Path
+from typing import Optional, Union
 
 import cv2
 import imageio
 import numpy as np
 from colour import Color
-from typing import Union, Optional
 
 from argoverse.data_loading.synchronization_database import SynchronizationDB
 from argoverse.map_representation.map_api import ArgoverseMap

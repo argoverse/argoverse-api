@@ -15,9 +15,10 @@
 # <Modifications copyright (C) 2019, Argo AI, LLC>
 
 import copy
+from typing import Optional, Tuple
+
 import numpy as np
 from scipy.spatial import Delaunay
-from typing import Optional, Tuple
 
 
 def filter_point_cloud_to_bbox(bbox: np.ndarray, velodyne_pts: np.ndarray) -> Optional[np.ndarray]:

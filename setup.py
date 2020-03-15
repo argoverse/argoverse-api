@@ -8,9 +8,7 @@ https://github.com/pypa/sampleproject
 
 import platform
 import sys
-
-# To use a consistent encoding
-from codecs import open
+from codecs import open  # To use a consistent encoding
 from os import path
 
 # Always prefer setuptools over distutils
@@ -66,6 +64,9 @@ setup(
         "shapely",
         "sklearn",
         "typing_extensions",
+        "h5py",
+        "numpy-quaternion",
+        "lap",
     ],
     # for older pip version, use with --process-dependency-links
     dependency_links=["git+https://github.com/daavoo/pyntcloud#egg=pyntcloud-0.1.0"],
