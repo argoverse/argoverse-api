@@ -7,10 +7,10 @@ import logging
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple, cast
 
-import numpy as np
-
 from argoverse.utils.camera_stats import RING_CAMERA_LIST, STEREO_CAMERA_LIST
 from argoverse.utils.json_utils import read_json_file
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 

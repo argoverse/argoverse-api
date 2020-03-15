@@ -8,14 +8,17 @@ import sys
 from collections import defaultdict
 from typing import Dict, Optional
 
+from argoverse.map_representation.map_api import ArgoverseMap
+
 import matplotlib.animation as anim
 import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import scipy.interpolate as interp
 
-from argoverse.map_representation.map_api import ArgoverseMap
+import numpy as np
+
+import pandas as pd
+
+import scipy.interpolate as interp
 
 _ZORDER = {"AGENT": 15, "AV": 10, "OTHERS": 5}
 

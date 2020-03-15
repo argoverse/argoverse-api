@@ -4,11 +4,11 @@
 
 import math
 import pickle as pkl
-from typing import Dict, List, Tuple
-
-import numpy as np
+from typing import Dict, List, Tuple\
 
 from argoverse.map_representation.map_api import ArgoverseMap
+
+import numpy as np
 
 
 def get_ade(forecasted_trajectory: np.ndarray, gt_trajectory: np.ndarray) -> float:
@@ -77,7 +77,7 @@ def get_displacement_errors_and_miss_rate(
         forecasted_probabilities: Probabilites associated with forecasted trajectories.
 
     Returns:
-        metric_results: Metric values for minADE, minFDE, MR, p-minADE, p-minFDE, p-MR        
+        metric_results: Metric values for minADE, minFDE, MR, p-minADE, p-minFDE, p-MR
     """
     metric_results: Dict[str, float] = {}
     min_ade, prob_min_ade = [], []

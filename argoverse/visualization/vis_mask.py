@@ -21,12 +21,14 @@ https://github.com/facebookresearch/Detectron/blob/master/detectron/utils/vis.py
 import os
 from typing import Any, List, Optional, Sequence, Tuple, Union
 
+from argoverse.visualization.colormap import colormap
+
 import cv2
+
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.patches import Polygon
 
-from argoverse.visualization.colormap import colormap
+import numpy as np
 
 plt.rcParams["pdf.fonttype"] = 42  # For editing in Adobe Illustrator
 

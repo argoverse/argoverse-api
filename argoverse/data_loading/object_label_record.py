@@ -8,13 +8,14 @@ import os
 import pdb
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-import cv2
-import numpy as np
-
 from argoverse.utils.calibration import CameraConfig
 from argoverse.utils.cv2_plotting_utils import draw_clipped_line_segment
 from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat2rotmat
+
+import cv2
+
+import numpy as np
 
 
 class ObjectLabelRecord:

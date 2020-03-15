@@ -4,10 +4,10 @@
 import copy
 from typing import Any, Dict, List, Tuple
 
-import numpy as np
-
 from argoverse.map_representation.map_api import ArgoverseMap
 from argoverse.utils.transform import quat2rotmat
+
+import numpy as np
 
 # Label dictionary should be of the form {"center": {"x": 0.0, "y": 0.0, "z": 0.0},
 #                                         "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},

@@ -6,9 +6,6 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union, overload
 
-import imageio
-import numpy as np
-
 from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
 from argoverse.utils.camera_stats import (
     CAMERA_LIST,
@@ -21,6 +18,11 @@ from argoverse.utils.camera_stats import (
 )
 from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat2rotmat
+
+import imageio
+
+import numpy as np
+
 from typing_extensions import Literal
 
 logger = logging.getLogger(__name__)

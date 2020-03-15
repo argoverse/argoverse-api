@@ -3,8 +3,9 @@
 
 from typing import Optional
 
-import numpy as np
 from matplotlib.axes import Axes
+
+import numpy as np
 
 __all__ = ["draw_point_cloud_bev"]
 

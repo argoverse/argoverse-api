@@ -4,11 +4,13 @@ import datetime
 import math
 from typing import Iterable, List, Sequence, Set, Tuple
 
-import matplotlib.pyplot as plt
-import numpy as np
-from shapely.geometry import LinearRing, LineString, Point, Polygon
-
 from argoverse.map_representation.lane_segment import LaneSegment
+
+import matplotlib.pyplot as plt
+
+import numpy as np
+
+from shapely.geometry import LineString, LinearRing, Point, Polygon
 
 from . import mpl_plotting_utils
 from .interpolate import interp_arc

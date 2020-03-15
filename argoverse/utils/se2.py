@@ -2,9 +2,9 @@
 
 """Module for `SE2`."""
 
-import numpy as np
-
 from argoverse.utils.helpers import assert_np_array_shape
+
+import numpy as np
 
 
 class SE2:

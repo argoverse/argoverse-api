@@ -4,6 +4,7 @@ import pdb
 from typing import Tuple, cast
 
 import matplotlib.pyplot as plt
+
 import numpy as np
 
 # For a single line segment

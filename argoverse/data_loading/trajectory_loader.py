@@ -9,9 +9,9 @@ import logging
 import sys
 from typing import List
 
-import numpy as np
-
 from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 

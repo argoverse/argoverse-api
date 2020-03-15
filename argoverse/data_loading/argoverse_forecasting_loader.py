@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence, Union
 
 import numpy as np
+
 import pandas as pd
 
 __all__ = ["ArgoverseForecastingLoader"]
@@ -27,7 +28,7 @@ def _read_csv(path: Path, *args: Any, **kwargs: Any) -> pd.DataFrame:
 class ArgoverseForecastingLoader:
     def __init__(self, root_dir: Union[str, Path]):
         """Initialization function for the class.
- 
+
         Args:
             root_dir: Path to the folder having sequence csv files
         """
@@ -60,7 +61,7 @@ class ArgoverseForecastingLoader:
 
     @property
     def num_tracks(self) -> int:
-        """Get the number of tracks in the current sequence. 
+        """Get the number of tracks in the current sequence.
 
         Returns:
             number of tracks in the current sequence

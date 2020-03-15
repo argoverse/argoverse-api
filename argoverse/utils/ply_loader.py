@@ -5,6 +5,7 @@ import os
 from typing import Union
 
 import numpy as np
+
 import pyntcloud
 
 _PathLike = Union[str, "os.PathLike[str]"]

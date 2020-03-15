@@ -6,11 +6,6 @@ import os
 from pathlib import Path
 from typing import Optional, Union
 
-import cv2
-import imageio
-import numpy as np
-from colour import Color
-
 from argoverse.data_loading.synchronization_database import SynchronizationDB
 from argoverse.map_representation.map_api import ArgoverseMap
 from argoverse.utils.calibration import (
@@ -22,6 +17,14 @@ from argoverse.utils.camera_stats import RING_CAMERA_LIST, STEREO_CAMERA_LIST
 from argoverse.utils.cv2_plotting_utils import draw_point_cloud_in_img_cv2
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.se3 import SE3
+
+from colour import Color
+
+import cv2
+
+import imageio
+
+import numpy as np
 
 __all__ = ["draw_ground_pts_in_image"]
 

@@ -10,15 +10,18 @@ import sys
 from collections import defaultdict
 from typing import List
 
+from argoverse.map_representation.map_api import ArgoverseMap
+from argoverse.visualization.visualize_sequences import viz_sequence
+
 import matplotlib.animation as anim
 import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-from scipy.interpolate import interp1d
 
-from argoverse.map_representation.map_api import ArgoverseMap
-from argoverse.visualization.visualize_sequences import viz_sequence
+import numpy as np
+
+import pandas as pd
+
+from scipy.interpolate import interp1d
 
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument("--root", help="sequence location ")

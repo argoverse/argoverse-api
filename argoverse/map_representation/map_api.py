@@ -2,32 +2,32 @@
 
 import copy
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import (Any, Dict, Iterable, List, Mapping, Optional, Sequence,
+                    Tuple, Union)
 
-import matplotlib.pyplot as plt
-import numpy as np
-from shapely.geometry import LineString
-
-from argoverse.data_loading.vector_map_loader import load_lane_segments_from_xml
+from argoverse.data_loading.vector_map_loader import \
+    load_lane_segments_from_xml
 from argoverse.utils.centerline_utils import (
-    centerline_to_polygon,
-    filter_candidate_centerlines,
-    get_centerlines_most_aligned_with_trajectory,
-    lane_waypt_to_query_dist,
-    remove_overlapping_lane_seq,
-)
+    centerline_to_polygon, filter_candidate_centerlines,
+    get_centerlines_most_aligned_with_trajectory, lane_waypt_to_query_dist,
+    remove_overlapping_lane_seq)
 from argoverse.utils.cv2_plotting_utils import get_img_contours
 from argoverse.utils.dilation_utils import dilate_by_l2
 from argoverse.utils.geometry import point_inside_polygon
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.manhattan_search import (
-    compute_polygon_bboxes,
-    find_all_polygon_bboxes_overlapping_query_bbox,
-    find_local_polygons,
-)
-from argoverse.utils.mpl_plotting_utils import plot_lane_segment_patch, visualize_centerline
+    compute_polygon_bboxes, find_all_polygon_bboxes_overlapping_query_bbox,
+    find_local_polygons)
+from argoverse.utils.mpl_plotting_utils import (plot_lane_segment_patch,
+                                                visualize_centerline)
 from argoverse.utils.pkl_utils import load_pkl_dictionary
 from argoverse.utils.se2 import SE2
+
+import matplotlib.pyplot as plt
+
+import numpy as np
+
+from shapely.geometry import LineString
 
 from .lane_segment import LaneSegment
 from .map_viz_helper import render_global_city_map_bev
