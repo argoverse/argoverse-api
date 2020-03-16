@@ -53,7 +53,7 @@ setup(
         "descartes",
         "imageio",
         "matplotlib",
-        "motmetrics==1.1.3",
+        "motmetrics",
         "numpy",
         "opencv-python>=4.1.0.25",
         "pandas>=0.23.1",
