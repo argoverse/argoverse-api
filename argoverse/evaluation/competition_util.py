@@ -24,7 +24,10 @@ TYPE_LIST = Union[List[np.ndarray], np.ndarray]
 
 
 def generate_forecasting_h5(
-    data: Dict[int, TYPE_LIST], output_path: str, filename: str = "argoverse_forecasting_baseline"
+    data: Dict[int, TYPE_LIST],
+    output_path: str,
+    filename: str = "argoverse_forecasting_baseline",
+    probabilities: Dict[int, List[float]] = None,
 ) -> None:
     """
     Helper function to generate the result h5 file for argoverse forecasting challenge
@@ -34,6 +37,7 @@ def generate_forecasting_h5(
               trajectory should be stored in a (9,30,2) np.ndarray
         output_path: path to the output directory to store the output h5 file
         filename: to be used as the name of the file
+        probabilities (optional) : normalized probability for each trajectory
 
     Returns:
 
@@ -54,16 +58,29 @@ def generate_forecasting_h5(
             future_frames,
             2,
         ), f"ERROR: the data should be of shape (n,30,2), currently getting {value.shape}"
+
         n = value.shape[0]
         value = value.reshape(n * future_frames, 2)
+        if probabilities is not None:
+            assert key in probabilities.keys(), f"missing probabilities for sequence {key}"
+            assert len(probabilities[key]) == len(value), f"mismatch sequence and probabilities len"
+            assert np.isclose(np.sum(probabilities[key]), 1), "probabilities are not normalized"
 
-        d = np.array([[key, np.float32(x), np.float32(y)] for x, y in value])
+            d = np.array(
+                [
+                    [key, np.float32(x), np.float32(y), probabilities[key][int(np.floor(i / future_frames))]]
+                    for i, (x, y) in enumerate(value)
+                ]
+            )
+        else:
+            d = np.array([[key, np.float32(x), np.float32(y)] for x, y in value])
 
         if len(d_all) == 0:
             d_all = d
         else:
             d_all = np.concatenate([d_all, d], 0)
         counter += 1
+
     hf.create_dataset("argoverse_forecasting", data=d_all, compression="gzip", compression_opts=9)
     hf.close()
 
