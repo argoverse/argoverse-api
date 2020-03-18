@@ -63,7 +63,7 @@ def get_displacement_errors_and_miss_rate(
     horizon: int,
     miss_threshold: float,
     forecasted_probabilities: Optional[Dict[int, List[float]]] = None,
-) -> Tuple[float, float, float]:
+) -> Dict[str, float]:
     """Compute min fde and ade for each sample.
 
     Note: Both min_fde and min_ade values correspond to the trajectory which has minimum fde.
