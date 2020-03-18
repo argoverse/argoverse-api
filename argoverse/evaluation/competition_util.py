@@ -7,7 +7,7 @@ import shutil
 import tempfile
 import uuid
 import zipfile
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from scipy.spatial import ConvexHull
@@ -27,7 +27,7 @@ def generate_forecasting_h5(
     data: Dict[int, TYPE_LIST],
     output_path: str,
     filename: str = "argoverse_forecasting_baseline",
-    probabilities: Dict[int, List[float]] = None,
+    probabilities: Optional[Dict[int, List[float]]] = None,
 ) -> None:
     """
     Helper function to generate the result h5 file for argoverse forecasting challenge
