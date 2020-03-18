@@ -60,11 +60,14 @@ def generate_forecasting_h5(
         ), f"ERROR: the data should be of shape (n,30,2), currently getting {value.shape}"
 
         n = value.shape[0]
+        len_val = len(value)
         value = value.reshape(n * future_frames, 2)
         if probabilities is not None:
             assert key in probabilities.keys(), f"missing probabilities for sequence {key}"
-            assert len(probabilities[key]) == len(value), f"mismatch sequence and probabilities len"
-            assert np.isclose(np.sum(probabilities[key]), 1), "probabilities are not normalized"
+            assert (
+                len(probabilities[key]) == len_val
+            ), f"mismatch sequence and probabilities len for {key}: {len(probabilities[key])} !== {len_val}"
+            # assert np.isclose(np.sum(probabilities[key]), 1), "probabilities are not normalized"
 
             d = np.array(
                 [
