@@ -10,7 +10,7 @@ from argoverse.visualization.vis_mask import decode_segment_to_mask, vis_mask, v
 
 
 def test_vis_mask():
-    ## Ordered Z first for easy reading
+    # Ordered Z first for easy reading
     img = np.array(
         [
             [[0, 0, 0], [0, 10, 10], [0, 10, 10]],
@@ -27,7 +27,7 @@ def test_vis_mask():
 
     masked_image = masked_image.swapaxes(0, 2)
 
-    ## Ordered Z first for easy reading
+    # Ordered Z first for easy reading
     expected_img = np.array(
         [
             [[0, 0, 0], [0, 10, 10], [0, 10, 10]],
