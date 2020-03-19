@@ -388,13 +388,22 @@ class ArgoverseMap:
             npyimage_coords[:, 0] > 0
         ), "Invalid coordinates, please make sure the query location is in a valid city coordinate"
 
-        if max_x > height_x or max_y > height_y:
-            # expand ground height npy image, fill with NaN
-            ground_height_mat_pad = np.full((max_y, max_x), np.nan)
-            ground_height_mat_pad[0:max_y, 0:max_x] = ground_height_mat
-            ground_height_mat = copy.deepcopy(ground_height_mat_pad)
+        ground_height_values = np.zeros(npyimage_coords.shape[0])
+        if max_x >= height_x or max_y >= height_y:
+            #if a point falls outside the map, use the ground height of closest point
 
-        ground_height_values = ground_height_mat[npyimage_coords[:, 1], npyimage_coords[:, 0]]
+            ind_valid_pts = (npyimage_coords[:, 1] < ground_height_mat.shape[0]) * \
+                            (npyimage_coords[:, 0] < ground_height_mat.shape[1])
+
+            ground_height_values[ind_valid_pts] = ground_height_mat[npyimage_coords[ind_valid_pts, 1], \
+                                                                    npyimage_coords[ind_valid_pts, 0]]
+            if ind_valid_pts.sum() != npyimage_coords.shape[0]: 
+                ind_point_invalid =  np.nonzero(1-ind_valid_pts)[0]
+                for ind in ind_point_invalid:
+                    point_invalid = npyimage_coords[ind]
+                    dist_diff = np.linalg.norm(npyimage_coords[ind_valid_pts]-point_invalid, axis=1)
+                    ground_height_values[ind] = ground_height_values[ind_valid_pts][np.argmin(dist_diff)]
+
         return ground_height_values
 
     def append_height_to_2d_city_pt_cloud(self, pt_cloud_xy: np.ndarray, city_name: str) -> np.ndarray:
