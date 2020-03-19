@@ -378,17 +378,14 @@ class ArgoverseMap:
         npyimage_coords = npyimage_to_city_se2.transform_point_cloud(city_coords)
         npyimage_coords = npyimage_coords.astype(np.int64)
 
-
-
         ground_height_values = np.full((npyimage_coords.shape[0]), np.nan)
         ind_valid_pts = (npyimage_coords[:, 1] < ground_height_mat.shape[0]) * \
-                            (npyimage_coords[:, 0] < ground_height_mat.shape[1])
+            (npyimage_coords[:, 0] < ground_height_mat.shape[1])
 
         ground_height_values[ind_valid_pts] = ground_height_mat[npyimage_coords[ind_valid_pts, 1], \
-                                                    npyimage_coords[ind_valid_pts, 0]]
+            npyimage_coords[ind_valid_pts, 0]]
 
         return ground_height_values
-
 
     def append_height_to_2d_city_pt_cloud(self, pt_cloud_xy: np.ndarray, city_name: str) -> np.ndarray:
         """
