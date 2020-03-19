@@ -378,33 +378,17 @@ class ArgoverseMap:
         npyimage_coords = npyimage_to_city_se2.transform_point_cloud(city_coords)
         npyimage_coords = npyimage_coords.astype(np.int64)
 
-        # index at (x,y) locations, which are (y,x) in the image
-        max_y = np.max(npyimage_coords[:, 1])
-        max_x = np.max(npyimage_coords[:, 0])
 
-        height_y, height_x = np.shape(ground_height_mat)
 
-        assert np.all(npyimage_coords[:, 1] > 0) and np.all(
-            npyimage_coords[:, 0] > 0
-        ), "Invalid coordinates, please make sure the query location is in a valid city coordinate"
-
-        ground_height_values = np.zeros(npyimage_coords.shape[0])
-        if max_x >= height_x or max_y >= height_y:
-            #if a point falls outside the map, use the ground height of closest point
-
-            ind_valid_pts = (npyimage_coords[:, 1] < ground_height_mat.shape[0]) * \
+        ground_height_values = np.full((npyimage_coords.shape[0]), np.nan)
+        ind_valid_pts = (npyimage_coords[:, 1] < ground_height_mat.shape[0]) * \
                             (npyimage_coords[:, 0] < ground_height_mat.shape[1])
 
-            ground_height_values[ind_valid_pts] = ground_height_mat[npyimage_coords[ind_valid_pts, 1], \
-                                                                    npyimage_coords[ind_valid_pts, 0]]
-            if ind_valid_pts.sum() != npyimage_coords.shape[0]: 
-                ind_point_invalid =  np.nonzero(1-ind_valid_pts)[0]
-                for ind in ind_point_invalid:
-                    point_invalid = npyimage_coords[ind]
-                    dist_diff = np.linalg.norm(npyimage_coords[ind_valid_pts]-point_invalid, axis=1)
-                    ground_height_values[ind] = ground_height_values[ind_valid_pts][np.argmin(dist_diff)]
+        ground_height_values[ind_valid_pts] = ground_height_mat[npyimage_coords[ind_valid_pts, 1], \
+                                                    npyimage_coords[ind_valid_pts, 0]]
 
         return ground_height_values
+
 
     def append_height_to_2d_city_pt_cloud(self, pt_cloud_xy: np.ndarray, city_name: str) -> np.ndarray:
         """
