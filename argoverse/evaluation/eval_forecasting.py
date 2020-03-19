@@ -4,11 +4,13 @@
 
 import math
 import pickle as pkl
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
 from argoverse.map_representation.map_api import ArgoverseMap
+
+LOW_PROB_THRESHOLD_FOR_METRICS = 0.05
 
 
 def get_ade(forecasted_trajectory: np.ndarray, gt_trajectory: np.ndarray) -> float:
@@ -60,7 +62,7 @@ def get_displacement_errors_and_miss_rate(
     max_guesses: int,
     horizon: int,
     miss_threshold: float,
-    forecasted_probabilities: Dict[int, List[float]],
+    forecasted_probabilities: Optional[Dict[int, List[float]]] = None,
 ) -> Dict[str, float]:
     """Compute min fde and ade for each sample.
 
@@ -87,24 +89,44 @@ def get_displacement_errors_and_miss_rate(
         curr_min_ade = float("inf")
         curr_min_fde = float("inf")
         min_idx = 0
-        for j in range(0, min(max_guesses, len(forecasted_trajectories[k]))):
-            fde = get_fde(forecasted_trajectories[k][j][:horizon], v[:horizon])
+        max_num_traj = min(max_guesses, len(forecasted_trajectories[k]))
+
+        # If probabilities available, use the most likely trajectories, else use the first few
+        if forecasted_probabilities is not None:
+            sorted_idx = np.argsort(forecasted_probabilities[k])[::-1]
+            pruned_probabilities = [forecasted_probabilities[k][t] for t in sorted_idx[:max_num_traj]]
+            # Normalize
+            prob_sum = sum(pruned_probabilities)
+            pruned_probabilities = [p / prob_sum for p in pruned_probabilities]
+        else:
+            sorted_idx = np.arange(len(forecasted_trajectories[k]))
+        pruned_trajectories = [forecasted_trajectories[k][t] for t in sorted_idx[:max_num_traj]]
+
+        for j in range(len(pruned_trajectories)):
+            fde = get_fde(pruned_trajectories[j][:horizon], v[:horizon])
             if fde < curr_min_fde:
                 min_idx = j
                 curr_min_fde = fde
-        curr_min_ade = get_ade(forecasted_trajectories[k][min_idx][:horizon], v[:horizon])
+        curr_min_ade = get_ade(pruned_trajectories[min_idx][:horizon], v[:horizon])
         min_ade.append(curr_min_ade)
         min_fde.append(curr_min_fde)
         n_misses.append(curr_min_fde > miss_threshold)
-        prob_n_misses.append(1.0 if curr_min_fde > miss_threshold else (1.0 - forecasted_probabilities[k][min_idx]))
-        prob_min_ade.append(-np.log(forecasted_probabilities[k][min_idx]) + curr_min_ade)
-        prob_min_fde.append(-np.log(forecasted_probabilities[k][min_idx]) + curr_min_fde)
+
+        if forecasted_probabilities is not None:
+            prob_n_misses.append(1.0 if curr_min_fde > miss_threshold else (1.0 - pruned_probabilities[min_idx]))
+            prob_min_ade.append(
+                min(-np.log(pruned_probabilities[min_idx]), -np.log(LOW_PROB_THRESHOLD_FOR_METRICS)) + curr_min_ade
+            )
+            prob_min_fde.append(
+                min(-np.log(pruned_probabilities[min_idx]), -np.log(LOW_PROB_THRESHOLD_FOR_METRICS)) + curr_min_fde
+            )
     metric_results["minADE"] = sum(min_ade) / len(min_ade)
     metric_results["minFDE"] = sum(min_fde) / len(min_fde)
     metric_results["MR"] = sum(n_misses) / len(n_misses)
-    metric_results["p-minADE"] = sum(prob_min_ade) / len(prob_min_ade)
-    metric_results["p-minFDE"] = sum(prob_min_fde) / len(prob_min_fde)
-    metric_results["p-MR"] = sum(prob_n_misses) / len(prob_n_misses)
+    if forecasted_probabilities is not None:
+        metric_results["p-minADE"] = sum(prob_min_ade) / len(prob_min_ade)
+        metric_results["p-minFDE"] = sum(prob_min_fde) / len(prob_min_fde)
+        metric_results["p-MR"] = sum(prob_n_misses) / len(prob_n_misses)
     return metric_results
 
 
@@ -148,7 +170,7 @@ def compute_forecasting_metrics(
     max_n_guesses: int,
     horizon: int,
     miss_threshold: float,
-    forecasted_probabilities: Dict[int, List[float]],
+    forecasted_probabilities: Optional[Dict[int, List[float]]] = None,
 ) -> Dict[str, float]:
     """Compute all the forecasting metrics.
 
