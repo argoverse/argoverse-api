@@ -93,7 +93,7 @@ def get_displacement_errors_and_miss_rate(
 
         # If probabilities available, use the most likely trajectories, else use the first few
         if forecasted_probabilities is not None:
-            sorted_idx = np.argsort(-forecasted_probabilities[k], kind="stable")
+            sorted_idx = np.argsort([-x for x in forecasted_probabilities[k]], kind="stable")
             # sorted_idx = np.argsort(forecasted_probabilities[k])[::-1]
             pruned_probabilities = [forecasted_probabilities[k][t] for t in sorted_idx[:max_num_traj]]
             # Normalize
