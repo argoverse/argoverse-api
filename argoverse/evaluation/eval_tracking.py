@@ -50,6 +50,7 @@ def iou_polygon(poly1: Polygon, poly2: Polygon) -> float:
 
 
 def get_distance_iou_3d(x1: np.ndarray, x2: np.ndarray, name: str = "bbox") -> float:
+    # ASSUME ALIGNED BBOX
 
     w1 = x1["width"]
     l1 = x1["length"]
@@ -59,9 +60,10 @@ def get_distance_iou_3d(x1: np.ndarray, x2: np.ndarray, name: str = "bbox") -> f
     l2 = x2["length"]
     h2 = x2["height"]
 
-    poly1 = Polygon([(-l1 / 2, -w1 / 2), (-l1 / 2, w1 / 2), (l1 / 2, w1 / 2), (l1 / 2, -w1 / 2)])
-    poly2 = Polygon([(-l2 / 2, -w2 / 2), (-l2 / 2, w2 / 2), (l2 / 2, w1 / 2), (l2 / 2, -w2 / 2)])
-    inter = poly1.intersection(poly2).area * min(h1, h2)
+    x_overlap = max(0, min(l1 / 2, l2 / 2) - max(-l1 / 2, -l2 / 2))
+    y_overlap = max(0, min(w1 / 2, w2 / 2) - max(-w1 / 2, -w2 / 2))
+    overlapArea = x_overlap * y_overlap
+    inter = overlapArea * min(h1, h2)
     union = w1 * l1 * h1 + w2 * l2 * h2 - inter
     score = 1 - inter / union
 
