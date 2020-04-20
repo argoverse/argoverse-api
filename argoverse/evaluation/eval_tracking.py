@@ -352,9 +352,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     logger.info("args = %s", args)
 
-    tracker_basename = os.path.basename(args.path_tracker_output)
+    tk_basename = os.path.basename(args.path_tracker_output)
 
-    out_filename = f"{tracker_basename}_{args.flag}_{int(args.d_min)}_{int(args.d_max)}_{args.centroid_method}_{args.diffatt}_{args.category}.txt"
+    out_filename = f"{tk_basename}_{args.flag}_{int(args.d_min)}_{int(args.d_max)}_\
+    {args.centroid_method}_{args.diffatt}_{args.category}.txt"
+
     logger.info("output file name = %s", out_filename)
 
     with open(out_filename, "w") as out_file:
@@ -370,5 +372,6 @@ if __name__ == "__main__":
             args.category,
         )
 
-
-# python3 eval_tracking_diff.py --path_tracker_output=/home/ubuntu/volume/dataset/argoverse/tracking_results/val-track-preds-cityframeKF-2dIoU-2019-12-05-maxage13-minhits4-confpt4_addnoise --path_dataset=/home/ubuntu/volume/dataset/argoverse/argoverse-tracking/val --d_max=100
+# python3 eval_tracking_diff.py \
+# --path_tracker_output=/data/tracker_output/val-track-preds-cityframeKF-2dIoU-2019-12-05-maxage13-minhits4-confpt4_addnoise \
+# --path_dataset=/data/argoverse/argoverse-tracking/val --d_max=100
