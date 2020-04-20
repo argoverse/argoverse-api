@@ -373,5 +373,5 @@ if __name__ == "__main__":
         )
 
 # python3 eval_tracking_diff.py \
-# --path_tracker_output=/data/tracker_output/val-track-preds-cityframeKF-2dIoU-2019-12-05-maxage13-minhits4-confpt4_addnoise \
+# --path_tracker_output=/data/tracker_output \
 # --path_dataset=/data/argoverse/argoverse-tracking/val --d_max=100
