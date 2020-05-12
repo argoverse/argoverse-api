@@ -74,6 +74,12 @@ Make sure that you can run `import argoverse` in python, and you are good to go!
 ### (optional) Install mayavi
 * Some visualizations may require `mayavi`. See instructions on how to install Mayavi [here](https://docs.enthought.com/mayavi/mayavi/installation.html).
 
+### (optional) Make the object-oriented label folders
+* The `track_labels_amodal` folders contains object-oriented labels (in contrast to per-frame labels in `per_sweep_annotations_amodal` folders. Run following script to remake `track_labels_amodal` folders and fix existing issues:
+
+`python3 argoverse/utils/make_track_label_folders.py argoverse-tracking/train/`
+`python3 argoverse/utils/make_track_label_folders.py argoverse-tracking/val/`
+
 ---
 
 ## Usage
