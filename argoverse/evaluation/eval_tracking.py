@@ -5,6 +5,8 @@ import json
 import logging
 import os
 import pathlib
+import pickle
+import sys
 from typing import Any, Dict, List, TextIO, Tuple, Union
 
 import motmetrics as mm
@@ -48,6 +50,7 @@ def iou_polygon(poly1: Polygon, poly2: Polygon) -> float:
 
 
 def get_distance_iou_3d(x1: np.ndarray, x2: np.ndarray, name: str = "bbox") -> float:
+    # ASSUME ALIGNED BBOX
 
     w1 = x1["width"]
     l1 = x1["length"]
@@ -57,10 +60,10 @@ def get_distance_iou_3d(x1: np.ndarray, x2: np.ndarray, name: str = "bbox") -> f
     l2 = x2["length"]
     h2 = x2["height"]
 
-    poly1 = Polygon([(-l1 / 2, -w1 / 2), (-l1 / 2, w1 / 2), (l1 / 2, w1 / 2), (l1 / 2, -w1 / 2)])
-    poly2 = Polygon([(-l2 / 2, -w2 / 2), (-l2 / 2, w2 / 2), (l2 / 2, w1 / 2), (l2 / 2, -w2 / 2)])
-
-    inter = poly1.intersection(poly2).area * min(h1, h2)
+    x_overlap = max(0, min(l1 / 2, l2 / 2) - max(-l1 / 2, -l2 / 2))
+    y_overlap = max(0, min(w1 / 2, w2 / 2) - max(-w1 / 2, -w2 / 2))
+    overlapArea = x_overlap * y_overlap
+    inter = overlapArea * min(h1, h2)
     union = w1 * l1 * h1 + w2 * l2 * h2 - inter
     score = 1 - inter / union
 
@@ -102,12 +105,13 @@ def get_forth_vertex_rect(
 
 
 def eval_tracks(
-    path_tracker_outputs: List[_PathLike],
-    path_datasets: List[_PathLike],
+    path_tracker_output_root: _PathLike,
+    path_dataset_root: _PathLike,
     d_min: float,
     d_max: float,
     out_file: TextIO,
     centroid_method: str,
+    diffatt: str,
     category: str = "VEHICLE",
 ) -> None:
     """Evaluate tracking output.
@@ -119,6 +123,8 @@ def eval_tracks(
         d_max: maximum distance range
         out_file: output file object
         centroid_method: method for ground truth centroid estimation
+        diffatt: difficulty attribute ['easy',  'far', 'fast', 'occ', 'short']
+        category: such as "VEHICLE" "PEDESTRIAN"
     """
     acc_c = mm.MOTAccumulator(auto_id=True)
     acc_i = mm.MOTAccumulator(auto_id=True)
@@ -127,12 +133,33 @@ def eval_tracks(
     ID_gt_all: List[str] = []
 
     count_all: int = 0
+    if diffatt is not None:
+        import argoverse.evaluation
 
-    for path_tracker_output, path_dataset in zip(path_tracker_outputs, path_datasets):
+        pkl_path = os.path.join(os.path.dirname(argoverse.evaluation.__file__), "dict_att_all.pkl")
+        if not os.path.exists(pkl_path):
+            # generate them on the fly
+            print(pkl_path)
+            raise NotImplementedError
 
-        path_track_data = sorted(glob.glob(os.fspath(path_tracker_output) + "/*"))
+        pickle_in = open(pkl_path, "rb")  # open(f"{path_dataset_root}/dict_att_all.pkl","rb")
+        dict_att_all = pickle.load(pickle_in)
+
+    path_datasets = glob.glob(os.path.join(path_dataset_root, "*"))
+    num_total_gt = 0
+
+    for path_dataset in path_datasets:  # path_tracker_output, path_dataset in zip(path_tracker_outputs, path_datasets):
 
         log_id = pathlib.Path(path_dataset).name
+        if len(log_id) == 0 or log_id.startswith("_"):
+            continue
+
+        path_tracker_output = os.path.join(path_tracker_output_root, log_id)
+
+        path_track_data = sorted(
+            glob.glob(os.path.join(os.fspath(path_tracker_output), "per_sweep_annotations_amodal", "*"))
+        )
+
         logger.info("log_id = %s", log_id)
 
         city_info_fpath = f"{path_dataset}/city_info.json"
@@ -142,6 +169,7 @@ def eval_tracks(
 
         for ind_frame in range(len(path_track_data)):
             if ind_frame % 50 == 0:
+                # print("%d/%d" % (ind_frame, len(path_track_data)))
                 logger.info("%d/%d" % (ind_frame, len(path_track_data)))
 
             timestamp_lidar = int(path_track_data[ind_frame].split("/")[-1].split("_")[-1].split(".")[0])
@@ -169,6 +197,11 @@ def eval_tracks(
                 if gt_data[i]["label_class"] != category:
                     continue
 
+                if diffatt is not None:
+
+                    if diffatt not in dict_att_all["test"][log_id][gt_data[i]["track_label_uuid"]]["difficult_att"]:
+                        continue
+
                 bbox, orientation = label_to_bbox(gt_data[i])
 
                 center = np.array([gt_data[i]["center"]["x"], gt_data[i]["center"]["y"], gt_data[i]["center"]["z"]])
@@ -187,6 +220,7 @@ def eval_tracks(
                         ID_gt_all.append(track_label_uuid)
 
                     id_gts.append(track_label_uuid)
+                    num_total_gt += 1
 
             tracks: Dict[str, Dict[str, Any]] = {}
             id_tracks: List[str] = []
@@ -231,6 +265,7 @@ def eval_tracks(
             acc_c.update(id_gts, id_tracks, dists_c)
             acc_i.update(id_gts, id_tracks, dists_i)
             acc_o.update(id_gts, id_tracks, dists_o)
+    # print(count_all)
     if count_all == 0:
         # fix for when all hypothesis is empty,
         # pymotmetric currently doesn't support this, see https://github.com/cheind/py-motmetrics/issues/49
@@ -291,6 +326,8 @@ def eval_tracks(
         f"{most_lost:.2f} {num_fp} {num_miss} {num_switch} {num_flag} \n"
     )
     out_file.write(out_string)
+    # out_file.write("total gt num = %d" %  num_total_gt)
+    # print(out_string)
 
 
 if __name__ == "__main__":
@@ -309,16 +346,32 @@ if __name__ == "__main__":
     parser.add_argument("--flag", type=str, default="")
     parser.add_argument("--d_min", type=float, default=0)
     parser.add_argument("--d_max", type=float, default=100, required=True)
+    parser.add_argument("--diffatt", type=str, default=None, required=False)
+    parser.add_argument("--category", type=str, default="VEHICLE", required=False)
 
     args = parser.parse_args()
     logger.info("args = %s", args)
 
-    tracker_basename = os.path.basename(args.path_tracker_output)
+    tk_basename = os.path.basename(args.path_tracker_output)
 
-    out_filename = f"{tracker_basename}_{args.flag}_{int(args.d_min)}_{int(args.d_max)}_{args.centroid_method}.txt"
+    out_filename = f"{tk_basename}_{args.flag}_{int(args.d_min)}_{int(args.d_max)}_\
+    {args.centroid_method}_{args.diffatt}_{args.category}.txt"
+
     logger.info("output file name = %s", out_filename)
 
     with open(out_filename, "w") as out_file:
+
         eval_tracks(
-            [args.path_tracker_output], [args.path_dataset], args.d_min, args.d_max, out_file, args.centroid_method
+            args.path_tracker_output,
+            args.path_dataset,
+            args.d_min,
+            args.d_max,
+            out_file,
+            args.centroid_method,
+            args.diffatt,
+            args.category,
         )
+
+# python3 eval_tracking_diff.py \
+# --path_tracker_output=/data/tracker_output \
+# --path_dataset=/data/argoverse/argoverse-tracking/val --d_max=100

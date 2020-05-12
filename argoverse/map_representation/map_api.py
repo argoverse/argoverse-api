@@ -380,10 +380,12 @@ class ArgoverseMap:
 
         ground_height_values = np.full((npyimage_coords.shape[0]), np.nan)
         ind_valid_pts = (npyimage_coords[:, 1] < ground_height_mat.shape[0]) * (
-            npyimage_coords[:, 0] < ground_height_mat.shape[1])
+            npyimage_coords[:, 0] < ground_height_mat.shape[1]
+        )
 
         ground_height_values[ind_valid_pts] = ground_height_mat[
-            npyimage_coords[ind_valid_pts, 1], npyimage_coords[ind_valid_pts, 0]]
+            npyimage_coords[ind_valid_pts, 1], npyimage_coords[ind_valid_pts, 0]
+        ]
 
         return ground_height_values
 
@@ -431,7 +433,16 @@ class ArgoverseMap:
         npyimage_coords = npyimage_coords.astype(np.int64)
 
         # index in at (x,y) locations, which are (y,x) in the image
-        layer_values = layer_raster_mat[npyimage_coords[:, 1], npyimage_coords[:, 0]]
+        layer_values = np.full((npyimage_coords.shape[0]), 0.0)
+        ind_valid_pts = (
+            (npyimage_coords[:, 1] > 0)
+            * (npyimage_coords[:, 1] < layer_raster_mat.shape[0])
+            * (npyimage_coords[:, 0] > 0)
+            * (npyimage_coords[:, 0] < layer_raster_mat.shape[1])
+        )
+        layer_values[ind_valid_pts] = layer_raster_mat[
+            npyimage_coords[ind_valid_pts, 1], npyimage_coords[ind_valid_pts, 0]
+        ]
         is_layer_boolean_arr = layer_values == 1.0
         return is_layer_boolean_arr
 
