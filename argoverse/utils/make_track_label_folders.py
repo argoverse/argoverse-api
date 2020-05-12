@@ -43,5 +43,3 @@ else:
             data_amodal[key]['log_id'] = path_log.split('/')[-1]
             data_amodal[key]['track_label_frames'] = dist_track_labels[key]
             save_json_dict(os.path.join(path_amodal_labels, "%s.json"% key), data_amodal[key])
-    
-    
