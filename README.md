@@ -74,6 +74,13 @@ Make sure that you can run `import argoverse` in python, and you are good to go!
 ### (optional) Install mayavi
 * Some visualizations may require `mayavi`. See instructions on how to install Mayavi [here](https://docs.enthought.com/mayavi/mayavi/installation.html).
 
+### (optional) Remake the object-oriented label folders
+* The `track_labels_amodal` folders contains object-oriented labels (in contrast to per-frame labels in `per_sweep_annotations_amodal` folders. Run following script to remake `track_labels_amodal` folders and fix existing issues:
+
+        python3 argoverse/utils/make_track_label_folders.py argoverse-tracking/train/
+
+        python3 argoverse/utils/make_track_label_folders.py argoverse-tracking/val/
+
 ---
 
 ## Usage
@@ -132,8 +139,8 @@ $ python visualize_ground_lidar_points.py --dataset-dir <path/to/logs> --log-ids
 ```
 This will produce images and videos will be in the directory `<experiment prefix>_ground_viz/<log id>`.  Here is an example image: ![](images/ring_front_center_315966392920007000.jpg)
 
-### Stereo correspondence
-For all log segments, accurate calibration between LiDAR and cameras enables sensor fusion approaches, but the calibration may not register the stereo images into perfect epipolar correspondence.
+### Calibration and Stereo
+For all log segments, accurate calibration between LiDAR and cameras enables sensor fusion approaches. In version 1.1 of Argoverse, we improved the stereo calibration significantly, as well.
 
 ---
 
