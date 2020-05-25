@@ -1,5 +1,6 @@
 from argoverse.utils.json_utils import read_json_file, save_json_dict
-from typing import Dict
+from typing import Dict, List
+from typing_extensions import TypedDict
 import glob
 import os
 import sys
@@ -7,6 +8,13 @@ import shutil
 
 
 root_dir = sys.argv[1]
+class Data_amodal_dict(TypedDict):
+    label_class : str
+    uuid : str
+    log_id : str
+    track_label_frames : List
+
+
 
 print("root dir = ", root_dir)
 print('updating track_labels_amodal folders...')
@@ -30,7 +38,7 @@ else:
                 dist_track_labels[id_obj].append(data_obj)
     
         path_amodal_labels = os.path.join(path_log, "track_labels_amodal")
-        data_amodal: Dict[str, Dict] = {}
+        data_amodal: Dict[str,Data_amodal_dict] = {}
     
         if os.path.exists(path_amodal_labels):
             shutil.rmtree(path_amodal_labels)
@@ -38,7 +46,7 @@ else:
         os.mkdir(path_amodal_labels)
         print("Adding files to ",path_amodal_labels)
         for key in dist_track_labels.keys():
-            data_amodal[key] = {}
+            data_amodal[key]: Data_amodal_dict = {}
             data_amodal[key]['label_class'] = dist_track_labels[key][0]['label_class']
             data_amodal[key]['uuid'] = dist_track_labels[key][0]['track_label_uuid']
             data_amodal[key]['log_id'] = path_log.split('/')[-1]
