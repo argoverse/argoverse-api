@@ -49,7 +49,7 @@ def write_nonsequential_idx_video(img_wildcard: str, output_fpath: str, fps: int
     cmd = f"ffmpeg -r {fps} -f image2 -i {img_wildcard}"
     cmd += " -vcodec libx264 -profile:v main"
     cmd += " -level 3.1 -preset medium -crf 23 -x264-params ref=4 -acodec"
-    cmd += f" copy -movflags +faststart -pix_fmt yuv420p  -vf scale=920:-2"
+    cmd += " copy -movflags +faststart -pix_fmt yuv420p  -vf scale=920:-2"
     cmd += f" {output_fpath}"
     print(cmd)
     run_command(cmd)
