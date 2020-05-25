@@ -3,6 +3,7 @@ import os
 import shutil
 import sys
 from typing import Any, Dict, List
+
 from argoverse.utils.json_utils import read_json_file, save_json_dict
 from typing_extensions import TypedDict
 
@@ -41,6 +42,6 @@ else:
                 "label_class": dist_track_labels[key][0]["label_class"],
                 "uuid": dist_track_labels[key][0]["track_label_uuid"],
                 "log_id": path_log.split("/")[-1],
-                "track_label_frames": dist_track_labels[key]
+                "track_label_frames": dist_track_labels[key],
             }
             save_json_dict(os.path.join(path_amodal_labels, "%s.json" % key), data_amodal[key])
