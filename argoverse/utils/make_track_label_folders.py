@@ -14,8 +14,6 @@ class Data_amodal_dict(TypedDict):
     log_id : str
     track_label_frames : List
 
-
-
 print("root dir = ", root_dir)
 print('updating track_labels_amodal folders...')
 list_log_folders = glob.glob(os.path.join(root_dir,"*"))
@@ -52,5 +50,3 @@ else:
             data_amodal[key]['log_id'] = path_log.split('/')[-1]
             data_amodal[key]['track_label_frames'] = dist_track_labels[key]
             save_json_dict(os.path.join(path_amodal_labels, "%s.json"% key), data_amodal[key])
-    
-    
