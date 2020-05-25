@@ -38,8 +38,9 @@ else:
         print("Adding files to ", path_amodal_labels)
         for key in dist_track_labels.keys():
             data_amodal[key] = {
-                "label_class": dist_track_labels[key][0]["label_class"], 
+                "label_class": dist_track_labels[key][0]["label_class"],
                 "uuid": dist_track_labels[key][0]["track_label_uuid"],
                 "log_id": path_log.split("/")[-1],
-                "track_label_frames": dist_track_labels[key]}
+                "track_label_frames": dist_track_labels[key]
+            }
             save_json_dict(os.path.join(path_amodal_labels, "%s.json" % key), data_amodal[key])
