@@ -7,11 +7,13 @@ from argoverse.utils.json_utils import read_json_file, save_json_dict
 from typing import Dict, List
 from typing_extensions import TypedDict
 
+
 class Data_amodal_dict(TypedDict):
     label_class : str
     uuid : str
     log_id : str
     track_label_frames : List
+
 
 root_dir = sys.argv[1]
 
@@ -36,7 +38,7 @@ else:
                 dist_track_labels[id_obj].append(data_obj)
 
         path_amodal_labels = os.path.join(path_log, "track_labels_amodal")
-        data_amodal: Dict[str,Data_amodal_dict] = {}
+        data_amodal: Dict[str, Data_amodal_dict] = {}
 
         if os.path.exists(path_amodal_labels):
             shutil.rmtree(path_amodal_labels)
