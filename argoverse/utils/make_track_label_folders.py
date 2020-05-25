@@ -1,8 +1,9 @@
 from argoverse.utils.json_utils import read_json_file, save_json_dict
+from typing import Dict
 import glob
 import os
 import sys
-
+import shutil
 
 
 root_dir = sys.argv[1]
@@ -19,7 +20,7 @@ else:
         print('Processing %d/%d' % (ind_log+1, len(list_log_folders)))
         list_path_label_persweep = glob.glob(os.path.join(path_log, "per_sweep_annotations_amodal", "*"))
         list_path_label_persweep.sort()
-        dist_track_labels = {}
+        dist_track_labels: Dict[str, Dict] = {}
         for path_label_persweep in list_path_label_persweep:
             data = read_json_file(path_label_persweep)
             for data_obj in data:
@@ -29,7 +30,7 @@ else:
                 dist_track_labels[id_obj].append(data_obj)
     
         path_amodal_labels = os.path.join(path_log, "track_labels_amodal")
-        data_amodal = {}
+        data_amodal: Dict[str, Dict] = {}
     
         if os.path.exists(path_amodal_labels):
             shutil.rmtree(path_amodal_labels)
