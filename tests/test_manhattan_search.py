@@ -4,6 +4,7 @@ from typing import List, Sequence, Tuple
 
 import numpy as np
 import pytest
+
 from argoverse.utils.manhattan_search import (
     compute_point_cloud_bbox,
     compute_polygon_bboxes,

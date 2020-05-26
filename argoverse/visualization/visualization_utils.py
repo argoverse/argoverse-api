@@ -1,5 +1,4 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
-
 import copy
 import logging
 from collections import defaultdict
@@ -8,6 +7,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
@@ -94,7 +94,7 @@ def draw_point_cloud_trajectory(
 ) -> None:
     axes = _get_axes_or_default(axes)
     unique_id_list = set()
-    for i in range(len(argoverse_data.label_list)):
+    for i in range(len(argoverse_data.lidar_list)):
         for label in argoverse_data.get_label_object(i):
             unique_id_list.add(label.track_id)
     color_map = {

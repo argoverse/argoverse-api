@@ -6,6 +6,7 @@ import pathlib
 
 import numpy as np
 import pytest
+
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.utils.camera_stats import CAMERA_LIST
 
@@ -23,6 +24,16 @@ def test_get_city_name(data_loader: ArgoverseTrackingLoader) -> None:
 
 def test_calib(data_loader: ArgoverseTrackingLoader) -> None:
     assert data_loader.calib
+    camera = "ring_front_center"
+    calib = data_loader.get_calibration(camera)
+    pc = data_loader.get_lidar(0)
+
+    uv = calib.project_ego_to_image(pc)
+    uv_cam = calib.project_ego_to_cam(pc)
+
+    assert (uv == calib.project_cam_to_image(uv_cam)).all
+    assert (uv_cam == calib.project_image_to_cam(uv)).all
+    assert (pc == calib.project_image_to_ego(uv)).all
 
 
 def test_log_list(data_loader: ArgoverseTrackingLoader) -> None:
@@ -126,6 +137,6 @@ def test_pose(data_loader: ArgoverseTrackingLoader) -> None:
         )
 
 
-def test_idx_from_tiemstamp(data_loader: ArgoverseTrackingLoader) -> None:
+def test_idx_from_timestamp(data_loader: ArgoverseTrackingLoader) -> None:
     for i in range(len(data_loader.lidar_list)):
         assert data_loader.get_idx_from_timestamp(i) == i

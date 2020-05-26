@@ -5,6 +5,7 @@ import pathlib
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 from argoverse.visualization.mpl_point_cloud_vis import draw_point_cloud_bev
 
 _TEST_DIR = pathlib.Path(__file__).parent

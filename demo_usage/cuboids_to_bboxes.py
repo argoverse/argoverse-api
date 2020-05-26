@@ -12,6 +12,7 @@ from typing import Any, Iterable, List, Mapping, Sequence, Tuple, Union
 import cv2
 import imageio
 import numpy as np
+
 from argoverse.data_loading.object_label_record import json_label_dict_to_obj_record
 from argoverse.data_loading.simple_track_dataloader import SimpleArgoverseTrackingDataLoader
 from argoverse.map_representation.map_api import ArgoverseMap
@@ -97,8 +98,7 @@ def dump_clipped_3d_cuboids_to_images(
     max_num_images_to_render: int,
     data_dir: str,
     experiment_prefix: str,
-    is_shrinkwrap: bool,
-    motion_compensate: bool = False,
+    motion_compensate: bool = True,
 ) -> List[str]:
     """
     We bring the 3D points into each camera coordinate system, and do the clipping there in 3D.
@@ -108,7 +108,6 @@ def dump_clipped_3d_cuboids_to_images(
         max_num_images_to_render: maximum numbers of images to render.
         data_dir: path to dataset with the latest data
         experiment_prefix: Output directory
-        is_shrinkwrap: Whether to place in a `"shrinkwrap"` output directory
         motion_compensate: Whether to motion compensate when projecting
 
     Returns:
@@ -125,37 +124,41 @@ def dump_clipped_3d_cuboids_to_images(
 
         city_name = dl.get_city_name(log_id)
         log_calib_data = dl.get_log_calibration_data(log_id)
-        ply_fpaths = dl.get_ordered_log_ply_fpaths(log_id)
+
         flag_done = False
-        for i, ply_fpath in enumerate(ply_fpaths):
-            if i % 50 == 0:
-                logging.info(f"\tOn file {i} of {log_id}")
-            lidar_timestamp = ply_fpath.split("/")[-1].split(".")[0].split("_")[-1]
-            lidar_timestamp = int(lidar_timestamp)
-            lidar_pts = load_ply(ply_fpath)
+        for cam_idx, camera_name in enumerate(RING_CAMERA_LIST + STEREO_CAMERA_LIST):
+            cam_im_fpaths = dl.get_ordered_log_cam_fpaths(log_id, camera_name)
+            for i, im_fpath in enumerate(cam_im_fpaths):
+                if i % 50 == 0:
+                    logging.info("\tOn file %s of camera %s of %s", i, camera_name, log_id)
 
-            city_to_egovehicle_se3 = dl.get_city_to_egovehicle_se3(log_id, lidar_timestamp)
-            if city_to_egovehicle_se3 is None:
-                continue
+                cam_timestamp = Path(im_fpath).stem.split("_")[-1]
+                cam_timestamp = int(cam_timestamp)
 
-            labels = dl.get_labels_at_lidar_timestamp(log_id, lidar_timestamp)
-            if labels is None:
-                logger.info(f"\tLabels missing at t={lidar_timestamp}")
-                continue
-
-            for cam_idx, camera_name in enumerate(RING_CAMERA_LIST + STEREO_CAMERA_LIST):
-                camera_counter = 0
-                # load images, e.g. 'image_raw_ring_front_center_000000486.jpg'
-                im_fpath = dl.get_closest_im_fpath(log_id, camera_name, lidar_timestamp)
-                if im_fpath is None:
+                # load PLY file path, e.g. 'PC_315978406032859416.ply'
+                ply_fpath = dl.get_closest_lidar_fpath(log_id, cam_timestamp)
+                if ply_fpath is None:
                     continue
-                save_img_fpath = f"{save_dir}/{camera_name}_{lidar_timestamp}.jpg"
+                lidar_pts = load_ply(ply_fpath)
+                save_img_fpath = f"{save_dir}/{camera_name}_{cam_timestamp}.jpg"
                 if Path(save_img_fpath).exists():
                     saved_img_fpaths += [save_img_fpath]
                     if max_num_images_to_render != -1 and len(saved_img_fpaths) > max_num_images_to_render:
                         flag_done = True
                         break
                     continue
+
+                city_to_egovehicle_se3 = dl.get_city_to_egovehicle_se3(log_id, cam_timestamp)
+                if city_to_egovehicle_se3 is None:
+                    continue
+
+                lidar_timestamp = Path(ply_fpath).stem.split("_")[-1]
+                lidar_timestamp = int(lidar_timestamp)
+                labels = dl.get_labels_at_lidar_timestamp(log_id, lidar_timestamp)
+                if labels is None:
+                    logging.info("\tLabels missing at t=%s", lidar_timestamp)
+                    continue
+
                 # Swap channel order as OpenCV expects it -- BGR not RGB
                 # must make a copy to make memory contiguous
                 img = imageio.imread(im_fpath)[:, :, ::-1].copy()
@@ -212,7 +215,7 @@ def dump_clipped_3d_cuboids_to_images(
             if "stereo" in camera_name:
                 fps = 5
             else:
-                fps = 10
+                fps = 30
             img_wildcard = f"{save_dir}/{camera_name}_%*.jpg"
             output_fpath = f"{experiment_prefix}_{category_subdir}/{log_id}_{camera_name}_{fps}fps.mp4"
             write_nonsequential_idx_video(img_wildcard, output_fpath, fps)
@@ -223,9 +226,8 @@ def dump_clipped_3d_cuboids_to_images(
 def main(args: Any):
     """Run the example."""
     log_ids = [log_id.strip() for log_id in args.log_ids.split(",")]
-
     dump_clipped_3d_cuboids_to_images(
-        log_ids, args.max_num_images_to_render * 9, args.dataset_dir, args.experiment_prefix, True
+        log_ids, args.max_num_images_to_render * 9, args.dataset_dir, args.experiment_prefix
     )
 
 
@@ -240,7 +242,9 @@ if __name__ == "__main__":
         "--log-ids",
         type=str,
         required=True,
-        help="comma seperated list of log ids, this is the folder name in argoverse-tracking/*/[log_id]",
+        help="comma separated list of log ids, each log_id represents a log directory, e.g. found at "
+        " {args.dataset-dir}/argoverse-tracking/train/{log_id} or "
+        " {args.dataset-dir}/argoverse-tracking/sample/{log_id} or ",
     )
     parser.add_argument(
         "--experiment-prefix",

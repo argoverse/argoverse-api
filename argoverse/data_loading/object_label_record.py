@@ -10,6 +10,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import cv2
 import numpy as np
+
 from argoverse.utils.calibration import CameraConfig
 from argoverse.utils.cv2_plotting_utils import draw_clipped_line_segment
 from argoverse.utils.se3 import SE3

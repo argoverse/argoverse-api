@@ -6,6 +6,8 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+from shapely.geometry import LineString
+
 from argoverse.data_loading.vector_map_loader import load_lane_segments_from_xml
 from argoverse.utils.centerline_utils import (
     centerline_to_polygon,
@@ -26,7 +28,6 @@ from argoverse.utils.manhattan_search import (
 from argoverse.utils.mpl_plotting_utils import plot_lane_segment_patch, visualize_centerline
 from argoverse.utils.pkl_utils import load_pkl_dictionary
 from argoverse.utils.se2 import SE2
-from shapely.geometry import LineString
 
 from .lane_segment import LaneSegment
 from .map_viz_helper import render_global_city_map_bev
@@ -377,8 +378,15 @@ class ArgoverseMap:
         npyimage_coords = npyimage_to_city_se2.transform_point_cloud(city_coords)
         npyimage_coords = npyimage_coords.astype(np.int64)
 
-        # index in at (x,y) locations, which are (y,x) in the image
-        ground_height_values = ground_height_mat[npyimage_coords[:, 1], npyimage_coords[:, 0]]
+        ground_height_values = np.full((npyimage_coords.shape[0]), np.nan)
+        ind_valid_pts = (npyimage_coords[:, 1] < ground_height_mat.shape[0]) * (
+            npyimage_coords[:, 0] < ground_height_mat.shape[1]
+        )
+
+        ground_height_values[ind_valid_pts] = ground_height_mat[
+            npyimage_coords[ind_valid_pts, 1], npyimage_coords[ind_valid_pts, 0]
+        ]
+
         return ground_height_values
 
     def append_height_to_2d_city_pt_cloud(self, pt_cloud_xy: np.ndarray, city_name: str) -> np.ndarray:
@@ -425,7 +433,16 @@ class ArgoverseMap:
         npyimage_coords = npyimage_coords.astype(np.int64)
 
         # index in at (x,y) locations, which are (y,x) in the image
-        layer_values = layer_raster_mat[npyimage_coords[:, 1], npyimage_coords[:, 0]]
+        layer_values = np.full((npyimage_coords.shape[0]), 0.0)
+        ind_valid_pts = (
+            (npyimage_coords[:, 1] > 0)
+            * (npyimage_coords[:, 1] < layer_raster_mat.shape[0])
+            * (npyimage_coords[:, 0] > 0)
+            * (npyimage_coords[:, 0] < layer_raster_mat.shape[1])
+        )
+        layer_values[ind_valid_pts] = layer_raster_mat[
+            npyimage_coords[ind_valid_pts, 1], npyimage_coords[ind_valid_pts, 0]
+        ]
         is_layer_boolean_arr = layer_values == 1.0
         return is_layer_boolean_arr
 
@@ -470,7 +487,7 @@ class ArgoverseMap:
             nearby_lane_ids = self.get_lane_ids_in_xy_bbox(
                 query_x, query_y, city_name, query_search_range_manhattan=search_radius
             )
-            if nearby_lane_ids is None:
+            if not nearby_lane_ids:
                 search_radius *= 2  # double search radius
             else:
                 break

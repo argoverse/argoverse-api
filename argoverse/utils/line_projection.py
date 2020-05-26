@@ -3,6 +3,7 @@
 from typing import List, Sequence, Tuple
 
 import numpy as np
+
 from argoverse.utils.interpolate import interp_arc
 from argoverse.utils.polyline_density import interpolate_polyline_to_ref_density
 

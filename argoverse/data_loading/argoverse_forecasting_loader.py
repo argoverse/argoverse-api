@@ -27,13 +27,10 @@ def _read_csv(path: Path, *args: Any, **kwargs: Any) -> pd.DataFrame:
 class ArgoverseForecastingLoader:
     def __init__(self, root_dir: Union[str, Path]):
         """Initialization function for the class.
- 
+
         Args:
             root_dir: Path to the folder having sequence csv files
         """
-        self._track_id_list: Optional[Mapping[str, Sequence[int]]] = None
-        self._city_list: Optional[Mapping[str, str]] = None
-
         self.counter: int = 0
 
         root_dir = Path(root_dir)
@@ -48,13 +45,8 @@ class ArgoverseForecastingLoader:
         Returns:
             list of track ids in the current sequence
         """
-        if self._track_id_list is None:
-            self._track_id_list = {}
-            for seq in self.seq_list:
-                seq_df = _read_csv(seq)
-                self._track_id_list[str(seq)] = np.unique(seq_df["TRACK_ID"].values).tolist()
-
-        return self._track_id_list[str(self.current_seq)]
+        _track_id_list: Sequence[int] = np.unique(self.seq_df["TRACK_ID"].values).tolist()
+        return _track_id_list
 
     @property
     def city(self) -> str:
@@ -63,17 +55,12 @@ class ArgoverseForecastingLoader:
         Returns:
             city name, i.e., either 'PIT' or 'MIA'
         """
-        if self._city_list is None:
-            self._city_list = {}
-            for seq in self.seq_list:
-                seq_df = _read_csv(seq)
-                self._city_list[str(seq)] = seq_df["CITY_NAME"].values[0]
-
-        return self._city_list[str(self.current_seq)]
+        _city: str = self.seq_df["CITY_NAME"].values[0]
+        return _city
 
     @property
     def num_tracks(self) -> int:
-        """Get the number of tracks in the current sequence. 
+        """Get the number of tracks in the current sequence.
 
         Returns:
             number of tracks in the current sequence

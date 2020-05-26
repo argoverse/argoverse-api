@@ -47,6 +47,7 @@ import xml.etree.ElementTree as ET
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union, cast
 
 import numpy as np
+
 from argoverse.map_representation.lane_segment import LaneSegment
 
 logger = logging.getLogger(__name__)
@@ -275,7 +276,7 @@ def extract_lane_segment_from_ET_element(
     node_id_list: List[int] = []
     for element in child:
         # The cast on the next line is the result of a typeshed bug.  This really is a List and not a ItemsView.
-        way_field = cast(List[Tuple[str, str]], element.items())
+        way_field = cast(List[Tuple[str, str]], list(element.items()))
         field_name = way_field[0][0]
         if field_name == "k":
             key = way_field[0][1]
