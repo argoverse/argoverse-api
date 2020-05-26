@@ -14,15 +14,15 @@ logger = logging.getLogger(__name__)
 
 
 def get_city_SE3_egovehicle_at_sensor_t(sensor_timestamp: int, dataset_dir: str, log_id: str) -> Optional[SE3]:
-    """Get translation from city to ego vechile coordinates at a given timestamp.
+    """Get transformation from ego-vehicle to city coordinates at a given timestamp.
 
         Args:
-            sensor_timestamp: in nanoseconds
+            sensor_timestamp: integer representing timestamp when sensor measurement captured, in nanoseconds
             dataset_dir:
-            log_id:
+            log_id: string representing unique log identifier
 
         Returns:
-            SE3 for translating city coordinates to ego vehicle coordinates if found, else None.
+            SE3 for translating ego-vehicle coordinates to city coordinates if found, else None.
     """
     pose_fpath = f"{dataset_dir}/{log_id}/poses/city_SE3_egovehicle_{sensor_timestamp}.json"
     if not Path(pose_fpath).exists():
