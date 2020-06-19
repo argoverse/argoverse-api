@@ -1,15 +1,16 @@
 #!/usr/bin/python3
 
-from collections import namedtuple, defaultdict
-import numpy as np
 import os
-from pathlib import Path
-from scipy.spatial.transform import Rotation
 import shutil
+from collections import defaultdict, namedtuple
+from pathlib import Path
 from typing import Tuple
 
-from argoverse.utils.json_utils import save_json_dict
+import numpy as np
+from scipy.spatial.transform import Rotation
+
 from argoverse.evaluation.eval_tracking import eval_tracks, get_orientation_error_deg
+from argoverse.utils.json_utils import save_json_dict
 
 _ROOT = Path(__file__).resolve().parent
 
@@ -36,7 +37,7 @@ negatives matches after global min-cost matching.
 """
 
 
-def check_mkdir(dirpath):
+def check_mkdir(dirpath: str):
     """ """
     if not Path(dirpath).exists():
         os.makedirs(dirpath, exist_ok=True)
@@ -45,7 +46,7 @@ def check_mkdir(dirpath):
 def yaw_to_quaternion3d(yaw: float) -> Tuple[float, float, float, float]:
     """
 		Args:
-		-   yaw: rotation about the z-axis
+		-   yaw: rotation about the z-axis, in radians
 		Returns:
 		-   qx,qy,qz,qw: quaternion coefficients
 	"""
@@ -53,20 +54,7 @@ def yaw_to_quaternion3d(yaw: float) -> Tuple[float, float, float, float]:
     return qx, qy, qz, qw
 
 
-fields = (
-    "l",
-    "w",
-    "h",
-    "qx",
-    "qy",
-    "qz",
-    "qw",
-    "cx",
-    "cy",
-    "cz",
-    "track_id",
-    "label_class",
-)
+fields = ("l", "w", "h", "qx", "qy", "qz", "qw", "cx", "cy", "cz", "track_id", "label_class")
 TrackedObjRec = namedtuple("TrackedObjRec", fields, defaults=(None,) * len(fields))
 
 
@@ -113,9 +101,7 @@ class TrackedObjects:
             pose_fpath = f"{self.log_dir}/poses/"
             check_mkdir(pose_fpath)
             pose_fpath += f"city_SE3_egovehicle_{ts_ns}.json"
-            save_json_dict(
-                pose_fpath, {"rotation": [0, 0, 0, 1], "translation": [0, 0, 0]}
-            )
+            save_json_dict(pose_fpath, {"rotation": [0, 0, 0, 1], "translation": [0, 0, 0]})
 
         save_json_dict(f"{self.log_dir}/city_info.json", {"city_name": "fake"})
 
@@ -376,9 +362,7 @@ def test_1obj_poor_translation():
     mota = 1 - ((2 + 2 + 0) / 4)  # 1 - (FN+FP+SW)/#GT
     assert mota == 0.0
     assert result_dict["mota"] == 0.0
-    assert np.allclose(
-        result_dict["motp_c"], np.sqrt(2), atol=0.01
-    )  # (1,1) away each time
+    assert np.allclose(result_dict["motp_c"], np.sqrt(2), atol=0.01)  # (1,1) away each time
     assert result_dict["motp_o"] == 0.0
     assert result_dict["motp_i"] == 0.0
     prec = 0.5
@@ -705,9 +689,7 @@ def test_mot16_scenario_b():
     assert result_dict["motp_c"] == 0.62  # off by [0.5,1,0,1] -> 0.625 truncated
     assert result_dict["motp_o"] == 0.0
     assert result_dict["motp_i"] == 0.0  # using same-sized box for GT and predictions
-    assert (
-        result_dict["most_track"] == 0.0
-    )  # GT obj is tracked for only 67% of lifetime
+    assert result_dict["most_track"] == 0.0  # GT obj is tracked for only 67% of lifetime
     assert result_dict["most_lost"] == 0.0
     assert result_dict["num_fp"] == 2
     assert result_dict["num_miss"] == 2  # 2 false negatives
