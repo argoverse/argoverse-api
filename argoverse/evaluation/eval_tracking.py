@@ -86,11 +86,13 @@ def get_orientation_error_deg(yaw1: float, yaw2: float) -> float:
     """
     Compute the smallest difference between 2 angles, in magnitude (absolute difference).
     First, find the difference between the two yaw angles; since
-    each angle is guaranteed to be [-pi,pi] as the output of arctan2,
-    if the difference exceeds pi, then its corresponding angle in [-pi,0]
-    would be smaller in magnitude. If the difference is less than -pi
-    degrees, then we are guaranteed its counterpart in [0,pi] would be
-    smaller in magnitude.
+    each angle is guaranteed to be [-pi,pi] as the output of arctan2, then their 
+    difference is bounded to [-2pi,2pi].
+    
+    If the difference exceeds pi, then its corresponding angle in [-pi,0]
+    would be smaller in magnitude. On the other hand, if the difference is
+    less than -pi degrees, then we are guaranteed its counterpart in [0,pi]
+    would be smaller in magnitude.
 
     Ref:
     https://stackoverflow.com/questions/1878907/the-smallest-difference-between-2-angles
@@ -110,7 +112,10 @@ def get_orientation_error_deg(yaw1: float, yaw2: float) -> float:
         error -= 360
     if error < -180:
         error += 360
-    return np.abs(error)
+
+    # get positive angle difference instead of signed angle difference
+    error = np.abs(error)
+    return float(error)
 
 
 def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
