@@ -82,7 +82,7 @@ def get_distance_iou_3d(x1: np.ndarray, x2: np.ndarray, name: str = "bbox") -> f
     return float(score)
 
 
-def get_orientation_error_deg(yaw1: float, yaw2: float):
+def get_orientation_error_deg(yaw1: float, yaw2: float) -> float:
     """
     Compute the smallest difference between 2 angles, in magnitude (absolute difference).
     First, find the difference between the two yaw angles; since
