@@ -415,15 +415,13 @@ def test_1obj_poor_orientation():
 
 	# dump the ground truth first
 	dump_1obj_scenario_json(gt_centers, gt_yaw_angles, log_id, is_gt=True)
-
-	pdb.set_trace()
 	dump_1obj_scenario_json(centers, yaw_angles, log_id, is_gt=False)
 	result_dict = run_eval(exp_name=log_id)
 
 	assert result_dict['num_frames'] == 4
 	assert result_dict['mota'] == 100.0
 	assert result_dict['motp_c'] == 0
-	assert result_dict['motp_o'] == 0.0 # ?????
+	assert np.allclose(result_dict['motp_o'], 14.32, atol=0.01)
 	assert result_dict['motp_i'] == 0.0
 	assert result_dict['idf1'] == 1.0
 	assert result_dict['most_track'] == 1.0
