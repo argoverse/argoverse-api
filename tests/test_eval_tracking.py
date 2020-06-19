@@ -4,7 +4,7 @@ import os
 import shutil
 from collections import defaultdict, namedtuple
 from pathlib import Path
-from typing import Tuple
+from typing import Any, Mapping, Tuple
 
 import numpy as np
 from scipy.spatial.transform import Rotation
@@ -59,7 +59,7 @@ TrackedObjRec = namedtuple("TrackedObjRec", fields, defaults=(None,) * len(field
 
 
 class TrackedObjects:
-    def __init__(self, log_id: str, is_gt: bool):
+    def __init__(self, log_id: str, is_gt: bool) -> None:
         """ """
         self.ts_to_trackedlabels_dict = defaultdict(list)
         self.log_id = log_id
@@ -68,7 +68,7 @@ class TrackedObjects:
         self.log_dir = f"{_ROOT}/test_data/"
         self.log_dir += f"eval_tracking_dummy_logs_{tracks_type}/{self.log_id}"
 
-    def add_obj(self, o: TrackedObjRec, ts_ns: int):
+    def add_obj(self, o: TrackedObjRec, ts_ns: int) -> None:
         """
 			Args:
 			-	ts_ns: timestamp in nanoseconds
@@ -86,7 +86,7 @@ class TrackedObjects:
             }
         ]
 
-    def save_to_disk(self):
+    def save_to_disk(self) -> None:
         """
 		Labels and predictions should be saved in JSON e.g.
 			`tracked_object_labels_315969629019741000.json`
@@ -106,7 +106,7 @@ class TrackedObjects:
         save_json_dict(f"{self.log_dir}/city_info.json", {"city_name": "fake"})
 
 
-def dump_1obj_scenario_json(centers, yaw_angles, log_id: str, is_gt: bool):
+def dump_1obj_scenario_json(centers, yaw_angles, log_id: str, is_gt: bool) -> None:
     """
 	Egovehicle stationary (represented by `o`).
 	Sequence of 4-nanosecond timestamps.
@@ -128,7 +128,7 @@ def dump_1obj_scenario_json(centers, yaw_angles, log_id: str, is_gt: bool):
     t_objs.save_to_disk()
 
 
-def run_eval(exp_name: str):
+def run_eval(exp_name: str) -> Mapping[str, Any]:
     """ """
     pred_log_dir = f"{_ROOT}/test_data/eval_tracking_dummy_logs_pred"
     gt_log_dir = f"{_ROOT}/test_data/eval_tracking_dummy_logs_gt"
