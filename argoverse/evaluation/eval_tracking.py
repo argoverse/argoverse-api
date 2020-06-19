@@ -33,6 +33,7 @@ MT, ML: Leal-Taixe et al., MOT15, https://arxiv.org/pdf/1504.01942.pdf
 MOTA: Bernardin et al. https://link.springer.com/article/10.1155/2008/246309
 """
 
+
 def in_distance_range_pose(ego_center: np.ndarray, pose: np.ndarray, d_min: float, d_max: float) -> bool:
     """Determine if a pose is within a distance range or not.
 
@@ -145,10 +146,11 @@ def eval_tracks(
     """Evaluate tracking output.
 
     Args:
-        path_tracker_output: list of path to tracker output, one for each log
-        path_dataset: path to dataset
-        d_min: minimum distance range
-        d_max: maximum distance range
+        path_tracker_output_root: path to tracker output root, containing log_id subdirs
+        path_dataset_root: path to dataset root, containing log_id subdirs
+        d_min: minimum allowed distance range for ground truth and predicted objects,
+            in meters
+        d_max: maximum allowed distance range, as above, in meters
         out_file: output file object
         centroid_method: method for ground truth centroid estimation
         diffatt: difficulty attribute ['easy',  'far', 'fast', 'occ', 'short']. Note that if
@@ -204,7 +206,7 @@ def eval_tracks(
             if ind_frame % 50 == 0:
                 logger.info("%d/%d" % (ind_frame, len(path_track_data)))
 
-            timestamp_lidar = int(Path(path_track_data[ind_frame].stem.split("_")[-1]))
+            timestamp_lidar = int(Path(path_track_data[ind_frame]).stem.split("_")[-1])
             path_gt = os.path.join(
                 path_dataset, "per_sweep_annotations_amodal", f"tracked_object_labels_{timestamp_lidar}.json"
             )
@@ -371,8 +373,13 @@ if __name__ == "__main__":
     parser.add_argument("--flag", type=str, default="")
     parser.add_argument("--d_min", type=float, default=0)
     parser.add_argument("--d_max", type=float, default=100, required=True)
-    parser.add_argument("--diffatt", type=str, default=None, required=False,
-        help='Evaluate tracking according to difficulty-based attributes.')
+    parser.add_argument(
+        "--diffatt",
+        type=str,
+        default=None,
+        required=False,
+        help="Evaluate tracking according to difficulty-based attributes.",
+    )
     parser.add_argument("--category", type=str, default="VEHICLE", required=False)
 
     args = parser.parse_args()
