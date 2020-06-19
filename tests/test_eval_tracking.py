@@ -432,11 +432,6 @@ def test_1obj_poor_orientation():
 	assert result_dict['num_frag'] == 0
 
 
-"""
-Additional examples are here: https://arxiv.org/pdf/1603.00831.pdf
-"""
-
-
 def test_orientation_error1():
 	""" """
 	yaw1 = np.deg2rad(179)
@@ -552,7 +547,7 @@ def get_mot16_scenario_a():
 
 def test_mot16_scenario_a():
 	"""
-	See page 8 of https://arxiv.org/pdf/1603.00831.pdf
+	See page 8 of MOT16 paper: https://arxiv.org/pdf/1603.00831.pdf
 	"""
 	log_id = 'mot16_scenario_a'
 	gt_centers, gt_yaw_angles = get_mot16_scenario_a()
@@ -633,7 +628,7 @@ def test_mot16_scenario_a():
 
 def test_mot16_scenario_b():
 	"""
-	See page 8 of https://arxiv.org/pdf/1603.00831.pdf
+	See page 8 of MOT16 paper: https://arxiv.org/pdf/1603.00831.pdf
 	Scenario `a` and Scenario `b` share the same ground truth.
 	"""
 	log_id = 'mot16_scenario_b'
@@ -707,7 +702,7 @@ if __name__ == '__main__':
 	test_1obj_perfect()
 	test_1obj_offset_translation()
 	test_1obj_poor_translation()
-	# test_1obj_poor_orientation()
+	test_1obj_poor_orientation()
 	test_mot16_scenario_a()
 	test_mot16_scenario_b()
 
