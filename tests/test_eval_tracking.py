@@ -37,7 +37,7 @@ negatives matches after global min-cost matching.
 """
 
 
-def check_mkdir(dirpath: str):
+def check_mkdir(dirpath: str) -> None:
     """ """
     if not Path(dirpath).exists():
         os.makedirs(dirpath, exist_ok=True)
@@ -224,7 +224,7 @@ def get_1obj_gt_scenario():
     return centers, yaw_angles
 
 
-def test_1obj_perfect():
+def test_1obj_perfect() -> None:
     """ """
     log_id = "1obj_perfect"
     gt_centers, gt_yaw_angles = get_1obj_gt_scenario()
@@ -251,7 +251,7 @@ def test_1obj_perfect():
     assert result_dict["num_frag"] == 0
 
 
-def test_1obj_offset_translation():
+def test_1obj_offset_translation() -> None:
     """ """
     log_id = "1obj_offset_translation"
 
@@ -306,7 +306,7 @@ def test_1obj_offset_translation():
     assert result_dict["num_frag"] == 0
 
 
-def test_1obj_poor_translation():
+def test_1obj_poor_translation() -> None:
     """
 	Miss in 1st frame, TP in 2nd frame,
 	lost in 3rd frame, retrack as TP in 4th frame
@@ -378,7 +378,7 @@ def test_1obj_poor_translation():
     assert result_dict["num_frag"] == 1
 
 
-def test_1obj_poor_orientation():
+def test_1obj_poor_orientation() -> None:
     """ """
     log_id = "1obj_poor_orientation"
 
@@ -431,7 +431,7 @@ def test_1obj_poor_orientation():
     assert result_dict["num_frag"] == 0
 
 
-def test_orientation_error1():
+def test_orientation_error1() -> None:
     """ """
     yaw1 = np.deg2rad(179)
     yaw2 = np.deg2rad(-179)
@@ -440,7 +440,7 @@ def test_orientation_error1():
     assert np.allclose(error_deg, 2.0, atol=1e-2)
 
 
-def test_orientation_error2():
+def test_orientation_error2() -> None:
     """ """
     yaw1 = np.deg2rad(-179)
     yaw2 = np.deg2rad(179)
@@ -450,7 +450,7 @@ def test_orientation_error2():
     assert np.allclose(error_deg, 2.0, atol=1e-2)
 
 
-def test_orientation_error3():
+def test_orientation_error3() -> None:
     """ """
     yaw1 = np.deg2rad(179)
     yaw2 = np.deg2rad(178)
@@ -459,7 +459,7 @@ def test_orientation_error3():
     assert np.allclose(error_deg, 1.0, atol=1e-2)
 
 
-def test_orientation_error4():
+def test_orientation_error4() -> None:
     """ """
     yaw1 = np.deg2rad(178)
     yaw2 = np.deg2rad(179)
@@ -468,7 +468,7 @@ def test_orientation_error4():
     assert np.allclose(error_deg, 1.0, atol=1e-2)
 
 
-def test_orientation_error5():
+def test_orientation_error5() -> None:
     """ """
     yaw1 = np.deg2rad(3)
     yaw2 = np.deg2rad(-3)
@@ -477,7 +477,7 @@ def test_orientation_error5():
     assert np.allclose(error_deg, 6.0, atol=1e-2)
 
 
-def test_orientation_error6():
+def test_orientation_error6() -> None:
     """ """
     yaw1 = np.deg2rad(-3)
     yaw2 = np.deg2rad(3)
@@ -486,7 +486,7 @@ def test_orientation_error6():
     assert np.allclose(error_deg, 6.0, atol=1e-2)
 
 
-def test_orientation_error7():
+def test_orientation_error7() -> None:
     """ """
     yaw1 = np.deg2rad(-177)
     yaw2 = np.deg2rad(-179)
@@ -495,7 +495,7 @@ def test_orientation_error7():
     assert np.allclose(error_deg, 2.0, atol=1e-2)
 
 
-def test_orientation_error8():
+def test_orientation_error8() -> None:
     """ """
     yaw1 = np.deg2rad(-179)
     yaw2 = np.deg2rad(-177)
@@ -549,7 +549,7 @@ def get_mot16_scenario_a():
     return centers, yaw_angles
 
 
-def test_mot16_scenario_a():
+def test_mot16_scenario_a() -> None:
     """
 	See page 8 of MOT16 paper: https://arxiv.org/pdf/1603.00831.pdf
 	"""
@@ -630,7 +630,7 @@ def test_mot16_scenario_a():
     assert result_dict["num_frag"] == 0
 
 
-def test_mot16_scenario_b():
+def test_mot16_scenario_b() -> None:
     """
 	See page 8 of MOT16 paper: https://arxiv.org/pdf/1603.00831.pdf
 	Scenario `a` and Scenario `b` share the same ground truth.
