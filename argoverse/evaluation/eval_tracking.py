@@ -24,9 +24,17 @@ logger = logging.getLogger(__name__)
 
 _PathLike = Union[str, "os.PathLike[str]"]
 
+"""
+Computes multiple object tracking (MOT) metrics. Please refer to the following
+papers for definitions of the following metrics:
+
+#FRAG, #IDSW: Milan et al., MOT16, https://arxiv.org/pdf/1603.00831.pdf
+MT, ML: Leal-Taixe et al., MOT15, https://arxiv.org/pdf/1504.01942.pdf
+MOTA: Bernardin et al. https://link.springer.com/article/10.1155/2008/246309
+"""
 
 def in_distance_range_pose(ego_center: np.ndarray, pose: np.ndarray, d_min: float, d_max: float) -> bool:
-    """Determine if a pose is within distance range or not.
+    """Determine if a pose is within a distance range or not.
 
     Args:
         ego_center: ego center pose (zero if bbox is in ego frame).
@@ -37,7 +45,6 @@ def in_distance_range_pose(ego_center: np.ndarray, pose: np.ndarray, d_min: floa
     Returns:
         A boolean saying if input pose is with specified distance range.
     """
-
     dist = float(np.linalg.norm(pose[0:3] - ego_center[0:3]))
 
     return dist > d_min and dist < d_max
@@ -50,8 +57,10 @@ def iou_polygon(poly1: Polygon, poly2: Polygon) -> float:
 
 
 def get_distance_iou_3d(x1: np.ndarray, x2: np.ndarray, name: str = "bbox") -> float:
-    # ASSUME ALIGNED BBOX
-
+    """
+    Note this is not traditional 2d or 3d iou, but rather we align two cuboids
+    along their x-axes, and compare 3d volume differences.
+    """
     w1 = x1["width"]
     l1 = x1["length"]
     h1 = x1["height"]
@@ -68,6 +77,37 @@ def get_distance_iou_3d(x1: np.ndarray, x2: np.ndarray, name: str = "bbox") -> f
     score = 1 - inter / union
 
     return float(score)
+
+
+def get_orientation_error_deg(yaw1: float, yaw2: float):
+    """
+    Compute the smallest difference between 2 angles, in magnitude (absolute difference).
+    First, find the difference between the two yaw angles; since
+    each angle is guaranteed to be [-pi,pi] as the output of arctan2,
+    if the difference exceeds pi, then its corresponding angle in [-pi,0]
+    would be smaller in magnitude. If the difference is less than -pi
+    degrees, then we are guaranteed its counterpart in [0,pi] would be
+    smaller in magnitude.
+
+    Ref:
+    https://stackoverflow.com/questions/1878907/the-smallest-difference-between-2-angles
+
+        Args:
+        -   yaw1: angle around unit circle, in radians in [-pi,pi]
+        -   yaw2: angle around unit circle, in radians in [-pi,pi]
+
+        Returns:
+        -   error: smallest difference between 2 angles, in degrees
+    """
+    assert -np.pi < yaw1 and yaw1 < np.pi
+    assert -np.pi < yaw2 and yaw2 < np.pi
+
+    error = np.rad2deg(yaw1 - yaw2)
+    if error > 180:
+        error -= 360
+    if error < -180:
+        error += 360
+    return np.abs(error)
 
 
 def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
@@ -87,21 +127,9 @@ def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
     elif name == "iou":
         return get_distance_iou_3d(x1, x2, name)
     elif name == "orientation":
-        return float(
-            min(np.abs(x1[name] - x2[name]), np.abs(np.pi + x1[name] - x2[name]), np.abs(-np.pi + x1[name] - x2[name]))
-            * 180
-            / np.pi
-        )
+        return get_orientation_error_deg(x1["orientation"], x2["orientation"])
     else:
         raise ValueError("Not implemented..")
-
-
-def get_forth_vertex_rect(
-    p1: Tuple[float, float], p2: Tuple[float, float], p3: Tuple[float, float]
-) -> Tuple[float, float]:
-    x = p2[0] - p1[0] + p3[0]
-    y = p3[1] - p1[1] + p2[1]
-    return (x, y)
 
 
 def eval_tracks(
@@ -123,7 +151,12 @@ def eval_tracks(
         d_max: maximum distance range
         out_file: output file object
         centroid_method: method for ground truth centroid estimation
-        diffatt: difficulty attribute ['easy',  'far', 'fast', 'occ', 'short']
+        diffatt: difficulty attribute ['easy',  'far', 'fast', 'occ', 'short']. Note that if
+            tracking according to a specific difficulty attribute is computed, then all ground
+            truth annotations not fulfilling that attribute specification are
+            disregarded/dropped out. Since the corresponding track predictions are not dropped
+            out, the number of false positives, false negatives, and MOTA will not be accurate
+            However, `mostly tracked` and `mostly lost` will be accurate.
         category: such as "VEHICLE" "PEDESTRIAN"
     """
     acc_c = mm.MOTAccumulator(auto_id=True)
@@ -346,7 +379,8 @@ if __name__ == "__main__":
     parser.add_argument("--flag", type=str, default="")
     parser.add_argument("--d_min", type=float, default=0)
     parser.add_argument("--d_max", type=float, default=100, required=True)
-    parser.add_argument("--diffatt", type=str, default=None, required=False)
+    parser.add_argument("--diffatt", type=str, default=None, required=False,
+        help='Evaluate tracking according to difficulty-based attributes.')
     parser.add_argument("--category", type=str, default="VEHICLE", required=False)
 
     args = parser.parse_args()
