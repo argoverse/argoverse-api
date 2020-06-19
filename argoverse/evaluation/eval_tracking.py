@@ -172,7 +172,7 @@ def eval_tracks(
         pkl_path = os.path.join(os.path.dirname(argoverse.evaluation.__file__), "dict_att_all.pkl")
         if not os.path.exists(pkl_path):
             # generate them on the fly
-            print(pkl_path)
+            logger.info(pkl_path)
             raise NotImplementedError
 
         pickle_in = open(pkl_path, "rb")  # open(f"{path_dataset_root}/dict_att_all.pkl","rb")
@@ -181,7 +181,7 @@ def eval_tracks(
     path_datasets = glob.glob(os.path.join(path_dataset_root, "*"))
     num_total_gt = 0
 
-    for path_dataset in path_datasets:  # path_tracker_output, path_dataset in zip(path_tracker_outputs, path_datasets):
+    for path_dataset in path_datasets:
 
         log_id = pathlib.Path(path_dataset).name
         if len(log_id) == 0 or log_id.startswith("_"):
@@ -202,10 +202,9 @@ def eval_tracks(
 
         for ind_frame in range(len(path_track_data)):
             if ind_frame % 50 == 0:
-                # print("%d/%d" % (ind_frame, len(path_track_data)))
                 logger.info("%d/%d" % (ind_frame, len(path_track_data)))
 
-            timestamp_lidar = int(path_track_data[ind_frame].split("/")[-1].split("_")[-1].split(".")[0])
+            timestamp_lidar = int(Path(path_track_data[ind_frame].stem.split("_")[-1]))
             path_gt = os.path.join(
                 path_dataset, "per_sweep_annotations_amodal", f"tracked_object_labels_{timestamp_lidar}.json"
             )
@@ -215,13 +214,6 @@ def eval_tracks(
                 continue
 
             gt_data = read_json_file(path_gt)
-
-            pose_data = read_json_file(f"{path_dataset}/poses/city_SE3_egovehicle_{timestamp_lidar}.json")
-            rotation = np.array(pose_data["rotation"])
-            translation = np.array(pose_data["translation"])
-            ego_R = quat2rotmat(rotation)
-            ego_t = translation
-            egovehicle_to_city_se3 = SE3(rotation=ego_R, translation=ego_t)
 
             gt: Dict[str, Dict[str, Any]] = {}
             id_gts = []
