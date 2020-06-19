@@ -156,7 +156,6 @@ def run_eval(exp_name: str):
 		fn, num_frames, mota, motp_c, motp_o, motp_i, idf1 = result_vals[:7]
 		most_track, most_lost, num_fp, num_miss, num_sw, num_frag = result_vals[7:]
 
-		# Todo: change `num_flag` to `num_frag`
 		result_dict = {
 			'filename': fn,
 			'num_frames': int(num_frames),
@@ -295,7 +294,8 @@ def test_1obj_offset_translation():
 
 	assert result_dict['num_frames'] == 4
 	assert result_dict['mota'] == 100.0
-	assert np.allclose( result_dict['motp_c'], np.sqrt(2), atol=0.01) # (1,1) away each time
+	# Centroids will be (1,1) away from true centroid each time
+	assert np.allclose( result_dict['motp_c'], np.sqrt(2), atol=0.01)
 	assert result_dict['motp_o'] == 0.0
 	assert result_dict['motp_i'] == 0.0
 	assert result_dict['idf1'] == 1.0
@@ -496,8 +496,6 @@ def test_orientation_error8():
 
 	error_deg = get_orientation_error_deg(yaw1, yaw2)
 	assert np.allclose(error_deg, 2.0, atol=1e-2)
-
-
 
 
 def get_mot16_scenario_a():
