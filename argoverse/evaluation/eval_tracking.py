@@ -335,7 +335,7 @@ def eval_tracks(
     num_fp = summary["num_false_positives"][0]
     num_miss = summary["num_misses"][0]
     num_switch = summary["num_switches"][0]
-    num_flag = summary["num_fragmentations"][0]
+    num_frag = summary["num_fragmentations"][0]
 
     acc_c.events.loc[acc_c.events.Type != "RAW", "D"] = acc_i.events.loc[acc_c.events.Type != "RAW", "D"]
 
@@ -356,7 +356,7 @@ def eval_tracks(
 
     out_string = (
         f"{fn} {num_frames} {mota:.2f} {motp_c:.2f} {motp_o:.2f} {motp_i:.2f} {idf1:.2f} {most_track:.2f} "
-        f"{most_lost:.2f} {num_fp} {num_miss} {num_switch} {num_flag} \n"
+        f"{most_lost:.2f} {num_fp} {num_miss} {num_switch} {num_frag} \n"
     )
     out_file.write(out_string)
     # out_file.write("total gt num = %d" %  num_total_gt)
