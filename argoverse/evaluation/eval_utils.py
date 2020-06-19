@@ -78,18 +78,18 @@ def get_pc_inside_bbox(pc_raw: np.ndarray, bbox: np.ndarray) -> np.ndarray:
     return pc_raw[flag[0, :]]
 
 
-def label_to_bbox(label: _LabelType) -> Tuple[np.ndarray, np.ndarray]:
-    """Convert a label into a bounding box.
+def label_to_bbox(label: _LabelType) -> Tuple[np.ndarray, float]:
+    """Convert a label into a parameterized bounding box that lives in the ego-vehicle
+        coordinate frame.
 
     Args:
         label: _LabelType
 
     Returns:
-        bbox: nupmy array for bounding box itself
-        orientation: numpy array for bounding box orientation
+        bbox: Numpmy array for bounding box itself
+        orientation: angle in radians, representing bounding box yaw
 
     """
-
     length = label["length"]
     width = label["width"]
     height = label["height"]
