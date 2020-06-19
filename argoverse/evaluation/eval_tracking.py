@@ -13,7 +13,7 @@ import motmetrics as mm
 import numpy as np
 from shapely.geometry.polygon import Polygon
 
-from argoverse.evaluation.eval_utils import get_pc_inside_bbox, label_to_bbox, leave_only_roi_region
+from argoverse.evaluation.eval_utils import get_pc_inside_bbox, label_to_bbox
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.ply_loader import load_ply
 from argoverse.utils.se3 import SE3
@@ -35,7 +35,8 @@ MOTA: Bernardin et al. https://link.springer.com/article/10.1155/2008/246309
 
 
 def in_distance_range_pose(ego_center: np.ndarray, pose: np.ndarray, d_min: float, d_max: float) -> bool:
-    """Determine if a pose is within a distance range or not.
+    """Determine whether a pose in the ego-vehicle frame falls within a specified distance range
+        of the egovehicle's origin.
 
     Args:
         ego_center: ego center pose (zero if bbox is in ego frame).
