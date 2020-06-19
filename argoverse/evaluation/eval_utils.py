@@ -6,13 +6,11 @@ from typing import Any, Dict, List, Tuple
 
 import numpy as np
 
-from argoverse.map_representation.map_api import ArgoverseMap
 from argoverse.utils.transform import quat2rotmat
 
 # Label dictionary should be of the form {"center": {"x": 0.0, "y": 0.0, "z": 0.0},
 #                                         "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
 #                                         "height": 0.0, "width": 0.0, "depth": 0.0}
-avm = ArgoverseMap()
 _LabelType = Dict[str, Any]
 
 
@@ -146,31 +144,3 @@ def in_between_matrix(x: np.ndarray, v1: np.ndarray, v2: np.ndarray) -> np.ndarr
     """
 
     return np.logical_or(np.logical_and(x <= v1, x >= v2), np.logical_and(x <= v2, x >= v1))
-
-
-def leave_only_roi_region(
-    lidar_pts: np.ndarray, egovehicle_to_city_se3: np.ndarray, ground_removal_method: str, city_name: str = "MIA"
-) -> np.ndarray:
-    """Return points that are on driveable area, and (optionally) are not ground.
-
-    Args:
-        lidar_pts: The lidar points
-        egovehicle_to_city_se3: Transformation from vehicle to map (city) frame
-        ground_removal_method: "map" is only supported value currently, otherwise will not run ground removal
-        city_name: city name, either 'PIT' or 'MIA'
-
-    Returns:
-        Modified point cloud reduced by driveable area and ground.
-
-    """
-
-    driveable_area_pts = copy.deepcopy(lidar_pts)
-    driveable_area_pts = egovehicle_to_city_se3.transform_point_cloud(driveable_area_pts)  # put into city coords
-    driveable_area_pts = avm.remove_non_roi_points(driveable_area_pts, city_name)
-
-    if ground_removal_method == "map":
-        driveable_area_pts = avm.remove_ground_surface(driveable_area_pts, city_name)
-    driveable_area_pts = egovehicle_to_city_se3.inverse_transform_point_cloud(
-        driveable_area_pts
-    )  # put back into ego-vehicle coords
-    return driveable_area_pts
