@@ -97,14 +97,6 @@ class TrackedObjects:
             json_fpath += f"tracked_object_labels_{ts_ns}.json"
             save_json_dict(json_fpath, ts_trackedlabels)
 
-            # until deprecated pose reading removed from eval file
-            pose_fpath = f"{self.log_dir}/poses/"
-            check_mkdir(pose_fpath)
-            pose_fpath += f"city_SE3_egovehicle_{ts_ns}.json"
-            save_json_dict(pose_fpath, {"rotation": [0, 0, 0, 1], "translation": [0, 0, 0]})
-
-        save_json_dict(f"{self.log_dir}/city_info.json", {"city_name": "fake"})
-
 
 def dump_1obj_scenario_json(centers, yaw_angles, log_id: str, is_gt: bool) -> None:
     """
