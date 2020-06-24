@@ -104,8 +104,9 @@ def get_orientation_error_deg(yaw1: float, yaw2: float) -> float:
         Returns:
         -   error: smallest difference between 2 angles, in degrees
     """
-    assert -np.pi < yaw1 and yaw1 < np.pi
-    assert -np.pi < yaw2 and yaw2 < np.pi
+    EPSILON=1e-5
+    assert -(np.pi+EPSILON) < yaw1 and yaw1 < (np.pi+EPSILON)
+    assert -(np.pi+EPSILON) < yaw2 and yaw2 < (np.pi+EPSILON)
 
     error = np.rad2deg(yaw1 - yaw2)
     if error > 180:
