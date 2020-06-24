@@ -205,11 +205,6 @@ def eval_tracks(
 
         logger.info("log_id = %s", log_id)
 
-        city_info_fpath = f"{path_dataset}/city_info.json"
-        city_info = read_json_file(city_info_fpath)
-        city_name = city_info["city_name"]
-        logger.info("city name = %s", city_name)
-
         for ind_frame in range(len(path_track_data)):
             if ind_frame % 50 == 0:
                 logger.info("%d/%d" % (ind_frame, len(path_track_data)))
@@ -372,9 +367,6 @@ if __name__ == "__main__":
         "--path_tracker_output",
         type=str,
         default="../../argodataset_30Hz/test_label/028d5cb1-f74d-366c-85ad-84fde69b0fd3",
-    )
-    parser.add_argument(
-        "--path_labels", type=str, default="../../argodataset_30Hz/labels_v32/028d5cb1-f74d-366c-85ad-84fde69b0fd3"
     )
     parser.add_argument("--path_dataset", type=str, default="../../argodataset_30Hz/cvpr_test_set")
     parser.add_argument("--centroid_method", type=str, default="average", choices=["label_center", "average"])
