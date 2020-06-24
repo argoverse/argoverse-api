@@ -78,12 +78,10 @@ def generate_forecasting_h5(
         else:
             d = np.array([[key, np.float32(x), np.float32(y)] for x, y in value])
 
-        if len(d_all) == 0:
-            d_all = d
-        else:
-            d_all = np.concatenate([d_all, d], 0)
+        d_all.append(d)
         counter += 1
 
+    d_all = np.concatenate(d_all, 0)
     hf.create_dataset("argoverse_forecasting", data=d_all, compression="gzip", compression_opts=9)
     hf.close()
 
