@@ -7,13 +7,14 @@ import os
 import pathlib
 import pickle
 import sys
+from pathlib import Path
 from typing import Any, Dict, List, TextIO, Tuple, Union
 
 import motmetrics as mm
 import numpy as np
 from shapely.geometry.polygon import Polygon
 
-from argoverse.evaluation.eval_utils import get_pc_inside_bbox, label_to_bbox, leave_only_roi_region
+from argoverse.evaluation.eval_utils import get_pc_inside_bbox, label_to_bbox
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.ply_loader import load_ply
 from argoverse.utils.se3 import SE3
@@ -24,9 +25,19 @@ logger = logging.getLogger(__name__)
 
 _PathLike = Union[str, "os.PathLike[str]"]
 
+"""
+Computes multiple object tracking (MOT) metrics. Please refer to the following
+papers for definitions of the following metrics:
+
+#FRAG, #IDSW: Milan et al., MOT16, https://arxiv.org/pdf/1603.00831.pdf
+MT, ML: Leal-Taixe et al., MOT15, https://arxiv.org/pdf/1504.01942.pdf
+MOTA: Bernardin et al. https://link.springer.com/article/10.1155/2008/246309
+"""
+
 
 def in_distance_range_pose(ego_center: np.ndarray, pose: np.ndarray, d_min: float, d_max: float) -> bool:
-    """Determine if a pose is within distance range or not.
+    """Determine whether a pose in the ego-vehicle frame falls within a specified distance range
+        of the egovehicle's origin.
 
     Args:
         ego_center: ego center pose (zero if bbox is in ego frame).
@@ -37,7 +48,6 @@ def in_distance_range_pose(ego_center: np.ndarray, pose: np.ndarray, d_min: floa
     Returns:
         A boolean saying if input pose is with specified distance range.
     """
-
     dist = float(np.linalg.norm(pose[0:3] - ego_center[0:3]))
 
     return dist > d_min and dist < d_max
@@ -50,8 +60,10 @@ def iou_polygon(poly1: Polygon, poly2: Polygon) -> float:
 
 
 def get_distance_iou_3d(x1: np.ndarray, x2: np.ndarray, name: str = "bbox") -> float:
-    # ASSUME ALIGNED BBOX
-
+    """
+    Note this is not traditional 2d or 3d iou, but rather we align two cuboids
+    along their x-axes, and compare 3d volume differences.
+    """
     w1 = x1["width"]
     l1 = x1["length"]
     h1 = x1["height"]
@@ -68,6 +80,43 @@ def get_distance_iou_3d(x1: np.ndarray, x2: np.ndarray, name: str = "bbox") -> f
     score = 1 - inter / union
 
     return float(score)
+
+
+def get_orientation_error_deg(yaw1: float, yaw2: float) -> float:
+    """
+    Compute the smallest difference between 2 angles, in magnitude (absolute difference).
+    First, find the difference between the two yaw angles; since
+    each angle is guaranteed to be [-pi,pi] as the output of arctan2, then their 
+    difference is bounded to [-2pi,2pi].
+    
+    If the difference exceeds pi, then its corresponding angle in [-pi,0]
+    would be smaller in magnitude. On the other hand, if the difference is
+    less than -pi degrees, then we are guaranteed its counterpart in [0,pi]
+    would be smaller in magnitude.
+
+    Ref:
+    https://stackoverflow.com/questions/1878907/the-smallest-difference-between-2-angles
+
+        Args:
+        -   yaw1: angle around unit circle, in radians in [-pi,pi]
+        -   yaw2: angle around unit circle, in radians in [-pi,pi]
+
+        Returns:
+        -   error: smallest difference between 2 angles, in degrees
+    """
+    EPSILON = 1e-5
+    assert -(np.pi + EPSILON) < yaw1 and yaw1 < (np.pi + EPSILON)
+    assert -(np.pi + EPSILON) < yaw2 and yaw2 < (np.pi + EPSILON)
+
+    error = np.rad2deg(yaw1 - yaw2)
+    if error > 180:
+        error -= 360
+    if error < -180:
+        error += 360
+
+    # get positive angle difference instead of signed angle difference
+    error = np.abs(error)
+    return float(error)
 
 
 def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
@@ -87,21 +136,9 @@ def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
     elif name == "iou":
         return get_distance_iou_3d(x1, x2, name)
     elif name == "orientation":
-        return float(
-            min(np.abs(x1[name] - x2[name]), np.abs(np.pi + x1[name] - x2[name]), np.abs(-np.pi + x1[name] - x2[name]))
-            * 180
-            / np.pi
-        )
+        return get_orientation_error_deg(x1["orientation"], x2["orientation"])
     else:
         raise ValueError("Not implemented..")
-
-
-def get_forth_vertex_rect(
-    p1: Tuple[float, float], p2: Tuple[float, float], p3: Tuple[float, float]
-) -> Tuple[float, float]:
-    x = p2[0] - p1[0] + p3[0]
-    y = p3[1] - p1[1] + p2[1]
-    return (x, y)
 
 
 def eval_tracks(
@@ -117,13 +154,19 @@ def eval_tracks(
     """Evaluate tracking output.
 
     Args:
-        path_tracker_output: list of path to tracker output, one for each log
-        path_dataset: path to dataset
-        d_min: minimum distance range
-        d_max: maximum distance range
+        path_tracker_output_root: path to tracker output root, containing log_id subdirs
+        path_dataset_root: path to dataset root, containing log_id subdirs
+        d_min: minimum allowed distance range for ground truth and predicted objects,
+            in meters
+        d_max: maximum allowed distance range, as above, in meters
         out_file: output file object
         centroid_method: method for ground truth centroid estimation
-        diffatt: difficulty attribute ['easy',  'far', 'fast', 'occ', 'short']
+        diffatt: difficulty attribute ['easy',  'far', 'fast', 'occ', 'short']. Note that if
+            tracking according to a specific difficulty attribute is computed, then all ground
+            truth annotations not fulfilling that attribute specification are
+            disregarded/dropped out. Since the corresponding track predictions are not dropped
+            out, the number of false positives, false negatives, and MOTA will not be accurate
+            However, `mostly tracked` and `mostly lost` will be accurate.
         category: such as "VEHICLE" "PEDESTRIAN"
     """
     acc_c = mm.MOTAccumulator(auto_id=True)
@@ -139,7 +182,7 @@ def eval_tracks(
         pkl_path = os.path.join(os.path.dirname(argoverse.evaluation.__file__), "dict_att_all.pkl")
         if not os.path.exists(pkl_path):
             # generate them on the fly
-            print(pkl_path)
+            logger.info(pkl_path)
             raise NotImplementedError
 
         pickle_in = open(pkl_path, "rb")  # open(f"{path_dataset_root}/dict_att_all.pkl","rb")
@@ -148,7 +191,7 @@ def eval_tracks(
     path_datasets = glob.glob(os.path.join(path_dataset_root, "*"))
     num_total_gt = 0
 
-    for path_dataset in path_datasets:  # path_tracker_output, path_dataset in zip(path_tracker_outputs, path_datasets):
+    for path_dataset in path_datasets:
 
         log_id = pathlib.Path(path_dataset).name
         if len(log_id) == 0 or log_id.startswith("_"):
@@ -162,17 +205,11 @@ def eval_tracks(
 
         logger.info("log_id = %s", log_id)
 
-        city_info_fpath = f"{path_dataset}/city_info.json"
-        city_info = read_json_file(city_info_fpath)
-        city_name = city_info["city_name"]
-        logger.info("city name = %s", city_name)
-
         for ind_frame in range(len(path_track_data)):
             if ind_frame % 50 == 0:
-                # print("%d/%d" % (ind_frame, len(path_track_data)))
                 logger.info("%d/%d" % (ind_frame, len(path_track_data)))
 
-            timestamp_lidar = int(path_track_data[ind_frame].split("/")[-1].split("_")[-1].split(".")[0])
+            timestamp_lidar = int(Path(path_track_data[ind_frame]).stem.split("_")[-1])
             path_gt = os.path.join(
                 path_dataset, "per_sweep_annotations_amodal", f"tracked_object_labels_{timestamp_lidar}.json"
             )
@@ -182,13 +219,6 @@ def eval_tracks(
                 continue
 
             gt_data = read_json_file(path_gt)
-
-            pose_data = read_json_file(f"{path_dataset}/poses/city_SE3_egovehicle_{timestamp_lidar}.json")
-            rotation = np.array(pose_data["rotation"])
-            translation = np.array(pose_data["translation"])
-            ego_R = quat2rotmat(rotation)
-            ego_t = translation
-            egovehicle_to_city_se3 = SE3(rotation=ego_R, translation=ego_t)
 
             gt: Dict[str, Dict[str, Any]] = {}
             id_gts = []
@@ -302,7 +332,7 @@ def eval_tracks(
     num_fp = summary["num_false_positives"][0]
     num_miss = summary["num_misses"][0]
     num_switch = summary["num_switches"][0]
-    num_flag = summary["num_fragmentations"][0]
+    num_frag = summary["num_fragmentations"][0]
 
     acc_c.events.loc[acc_c.events.Type != "RAW", "D"] = acc_i.events.loc[acc_c.events.Type != "RAW", "D"]
 
@@ -323,7 +353,7 @@ def eval_tracks(
 
     out_string = (
         f"{fn} {num_frames} {mota:.2f} {motp_c:.2f} {motp_o:.2f} {motp_i:.2f} {idf1:.2f} {most_track:.2f} "
-        f"{most_lost:.2f} {num_fp} {num_miss} {num_switch} {num_flag} \n"
+        f"{most_lost:.2f} {num_fp} {num_miss} {num_switch} {num_frag} \n"
     )
     out_file.write(out_string)
     # out_file.write("total gt num = %d" %  num_total_gt)
@@ -338,15 +368,18 @@ if __name__ == "__main__":
         type=str,
         default="../../argodataset_30Hz/test_label/028d5cb1-f74d-366c-85ad-84fde69b0fd3",
     )
-    parser.add_argument(
-        "--path_labels", type=str, default="../../argodataset_30Hz/labels_v32/028d5cb1-f74d-366c-85ad-84fde69b0fd3"
-    )
     parser.add_argument("--path_dataset", type=str, default="../../argodataset_30Hz/cvpr_test_set")
     parser.add_argument("--centroid_method", type=str, default="average", choices=["label_center", "average"])
     parser.add_argument("--flag", type=str, default="")
     parser.add_argument("--d_min", type=float, default=0)
     parser.add_argument("--d_max", type=float, default=100, required=True)
-    parser.add_argument("--diffatt", type=str, default=None, required=False)
+    parser.add_argument(
+        "--diffatt",
+        type=str,
+        default=None,
+        required=False,
+        help="Evaluate tracking according to difficulty-based attributes.",
+    )
     parser.add_argument("--category", type=str, default="VEHICLE", required=False)
 
     args = parser.parse_args()

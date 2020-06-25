@@ -65,7 +65,6 @@ setup(
         "sklearn",
         "typing_extensions",
         "h5py",
-        "numpy-quaternion",
         "lap",
     ],
     # for older pip version, use with --process-dependency-links
