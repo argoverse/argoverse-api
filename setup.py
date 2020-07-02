@@ -27,7 +27,7 @@ if platform.system() == "Windows":
 
 setup(
     name="argoverse",
-    version="1.0.0",
+    version="1.0.1",
     description="",
     long_description=long_description,
     url="https://www.argoverse.org",
