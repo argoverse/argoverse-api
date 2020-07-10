@@ -38,7 +38,7 @@ def save_bev_img(
     list_difficulty_att: List[Any],
     dataset_name: str, 
     log_id: str, 
-    lidar_timestamp: str, 
+    lidar_timestamp: int, 
     pc: np.ndarray,
     egovehicle_to_city_se3: Any,
 ) -> None:
@@ -100,7 +100,7 @@ def save_bev_img(
     img = cv2.dilate(img, kernel, iterations=1)
     cv2.putText(
         img,
-        "%s_%s_%s" % (dataset_name, log_id, lidar_timestamp),
+        "%s_%s_%d" % (dataset_name, log_id, lidar_timestamp),
         (100, image_size - 100),
         font,
         fontScale,
@@ -114,7 +114,7 @@ def save_bev_img(
         offset += 150
 
     print("Saving img: ", path_imgs)
-    cv2.imwrite(os.path.join(path_imgs, "%s_%s_%s.jpg" % (dataset_name, log_id, lidar_timestamp)), img * 255)
+    cv2.imwrite(os.path.join(path_imgs, "%s_%s_%d.jpg" % (dataset_name, log_id, lidar_timestamp)), img * 255)
 
 
 def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3) -> np.array:
@@ -176,12 +176,12 @@ def compute_v_a(traj: np.array) -> Tuple[np.array, np.array]:  # traj:Nx3
     return v, a
 
 
-def read_json_file(fpath: str) -> None:
+def read_json_file(fpath: str) -> Any:
     with open(fpath, "rb") as f:
         return json.load(f)
 
 
-def save_json_file(fpath: str, x: Any) -> None:
+def save_json_file(fpath: str, x: Any) -> Any:
     with open(fpath, "w") as f:
         return json.dump(x, f)
 
@@ -223,6 +223,7 @@ for name_folder in list_folders:
 
             data_amodel: Dict[str, Any] = {}
             for key in dict_track_labels.keys():
+                data_amodel[key]: Dict[str, Any] = {}
                 data_amodel[key]["label_class"] = dict_track_labels[key][0]["label_class"]
                 data_amodel[key]["uuid"] = dict_track_labels[key][0]["track_label_uuid"]
                 data_amodel[key]["log_id"] = id_log
@@ -241,7 +242,8 @@ for name_folder in list_folders:
 
             data_per_frame = data["track_label_frames"]
 
-            dict_tracks[id_track]: Dict[str, Any] = {}
+            dict_per_track: Dict[str, Any] = {}
+            dict_tracks[id_track] = dict_per_track
             dict_tracks[id_track]["ind_lidar_min"] = -1
             dict_tracks[id_track]["ind_lidar_max"] = -1
             length_log = len(list_lidar_timestamp)
@@ -269,6 +271,9 @@ for name_folder in list_folders:
 
                 center = np.array([box["center"]["x"], box["center"]["y"], box["center"]["z"]])
                 egovehicle_to_city_se3 = argoverse_loader.get_pose(ind_lidar, id_log)
+                if egovehicle_to_city_se3 is None:
+                    print("Pose not found!")
+                    continue
                 center_w = egovehicle_to_city_se3.transform_point_cloud(center[np.newaxis, :])[0]
  
                 dict_tracks[id_track]["list_center"][ind_lidar] = center
