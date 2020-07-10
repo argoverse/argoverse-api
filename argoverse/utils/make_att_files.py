@@ -1,6 +1,7 @@
 import sys
 import argoverse
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
+from typing import Any, Dict, List, Tuple
 import open3d as o3d
 import os
 import numpy as np
@@ -14,11 +15,11 @@ import torch
 import cv2
 import pickle
 
-dict_color = {}
-dict_color["easy"] = (0, 1.0, 0)
-dict_color["far"] = (0, 0.4, 0)
-dict_color["occ"] = (0, 0, 1.0)
-dict_color["fast"] = (0, 1.0, 1.0)
+dict_color: Dict[str, Tuple[float, float, float]] = {}
+dict_color["easy"] = (0.0, 1.0, 0.0)
+dict_color["far"] = (0.0, 0.4, 0.0)
+dict_color["occ"] = (0.0, 0.0, 1.0)
+dict_color["fast"] = (0.0, 1.0, 1.0)
 dict_color["short"] = (0.8, 0.3, 0.3)
 
 list_attritubes = ["short", "occ", "fast", "far", "easy"]
@@ -31,9 +32,9 @@ visualize = True
 check_track_label_folder = True
 
 
-def save_bev_img(path_output_vis, list_bboxes, list_difficulty_att,
-                 dataset_name, log_id, lidar_timestamp, pc,
-                 egovehicle_to_city_se3):
+def save_bev_img(path_output_vis: str, list_bboxes: List[Any], list_difficulty_att: List[Any],
+                 dataset_name: str, log_id: str, lidar_timestamp: str, pc: np.ndarray,
+                 egovehicle_to_city_se3: Any):
     """
     Plot results on bev images and save 
     """
@@ -64,9 +65,9 @@ def save_bev_img(path_output_vis, list_bboxes, list_difficulty_att,
         pose_local = np.array(
             [bbox['center']['x'], bbox['center']['y'], bbox['center']['z']])
 
-        color_0 = 0
-        color_1 = 0
-        color_2 = 0
+        color_0 = 0.0
+        color_1 = 0.0
+        color_2 = 0.0
         for att in difficulty_att:
             color_0 += dict_color[att][0] / len(difficulty_att)
             color_1 += dict_color[att][1] / len(difficulty_att)
@@ -110,7 +111,7 @@ def save_bev_img(path_output_vis, list_bboxes, list_difficulty_att,
         img * 255)
 
 
-def bspline_1d(x, y, s=20, k=3):
+def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3):
     """
     Do Bspline smoothing
     """
@@ -123,7 +124,7 @@ def bspline_1d(x, y, s=20, k=3):
     return interpolate.splev(np.arange(y.shape[0]), tck)
 
 
-def derivative(x):
+def derivative(x: np.array):
     """
     Compute derivative for velocity and acceleration 
     """
@@ -134,7 +135,7 @@ def derivative(x):
     return F.conv1d(x_padded, filters)[0, 0].numpy()
 
 
-def compute_v_a(traj):  # traj:Nx3
+def compute_v_a(traj: np.array):  # traj:Nx3
     """
     Compute velocity and acceleration
     """
@@ -171,12 +172,12 @@ def compute_v_a(traj):  # traj:Nx3
     return v, a
 
 
-def read_json_file(fpath):
+def read_json_file(fpath: str):
     with open(fpath, "rb") as f:
         return json.load(f)
 
 
-def save_json_file(fpath, x):
+def save_json_file(fpath:str, x: Any):
     with open(fpath, "w") as f:
         return json.dump(x, f)
 
@@ -192,7 +193,7 @@ if not os.path.exists(path_output_vis):
 list_folders = ["test"]
 list_name_class = ["VEHICLE", "PEDESTRIAN"]
 count_track = 0
-dict_att_all = {}
+dict_att_all: Dict[str, Any] = {}
 for name_folder in list_folders:
 
     dict_att_all[name_folder] = {}
@@ -207,32 +208,32 @@ for name_folder in list_folders:
                 os.path.join(path_log, "per_sweep_annotations_amodal", "*"))
             list_path_label_persweep.sort()
 
-            dist_track_labels = {}
+            dict_track_labels: Dict[str, Any] = {}
             for path_label_persweep in list_path_label_persweep:
                 data = read_json_file(path_label_persweep)
                 for data_obj in data:
                     id_obj = data_obj['track_label_uuid']
 
-                    if id_obj not in dist_track_labels.keys():
-                        dist_track_labels[id_obj] = []
-                    dist_track_labels[id_obj].append(data_obj)
+                    if id_obj not in dict_track_labels.keys():
+                        dict_track_labels[id_obj] = []
+                    dict_track_labels[id_obj].append(data_obj)
 
-            data_amodel = {}
-            for key in dist_track_labels.keys():
+            data_amodel: Dict[str, Any] = {}
+            for key in dict_track_labels.keys():
                 data_amodel[key] = {}
-                data_amodel[key]['label_class'] = dist_track_labels[key][0][
+                data_amodel[key]['label_class'] = dict_track_labels[key][0][
                     'label_class']
-                data_amodel[key]['uuid'] = dist_track_labels[key][0][
+                data_amodel[key]['uuid'] = dict_track_labels[key][0][
                     'track_label_uuid']
                 data_amodel[key]['log_id'] = id_log
-                data_amodel[key]['track_label_frames'] = dist_track_labels[key]
+                data_amodel[key]['track_label_frames'] = dict_track_labels[key]
 
         argoverse_loader = ArgoverseTrackingLoader(
             os.path.join(root_dir, name_folder))
         data_log = argoverse_loader.get(id_log)
         list_lidar_timestamp = data_log.lidar_timestamp_list
 
-        dict_tracks = {}
+        dict_tracks: Dict[str, Any] = {}
         for id_track in data_amodel.keys():
 
             data = data_amodel[id_track]
@@ -240,7 +241,8 @@ for name_folder in list_folders:
                 continue
 
             data_per_frame = data['track_label_frames']
-            dict_tracks[id_track] = {}
+
+            dict_tracks[id_track]: Dict[str, Any] = {}
             dict_tracks[id_track]["ind_lidar_min"] = -1
             dict_tracks[id_track]["ind_lidar_max"] = -1
             length_log = len(list_lidar_timestamp)
