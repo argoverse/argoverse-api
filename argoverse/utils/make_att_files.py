@@ -60,7 +60,7 @@ def save_bev_img(path_output_vis, list_bboxes, list_difficulty_att,
             'rotation']['y'], bbox['rotation']['z']
         theta_local = np.arctan2(
             2 * (q0 * q3 + q1 * q2),
-            1 - 2 * (q2 * q2 + q3 * q3))  #np.arccos(bbox['rotation']['w'])*2
+            1 - 2 * (q2 * q2 + q3 * q3)) 
         pose_local = np.array(
             [bbox['center']['x'], bbox['center']['y'], bbox['center']['z']])
 
@@ -84,14 +84,10 @@ def save_bev_img(path_output_vis, list_bboxes, list_difficulty_att,
         edge_2d = np.array([[0, 1], [0, 2], [2, 3], [1, 3]])
 
         for ii in range(len(edge_2d)):
-            p1 = (int(bbox_2d[edge_2d[ii][0], 1] * image_scale +
-                      image_size / 2),
-                  int(bbox_2d[edge_2d[ii][0], 0] * image_scale +
-                      image_size / 2))
-            p2 = (int(bbox_2d[edge_2d[ii][1], 1] * image_scale +
-                      image_size / 2),
-                  int(bbox_2d[edge_2d[ii][1], 0] * image_scale +
-                      image_size / 2))
+            p1 = (int(bbox_2d[edge_2d[ii][0], 1] * image_scale + image_size / 2),
+                  int(bbox_2d[edge_2d[ii][0], 0] * image_scale + image_size / 2))
+            p2 = (int(bbox_2d[edge_2d[ii][1], 1] * image_scale + image_size / 2),
+                  int(bbox_2d[edge_2d[ii][1], 0] * image_scale + image_size / 2))
             cv2.line(img, p1, p2, color=color)
 
     kernel = np.ones((5, 5), np.float)
@@ -132,15 +128,13 @@ def derivative(x):
     Compute derivative for velocity and acceleration 
     """
     x_tensor = torch.Tensor(x).unsqueeze(0).unsqueeze(0)
-    x_padded = torch.cat((x_tensor, (x_tensor[:, :, -1] - x_tensor[:, :, -2] +
-                                     x_tensor[:, :, -1]).unsqueeze(0)),
-                         dim=2)  #
+    x_padded = torch.cat((x_tensor, (x_tensor[:, :, -1] - x_tensor[:, :, -2] + x_tensor[:, :, -1]).unsqueeze(0)), dim=2)  
     filters = torch.Tensor([-1, 1]).unsqueeze(0).unsqueeze(0)
 
     return F.conv1d(x_padded, filters)[0, 0].numpy()
 
 
-def compute_v_a(traj):  #traj:Nx3
+def compute_v_a(traj):  # traj:Nx3
     """
     Compute velocity and acceleration
     """
@@ -159,7 +153,7 @@ def compute_v_a(traj):  #traj:Nx3
         if np.sqrt((x_max - x_min)**2 + (y_max - y_min)**2) < 10:
             return np.zeros_like(traj), np.zeros_like(traj)
 
-    vx = derivative(dx) * 10  #lidar freq 10 hz
+    vx = derivative(dx) * 10  # lidar freq 10 hz
     vy = derivative(dy) * 10
     vz = derivative(dz) * 10
 
@@ -187,7 +181,7 @@ def save_json_file(fpath, x):
         return json.dump(x, f)
 
 
-##set root_dir to the correct path to your dataset folder
+# set root_dir to the correct path to your dataset folder
 root_dir = 'test_set/'
 path_output_vis = 'vis_output'
 filename_output = 'att_file.npy'
@@ -297,7 +291,7 @@ for name_folder in list_folders:
                 "ind_lidar_max"] - dict_tracks[id_track]["ind_lidar_min"] + 1
             if dict_tracks[id_track]["ind_lidar_max"] == -1 and dict_tracks[
                     id_track]["ind_lidar_min"] == -1:
-                #this shouldn't happen
+                # this shouldn't happen
                 dict_tracks[id_track]["length_track"] = 0
             else:
                 dict_tracks[id_track]["length_track"] = length_track
@@ -324,7 +318,7 @@ for name_folder in list_folders:
                 ind_close_min = ind_close.min()
 
             if dict_tracks[id_track]["length_track"] == 0:
-                #this shouldn't happen
+                # this shouldn't happen
                 dict_tracks[id_track]["difficult_att"].append("zero_length")
 
             else:
