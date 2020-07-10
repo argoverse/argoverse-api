@@ -260,7 +260,8 @@ if __name__ == "__main__":
                     if dict_tracks[id_track]["ind_lidar_min"] == -1:
                         dict_tracks[id_track]["ind_lidar_min"] = ind_lidar
     
-                    if dict_tracks[id_track]["ind_lidar_max"] == -1 or ind_lidar > dict_tracks[id_track]["ind_lidar_max"]:
+                    if dict_tracks[id_track]["ind_lidar_max"] == -1 or 
+                        ind_lidar > dict_tracks[id_track]["ind_lidar_max"]:
                         dict_tracks[id_track]["ind_lidar_max"] = ind_lidar
     
                     center = np.array([box["center"]["x"], box["center"]["y"], box["center"]["z"]])
@@ -442,7 +443,8 @@ if __name__ == "__main__":
                     if dict_tracks[id_track]["ind_lidar_min"] == -1:
                         dict_tracks[id_track]["ind_lidar_min"] = ind_lidar
     
-                    if dict_tracks[id_track]["ind_lidar_max"] == -1 or ind_lidar > dict_tracks[id_track]["ind_lidar_max"]:
+                    if dict_tracks[id_track]["ind_lidar_max"] == -1 or 
+                        ind_lidar > dict_tracks[id_track]["ind_lidar_max"]:
                         dict_tracks[id_track]["ind_lidar_max"] = ind_lidar
     
                     center = np.array([box["center"]["x"], box["center"]["y"], box["center"]["z"]])
