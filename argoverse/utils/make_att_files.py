@@ -34,7 +34,7 @@ check_track_label_folder = True
 
 def save_bev_img(path_output_vis: str, list_bboxes: List[Any], list_difficulty_att: List[Any],
                  dataset_name: str, log_id: str, lidar_timestamp: str, pc: np.ndarray,
-                 egovehicle_to_city_se3: Any):
+                 egovehicle_to_city_se3: Any) -> None:
     """
     Plot results on bev images and save 
     """
@@ -111,7 +111,7 @@ def save_bev_img(path_output_vis: str, list_bboxes: List[Any], list_difficulty_a
         img * 255)
 
 
-def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3):
+def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3) -> np.array:
     """
     Do Bspline smoothing
     """
@@ -124,7 +124,7 @@ def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3):
     return interpolate.splev(np.arange(y.shape[0]), tck)
 
 
-def derivative(x: np.array):
+def derivative(x: np.array) -> np.array:
     """
     Compute derivative for velocity and acceleration 
     """
@@ -135,7 +135,7 @@ def derivative(x: np.array):
     return F.conv1d(x_padded, filters)[0, 0].numpy()
 
 
-def compute_v_a(traj: np.array):  # traj:Nx3
+def compute_v_a(traj: np.array) -> Tuple[np.array, np.array]:  # traj:Nx3
     """
     Compute velocity and acceleration
     """
@@ -172,12 +172,12 @@ def compute_v_a(traj: np.array):  # traj:Nx3
     return v, a
 
 
-def read_json_file(fpath: str):
+def read_json_file(fpath: str) -> None:
     with open(fpath, "rb") as f:
         return json.load(f)
 
 
-def save_json_file(fpath: str, x: Any):
+def save_json_file(fpath: str, x: Any) -> None:
     with open(fpath, "w") as f:
         return json.dump(x, f)
 
