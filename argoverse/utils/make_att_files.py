@@ -41,7 +41,7 @@ def save_bev_img(
     lidar_timestamp: str, 
     pc: np.ndarray,
     egovehicle_to_city_se3: Any,
-    ) -> None:
+) -> None:
     """
     Plot results on bev images and save 
     """
@@ -93,7 +93,8 @@ def save_bev_img(
             p2 = (
                 int(bbox_2d[edge_2d[ii][1], 1] * image_scale + image_size / 2),
                 int(bbox_2d[edge_2d[ii][1], 0] * image_scale + image_size / 2),
-            )            cv2.line(img, p1, p2, color=color)
+            )            
+            cv2.line(img, p1, p2, color=color)
 
     kernel = np.ones((5, 5), np.float)
     img = cv2.dilate(img, kernel, iterations=1)
@@ -114,7 +115,6 @@ def save_bev_img(
 
     print("Saving img: ", path_imgs)
     cv2.imwrite(os.path.join(path_imgs, "%s_%s_%s.jpg" % (dataset_name, log_id, lidar_timestamp)), img * 255)
-
 
 
 def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3) -> np.array:
