@@ -223,7 +223,8 @@ for name_folder in list_folders:
 
             data_amodel: Dict[str, Any] = {}
             for key in dict_track_labels.keys():
-                data_amodel[key]: Dict[str, Any] = {}
+                dict_amodal : Dict[str, Any] = {}
+                data_amodel[key] = dict_amodal
                 data_amodel[key]["label_class"] = dict_track_labels[key][0]["label_class"]
                 data_amodel[key]["uuid"] = dict_track_labels[key][0]["track_label_uuid"]
                 data_amodel[key]["log_id"] = id_log
