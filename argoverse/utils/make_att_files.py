@@ -1,19 +1,19 @@
-import sys
-import argoverse
-from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
-from typing import Any, Dict, List, Tuple
-import open3d as o3d
 import os
-import numpy as np
-import matplotlib.pyplot as plt
+
 import json
 import glob
-import scipy
-import scipy.interpolate as interpolate
-import torch.nn.functional as F
 import torch
 import cv2
 import pickle
+import open3d as o3d
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy.interpolate as interpolate
+import torch.nn.functional as F
+
+import argoverse
+from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
+from typing import Any, Dict, List, Tuple
 
 dict_color: Dict[str, Tuple[float, float, float]] = {}
 dict_color["easy"] = (0.0, 1.0, 0.0)
@@ -177,7 +177,7 @@ def read_json_file(fpath: str):
         return json.load(f)
 
 
-def save_json_file(fpath:str, x: Any):
+def save_json_file(fpath: str, x: Any):
     with open(fpath, "w") as f:
         return json.dump(x, f)
 
