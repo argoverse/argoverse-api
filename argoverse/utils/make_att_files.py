@@ -26,6 +26,13 @@ dict_color["short"] = (0.8, 0.3, 0.3)  # dark purple
 
 list_attritubes = ["short", "occ", "fast", "far", "easy"]
 LIDAR_FPS = 10  # 10 Hz frequency
+MAX_OCCLUSION_PCT = 20
+NEAR_DISTANCE_THRESH = 50
+SHORT_TRACK_LENGTH_THRESH = 10
+SHORT_TRACK_COUNT_THRESH = 10
+FAST_TRACK_THRESH = 1
+
+
 font = cv2.FONT_HERSHEY_SIMPLEX
 fontScale = 1.2
 fontColor = (255, 255, 255)
@@ -119,7 +126,7 @@ def save_bev_img(
 
 def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3) -> np.array:
     """
-    Do B-Spline smoothing
+    Do B-Spline smoothing for temporal noise reduction
     x, y: N-length np array
     s: smoothing condition
     k: degree of the spline fit
@@ -283,10 +290,9 @@ if __name__ == "__main__":
                     dict_tracks[id_track]["list_bbox"][ind_lidar] = box
 
                 length_track = dict_tracks[id_track]["ind_lidar_max"] - dict_tracks[id_track]["ind_lidar_min"] + 1
-
-                assert not (dict_tracks[id_track]["ind_lidar_max"] == -1
-                            and dict_tracks[id_track]["ind_lidar_min"] == -1), "zero-length track"
-
+                
+                assert not (dict_tracks[id_track]["ind_lidar_max"] == -1 and \
+                    dict_tracks[id_track]["ind_lidar_min"] == -1), "zero-length track"
                 dict_tracks[id_track]["length_track"] = length_track
 
                 dict_tracks[id_track]["list_vel"], dict_tracks[id_track]["list_acc"] = compute_v_a(
@@ -299,26 +305,25 @@ if __name__ == "__main__":
                 vel_abs = np.linalg.norm(dict_tracks[id_track]["list_vel"][:, 0:2], axis=1)
                 acc_abs = np.linalg.norm(dict_tracks[id_track]["list_acc"][:, 0:2], axis=1)
 
-                dist_close = 50
                 ind_valid = np.nonzero(1 - np.isnan(dict_tracks[id_track]["list_dist"]))[0]
-                ind_close = np.nonzero(dict_tracks[id_track]["list_dist"][ind_valid] < dist_close)[0]
+                ind_close = np.nonzero(dict_tracks[id_track]["list_dist"][ind_valid] < NEAR_DISTANCE_THRESH)[0]
 
                 if len(ind_close) > 0:
                     ind_close_max = ind_close.max() + 1
                     ind_close_min = ind_close.min()
 
-                if dict_tracks[id_track]["list_dist"][ind_valid].min() > dist_close:
+                if dict_tracks[id_track]["list_dist"][ind_valid].min() > NEAR_DISTANCE_THRESH:
                     dict_tracks[id_track]["difficult_att"].append("far")
                 else:
-                    if dict_tracks[id_track]["length_track"] < 10 or dict_tracks[id_track]["exists"].sum() < 10:
+                    if dict_tracks[id_track]["length_track"] < SHORT_TRACK_LENGTH_THRESH or dict_tracks[id_track]["exists"].sum() < SHORT_TRACK_COUNT_THRESH:
                         dict_tracks[id_track]["difficult_att"].append("short")
                     else:
                         if (ind_close_max - ind_close_min) - dict_tracks[id_track]["exists"][
                             ind_close_min:ind_close_max
-                        ].sum() > 20:
+                        ].sum() > MAX_OCCLUSION_PCT:
                             dict_tracks[id_track]["difficult_att"].append("occ")
 
-                        if np.quantile(vel_abs[ind_valid][ind_close], 0.9) > 1:
+                        if np.quantile(vel_abs[ind_valid][ind_close], 0.9) > FAST_TRACK_THRESH:
                             dict_tracks[id_track]["difficult_att"].append("fast")
 
                 if len(dict_tracks[id_track]["difficult_att"]) == 0:
