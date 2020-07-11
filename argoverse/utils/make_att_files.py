@@ -2,6 +2,7 @@ import glob
 import json
 import os
 import pickle
+from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 import cv2
@@ -24,6 +25,13 @@ dict_color["fast"] = (0.0, 1.0, 1.0)  # yellow
 dict_color["short"] = (0.8, 0.3, 0.3)  # dark purple
 
 list_attritubes = ["short", "occ", "fast", "far", "easy"]
+LIDAR_FPS = 10  # 10 Hz frequency
+MAX_OCCLUSION_PCT = 20
+NEAR_DISTANCE_THRESH = 50
+SHORT_TRACK_LENGTH_THRESH = 10
+SHORT_TRACK_COUNT_THRESH = 10
+FAST_TRACK_THRESH = 1
+
 
 font = cv2.FONT_HERSHEY_SIMPLEX
 fontScale = 1.2
@@ -41,7 +49,7 @@ def save_bev_img(
     log_id: str,
     lidar_timestamp: int,
     pc: np.ndarray,
-    egovehicle_to_city_se3: Any,
+    city_SE3_egovehicle: Any,
 ) -> None:
     """
     Plot results on bev images and save 
@@ -54,9 +62,7 @@ def save_bev_img(
     pc[:, 1] += int(image_size / 2)
     pc = pc.astype("int")
 
-    ind_valid = np.logical_and(
-        np.logical_and(pc[:, 0] >= 0, pc[:, 1] >= 0), np.logical_and(pc[:, 0] < image_size, pc[:, 1] < image_size)
-    )
+    ind_valid = np.logical_and.reduce([pc[:, 0] >= 0, pc[:, 1] >= 0, pc[:, 0] < image_size, pc[:, 1] < image_size])
     img[pc[ind_valid, 0], pc[ind_valid, 1], :] = 0.4
 
     path_imgs = os.path.join(path_output_vis, "bev")
@@ -120,7 +126,10 @@ def save_bev_img(
 
 def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3) -> np.array:
     """
-    Do Bspline smoothing
+    Do B-Spline smoothing for temporal noise reduction
+    x, y: N-length np array
+    s: smoothing condition
+    k: degree of the spline fit
     """
 
     if len(x) <= k:
@@ -161,13 +170,13 @@ def compute_v_a(traj: np.array) -> Tuple[np.array, np.array]:  # traj:Nx3
         if np.sqrt((x_max - x_min) ** 2 + (y_max - y_min) ** 2) < 10:
             return np.zeros_like(traj), np.zeros_like(traj)
 
-    vx = derivative(dx) * 10  # lidar freq 10 hz
-    vy = derivative(dy) * 10
-    vz = derivative(dz) * 10
+    vx = derivative(dx) * LIDAR_FPS  # lidar freq 10 hz
+    vy = derivative(dy) * LIDAR_FPS
+    vz = derivative(dz) * LIDAR_FPS
 
-    ax = derivative(vx) * 10
-    ay = derivative(vy) * 10
-    az = derivative(vz) * 10
+    ax = derivative(vx) * LIDAR_FPS
+    ay = derivative(vy) * LIDAR_FPS
+    az = derivative(vz) * LIDAR_FPS
 
     v = np.concatenate((vx[:, np.newaxis], vy[:, np.newaxis], vz[:, np.newaxis]), axis=1)
     a = np.concatenate((ax[:, np.newaxis], ay[:, np.newaxis], az[:, np.newaxis]), axis=1)
@@ -190,13 +199,14 @@ if __name__ == "__main__":
     list_name_class = ["VEHICLE", "PEDESTRIAN"]
     count_track = 0
     dict_att_all: Dict[str, Any] = {}
+
     for name_folder in list_folders:
 
         dict_att_all[name_folder] = {}
         list_log_folders = glob.glob(os.path.join(root_dir, name_folder, "*"))
         for ind_log, path_log in enumerate(list_log_folders):
 
-            id_log = path_log.split("/")[-1]
+            id_log = f'{Path(path_log).name}'
             print("%s %s %d/%d" % (name_folder, id_log, ind_log, len(list_log_folders)))
 
             if check_track_label_folder:
@@ -266,25 +276,24 @@ if __name__ == "__main__":
                         dict_tracks[id_track]["ind_lidar_max"] = ind_lidar
 
                     center = np.array([box["center"]["x"], box["center"]["y"], box["center"]["z"]])
-                    egovehicle_to_city_se3 = argoverse_loader.get_pose(ind_lidar, id_log)
-                    if egovehicle_to_city_se3 is None:
+                    city_SE3_egovehicle = argoverse_loader.get_pose(ind_lidar, id_log)
+                    if city_SE3_egovehicle is None:
                         print("Pose not found!")
                         continue
-                    center_w = egovehicle_to_city_se3.transform_point_cloud(center[np.newaxis, :])[0]
+                    center_w = city_SE3_egovehicle.transform_point_cloud(center[np.newaxis, :])[0]
 
                     dict_tracks[id_track]["list_center"][ind_lidar] = center
                     dict_tracks[id_track]["list_center_w"][ind_lidar] = center_w
                     dict_tracks[id_track]["list_dist"][ind_lidar] = np.linalg.norm(center[0:2])
                     dict_tracks[id_track]["exists"][ind_lidar] = True
-                    dict_tracks[id_track]["list_city_se3"][ind_lidar] = egovehicle_to_city_se3
+                    dict_tracks[id_track]["list_city_se3"][ind_lidar] = city_SE3_egovehicle
                     dict_tracks[id_track]["list_bbox"][ind_lidar] = box
 
                 length_track = dict_tracks[id_track]["ind_lidar_max"] - dict_tracks[id_track]["ind_lidar_min"] + 1
-                if dict_tracks[id_track]["ind_lidar_max"] == -1 and dict_tracks[id_track]["ind_lidar_min"] == -1:
-                    # this shouldn't happen
-                    dict_tracks[id_track]["length_track"] = 0
-                else:
-                    dict_tracks[id_track]["length_track"] = length_track
+                
+                assert not (dict_tracks[id_track]["ind_lidar_max"] == -1 and \
+                    dict_tracks[id_track]["ind_lidar_min"] == -1), "zero-length track"
+                dict_tracks[id_track]["length_track"] = length_track
 
                 dict_tracks[id_track]["list_vel"], dict_tracks[id_track]["list_acc"] = compute_v_a(
                     dict_tracks[id_track]["list_center_w"]
@@ -296,35 +305,29 @@ if __name__ == "__main__":
                 vel_abs = np.linalg.norm(dict_tracks[id_track]["list_vel"][:, 0:2], axis=1)
                 acc_abs = np.linalg.norm(dict_tracks[id_track]["list_acc"][:, 0:2], axis=1)
 
-                dist_close = 50
                 ind_valid = np.nonzero(1 - np.isnan(dict_tracks[id_track]["list_dist"]))[0]
-                ind_close = np.nonzero(dict_tracks[id_track]["list_dist"][ind_valid] < dist_close)[0]
+                ind_close = np.nonzero(dict_tracks[id_track]["list_dist"][ind_valid] < NEAR_DISTANCE_THRESH)[0]
 
                 if len(ind_close) > 0:
                     ind_close_max = ind_close.max() + 1
                     ind_close_min = ind_close.min()
 
-                if dict_tracks[id_track]["length_track"] == 0:
-                    # this shouldn't happen
-                    dict_tracks[id_track]["difficult_att"].append("zero_length")
-
+                if dict_tracks[id_track]["list_dist"][ind_valid].min() > NEAR_DISTANCE_THRESH:
+                    dict_tracks[id_track]["difficult_att"].append("far")
                 else:
-                    if dict_tracks[id_track]["list_dist"][ind_valid].min() > dist_close:
-                        dict_tracks[id_track]["difficult_att"].append("far")
+                    if dict_tracks[id_track]["length_track"] < SHORT_TRACK_LENGTH_THRESH or dict_tracks[id_track]["exists"].sum() < SHORT_TRACK_COUNT_THRESH:
+                        dict_tracks[id_track]["difficult_att"].append("short")
                     else:
-                        if dict_tracks[id_track]["length_track"] < 10 or dict_tracks[id_track]["exists"].sum() < 10:
-                            dict_tracks[id_track]["difficult_att"].append("short")
-                        else:
-                            if (ind_close_max - ind_close_min) - dict_tracks[id_track]["exists"][
-                                ind_close_min:ind_close_max
-                            ].sum() > 20:
-                                dict_tracks[id_track]["difficult_att"].append("occ")
+                        if (ind_close_max - ind_close_min) - dict_tracks[id_track]["exists"][
+                            ind_close_min:ind_close_max
+                        ].sum() > MAX_OCCLUSION_PCT:
+                            dict_tracks[id_track]["difficult_att"].append("occ")
 
-                            if np.quantile(vel_abs[ind_valid][ind_close], 0.9) > 1:
-                                dict_tracks[id_track]["difficult_att"].append("fast")
+                        if np.quantile(vel_abs[ind_valid][ind_close], 0.9) > FAST_TRACK_THRESH:
+                            dict_tracks[id_track]["difficult_att"].append("fast")
 
-                    if len(dict_tracks[id_track]["difficult_att"]) == 0:
-                        dict_tracks[id_track]["difficult_att"].append("easy")
+                if len(dict_tracks[id_track]["difficult_att"]) == 0:
+                    dict_tracks[id_track]["difficult_att"].append("easy")
 
             if visualize:
                 for ind_lidar, timestamp_lidar in enumerate(list_lidar_timestamp):
@@ -338,7 +341,7 @@ if __name__ == "__main__":
                             list_difficulty_att.append(dict_tracks[id_track]["difficult_att"])
 
                     path_lidar = os.path.join(path_log, "lidar", "PC_%s.ply" % timestamp_lidar)
-                    egovehicle_to_city_se3 = argoverse_loader.get_pose(ind_lidar, id_log)
+                    city_SE3_egovehicle = argoverse_loader.get_pose(ind_lidar, id_log)
                     pc = np.asarray(o3d.io.read_point_cloud(path_lidar).points)
                     list_lidar_timestamp = data_log.lidar_timestamp_list
                     save_bev_img(
@@ -349,7 +352,7 @@ if __name__ == "__main__":
                         id_log,
                         timestamp_lidar,
                         pc,
-                        egovehicle_to_city_se3,
+                        city_SE3_egovehicle,
                     )
 
             for id_track in dict_tracks.keys():
