@@ -16,7 +16,6 @@ import torch.nn.functional as F
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.utils.json_utils import read_json_file
 
-
 dict_color: Dict[str, Tuple[float, float, float]] = {}
 dict_color["easy"] = (0.0, 1.0, 0.0)  # green
 dict_color["far"] = (0.0, 0.4, 0.0)  # dark green
