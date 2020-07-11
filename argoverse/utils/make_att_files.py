@@ -183,37 +183,37 @@ if __name__ == "__main__":
     root_dir = "test_set/"
     path_output_vis = "vis_output"
     filename_output = "att_file.npy"
-    
+
     if not os.path.exists(path_output_vis):
         os.mkdir(path_output_vis)
-    
+
     list_folders = ["test"]
     list_name_class = ["VEHICLE", "PEDESTRIAN"]
     count_track = 0
     dict_att_all: Dict[str, Any] = {}
     for name_folder in list_folders:
-    
+
         dict_att_all[name_folder] = {}
         list_log_folders = glob.glob(os.path.join(root_dir, name_folder, "*"))
         for ind_log, path_log in enumerate(list_log_folders):
-    
+
             id_log = path_log.split("/")[-1]
             print("%s %s %d/%d" % (name_folder, id_log, ind_log, len(list_log_folders)))
-    
+
             if check_track_label_folder:
                 list_path_label_persweep = glob.glob(os.path.join(path_log, "per_sweep_annotations_amodal", "*")) 
                 list_path_label_persweep.sort()
-    
+
                 dict_track_labels: Dict[str, Any] = {}
                 for path_label_persweep in list_path_label_persweep:
                     data = read_json_file(path_label_persweep)
                     for data_obj in data:
                         id_obj = data_obj["track_label_uuid"]
-    
+
                         if id_obj not in dict_track_labels.keys():
                             dict_track_labels[id_obj] = []
                         dict_track_labels[id_obj].append(data_obj)
-    
+
                 data_amodel: Dict[str, Any] = {}
                 for key in dict_track_labels.keys():
                     dict_amodal : Dict[str, Any] = {}
@@ -222,20 +222,20 @@ if __name__ == "__main__":
                     data_amodel[key]["uuid"] = dict_track_labels[key][0]["track_label_uuid"]
                     data_amodel[key]["log_id"] = id_log
                     data_amodel[key]["track_label_frames"] = dict_track_labels[key]
-    
+
             argoverse_loader = ArgoverseTrackingLoader(os.path.join(root_dir, name_folder))
             data_log = argoverse_loader.get(id_log)
             list_lidar_timestamp = data_log.lidar_timestamp_list
-    
+
             dict_tracks: Dict[str, Any] = {}
             for id_track in data_amodel.keys():
-    
+
                 data = data_amodel[id_track]
                 if data["label_class"] not in list_name_class:
                     continue
-    
+
                 data_per_frame = data["track_label_frames"]
-    
+
                 dict_per_track: Dict[str, Any] = {}
                 dict_tracks[id_track] = dict_per_track
                 dict_tracks[id_track]["ind_lidar_min"] = -1
@@ -244,47 +244,47 @@ if __name__ == "__main__":
                 dict_tracks[id_track]["list_city_se3"] = [None] * length_log
                 dict_tracks[id_track]["list_bbox"] = [None] * length_log
                 count_track += 1
-    
+
                 dict_tracks[id_track]["list_center"] = np.full([length_log, 3], np.nan)
                 dict_tracks[id_track]["list_center_w"] = np.full([length_log, 3], np.nan)
                 dict_tracks[id_track]["list_dist"] = np.full([length_log], np.nan)
                 dict_tracks[id_track]["exists"] = np.full([length_log], False)
-    
+
                 for box in data_per_frame:
-    
+
                     if box["timestamp"] in list_lidar_timestamp:
                         ind_lidar = list_lidar_timestamp.index(box["timestamp"])
                     else:
                         continue
-    
+
                     if dict_tracks[id_track]["ind_lidar_min"] == -1:
                         dict_tracks[id_track]["ind_lidar_min"] = ind_lidar
-    
+
                     if dict_tracks[id_track]["ind_lidar_max"] == -1 or \
                             ind_lidar > dict_tracks[id_track]["ind_lidar_max"]:
                         dict_tracks[id_track]["ind_lidar_max"] = ind_lidar
-    
+
                     center = np.array([box["center"]["x"], box["center"]["y"], box["center"]["z"]])
                     egovehicle_to_city_se3 = argoverse_loader.get_pose(ind_lidar, id_log)
                     if egovehicle_to_city_se3 is None:
                         print("Pose not found!")
                         continue
                     center_w = egovehicle_to_city_se3.transform_point_cloud(center[np.newaxis, :])[0]
-     
+
                     dict_tracks[id_track]["list_center"][ind_lidar] = center
                     dict_tracks[id_track]["list_center_w"][ind_lidar] = center_w
                     dict_tracks[id_track]["list_dist"][ind_lidar] = np.linalg.norm(center[0:2])
                     dict_tracks[id_track]["exists"][ind_lidar] = True
                     dict_tracks[id_track]["list_city_se3"][ind_lidar] = egovehicle_to_city_se3
                     dict_tracks[id_track]["list_bbox"][ind_lidar] = box
-    
+
                 length_track = dict_tracks[id_track]["ind_lidar_max"] - dict_tracks[id_track]["ind_lidar_min"] + 1
                 if dict_tracks[id_track]["ind_lidar_max"] == -1 and dict_tracks[id_track]["ind_lidar_min"] == -1:
                     # this shouldn't happen
                     dict_tracks[id_track]["length_track"] = 0
                 else:
                     dict_tracks[id_track]["length_track"] = length_track
-    
+
                 dict_tracks[id_track]["list_vel"], dict_tracks[id_track]["list_acc"] = compute_v_a(
                     dict_tracks[id_track]["list_center_w"]
                 )
@@ -294,19 +294,19 @@ if __name__ == "__main__":
                 dict_tracks[id_track]["difficult_att"] = []
                 vel_abs = np.linalg.norm(dict_tracks[id_track]["list_vel"][:, 0:2], axis=1)
                 acc_abs = np.linalg.norm(dict_tracks[id_track]["list_acc"][:, 0:2], axis=1)
-    
+
                 dist_close = 50
                 ind_valid = np.nonzero(1 - np.isnan(dict_tracks[id_track]["list_dist"]))[0]
                 ind_close = np.nonzero(dict_tracks[id_track]["list_dist"][ind_valid] < dist_close)[0]
-    
+
                 if len(ind_close) > 0:
                     ind_close_max = ind_close.max() + 1
                     ind_close_min = ind_close.min()
-    
+
                 if dict_tracks[id_track]["length_track"] == 0:
                     # this shouldn't happen
                     dict_tracks[id_track]["difficult_att"].append("zero_length")
-    
+
                 else:
                     if dict_tracks[id_track]["list_dist"][ind_valid].min() > dist_close:
                         dict_tracks[id_track]["difficult_att"].append("far")
@@ -319,24 +319,24 @@ if __name__ == "__main__":
                                 ind_close_min:ind_close_max
                             ].sum() > 20:
                                 dict_tracks[id_track]["difficult_att"].append("occ")
-    
+
                             if np.quantile(vel_abs[ind_valid][ind_close], 0.9) > 1:
                                 dict_tracks[id_track]["difficult_att"].append("fast")
-    
+
                     if len(dict_tracks[id_track]["difficult_att"]) == 0:
                         dict_tracks[id_track]["difficult_att"].append("easy")
-    
+
             if visualize:
                 for ind_lidar, timestamp_lidar in enumerate(list_lidar_timestamp):
-    
+
                     list_bboxes = []
                     list_difficulty_att = []
-    
+
                     for id_track in dict_tracks.keys():
                         if dict_tracks[id_track]["exists"][ind_lidar]:
                             list_bboxes.append(dict_tracks[id_track]["list_bbox"][ind_lidar])
                             list_difficulty_att.append(dict_tracks[id_track]["difficult_att"])
-    
+
                     path_lidar = os.path.join(path_log, "lidar", "PC_%s.ply" % timestamp_lidar)
                     egovehicle_to_city_se3 = argoverse_loader.get_pose(ind_lidar, id_log)
                     pc = np.asarray(o3d.io.read_point_cloud(path_lidar).points)
@@ -351,198 +351,15 @@ if __name__ == "__main__":
                         pc,
                         egovehicle_to_city_se3,
                     )
-    
+
             for id_track in dict_tracks.keys():
                 list_key = list(dict_tracks[id_track].keys()).copy()
                 for key in list_key:
                     if key != "difficult_att":
                         del dict_tracks[id_track][key]
-    
+
             dict_att_all[name_folder][id_log] = dict_tracks
-    
+
     pickle_out = open(filename_output, "wb")
     pickle.dump(dict_att_all, pickle_out)
     pickle_out.close()
-    # set root_dir to the correct path to your dataset folder
-    root_dir = "test_set/"
-    path_output_vis = "vis_output"
-    filename_output = "att_file.npy"
-    
-    if not os.path.exists(path_output_vis):
-        os.mkdir(path_output_vis)
-    
-    list_folders = ["test"]
-    list_name_class = ["VEHICLE", "PEDESTRIAN"]
-    count_track = 0
-    dict_att_all: Dict[str, Any] = {}
-    for name_folder in list_folders:
-    
-        dict_att_all[name_folder] = {}
-        list_log_folders = glob.glob(os.path.join(root_dir, name_folder, "*"))
-        for ind_log, path_log in enumerate(list_log_folders):
-    
-            id_log = path_log.split("/")[-1]
-            print("%s %s %d/%d" % (name_folder, id_log, ind_log, len(list_log_folders)))
-    
-            if check_track_label_folder:
-                list_path_label_persweep = glob.glob(os.path.join(path_log, "per_sweep_annotations_amodal", "*")) 
-                list_path_label_persweep.sort()
-    
-                dict_track_labels: Dict[str, Any] = {}
-                for path_label_persweep in list_path_label_persweep:
-                    data = read_json_file(path_label_persweep)
-                    for data_obj in data:
-                        id_obj = data_obj["track_label_uuid"]
-    
-                        if id_obj not in dict_track_labels.keys():
-                            dict_track_labels[id_obj] = []
-                        dict_track_labels[id_obj].append(data_obj)
-    
-                data_amodel: Dict[str, Any] = {}
-                for key in dict_track_labels.keys():
-                    dict_amodal : Dict[str, Any] = {}
-                    data_amodel[key] = dict_amodal
-                    data_amodel[key]["label_class"] = dict_track_labels[key][0]["label_class"]
-                    data_amodel[key]["uuid"] = dict_track_labels[key][0]["track_label_uuid"]
-                    data_amodel[key]["log_id"] = id_log
-                    data_amodel[key]["track_label_frames"] = dict_track_labels[key]
-    
-            argoverse_loader = ArgoverseTrackingLoader(os.path.join(root_dir, name_folder))
-            data_log = argoverse_loader.get(id_log)
-            list_lidar_timestamp = data_log.lidar_timestamp_list
-    
-            dict_tracks: Dict[str, Any] = {}
-            for id_track in data_amodel.keys():
-    
-                data = data_amodel[id_track]
-                if data["label_class"] not in list_name_class:
-                    continue
-    
-                data_per_frame = data["track_label_frames"]
-    
-                dict_per_track: Dict[str, Any] = {}
-                dict_tracks[id_track] = dict_per_track
-                dict_tracks[id_track]["ind_lidar_min"] = -1
-                dict_tracks[id_track]["ind_lidar_max"] = -1
-                length_log = len(list_lidar_timestamp)
-                dict_tracks[id_track]["list_city_se3"] = [None] * length_log
-                dict_tracks[id_track]["list_bbox"] = [None] * length_log
-                count_track += 1
-    
-                dict_tracks[id_track]["list_center"] = np.full([length_log, 3], np.nan)
-                dict_tracks[id_track]["list_center_w"] = np.full([length_log, 3], np.nan)
-                dict_tracks[id_track]["list_dist"] = np.full([length_log], np.nan)
-                dict_tracks[id_track]["exists"] = np.full([length_log], False)
-    
-                for box in data_per_frame:
-    
-                    if box["timestamp"] in list_lidar_timestamp:
-                        ind_lidar = list_lidar_timestamp.index(box["timestamp"])
-                    else:
-                        continue
-    
-                    if dict_tracks[id_track]["ind_lidar_min"] == -1:
-                        dict_tracks[id_track]["ind_lidar_min"] = ind_lidar
-    
-                    if dict_tracks[id_track]["ind_lidar_max"] == -1 or \
-                            ind_lidar > dict_tracks[id_track]["ind_lidar_max"]:
-                        dict_tracks[id_track]["ind_lidar_max"] = ind_lidar
-    
-                    center = np.array([box["center"]["x"], box["center"]["y"], box["center"]["z"]])
-                    egovehicle_to_city_se3 = argoverse_loader.get_pose(ind_lidar, id_log)
-                    if egovehicle_to_city_se3 is None:
-                        print("Pose not found!")
-                        continue
-                    center_w = egovehicle_to_city_se3.transform_point_cloud(center[np.newaxis, :])[0]
-     
-                    dict_tracks[id_track]["list_center"][ind_lidar] = center
-                    dict_tracks[id_track]["list_center_w"][ind_lidar] = center_w
-                    dict_tracks[id_track]["list_dist"][ind_lidar] = np.linalg.norm(center[0:2])
-                    dict_tracks[id_track]["exists"][ind_lidar] = True
-                    dict_tracks[id_track]["list_city_se3"][ind_lidar] = egovehicle_to_city_se3
-                    dict_tracks[id_track]["list_bbox"][ind_lidar] = box
-    
-                length_track = dict_tracks[id_track]["ind_lidar_max"] - dict_tracks[id_track]["ind_lidar_min"] + 1
-                if dict_tracks[id_track]["ind_lidar_max"] == -1 and dict_tracks[id_track]["ind_lidar_min"] == -1:
-                    # this shouldn't happen
-                    dict_tracks[id_track]["length_track"] = 0
-                else:
-                    dict_tracks[id_track]["length_track"] = length_track
-    
-                dict_tracks[id_track]["list_vel"], dict_tracks[id_track]["list_acc"] = compute_v_a(
-                    dict_tracks[id_track]["list_center_w"]
-                )
-                dict_tracks[id_track]["num_missing"] = (
-                    dict_tracks[id_track]["length_track"] - dict_tracks[id_track]["exists"].sum()
-                )
-                dict_tracks[id_track]["difficult_att"] = []
-                vel_abs = np.linalg.norm(dict_tracks[id_track]["list_vel"][:, 0:2], axis=1)
-                acc_abs = np.linalg.norm(dict_tracks[id_track]["list_acc"][:, 0:2], axis=1)
-    
-                dist_close = 50
-                ind_valid = np.nonzero(1 - np.isnan(dict_tracks[id_track]["list_dist"]))[0]
-                ind_close = np.nonzero(dict_tracks[id_track]["list_dist"][ind_valid] < dist_close)[0]
-    
-                if len(ind_close) > 0:
-                    ind_close_max = ind_close.max() + 1
-                    ind_close_min = ind_close.min()
-    
-                if dict_tracks[id_track]["length_track"] == 0:
-                    # this shouldn't happen
-                    dict_tracks[id_track]["difficult_att"].append("zero_length")
-    
-                else:
-                    if dict_tracks[id_track]["list_dist"][ind_valid].min() > dist_close:
-                        dict_tracks[id_track]["difficult_att"].append("far")
-                    else:
-                        if dict_tracks[id_track]["length_track"] < 10 or dict_tracks[id_track]["exists"].sum() < 10:
-                            dict_tracks[id_track]["difficult_att"].append("short")
-                        else:
-                            if (ind_close_max - ind_close_min) - dict_tracks[id_track]["exists"][
-                                ind_close_min:ind_close_max
-                            ].sum() > 20:
-                                dict_tracks[id_track]["difficult_att"].append("occ")
-    
-                            if np.quantile(vel_abs[ind_valid][ind_close], 0.9) > 1:
-                                dict_tracks[id_track]["difficult_att"].append("fast")
-    
-                    if len(dict_tracks[id_track]["difficult_att"]) == 0:
-                        dict_tracks[id_track]["difficult_att"].append("easy")
-    
-            if visualize:
-                for ind_lidar, timestamp_lidar in enumerate(list_lidar_timestamp):
-    
-                    list_bboxes = []
-                    list_difficulty_att = []
-    
-                    for id_track in dict_tracks.keys():
-                        if dict_tracks[id_track]["exists"][ind_lidar]:
-                            list_bboxes.append(dict_tracks[id_track]["list_bbox"][ind_lidar])
-                            list_difficulty_att.append(dict_tracks[id_track]["difficult_att"])
-    
-                    path_lidar = os.path.join(path_log, "lidar", "PC_%s.ply" % timestamp_lidar)
-                    egovehicle_to_city_se3 = argoverse_loader.get_pose(ind_lidar, id_log)
-                    pc = np.asarray(o3d.io.read_point_cloud(path_lidar).points)
-                    list_lidar_timestamp = data_log.lidar_timestamp_list
-                    save_bev_img(
-                        path_output_vis,
-                        list_bboxes,
-                        list_difficulty_att,
-                        "argoverse_%s" % name_folder,
-                        id_log,
-                        timestamp_lidar,
-                        pc,
-                        egovehicle_to_city_se3,
-                    )
-    
-            for id_track in dict_tracks.keys():
-                list_key = list(dict_tracks[id_track].keys()).copy()
-                for key in list_key:
-                    if key != "difficult_att":
-                        del dict_tracks[id_track][key]
-    
-            dict_att_all[name_folder][id_log] = dict_tracks
-    
-    pickle_out = open(filename_output, "wb")
-    pickle.dump(dict_att_all, pickle_out)
-    pickle_out.close()    
