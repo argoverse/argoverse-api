@@ -35,12 +35,12 @@ check_track_label_folder = True
 
 
 def save_bev_img(
-    path_output_vis: str, 
-    list_bboxes: List[Any], 
+    path_output_vis: str,
+    list_bboxes: List[Any],
     list_difficulty_att: List[Any],
-    dataset_name: str, 
-    log_id: str, 
-    lidar_timestamp: int, 
+    dataset_name: str,
+    log_id: str,
+    lidar_timestamp: int,
     pc: np.ndarray,
     egovehicle_to_city_se3: Any,
 ) -> None:
@@ -95,7 +95,7 @@ def save_bev_img(
             p2 = (
                 int(bbox_2d[edge_2d[ii][1], 1] * image_scale + image_size / 2),
                 int(bbox_2d[edge_2d[ii][1], 0] * image_scale + image_size / 2),
-            )            
+            )
             cv2.line(img, p1, p2, color=color)
 
     kernel = np.ones((5, 5), np.float)
@@ -201,7 +201,7 @@ if __name__ == "__main__":
             print("%s %s %d/%d" % (name_folder, id_log, ind_log, len(list_log_folders)))
 
             if check_track_label_folder:
-                list_path_label_persweep = glob.glob(os.path.join(path_log, "per_sweep_annotations_amodal", "*")) 
+                list_path_label_persweep = glob.glob(os.path.join(path_log, "per_sweep_annotations_amodal", "*"))
                 list_path_label_persweep.sort()
 
                 dict_track_labels: Dict[str, Any] = {}
@@ -216,7 +216,7 @@ if __name__ == "__main__":
 
                 data_amodel: Dict[str, Any] = {}
                 for key in dict_track_labels.keys():
-                    dict_amodal : Dict[str, Any] = {}
+                    dict_amodal: Dict[str, Any] = {}
                     data_amodel[key] = dict_amodal
                     data_amodel[key]["label_class"] = dict_track_labels[key][0]["label_class"]
                     data_amodel[key]["uuid"] = dict_track_labels[key][0]["track_label_uuid"]
@@ -260,8 +260,10 @@ if __name__ == "__main__":
                     if dict_tracks[id_track]["ind_lidar_min"] == -1:
                         dict_tracks[id_track]["ind_lidar_min"] = ind_lidar
 
-                    if dict_tracks[id_track]["ind_lidar_max"] == -1 or \
-                            ind_lidar > dict_tracks[id_track]["ind_lidar_max"]:
+                    if (
+                        dict_tracks[id_track]["ind_lidar_max"] == -1
+                        or ind_lidar > dict_tracks[id_track]["ind_lidar_max"]
+                    ):
                         dict_tracks[id_track]["ind_lidar_max"] = ind_lidar
 
                     center = np.array([box["center"]["x"], box["center"]["y"], box["center"]["z"]])
@@ -311,8 +313,7 @@ if __name__ == "__main__":
                     if dict_tracks[id_track]["list_dist"][ind_valid].min() > dist_close:
                         dict_tracks[id_track]["difficult_att"].append("far")
                     else:
-                        if dict_tracks[id_track]["length_track"] < 10 or \
-                                dict_tracks[id_track]["exists"].sum() < 10:
+                        if dict_tracks[id_track]["length_track"] < 10 or dict_tracks[id_track]["exists"].sum() < 10:
                             dict_tracks[id_track]["difficult_att"].append("short")
                         else:
                             if (ind_close_max - ind_close_min) - dict_tracks[id_track]["exists"][
