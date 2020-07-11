@@ -283,11 +283,9 @@ if __name__ == "__main__":
                     dict_tracks[id_track]["list_bbox"][ind_lidar] = box
 
                 length_track = dict_tracks[id_track]["ind_lidar_max"] - dict_tracks[id_track]["ind_lidar_min"] + 1
-                if dict_tracks[id_track]["ind_lidar_max"] == -1 and dict_tracks[id_track]["ind_lidar_min"] == -1:
-                    # this shouldn't happen
-                    dict_tracks[id_track]["length_track"] = 0
-                else:
-                    dict_tracks[id_track]["length_track"] = length_track
+                
+                assert not (dict_tracks[id_track]["ind_lidar_max"] == -1 and dict_tracks[id_track]["ind_lidar_min"] == -1), "zero-length track"
+                dict_tracks[id_track]["length_track"] = length_track
 
                 dict_tracks[id_track]["list_vel"], dict_tracks[id_track]["list_acc"] = compute_v_a(
                     dict_tracks[id_track]["list_center_w"]
@@ -307,27 +305,22 @@ if __name__ == "__main__":
                     ind_close_max = ind_close.max() + 1
                     ind_close_min = ind_close.min()
 
-                if dict_tracks[id_track]["length_track"] == 0:
-                    # this shouldn't happen
-                    dict_tracks[id_track]["difficult_att"].append("zero_length")
-
+                if dict_tracks[id_track]["list_dist"][ind_valid].min() > dist_close:
+                    dict_tracks[id_track]["difficult_att"].append("far")
                 else:
-                    if dict_tracks[id_track]["list_dist"][ind_valid].min() > dist_close:
-                        dict_tracks[id_track]["difficult_att"].append("far")
+                    if dict_tracks[id_track]["length_track"] < 10 or dict_tracks[id_track]["exists"].sum() < 10:
+                        dict_tracks[id_track]["difficult_att"].append("short")
                     else:
-                        if dict_tracks[id_track]["length_track"] < 10 or dict_tracks[id_track]["exists"].sum() < 10:
-                            dict_tracks[id_track]["difficult_att"].append("short")
-                        else:
-                            if (ind_close_max - ind_close_min) - dict_tracks[id_track]["exists"][
-                                ind_close_min:ind_close_max
-                            ].sum() > 20:
-                                dict_tracks[id_track]["difficult_att"].append("occ")
+                        if (ind_close_max - ind_close_min) - dict_tracks[id_track]["exists"][
+                            ind_close_min:ind_close_max
+                        ].sum() > 20:
+                            dict_tracks[id_track]["difficult_att"].append("occ")
 
-                            if np.quantile(vel_abs[ind_valid][ind_close], 0.9) > 1:
-                                dict_tracks[id_track]["difficult_att"].append("fast")
+                        if np.quantile(vel_abs[ind_valid][ind_close], 0.9) > 1:
+                            dict_tracks[id_track]["difficult_att"].append("fast")
 
-                    if len(dict_tracks[id_track]["difficult_att"]) == 0:
-                        dict_tracks[id_track]["difficult_att"].append("easy")
+                if len(dict_tracks[id_track]["difficult_att"]) == 0:
+                    dict_tracks[id_track]["difficult_att"].append("easy")
 
             if visualize:
                 for ind_lidar, timestamp_lidar in enumerate(list_lidar_timestamp):
