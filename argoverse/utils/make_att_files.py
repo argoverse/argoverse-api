@@ -311,7 +311,8 @@ if __name__ == "__main__":
                     if dict_tracks[id_track]["list_dist"][ind_valid].min() > dist_close:
                         dict_tracks[id_track]["difficult_att"].append("far")
                     else:
-                        if dict_tracks[id_track]["length_track"] < 10 or dict_tracks[id_track]["exists"].sum() < 10:
+                        if dict_tracks[id_track]["length_track"] < 10 or \
+                                dict_tracks[id_track]["exists"].sum() < 10:
                             dict_tracks[id_track]["difficult_att"].append("short")
                         else:
                             if (ind_close_max - ind_close_min) - dict_tracks[id_track]["exists"][
@@ -443,8 +444,7 @@ if __name__ == "__main__":
                     if dict_tracks[id_track]["ind_lidar_min"] == -1:
                         dict_tracks[id_track]["ind_lidar_min"] = ind_lidar
     
-                    if dict_tracks[id_track]["ind_lidar_max"] == -1 or \
-                            ind_lidar > dict_tracks[id_track]["ind_lidar_max"]:
+                    if dict_tracks[id_track]["ind_lidar_max"] == -1 or ind_lidar > dict_tracks[id_track]["ind_lidar_max"]:
                         dict_tracks[id_track]["ind_lidar_max"] = ind_lidar
     
                     center = np.array([box["center"]["x"], box["center"]["y"], box["center"]["z"]])
