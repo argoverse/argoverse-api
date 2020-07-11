@@ -284,7 +284,8 @@ if __name__ == "__main__":
 
                 length_track = dict_tracks[id_track]["ind_lidar_max"] - dict_tracks[id_track]["ind_lidar_min"] + 1
                 
-                assert not (dict_tracks[id_track]["ind_lidar_max"] == -1 and dict_tracks[id_track]["ind_lidar_min"] == -1), "zero-length track"
+                assert not (dict_tracks[id_track]["ind_lidar_max"] == -1 and \
+                    dict_tracks[id_track]["ind_lidar_min"] == -1), "zero-length track"
                 dict_tracks[id_track]["length_track"] = length_track
 
                 dict_tracks[id_track]["list_vel"], dict_tracks[id_track]["list_acc"] = compute_v_a(
