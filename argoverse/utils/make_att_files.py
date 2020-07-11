@@ -131,7 +131,7 @@ def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3) -> np.arra
     return interpolate.splev(np.arange(y.shape[0]), tck)
 
 
-def derivative(x: np.array) -> np.array: #x: N-length np array
+def derivative(x: np.array) -> np.array:  # x: N-length np array
     """
     Compute derivative for velocity and acceleration 
     """
