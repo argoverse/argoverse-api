@@ -151,12 +151,7 @@ def derivative(x: np.array) -> np.array:  # x: N-length np array
     Compute derivative for velocity and acceleration 
     """
     x_tensor = torch.Tensor(x).unsqueeze(0).unsqueeze(0)
-    x_padded = torch.cat(
-        (
-            x_tensor,
-            (x_tensor[:, :, -1] - x_tensor[:, :, -2] + x_tensor[:, :, -1]).unsqueeze(0)
-        ), dim=2
-    )
+    x_padded = torch.cat((x_tensor,(x_tensor[:, :, -1] - x_tensor[:, :, -2] + x_tensor[:, :, -1]).unsqueeze(0)), dim=2)
     filters = torch.Tensor([-1, 1]).unsqueeze(0).unsqueeze(0)
 
     return F.conv1d(x_padded, filters)[0, 0].numpy()
@@ -297,8 +292,9 @@ def make_att_files(root_dir: str) -> None:
 
                 length_track = dict_tracks[id_track]["ind_lidar_max"] - dict_tracks[id_track]["ind_lidar_min"] + 1
                 
-                assert not (dict_tracks[id_track]["ind_lidar_max"] == -1 and \
-                    dict_tracks[id_track]["ind_lidar_min"] == -1), "zero-length track"
+                assert not (
+                    dict_tracks[id_track]["ind_lidar_max"] == -1 and dict_tracks[id_track]["ind_lidar_min"] == -1
+                ), "zero-length track"
                 dict_tracks[id_track]["length_track"] = length_track
 
                 dict_tracks[id_track]["list_vel"], dict_tracks[id_track]["list_acc"] = compute_v_a(
