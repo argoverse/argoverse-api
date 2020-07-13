@@ -49,7 +49,7 @@ def save_bev_img(
     dataset_name: str,
     log_id: str,
     lidar_timestamp: int,
-    pc: np.ndarray
+    pc: np.ndarray,
 ) -> None:
     """
     Plot results on bev images and save 
@@ -156,7 +156,7 @@ def derivative(x: np.array) -> np.array:
         acceleration
     """
     x_tensor = torch.Tensor(x).unsqueeze(0).unsqueeze(0)
-    x_padded = torch.cat((x_tensor,(x_tensor[:, :, -1] - x_tensor[:, :, -2] + x_tensor[:, :, -1]).unsqueeze(0)), dim=2)
+    x_padded = torch.cat((x_tensor, (x_tensor[:, :, -1] - x_tensor[:, :, -2] + x_tensor[:, :, -1]).unsqueeze(0)), dim=2)
     filters = torch.Tensor([-1, 1]).unsqueeze(0).unsqueeze(0)
 
     return F.conv1d(x_padded, filters)[0, 0].numpy()
@@ -360,7 +360,7 @@ def make_att_files(root_dir: str) -> None:
                         "argoverse_%s" % name_folder,
                         id_log,
                         timestamp_lidar,
-                        pc
+                        pc,
                     )
 
             for id_track in dict_tracks.keys():
