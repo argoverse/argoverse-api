@@ -91,3 +91,28 @@ def test_interp_square_grid_linear_2to5_zero():
     gt_interp_grid = np.zeros((5, 5))
 
     assert np.allclose(out_grid, gt_interp_grid)
+
+def test_interp_square_grid_check_no_transpose():
+    """
+    All other tests are transpose-agnostic (input data is symmetric
+    across matrix diagonal) except for this test. Ensure
+    row-major data stays row-major.
+    """
+    in_dim = 2
+    out_dim = 4
+    interp_type = 'nearest'
+    grid_data = np.array(
+        [
+            [1,2],
+            [3,4],
+        ])
+    interp_grid = interp_square_grid(grid_data, in_dim=in_dim, out_dim=out_dim, interp_type=interp_type)
+    gt_interp_grid = np.array(
+        [
+            [1., 1., 2., 2.],
+            [1., 1., 2., 2.],
+            [3., 3., 4., 4.],
+            [3., 3., 4., 4.]
+        ])
+    assert np.allclose(gt_interp_grid, interp_grid)
+    
