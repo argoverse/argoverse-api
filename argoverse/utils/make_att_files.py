@@ -170,7 +170,6 @@ def compute_v_a(traj: np.array) -> Tuple[np.array, np.array]:
         velocity: Numpy array representing (d traj)/dt
         acceleration: Numpy array representing (d velocity)/dt
     """
-
     ind_valid = np.nonzero(1 - np.isnan(traj[:, 0]))[0]
     dx = bspline_1d(ind_valid, traj[:, 0])
     dy = bspline_1d(ind_valid, traj[:, 1])
@@ -300,7 +299,7 @@ def make_att_files(root_dir: str) -> None:
                     dict_tracks[id_track]["list_bbox"][ind_lidar] = box
 
                 length_track = dict_tracks[id_track]["ind_lidar_max"] - dict_tracks[id_track]["ind_lidar_min"] + 1
-                
+
                 assert not (
                     dict_tracks[id_track]["ind_lidar_max"] == -1 and dict_tracks[id_track]["ind_lidar_min"] == -1
                 ), "zero-length track"
@@ -313,6 +312,7 @@ def make_att_files(root_dir: str) -> None:
                     dict_tracks[id_track]["length_track"] - dict_tracks[id_track]["exists"].sum()
                 )
                 dict_tracks[id_track]["difficult_att"] = []
+                # get scalar velocity per timestamp as 2-norm of (vx, vy)
                 vel_abs = np.linalg.norm(dict_tracks[id_track]["list_vel"][:, 0:2], axis=1)
                 acc_abs = np.linalg.norm(dict_tracks[id_track]["list_acc"][:, 0:2], axis=1)
 
@@ -354,7 +354,6 @@ def make_att_files(root_dir: str) -> None:
                             list_difficulty_att.append(dict_tracks[id_track]["difficult_att"])
 
                     path_lidar = os.path.join(path_log, "lidar", "PC_%s.ply" % timestamp_lidar)
-                    city_SE3_egovehicle = argoverse_loader.get_pose(ind_lidar, id_log)
                     pc = np.asarray(o3d.io.read_point_cloud(path_lidar).points)
                     list_lidar_timestamp = data_log.lidar_timestamp_list
                     save_bev_img(
@@ -377,9 +376,8 @@ def make_att_files(root_dir: str) -> None:
 
     save_pkl_dictionary(filename_output, dict_att_all)
 
-    
+
 if __name__ == "__main__":
     # set root_dir to the correct path to your dataset folder
     root_dir = "test_set/"
     make_att_files(root_dir)
-    
