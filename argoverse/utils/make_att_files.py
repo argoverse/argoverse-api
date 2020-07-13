@@ -126,11 +126,16 @@ def save_bev_img(
 
 
 def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3) -> np.array:
-    """
-    Do B-Spline smoothing for temporal noise reduction
-    x, y: N-length np array
-    s: smoothing condition
-    k: degree of the spline fit
+    """ Perform B-Spline smoothing of trajectories for temporal noise reduction
+    
+    Args:
+        x: N-length np array
+        y: N-length np array
+        s: smoothing condition
+        k: degree of the spline fit
+        
+    Returns:
+        smoothed trajectory
     """
 
     if len(x) <= k:
@@ -206,7 +211,7 @@ def make_att_files(root_dir: str) -> None:
         list_log_folders = glob.glob(os.path.join(root_dir, name_folder, "*"))
         for ind_log, path_log in enumerate(list_log_folders):
 
-            id_log = f'{Path(path_log).name}'
+            id_log = f"{Path(path_log).name}"
             print("%s %s %d/%d" % (name_folder, id_log, ind_log, len(list_log_folders)))
 
             if check_track_label_folder:
@@ -363,6 +368,7 @@ def make_att_files(root_dir: str) -> None:
 
     save_pkl_dictionary(filename_output, dict_att_all)
 
+    
 if __name__ == "__main__":
     # set root_dir to the correct path to your dataset folder
     root_dir = "test_set/"
