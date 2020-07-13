@@ -323,6 +323,8 @@ def make_att_files(root_dir: str) -> None:
                     ind_close_max = ind_close.max() + 1
                     ind_close_min = ind_close.min()
 
+                # Only compute "fast" and "occluded" tags for near objects
+                # The thresholds are not very meaningful for faraway objects, since they are usually pretty short.
                 if dict_tracks[id_track]["list_dist"][ind_valid].min() > NEAR_DISTANCE_THRESH:
                     dict_tracks[id_track]["difficult_att"].append("far")
                 else:
