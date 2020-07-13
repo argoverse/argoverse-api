@@ -147,11 +147,10 @@ def derivative(x: np.array) -> np.array:
     """ Compute time derivatives for velocity and acceleration
     
     Args:
-        x: N-length Numpy array
+        x: N-length Numpy array, with indices at consecutive timestamps
     
     Returns:
-        velocity
-        acceleration
+        dx/dt: N-length Numpy array, with derivative of x w.r.t. timestep
     """
     x_tensor = torch.Tensor(x).unsqueeze(0).unsqueeze(0)
     x_padded = torch.cat((x_tensor, (x_tensor[:, :, -1] - x_tensor[:, :, -2] + x_tensor[:, :, -1]).unsqueeze(0)), dim=2)
@@ -160,9 +159,16 @@ def derivative(x: np.array) -> np.array:
     return F.conv1d(x_padded, filters)[0, 0].numpy()
 
 
-def compute_v_a(traj: np.array) -> Tuple[np.array, np.array]:  # traj:Nx3
+def compute_v_a(traj: np.array) -> Tuple[np.array, np.array]:
     """
     Compute velocity and acceleration
+    
+    Args:
+        traj: Numpy array of shape Nx3 representing 3-d trajectory
+    
+    Returns:
+        velocity: Numpy array representing (d traj)/dt
+        acceleration: Numpy array representing (d velocity)/dt
     """
 
     ind_valid = np.nonzero(1 - np.isnan(traj[:, 0]))[0]
