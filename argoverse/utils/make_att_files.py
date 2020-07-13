@@ -146,9 +146,15 @@ def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3) -> np.arra
     return interpolate.splev(np.arange(y.shape[0]), tck)
 
 
-def derivative(x: np.array) -> np.array:  # x: N-length np array
-    """
-    Compute derivative for velocity and acceleration 
+def derivative(x: np.array) -> np.array:
+    """ Compute time derivatives for velocity and acceleration
+    
+    Args:
+        x: N-length Numpy array
+    
+    Returns:
+        velocity
+        acceleration
     """
     x_tensor = torch.Tensor(x).unsqueeze(0).unsqueeze(0)
     x_padded = torch.cat((x_tensor,(x_tensor[:, :, -1] - x_tensor[:, :, -2] + x_tensor[:, :, -1]).unsqueeze(0)), dim=2)
