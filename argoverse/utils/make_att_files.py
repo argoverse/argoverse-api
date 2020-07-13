@@ -151,7 +151,12 @@ def derivative(x: np.array) -> np.array:  # x: N-length np array
     Compute derivative for velocity and acceleration 
     """
     x_tensor = torch.Tensor(x).unsqueeze(0).unsqueeze(0)
-    x_padded = torch.cat((x_tensor, (x_tensor[:, :, -1] - x_tensor[:, :, -2] + x_tensor[:, :, -1]).unsqueeze(0)), dim=2)
+    x_padded = torch.cat(
+        (
+            x_tensor,
+            (x_tensor[:, :, -1] - x_tensor[:, :, -2] + x_tensor[:, :, -1]).unsqueeze(0)
+        ), dim=2
+    )
     filters = torch.Tensor([-1, 1]).unsqueeze(0).unsqueeze(0)
 
     return F.conv1d(x_padded, filters)[0, 0].numpy()
