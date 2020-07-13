@@ -8,21 +8,22 @@ from typing import Any, Dict, List, Tuple
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.interpolate as interpolate
-
-import argoverse
 import open3d as o3d
+import scipy.interpolate as interpolate
 import torch
 import torch.nn.functional as F
+
+import argoverse
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.utils.json_utils import read_json_file
+from argoverse.utils.pkl_utils import save_pkl_dictionary
 
 dict_color: Dict[str, Tuple[float, float, float]] = {}
-dict_color["easy"] = (0.0, 1.0, 0.0)  # green
-dict_color["far"] = (0.0, 0.4, 0.0)  # dark green
-dict_color["occ"] = (0.0, 0.0, 1.0)  # red
-dict_color["fast"] = (0.0, 1.0, 1.0)  # yellow
-dict_color["short"] = (0.8, 0.3, 0.3)  # dark purple
+dict_color["easy"] = (0.0, 1.0, 0.0)  # BGR green
+dict_color["far"] = (0.0, 0.4, 0.0)  # BGR dark green
+dict_color["occ"] = (0.0, 0.0, 1.0)  # BGR red
+dict_color["fast"] = (0.0, 1.0, 1.0)  # BGR yellow
+dict_color["short"] = (0.8, 0.3, 0.3)  # BGR dark purple
 
 list_attritubes = ["short", "occ", "fast", "far", "easy"]
 LIDAR_FPS = 10  # 10 Hz frequency
@@ -186,9 +187,8 @@ def compute_v_a(traj: np.array) -> Tuple[np.array, np.array]:  # traj:Nx3
     return v, a
 
 
-if __name__ == "__main__":
-    # set root_dir to the correct path to your dataset folder
-    root_dir = "test_set/"
+def make_att_files(root_dir: str) -> None:
+    """ Write a .pkl file with difficulty attributes per track """
     path_output_vis = "vis_output"
     filename_output = "att_file.npy"
 
@@ -223,23 +223,23 @@ if __name__ == "__main__":
                             dict_track_labels[id_obj] = []
                         dict_track_labels[id_obj].append(data_obj)
 
-                data_amodel: Dict[str, Any] = {}
+                data_amodal: Dict[str, Any] = {}
                 for key in dict_track_labels.keys():
                     dict_amodal: Dict[str, Any] = {}
-                    data_amodel[key] = dict_amodal
-                    data_amodel[key]["label_class"] = dict_track_labels[key][0]["label_class"]
-                    data_amodel[key]["uuid"] = dict_track_labels[key][0]["track_label_uuid"]
-                    data_amodel[key]["log_id"] = id_log
-                    data_amodel[key]["track_label_frames"] = dict_track_labels[key]
+                    data_amodal[key] = dict_amodal
+                    data_amodal[key]["label_class"] = dict_track_labels[key][0]["label_class"]
+                    data_amodal[key]["uuid"] = dict_track_labels[key][0]["track_label_uuid"]
+                    data_amodal[key]["log_id"] = id_log
+                    data_amodal[key]["track_label_frames"] = dict_track_labels[key]
 
             argoverse_loader = ArgoverseTrackingLoader(os.path.join(root_dir, name_folder))
             data_log = argoverse_loader.get(id_log)
             list_lidar_timestamp = data_log.lidar_timestamp_list
 
             dict_tracks: Dict[str, Any] = {}
-            for id_track in data_amodel.keys():
+            for id_track in data_amodal.keys():
 
-                data = data_amodel[id_track]
+                data = data_amodal[id_track]
                 if data["label_class"] not in list_name_class:
                     continue
 
@@ -269,11 +269,7 @@ if __name__ == "__main__":
                     if dict_tracks[id_track]["ind_lidar_min"] == -1:
                         dict_tracks[id_track]["ind_lidar_min"] = ind_lidar
 
-                    if (
-                        dict_tracks[id_track]["ind_lidar_max"] == -1
-                        or ind_lidar > dict_tracks[id_track]["ind_lidar_max"]
-                    ):
-                        dict_tracks[id_track]["ind_lidar_max"] = ind_lidar
+                    dict_tracks[id_track]["ind_lidar_max"] = max(ind_lidar, dict_tracks[id_track]["ind_lidar_max"])
 
                     center = np.array([box["center"]["x"], box["center"]["y"], box["center"]["z"]])
                     city_SE3_egovehicle = argoverse_loader.get_pose(ind_lidar, id_log)
@@ -315,7 +311,9 @@ if __name__ == "__main__":
                 if dict_tracks[id_track]["list_dist"][ind_valid].min() > NEAR_DISTANCE_THRESH:
                     dict_tracks[id_track]["difficult_att"].append("far")
                 else:
-                    if dict_tracks[id_track]["length_track"] < SHORT_TRACK_LENGTH_THRESH or dict_tracks[id_track]["exists"].sum() < SHORT_TRACK_COUNT_THRESH:
+                    is_short_len_track1 = dict_tracks[id_track]["length_track"] < SHORT_TRACK_LENGTH_THRESH
+                    is_short_len_track2 = dict_tracks[id_track]["exists"].sum() < SHORT_TRACK_COUNT_THRESH
+                    if is_short_len_track1 or is_short_len_track2:
                         dict_tracks[id_track]["difficult_att"].append("short")
                     else:
                         if (ind_close_max - ind_close_min) - dict_tracks[id_track]["exists"][
@@ -363,6 +361,10 @@ if __name__ == "__main__":
 
             dict_att_all[name_folder][id_log] = dict_tracks
 
-    pickle_out = open(filename_output, "wb")
-    pickle.dump(dict_att_all, pickle_out)
-    pickle_out.close()
+    save_pkl_dictionary(filename_output, dict_att_all)
+
+if __name__ == "__main__":
+    # set root_dir to the correct path to your dataset folder
+    root_dir = "test_set/"
+    make_att_files(root_dir)
+    
