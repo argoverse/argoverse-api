@@ -49,8 +49,7 @@ def save_bev_img(
     dataset_name: str,
     log_id: str,
     lidar_timestamp: int,
-    pc: np.ndarray,
-    city_SE3_egovehicle: Any,
+    pc: np.ndarray
 ) -> None:
     """
     Plot results on bev images and save 
@@ -361,8 +360,7 @@ def make_att_files(root_dir: str) -> None:
                         "argoverse_%s" % name_folder,
                         id_log,
                         timestamp_lidar,
-                        pc,
-                        city_SE3_egovehicle,
+                        pc
                     )
 
             for id_track in dict_tracks.keys():
