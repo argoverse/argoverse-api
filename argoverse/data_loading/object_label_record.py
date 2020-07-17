@@ -71,8 +71,8 @@ class ObjectLabelRecord:
             ]
         )
 
-        egovehicle_to_object_se3 = SE3(rotation=quat2rotmat(self.quaternion), translation=self.translation)
-        bbox_in_egovehicle_frame = egovehicle_to_object_se3.transform_point_cloud(bbox_object_frame)
+        egovehicle_SE3_object = SE3(rotation=quat2rotmat(self.quaternion), translation=self.translation)
+        bbox_in_egovehicle_frame = egovehicle_SE3_object.transform_point_cloud(bbox_object_frame)
         return bbox_in_egovehicle_frame
 
     def as_3d_bbox(self) -> np.ndarray:
@@ -107,8 +107,8 @@ class ObjectLabelRecord:
         z_corners = self.height / 2 * np.array([1, 1, -1, -1, 1, 1, -1, -1])
         corners_object_frame = np.vstack((x_corners, y_corners, z_corners)).T
 
-        egovehicle_to_object_se3 = SE3(rotation=quat2rotmat(self.quaternion), translation=self.translation)
-        corners_egovehicle_frame = egovehicle_to_object_se3.transform_point_cloud(corners_object_frame)
+        egovehicle_SE3_object = SE3(rotation=quat2rotmat(self.quaternion), translation=self.translation)
+        corners_egovehicle_frame = egovehicle_SE3_object.transform_point_cloud(corners_object_frame)
         return corners_egovehicle_frame
 
     def render_clip_frustum_cv2(
