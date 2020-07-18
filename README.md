@@ -146,7 +146,7 @@ For all log segments, accurate calibration between LiDAR and cameras enables sen
 ## A Note Regarding Coordinate Transforms
 We provide a number of SE(3) and SE(2) coordinate transforms in the raw Argoverse data. The main notation we use is:
 
-`p_dst = dst_SE3_src * p_src` or `p_dst = dst_SE2_src * p_src`
+`p_dst = dst_SE3_src * p_src` or `p_dst = dst_SE2_src * p_src`.
 We'll describe the 6-dof transforms in more detail below:
 
 - **Map pose**: represents the location and orientation of the ego-vehicle inside the city (i.e. map) reference frame, `city_SE3_egovehicle`. We provide map pose for each log in `poses/city_SE3_egovehicle_{nanosec_timestamp}.json`. This transform brings a point in the egovehicle's reference frame into the city's reference frame.
