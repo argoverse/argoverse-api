@@ -145,6 +145,7 @@ For all log segments, accurate calibration between LiDAR and cameras enables sen
 ---
 ## A Note Regarding Coordinate Transforms
 We provide a number of SE(3) and SE(2) coordinate transforms in the raw Argoverse data. The main notation we use is:
+
 `p_dst = dst_SE3_src * p_src` or `p_dst = dst_SE2_src * p_src`
 We'll describe the 6-dof transforms in more detail below:
 
