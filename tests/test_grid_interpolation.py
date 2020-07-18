@@ -5,7 +5,7 @@ import numpy as np
 from argoverse.utils.grid_interpolation import interp_square_grid
 
 
-def test_interp_square_grid_nearest_3to4():
+def test_interp_square_grid_nearest_3to4() -> None:
     """
     "nearest" interpolation ight make sense for something binary valued like ROI.
     """
@@ -18,7 +18,7 @@ def test_interp_square_grid_nearest_3to4():
     assert np.allclose(out_grid, gt_interp_grid)
 
 
-def test_interp_square_grid_nearest_2to3():
+def test_interp_square_grid_nearest_2to3() -> None:
     """
     "nearest" interpolation ight make sense for something binary valued like ROI.
     """
@@ -31,7 +31,7 @@ def test_interp_square_grid_nearest_2to3():
     assert np.allclose(out_grid, gt_interp_grid)
 
 
-def test_interp_square_grid_linear_3to5():
+def test_interp_square_grid_linear_3to5() -> None:
     """
     "linear" interpolation ight make sense for real valued numbers, e.g. ground heights.
     """
@@ -52,7 +52,7 @@ def test_interp_square_grid_linear_3to5():
     assert np.allclose(out_grid, gt_interp_grid)
 
 
-def test_interp_square_grid_linear_2to3():
+def test_interp_square_grid_linear_2to3() -> None:
     """
     "linear" interpolation ight make sense for real valued numbers, e.g. ground heights.
     """
@@ -65,7 +65,7 @@ def test_interp_square_grid_linear_2to3():
     assert np.allclose(out_grid, gt_interp_grid)
 
 
-def test_interp_square_grid_linear_2to3_neg():
+def test_interp_square_grid_linear_2to3_neg() -> None:
     """
     "linear" interpolation ight make sense for real valued numbers, e.g. ground heights.
     """
@@ -79,7 +79,7 @@ def test_interp_square_grid_linear_2to3_neg():
     assert np.allclose(out_grid, gt_interp_grid)
 
 
-def test_interp_square_grid_linear_2to5_zero():
+def test_interp_square_grid_linear_2to5_zero() -> None:
     """
     "linear" interpolation ight make sense for real valued numbers, e.g. ground heights.
     """
@@ -92,7 +92,8 @@ def test_interp_square_grid_linear_2to5_zero():
 
     assert np.allclose(out_grid, gt_interp_grid)
 
-def test_interp_square_grid_check_no_transpose():
+
+def test_interp_square_grid_check_no_transpose() -> None:
     """
     All other tests are transpose-agnostic (input data is symmetric
     across matrix diagonal) except for this test. Ensure
