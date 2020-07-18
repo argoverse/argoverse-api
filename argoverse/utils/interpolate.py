@@ -154,9 +154,14 @@ def eliminate_duplicates_2d(px: np.ndarray, py: np.ndarray) -> Tuple[np.ndarray,
     return px, py
 
 
-def interp_arc(t: int, px: np.ndarray, py: np.ndarray, interp_method: str = "linear") -> np.ndarray:
-    """
-    Interpolate a polyline using arc-length interpolation.
+def interp_arc(t: int, px: np.ndarray, py: np.ndarray) -> np.ndarray:
+    """ Linearly interpolate equally-spaced points along a polyline.
+
+    We use a chordal parameterization so that interpolated arc-lengths
+    will approximate original polyline chord lengths.
+        Ref: M. Floater and T. Surazhsky, Parameterization for curve
+            interpolation. 2005.
+
     We remove duplicate consecutive points, since these have zero
     distance and thus cause division by zero in chord length computation.
 
