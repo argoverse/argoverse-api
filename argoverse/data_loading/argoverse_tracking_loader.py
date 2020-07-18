@@ -193,7 +193,7 @@ class ArgoverseTrackingLoader:
         """return list of image timestamp (str) for all cameras for the current log.
 
         The different between image_timestamp and image_timestamp_list_sync is that image_timestamp_list_sync
-        syncronize the image to lidar frame.
+        synchronizes the image to the lidar frame.
 
         Returns:
             image_timestamp_list_sync: dictionary of list of image timestamp, with camera name as key.
