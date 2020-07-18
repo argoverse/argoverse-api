@@ -1,6 +1,5 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
-import pdb
 from typing import Tuple, cast
 
 import matplotlib.pyplot as plt
