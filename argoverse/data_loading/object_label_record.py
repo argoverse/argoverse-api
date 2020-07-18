@@ -5,7 +5,6 @@
 import copy
 import json
 import os
-import pdb
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import cv2
