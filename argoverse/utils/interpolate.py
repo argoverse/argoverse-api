@@ -172,10 +172,10 @@ def interp_arc(t: int, px: np.ndarray, py: np.ndarray, interp_method: str = "lin
     px, py = eliminate_duplicates_2d(px, py)
 
     # equally spaced in arclength
-    transposed = np.transpose(np.linspace(0, 1, t))  # should be 15 x 1
+    eq_spaced_points = np.linspace(0, 1, t)
 
     # how many points will be uniformly interpolated?
-    nt = transposed.size
+    nt = eq_spaced_points.size
 
     # the number of points on the curve itself
     n = px.size
@@ -189,20 +189,20 @@ def interp_arc(t: int, px: np.ndarray, py: np.ndarray, interp_method: str = "lin
     # Compute the chordal arclength of each segment.
     # Compute differences between each x coord, to get the dx's
     # Do the same to get dy's. Then the hypotenuse length is computed as a norm.
-    chordlen = (np.sum(np.diff(pxy, axis=0) ** 2, axis=1)) ** (1 / 2)
+    chordlen = np.linalg.norm(np.diff(pxy, axis=0), axis=1)
     # Normalize the arclengths to a unit total
     chordlen = chordlen / np.sum(chordlen)
     # cumulative arclength
     cumarc = np.append(0, np.cumsum(chordlen))
 
-    # which interval did each point fall in, in terms of transposed? (bin index)
-    tbins = np.digitize(transposed, cumarc)
+    # which interval did each point fall in, in terms of eq_spaced_points? (bin index)
+    tbins = np.digitize(eq_spaced_points, cumarc)
 
     # #catch any problems at the ends
-    tbins[np.where((tbins <= 0) | (transposed <= 0))] = 1
-    tbins[np.where((tbins >= n) | (transposed >= 1))] = n - 1
+    tbins[np.where((tbins <= 0) | (eq_spaced_points <= 0))] = 1
+    tbins[np.where((tbins >= n) | (eq_spaced_points >= 1))] = n - 1
 
-    s = np.divide((transposed - cumarc[tbins - 1]), chordlen[tbins - 1])
+    s = np.divide((eq_spaced_points - cumarc[tbins - 1]), chordlen[tbins - 1])
     pt = pxy[tbins - 1, :] + np.multiply((pxy[tbins, :] - pxy[tbins - 1, :]), (np.vstack([s] * 2)).T)
 
     return pt
