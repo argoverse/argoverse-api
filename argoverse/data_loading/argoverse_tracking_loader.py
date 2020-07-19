@@ -171,15 +171,14 @@ class ArgoverseTrackingLoader:
                     self._image_timestamp_list_sync[log][camera] = cast(
                         List[int],
                         list(
-                            filter(
-                                lambda x: x is not None,
-                                (
-                                    self.sync.get_closest_cam_channel_timestamp(x, camera, log)
-                                    for x in self._lidar_timestamp_list[log]
-                                ),
-                            )
+                            self.sync.get_closest_cam_channel_timestamp(x, camera, log)
+                            for x in self._lidar_timestamp_list[log]
                         ),
                     )
+
+                    assert len(self._image_timestamp_list_sync[log][camera]) == len(
+                        self._lidar_timestamp_list[log]
+                    ), "Missing timestamp"
 
                     self._image_list_sync[log][camera] = [
                         self.get_image_at_timestamp(x, camera=camera, log_id=log, load=False)
