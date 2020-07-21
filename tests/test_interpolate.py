@@ -4,7 +4,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from argoverse.utils.interpolate import compute_lane_width, compute_mid_pivot_arc, compute_midpoint_line
+from argoverse.utils.interpolate import compute_lane_width, compute_mid_pivot_arc, compute_midpoint_line, interp_arc
 
 
 def test_compute_lane_width_straight():
@@ -304,3 +304,16 @@ def test_compute_midpoint_line_curved_maintain_4_waypts():
 
     assert np.allclose(centerline_pts[0], gt_centerline_pts[0])
     assert np.allclose(centerline_pts[-1], gt_centerline_pts[-1])
+
+
+def test_interp_arc_straight_line():
+    """ """
+    pts = np.array([[-10, 0], [10, 0]])
+    interp_pts = interp_arc(t=3, px=pts[:, 0], py=pts[:, 1])
+    gt_interp_pts = np.array([[-10, 0], [0, 0], [10, 0]])
+    assert np.allclose(interp_pts, gt_interp_pts)
+
+    pts = np.array([[-10, 0], [10, 0]])
+    interp_pts = interp_arc(t=4, px=pts[:, 0], py=pts[:, 1])
+    gt_interp_pts = np.array([[-10, 0], [-10 / 3, 0], [10 / 3, 0], [10, 0]])
+    assert np.allclose(interp_pts, gt_interp_pts)

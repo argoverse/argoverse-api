@@ -1,7 +1,5 @@
 import glob
-import json
 import os
-import pickle
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
@@ -16,13 +14,14 @@ import torch
 import torch.nn.functional as F
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.utils.json_utils import read_json_file
+from argoverse.utils.pkl_utils import save_pkl_dictionary
 
 dict_color: Dict[str, Tuple[float, float, float]] = {}
-dict_color["easy"] = (0.0, 1.0, 0.0)  # green
-dict_color["far"] = (0.0, 0.4, 0.0)  # dark green
-dict_color["occ"] = (0.0, 0.0, 1.0)  # red
-dict_color["fast"] = (0.0, 1.0, 1.0)  # yellow
-dict_color["short"] = (0.8, 0.3, 0.3)  # dark purple
+dict_color["easy"] = (0.0, 1.0, 0.0)  # BGR green
+dict_color["far"] = (0.0, 0.4, 0.0)  # BGR dark green
+dict_color["occ"] = (0.0, 0.0, 1.0)  # BGR red
+dict_color["fast"] = (0.0, 1.0, 1.0)  # BGR yellow
+dict_color["short"] = (0.8, 0.3, 0.3)  # BGR dark purple
 
 list_attritubes = ["short", "occ", "fast", "far", "easy"]
 LIDAR_FPS = 10  # 10 Hz frequency
@@ -49,7 +48,6 @@ def save_bev_img(
     log_id: str,
     lidar_timestamp: int,
     pc: np.ndarray,
-    city_SE3_egovehicle: Any,
 ) -> None:
     """
     Plot results on bev images and save 
@@ -125,11 +123,16 @@ def save_bev_img(
 
 
 def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3) -> np.array:
-    """
-    Do B-Spline smoothing for temporal noise reduction
-    x, y: N-length np array
-    s: smoothing condition
-    k: degree of the spline fit
+    """ Perform B-Spline smoothing of trajectories for temporal noise reduction
+    
+    Args:
+        x: N-length np array
+        y: N-length np array
+        s: smoothing condition
+        k: degree of the spline fit
+        
+    Returns:
+        smoothed trajectory
     """
 
     if len(x) <= k:
@@ -140,9 +143,14 @@ def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3) -> np.arra
     return interpolate.splev(np.arange(y.shape[0]), tck)
 
 
-def derivative(x: np.array) -> np.array:  # x: N-length np array
-    """
-    Compute derivative for velocity and acceleration 
+def derivative(x: np.array) -> np.array:
+    """ Compute time derivatives for velocity and acceleration
+    
+    Args:
+        x: N-length Numpy array, with indices at consecutive timestamps
+    
+    Returns:
+        dx/dt: N-length Numpy array, with derivative of x w.r.t. timestep
     """
     x_tensor = torch.Tensor(x).unsqueeze(0).unsqueeze(0)
     x_padded = torch.cat((x_tensor, (x_tensor[:, :, -1] - x_tensor[:, :, -2] + x_tensor[:, :, -1]).unsqueeze(0)), dim=2)
@@ -151,11 +159,17 @@ def derivative(x: np.array) -> np.array:  # x: N-length np array
     return F.conv1d(x_padded, filters)[0, 0].numpy()
 
 
-def compute_v_a(traj: np.array) -> Tuple[np.array, np.array]:  # traj:Nx3
+def compute_v_a(traj: np.array) -> Tuple[np.array, np.array]:
     """
     Compute velocity and acceleration
+    
+    Args:
+        traj: Numpy array of shape Nx3 representing 3-d trajectory
+    
+    Returns:
+        velocity: Numpy array representing (d traj)/dt
+        acceleration: Numpy array representing (d velocity)/dt
     """
-
     ind_valid = np.nonzero(1 - np.isnan(traj[:, 0]))[0]
     dx = bspline_1d(ind_valid, traj[:, 0])
     dy = bspline_1d(ind_valid, traj[:, 1])
@@ -186,9 +200,8 @@ def compute_v_a(traj: np.array) -> Tuple[np.array, np.array]:  # traj:Nx3
     return v, a
 
 
-if __name__ == "__main__":
-    # set root_dir to the correct path to your dataset folder
-    root_dir = "test_set/"
+def make_att_files(root_dir: str) -> None:
+    """ Write a .pkl file with difficulty attributes per track """
     path_output_vis = "vis_output"
     filename_output = "att_file.npy"
 
@@ -206,7 +219,7 @@ if __name__ == "__main__":
         list_log_folders = glob.glob(os.path.join(root_dir, name_folder, "*"))
         for ind_log, path_log in enumerate(list_log_folders):
 
-            id_log = f'{Path(path_log).name}'
+            id_log = f"{Path(path_log).name}"
             print("%s %s %d/%d" % (name_folder, id_log, ind_log, len(list_log_folders)))
 
             if check_track_label_folder:
@@ -223,23 +236,23 @@ if __name__ == "__main__":
                             dict_track_labels[id_obj] = []
                         dict_track_labels[id_obj].append(data_obj)
 
-                data_amodel: Dict[str, Any] = {}
+                data_amodal: Dict[str, Any] = {}
                 for key in dict_track_labels.keys():
                     dict_amodal: Dict[str, Any] = {}
-                    data_amodel[key] = dict_amodal
-                    data_amodel[key]["label_class"] = dict_track_labels[key][0]["label_class"]
-                    data_amodel[key]["uuid"] = dict_track_labels[key][0]["track_label_uuid"]
-                    data_amodel[key]["log_id"] = id_log
-                    data_amodel[key]["track_label_frames"] = dict_track_labels[key]
+                    data_amodal[key] = dict_amodal
+                    data_amodal[key]["label_class"] = dict_track_labels[key][0]["label_class"]
+                    data_amodal[key]["uuid"] = dict_track_labels[key][0]["track_label_uuid"]
+                    data_amodal[key]["log_id"] = id_log
+                    data_amodal[key]["track_label_frames"] = dict_track_labels[key]
 
             argoverse_loader = ArgoverseTrackingLoader(os.path.join(root_dir, name_folder))
             data_log = argoverse_loader.get(id_log)
             list_lidar_timestamp = data_log.lidar_timestamp_list
 
             dict_tracks: Dict[str, Any] = {}
-            for id_track in data_amodel.keys():
+            for id_track in data_amodal.keys():
 
-                data = data_amodel[id_track]
+                data = data_amodal[id_track]
                 if data["label_class"] not in list_name_class:
                     continue
 
@@ -269,11 +282,7 @@ if __name__ == "__main__":
                     if dict_tracks[id_track]["ind_lidar_min"] == -1:
                         dict_tracks[id_track]["ind_lidar_min"] = ind_lidar
 
-                    if (
-                        dict_tracks[id_track]["ind_lidar_max"] == -1
-                        or ind_lidar > dict_tracks[id_track]["ind_lidar_max"]
-                    ):
-                        dict_tracks[id_track]["ind_lidar_max"] = ind_lidar
+                    dict_tracks[id_track]["ind_lidar_max"] = max(ind_lidar, dict_tracks[id_track]["ind_lidar_max"])
 
                     center = np.array([box["center"]["x"], box["center"]["y"], box["center"]["z"]])
                     city_SE3_egovehicle = argoverse_loader.get_pose(ind_lidar, id_log)
@@ -290,9 +299,10 @@ if __name__ == "__main__":
                     dict_tracks[id_track]["list_bbox"][ind_lidar] = box
 
                 length_track = dict_tracks[id_track]["ind_lidar_max"] - dict_tracks[id_track]["ind_lidar_min"] + 1
-                
-                assert not (dict_tracks[id_track]["ind_lidar_max"] == -1 and \
-                    dict_tracks[id_track]["ind_lidar_min"] == -1), "zero-length track"
+
+                assert not (
+                    dict_tracks[id_track]["ind_lidar_max"] == -1 and dict_tracks[id_track]["ind_lidar_min"] == -1
+                ), "zero-length track"
                 dict_tracks[id_track]["length_track"] = length_track
 
                 dict_tracks[id_track]["list_vel"], dict_tracks[id_track]["list_acc"] = compute_v_a(
@@ -302,6 +312,7 @@ if __name__ == "__main__":
                     dict_tracks[id_track]["length_track"] - dict_tracks[id_track]["exists"].sum()
                 )
                 dict_tracks[id_track]["difficult_att"] = []
+                # get scalar velocity per timestamp as 2-norm of (vx, vy)
                 vel_abs = np.linalg.norm(dict_tracks[id_track]["list_vel"][:, 0:2], axis=1)
                 acc_abs = np.linalg.norm(dict_tracks[id_track]["list_acc"][:, 0:2], axis=1)
 
@@ -312,10 +323,14 @@ if __name__ == "__main__":
                     ind_close_max = ind_close.max() + 1
                     ind_close_min = ind_close.min()
 
+                # Only compute "fast" and "occluded" tags for near objects
+                # The thresholds are not very meaningful for faraway objects, since they are usually pretty short.
                 if dict_tracks[id_track]["list_dist"][ind_valid].min() > NEAR_DISTANCE_THRESH:
                     dict_tracks[id_track]["difficult_att"].append("far")
                 else:
-                    if dict_tracks[id_track]["length_track"] < SHORT_TRACK_LENGTH_THRESH or dict_tracks[id_track]["exists"].sum() < SHORT_TRACK_COUNT_THRESH:
+                    is_short_len_track1 = dict_tracks[id_track]["length_track"] < SHORT_TRACK_LENGTH_THRESH
+                    is_short_len_track2 = dict_tracks[id_track]["exists"].sum() < SHORT_TRACK_COUNT_THRESH
+                    if is_short_len_track1 or is_short_len_track2:
                         dict_tracks[id_track]["difficult_att"].append("short")
                     else:
                         if (ind_close_max - ind_close_min) - dict_tracks[id_track]["exists"][
@@ -341,7 +356,6 @@ if __name__ == "__main__":
                             list_difficulty_att.append(dict_tracks[id_track]["difficult_att"])
 
                     path_lidar = os.path.join(path_log, "lidar", "PC_%s.ply" % timestamp_lidar)
-                    city_SE3_egovehicle = argoverse_loader.get_pose(ind_lidar, id_log)
                     pc = np.asarray(o3d.io.read_point_cloud(path_lidar).points)
                     list_lidar_timestamp = data_log.lidar_timestamp_list
                     save_bev_img(
@@ -352,7 +366,6 @@ if __name__ == "__main__":
                         id_log,
                         timestamp_lidar,
                         pc,
-                        city_SE3_egovehicle,
                     )
 
             for id_track in dict_tracks.keys():
@@ -363,6 +376,10 @@ if __name__ == "__main__":
 
             dict_att_all[name_folder][id_log] = dict_tracks
 
-    pickle_out = open(filename_output, "wb")
-    pickle.dump(dict_att_all, pickle_out)
-    pickle_out.close()
+    save_pkl_dictionary(filename_output, dict_att_all)
+
+
+if __name__ == "__main__":
+    # set root_dir to the correct path to your dataset folder
+    root_dir = "test_set/"
+    make_att_files(root_dir)

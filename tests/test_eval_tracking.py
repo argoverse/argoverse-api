@@ -4,7 +4,7 @@ import os
 import shutil
 from collections import defaultdict, namedtuple
 from pathlib import Path
-from typing import Any, Mapping, Tuple
+from typing import Any, Mapping, NamedTuple, Tuple
 
 import numpy as np
 from scipy.spatial.transform import Rotation
@@ -54,8 +54,19 @@ def yaw_to_quaternion3d(yaw: float) -> Tuple[float, float, float, float]:
     return qx, qy, qz, qw
 
 
-fields = ("l", "w", "h", "qx", "qy", "qz", "qw", "cx", "cy", "cz", "track_id", "label_class")
-TrackedObjRec = namedtuple("TrackedObjRec", fields, defaults=(None,) * len(fields))
+class TrackedObjRec(NamedTuple):
+    l: float
+    w: float
+    h: float
+    qx: float
+    qy: float
+    qz: float
+    qw: float
+    cx: float
+    cy: float
+    cz: float
+    track_id: str
+    label_class: str
 
 
 class TrackedObjects:
