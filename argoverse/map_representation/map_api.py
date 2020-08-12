@@ -127,19 +127,21 @@ class ArgoverseMap:
             Drivable area contours
         """
         da_imgray = self.city_rasterized_da_roi_dict[city_name]["da_mat"]
-
         contours = get_img_contours(da_imgray)
+
+        # pull out 3x3 matrix parameterizing the SE(2) transformation from city coords -> npy image
+        npyimage_T_city = self.city_rasterized_da_roi_dict[city_name]["npyimage_to_city_se2"]
+        R = npyimage_T_city[:2, :2]
+        t = npyimage_T_city[:2, 2]
+        npyimage_SE2_city = SE2(rotation=R, translation=t)
+        city_SE2_npyimage = npyimage_SE2_city.inverse()
+
         city_contours: List[np.ndarray] = []
         for i, contour_im_coords in enumerate(contours):
             contour_im_coords = contour_im_coords.squeeze()
             contour_im_coords = contour_im_coords.astype(np.float64)
-            npyimage_to_city_se2_mat = self.city_rasterized_da_roi_dict[city_name]["npyimage_to_city_se2"]
 
-            se2_rotation = npyimage_to_city_se2_mat[:2, :2]
-            se2_trans = npyimage_to_city_se2_mat[:2, 2]
-
-            npyimage_to_city_se2 = SE2(rotation=se2_rotation, translation=se2_trans)
-            contour_city_coords = npyimage_to_city_se2.inverse_transform_point_cloud(contour_im_coords)
+            contour_city_coords = city_SE2_npyimage.transform_point_cloud(contour_im_coords)
             city_contours.append(self.append_height_to_2d_city_pt_cloud(contour_city_coords, city_name))
 
         return city_contours
