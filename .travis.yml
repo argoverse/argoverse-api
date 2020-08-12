@@ -7,8 +7,8 @@ install:
     - pip install tox-travis==0.12 tox==3.12.1 pre-commit==1.17.0
 
 script:
-    - travis_wait 20 tox
-    - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then pre-commit run --show-diff-on-failure --origin $TRAVIS_COMMIT --source $TRAVIS_BRANCH; fi'
+    - tox
+    - travis_wait 20 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then pre-commit run --show-diff-on-failure --origin $TRAVIS_COMMIT --source $TRAVIS_BRANCH; fi'
 
 notifications:
     email:
