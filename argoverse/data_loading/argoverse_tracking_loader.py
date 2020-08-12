@@ -36,7 +36,7 @@ def _read_city_name(path: str) -> str:
 
 
 class ArgoverseTrackingLoader:
-    def __init__(self, root_dir: str, return_missing_image_as: str = None) -> None:
+    def __init__(self, root_dir: str, return_missing_image_as: Optional[str] = None) -> None:
         """
         root_dir: directory of the dataset
         return_missing_image_as: specify what to return when there are image with missing timestamp (default = None).
