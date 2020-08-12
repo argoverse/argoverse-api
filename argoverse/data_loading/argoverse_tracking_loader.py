@@ -36,7 +36,13 @@ def _read_city_name(path: str) -> str:
 
 
 class ArgoverseTrackingLoader:
-    def __init__(self, root_dir: str) -> None:
+    def __init__(self, root_dir: str, return_missing_image_as: str = None) -> None:
+        """
+        return_missing_image_as: specify what to return when there are image with missing timestamp (default = None).
+                            None        -> None,
+                            'backward'  -> closest previous timestamp,
+                            'forward'   -> closest next timestamp
+                            """
         # initialize class member
         self.CAMERA_LIST = CAMERA_LIST
         self._log_list: Optional[List[str]] = None
@@ -52,6 +58,8 @@ class ArgoverseTrackingLoader:
         self._calib: Optional[Dict[str, Dict[str, Calibration]]] = None  # { log_name: { camera_name: Calibration } }
         self._city_name = None
         self.counter: int = 0
+
+        self.return_missing_image_as = return_missing_image_as
 
         self.image_count: int = 0
         self.lidar_count: int = 0
@@ -180,10 +188,22 @@ class ArgoverseTrackingLoader:
                         self._lidar_timestamp_list[log]
                     ), "Missing timestamp"
 
-                    self._image_list_sync[log][camera] = [
-                        self.get_image_at_timestamp(x, camera=camera, log_id=log, load=False)
-                        for x in self._image_timestamp_list_sync[log][camera]
-                    ]
+                    self._image_list_sync[log][camera] = []
+                    for i, x in enumerate(self._image_timestamp_list_sync[log][camera]):
+                        if x is None:
+                            if self.return_missing_image_as == "backward" and i != 0:
+                                x = self._image_timestamp_list_sync[log][camera][i - 1]
+                            elif (
+                                self.return_missing_image_as == "forward"
+                                and i != len(self._image_timestamp_list_sync[log][camera]) - 1
+                            ):
+                                x = self._image_timestamp_list_sync[log][camera][i + 1]
+                            else:
+                                x = None
+
+                        self._image_list_sync[log][camera].append(
+                            self.get_image_at_timestamp(x, camera=camera, log_id=log, load=False)
+                        )
 
         return self._image_list_sync[self.current_log]
 
@@ -449,6 +469,7 @@ Total bounding box: {sum(num_annotations)}
             log_id: log_id, if not specified will use self.current_log
             load: whether to return image array (True) or image path (False)
 
+
         Returns:
             np.array: list of image path (str or np.array)),
         """
@@ -458,10 +479,14 @@ Total bounding box: {sum(num_annotations)}
         if log_id is None:
             log_id = self.current_log
         assert self.timestamp_image_dict is not None
+
+        if timestamp is None:
+            return None
+
         try:
             image_path = self._timestamp_image_dict[log_id][camera][timestamp]
         except KeyError:
-            logging.error(f"Cannot find {camera} image at timestamp {timestamp} in log {log_id}")
+            logging.warning(f"Cannot find {camera} image at timestamp {timestamp} in log {log_id}")
             return None
 
         if load:
