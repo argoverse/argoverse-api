@@ -27,6 +27,7 @@ class ObjectLabelRecord:
         occlusion: int,
         label_class: Optional[str] = None,
         track_id: Optional[str] = None,
+        score: float = 1.0,
     ) -> None:
         """Create an ObjectLabelRecord.
 
@@ -48,6 +49,7 @@ class ObjectLabelRecord:
         self.occlusion = occlusion
         self.label_class = label_class
         self.track_id = track_id
+        self.score = score
 
     def as_2d_bbox(self) -> np.ndarray:
         """Construct a 2D bounding box from this label.
@@ -271,7 +273,11 @@ def json_label_dict_to_obj_record(label: Dict[str, Any]) -> ObjectLabelRecord:
         track_id = label["track_label_uuid"]
     else:
         track_id = None
-    obj_rec = ObjectLabelRecord(quaternion, translation, length, width, height, occlusion, label_class, track_id)
+    if "score" in label:
+        score = label["score"]
+    else:
+        score = 1.0
+    obj_rec = ObjectLabelRecord(quaternion, translation, length, width, height, occlusion, label_class, track_id, score)
     return obj_rec
 
 
