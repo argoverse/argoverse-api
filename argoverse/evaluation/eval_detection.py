@@ -2,26 +2,26 @@
 import os
 from collections import defaultdict
 from dataclasses import dataclass
+from multiprocessing import Pool
 from pathlib import Path
 from typing import List, Tuple
 
+import click
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-import click
 from argoverse.data_loading.object_label_record import read_label
 from argoverse.evaluation.detection_utils import (
     DistFnType,
     SimFnType,
+    compute_match_matrix,
     dist_fn,
-    filter_annos,
+    filter_instances,
     get_error_types,
     get_ranks,
     interp,
-    sim_fn,
 )
-from tqdm.contrib.concurrent import process_map
 
 
 @dataclass
@@ -32,7 +32,7 @@ class DetectionCfg:
         sim_ths: The similarity thresholds for determining a true positive.
         sim_fn_type: The type of similarity function to be used for calculating average precision.
         n_rec_samples: The number of recall points to sample uniformly in [0, 1].
-        wdcs: The weight vector for the weighted detection composite score (WDCS).
+        dcs: The weight vector for the detection composite score (DCS).
         tp_threshold: The center distance threshold for the true positive metrics.
         significant_digits: The precision for metrics.
     """
@@ -40,7 +40,7 @@ class DetectionCfg:
     sim_ths: Tuple[float] = (0.5, 1.0, 2.0, 4.0)
     sim_fn_type: SimFnType = SimFnType.CENTER
     n_rec_samples: int = 101
-    ads_weighting: Tuple[float] = (3, 1, 1, 1)
+    dcs_weighting: Tuple[float] = (3, 1, 1, 1)
     tp_thresh: float = 2.0
     significant_digits: int = 3
 
@@ -75,8 +75,8 @@ class DetectionEvaluator:
         data = defaultdict(list)
         cls_inst_map = defaultdict(int)
 
-        chunk_size = max(1, len(gt_fpaths) // os.cpu_count())
-        accum = process_map(self.accumulate, gt_fpaths, chunksize=chunk_size)
+        with Pool(os.cpu_count()) as p:
+            accum = p.map(self.accumulate, gt_fpaths)
         for frame_stats, frame_cls_to_inst in accum:
             for cls_name, cls_stats in frame_stats.items():
                 data[cls_name].append(cls_stats)
@@ -111,15 +111,15 @@ class DetectionEvaluator:
         ts = gt_fpath.stem.split("_")[-1]
         dt_fpath = self.dt_fpath / f"{log_id}/per_sweep_annotations_amodal/tracked_object_labels_{ts}.json"
 
-        dt_annos = np.array(read_label(dt_fpath))
-        gt_annos = np.array(read_label(gt_fpath))
-        gt_clss = np.array([gt_anno.label_class for gt_anno in gt_annos])
+        dts = np.array(read_label(dt_fpath))
+        gts = np.array(read_label(gt_fpath))
+        gt_clss = np.array([gt.label_class for gt in gts])
 
         class_data = defaultdict(list)
         class_to_ninst = defaultdict(int)
         for gt_cls in np.unique(gt_clss):
-            dt_filtered = filter_annos(dt_annos, gt_cls)
-            gt_filtered = filter_annos(gt_annos, gt_cls)
+            dt_filtered = filter_instances(dts, gt_cls)
+            gt_filtered = filter_instances(gts, gt_cls)
 
             if dt_filtered.shape[0] > 0:
                 error_types = self.assign(dt_filtered, gt_filtered)
@@ -128,26 +128,26 @@ class DetectionEvaluator:
             class_to_ninst[gt_cls] = gt_filtered.shape[0]
         return class_data, class_to_ninst
 
-    def assign(self, dt_annos: np.ndarray, gt_annos: np.ndarray) -> List:
-        """Attempt assignment of each detection to a ground truth annotation.
+    def assign(self, dts: np.ndarray, gts: np.ndarray) -> List:
+        """Attempt assignment of each detection to a ground truth label.
 
         Args:
-            dt_annos: Detection annotations.
-            gt_annos: Ground truth annotations.
+            dts: Detections.
+            gts: Ground truth labels.
 
         Returns:
             True positives, false positives, scores, and translation errors.
 
         """
         n_threshs = len(self.dt_cfg.sim_ths)
-        error_types = np.zeros((dt_annos.shape[0], n_threshs + 3))
-        scores, ranks = get_ranks(dt_annos)
-        if gt_annos.shape[0] == 0:
+        error_types = np.zeros((dts.shape[0], n_threshs + 3))
+        scores, ranks = get_ranks(dts)
+        if gts.shape[0] == 0:
             return np.hstack((error_types, scores))
 
-        match_matrix = sim_fn(dt_annos, gt_annos, self.dt_cfg.sim_fn_type)
+        match_matrix = compute_match_matrix(dts, gts, self.dt_cfg.sim_fn_type)
 
-        # Get the most similar GT annotation to each detection.
+        # Get the most similar GT label for each detection.
         gt_matches = np.expand_dims(match_matrix[ranks].argmax(axis=1), axis=0)
 
         # Grab the corresponding similarity score for each assignment.
@@ -163,8 +163,8 @@ class DetectionEvaluator:
                 dt_tp_indices = unique_dt_matches[tp_mask]
                 gt_tp_indices = unique_gt_matches[tp_mask]
 
-                dt_df = pd.DataFrame([dt.__dict__ for dt in dt_annos[ranks][dt_tp_indices]])
-                gt_df = pd.DataFrame([gt.__dict__ for gt in gt_annos[gt_tp_indices]])
+                dt_df = pd.DataFrame([dt.__dict__ for dt in dts[ranks][dt_tp_indices]])
+                gt_df = pd.DataFrame([gt.__dict__ for gt in gts[gt_tp_indices]])
 
                 trans_error = dist_fn(dt_df, gt_df, DistFnType.TRANSLATION)
                 scale_error = dist_fn(dt_df, gt_df, DistFnType.SCALE)
@@ -217,10 +217,10 @@ class DetectionEvaluator:
             # TP Error Metrics
             tp_metrics = np.mean(cls_stats[:, num_ths : num_ths + 3], axis=0)
 
-            ads_summands = np.hstack((ap, 1 - tp_metrics))
+            dcs_summands = np.hstack((ap, 1 - tp_metrics))
 
             # Ranking metric
-            wdcs = np.average(ads_summands, weights=self.dt_cfg.ads_weighting)
+            wdcs = np.average(dcs_summands, weights=self.dt_cfg.dcs_weighting)
 
             summary[cls_name] = [ap, *tp_metrics, wdcs]
             self.plot(rec_interp, prec_interp, cls_name)

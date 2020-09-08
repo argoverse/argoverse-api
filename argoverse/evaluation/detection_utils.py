@@ -1,3 +1,10 @@
+# <Copyright 2020, Argo AI, LLC. Released under the MIT license.>
+"""Detection utilities for the Argoverse detection leaderboard.
+
+Accepts detections (in Argoverse ground truth format) and ground truth labels
+
+"""
+
 from enum import Enum, auto
 from typing import List, Tuple
 
@@ -12,8 +19,6 @@ from argoverse.utils.transform import quat2rotmat
 
 class SimFnType(Enum):
     CENTER = auto()
-    IOU_2D = auto()
-    IOU_3D = auto()
 
 
 class DistFnType(Enum):
@@ -22,47 +27,53 @@ class DistFnType(Enum):
     ORIENTATION = auto()
 
 
-def filter_annos(annos: np.ndarray, target_class: str, range_metric="euclidean", max_dist=50) -> np.ndarray:
+class InterpType(Enum):
+    ALL = auto()
+
+
+def filter_instances(
+    instances: np.ndarray, target_class: str, range_metric: str = "euclidean", max_dist: float = 50.0
+) -> np.ndarray:
     """Filter the annotations based on a set of conditions.
 
     Args:
-        annos: The annotations to be filtered.
+        annos: The instances to be filtered.
         target_class: The name of the class of interest.
         range_metric: The range metric used for filtering.
     
     Returns:
         The filtered annotations.
     """
-    annos = np.array([dt_anno for dt_anno in annos if dt_anno.label_class == target_class])
+    instances = np.array([instance for instance in instances if instance.label_class == target_class])
 
     if range_metric == "euclidean":
-        centers = np.array([dt.translation for dt in annos])
+        centers = np.array([dt.translation for dt in instances])
         filtered_annos = np.array([])
 
         if centers.shape[0] > 0:
             dt_dists = np.linalg.norm(centers, axis=1)
-            filtered_annos = annos[dt_dists < max_dist]
+            filtered_annos = instances[dt_dists < max_dist]
 
         return filtered_annos
 
 
-def get_ranks(dt_annos: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    """Get the rankings for the detection annotations.
+def get_ranks(dts: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """Get the rankings for the detections.
 
     Args:
-        dt_annos: Detection annotations.
+        dts: Detections.
 
     Returns:
         scores: The detection scores.
         ranks: The ranking for the detections.
 
     """
-    scores = np.array([dt_anno.score for dt_anno in dt_annos])
+    scores = np.array([dt.score for dt in dts])
     ranks = scores.argsort()[::-1]
     return np.expand_dims(scores, 1)[ranks], ranks
 
 
-def interp(prec: np.ndarray, method="all") -> np.ndarray:
+def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
     """Interpolate the precision over all recall levels.
 
     Args:
@@ -72,19 +83,29 @@ def interp(prec: np.ndarray, method="all") -> np.ndarray:
     Returns:
         Interpolated precision at all recall levels.
     """
-    if method == "all":
-        return np.maximum.accumulate(prec[::-1])[::-1]
+    if method == InterpType.ALL:
+        prec_interp = np.maximum.accumulate(prec[::-1])[::-1]
+    else:
+        raise NotImplemented("This interpolation method is not implemented!")
+    return prec_interp
 
 
-def sim_fn(dt_annos: np.ndarray, gt_annos: np.ndarray, metric: SimFnType) -> np.ndarray:
+def compute_match_matrix(dts: np.ndarray, gts: np.ndarray, metric: SimFnType) -> np.ndarray:
+    """Calculate the match matrix between detections and ground truth labels,
+    using a specified similarity function.
+
+    Args:
+        dts: Detections.
+        gts: Ground truth labels.
+        metric: Similarity metric type.
+    
+    Returns:
+        Interpolated precision at all recall levels.
+    """
     if metric == SimFnType.CENTER:
-        dt_centers = np.array([dt.translation for dt in dt_annos])
-        gt_centers = np.array([gt.translation for gt in gt_annos])
+        dt_centers = np.array([dt.translation for dt in dts])
+        gt_centers = np.array([gt.translation for gt in gts])
         sims = -cdist(dt_centers, gt_centers)
-    elif metric == SimFnType.IOU_2D:
-        raise NotImplemented("This similarity metric is not implemented!")
-    elif metric == SimFnType.IOU_3D:
-        raise NotImplemented("This similarity metric is not implemented!")
     else:
         raise NotImplemented("This similarity metric is not implemented!")
     return sims
@@ -98,22 +119,22 @@ def get_error_types(match_scores: np.ndarray, thresh: float, metric: SimFnType) 
         raise NotImplemented("This similarity metric is not implemented!")
 
 
-def dist_fn(dt_df: pd.DataFrame, gt_df: pd.DataFrame, metric: DistFnType) -> np.ndarray:
+def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndarray:
     if metric == DistFnType.TRANSLATION:
-        dt_centers = np.vstack(dt_df["translation"].array)
-        gt_centers = np.vstack(gt_df["translation"].array)
+        dt_centers = np.vstack(dts["translation"].array)
+        gt_centers = np.vstack(gts["translation"].array)
         trans_errors = np.linalg.norm(dt_centers - gt_centers, axis=1)
         return trans_errors
     elif metric == DistFnType.SCALE:
-        dt_dims = dt_df[["width", "length", "height"]]
-        gt_dims = gt_df[["width", "length", "height"]]
+        dt_dims = dts[["width", "length", "height"]]
+        gt_dims = gts[["width", "length", "height"]]
         inter = np.minimum(dt_dims, gt_dims).prod(axis=1)
         union = np.maximum(dt_dims, gt_dims).prod(axis=1)
         scale_errors = 1 - (inter / union)
         return scale_errors
     elif metric == DistFnType.ORIENTATION:
-        dt_yaws = R.from_quat(np.vstack(dt_df["quaternion"].array)[:, [3, 0, 1, 2]]).as_euler("xyz")[:, 2]
-        gt_yaws = R.from_quat(np.vstack(gt_df["quaternion"].array)[:, [3, 0, 1, 2]]).as_euler("xyz")[:, 2]
+        dt_yaws = R.from_quat(np.vstack(dts["quaternion"].array)[:, [3, 0, 1, 2]]).as_euler("xyz")[:, 2]
+        gt_yaws = R.from_quat(np.vstack(gts["quaternion"].array)[:, [3, 0, 1, 2]]).as_euler("xyz")[:, 2]
         orientation_errors = np.abs((dt_yaws - gt_yaws + np.pi) % (2 * np.pi) - np.pi)
         return orientation_errors
     else:
