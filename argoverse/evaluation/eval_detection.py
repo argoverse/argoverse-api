@@ -220,9 +220,9 @@ class DetectionEvaluator:
             dcs_summands = np.hstack((ap, 1 - tp_metrics))
 
             # Ranking metric
-            wdcs = np.average(dcs_summands, weights=self.dt_cfg.dcs_weighting)
+            dcs = np.average(dcs_summands, weights=self.dt_cfg.dcs_weighting)
 
-            summary[cls_name] = [ap, *tp_metrics, wdcs]
+            summary[cls_name] = [ap, *tp_metrics, dcs]
             self.plot(rec_interp, prec_interp, cls_name)
         return summary
 

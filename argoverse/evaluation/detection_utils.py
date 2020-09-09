@@ -2,6 +2,11 @@
 """Detection utilities for the Argoverse detection leaderboard.
 
 Accepts detections (in Argoverse ground truth format) and ground truth labels
+for computing evaluation metrics for 3d object detection. We have five different,
+metrics: mAP, ATE, ASE, AOE, and DCS. A true positive for mAP is defined as the
+highest confidence prediction within a specified euclidean distance threshold
+from a bird's-eye view. We prefer these metrics instead of IoU due to the
+increased interpretability of the error modes in a set of detections.
 
 """
 
@@ -12,9 +17,6 @@ import numpy as np
 import pandas as pd
 from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation as R
-
-from argoverse.data_loading.object_label_record import ObjectLabelRecord
-from argoverse.utils.transform import quat2rotmat
 
 
 class SimFnType(Enum):
@@ -31,22 +33,29 @@ class InterpType(Enum):
     ALL = auto()
 
 
+class FilterMetric(Enum):
+    EUCLIDEAN = auto()
+
+
 def filter_instances(
-    instances: np.ndarray, target_class: str, range_metric: str = "euclidean", max_dist: float = 50.0
+    instances: np.ndarray,
+    target_class: str,
+    filter_metric: FilterMetric = FilterMetric.EUCLIDEAN,
+    max_dist: float = 50.0,
 ) -> np.ndarray:
     """Filter the annotations based on a set of conditions.
 
     Args:
         annos: The instances to be filtered.
         target_class: The name of the class of interest.
-        range_metric: The range metric used for filtering.
+        filter_metric: The range metric used for filtering.
     
     Returns:
         The filtered annotations.
     """
     instances = np.array([instance for instance in instances if instance.label_class == target_class])
 
-    if range_metric == "euclidean":
+    if filter_metric == FilterMetric.EUCLIDEAN:
         centers = np.array([dt.translation for dt in instances])
         filtered_annos = np.array([])
 
@@ -139,18 +148,3 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
         return orientation_errors
     else:
         raise NotImplemented("This distance metric is not implemented!")
-
-
-def get_label_orientations(labels: List[ObjectLabelRecord]) -> float:
-    """Get the orientation (yaw) of a label.
-
-    Args:
-        label: The label
-
-    Returns:
-        The float orientation (yaw angle) of the label
-    """
-    R = [quat2rotmat(l.quaternion) for l in labels]
-    v = np.array([1, 0, 0])[:, np.newaxis]
-    orientations = np.matmul(R, v)
-    return np.arctan2(orientations[:, 1, 0], orientations[:, 0, 0])

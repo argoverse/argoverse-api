@@ -36,16 +36,6 @@ def test_center_similarity() -> None:
     assert compute_match_matrix(olr1, olr2, SimFnType.CENTER) == -5
 
 
-def test_iou_2d_similarity() -> None:
-    # TO DO
-    pass
-
-
-def test_iou_3d_similarity() -> None:
-    # TO DO
-    pass
-
-
 def test_translation_distance() -> None:
     df1 = DataFrame([{"translation": [0.0, 0.0, 0.0]}])
     df2 = DataFrame([{"translation": [5.0, 5.0, 5.0]}])
