@@ -40,7 +40,7 @@ class DetectionCfg:
     sim_ths: Tuple[float] = (0.5, 1.0, 2.0, 4.0)
     sim_fn_type: SimFnType = SimFnType.CENTER
     n_rec_samples: int = 101
-    dcs_weighting: Tuple[float] = (3, 1, 1, 1)
+    cds_weights: Tuple[float] = (3, 1, 1, 1)
     tp_thresh: float = 2.0
     significant_digits: int = 3
 
@@ -217,12 +217,12 @@ class DetectionEvaluator:
             # TP Error Metrics
             tp_metrics = np.mean(cls_stats[:, num_ths : num_ths + 3], axis=0)
 
-            dcs_summands = np.hstack((ap, 1 - tp_metrics))
+            cds_summands = np.hstack((ap, np.clip(1 - tp_metrics, a_min=0, a_max=None)))
 
             # Ranking metric
-            dcs = np.average(dcs_summands, weights=self.dt_cfg.dcs_weighting)
+            cds = np.average(cds_summands, weights=self.dt_cfg.cds_weights)
 
-            summary[cls_name] = [ap, *tp_metrics, dcs]
+            summary[cls_name] = [ap, *tp_metrics, cds]
             self.plot(rec_interp, prec_interp, cls_name)
         return summary
 
