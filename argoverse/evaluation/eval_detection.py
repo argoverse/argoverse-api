@@ -107,8 +107,7 @@ class DetectionEvaluator:
             gt_fpath: The ground truth file path.
 
         Returns:
-            The aggregated data used for summarization.
-            
+            The aggregated data used for summarization. 
         """
         log_id = gt_fpath.parents[1].stem
         logger.info("log_id = %s", log_id)
@@ -143,7 +142,6 @@ class DetectionEvaluator:
 
         Returns:
             True positives, false positives, scores, and translation errors.
-
         """
         n_threshs = len(self.dt_cfg.sim_ths)
         error_types = np.zeros((dts.shape[0], n_threshs + 3))
@@ -191,7 +189,6 @@ class DetectionEvaluator:
 
         Returns:
             summary: The summary statistics.
-
         """
         summary = defaultdict(list)
         rec_interp = np.linspace(0, 1, self.dt_cfg.n_rec_samples)
@@ -234,6 +231,13 @@ class DetectionEvaluator:
         return summary
 
     def plot(self, rec_interp, prec_interp, cls_name) -> None:
+        """Plot and save the precision recall curve.
+
+        Args:
+            rec_interp: The interpolated recall data.
+            prec_interp: The interpolated precision data.
+            cls_name: Class name.
+        """
         plt.plot(rec_interp, prec_interp)
         plt.title("PR Curve")
         plt.xlabel("Recall")
