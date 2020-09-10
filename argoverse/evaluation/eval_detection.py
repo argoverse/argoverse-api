@@ -2,6 +2,7 @@
 import os
 from collections import defaultdict
 from dataclasses import dataclass
+import logging
 from multiprocessing import Pool
 from pathlib import Path
 from typing import List, Tuple
@@ -22,6 +23,8 @@ from argoverse.evaluation.detection_utils import (
     get_ranks,
     interp,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -108,6 +111,7 @@ class DetectionEvaluator:
             
         """
         log_id = gt_fpath.parents[1].stem
+        logger.info("log_id = %s", log_id)
         ts = gt_fpath.stem.split("_")[-1]
         dt_fpath = self.dt_fpath / f"{log_id}/per_sweep_annotations_amodal/tracked_object_labels_{ts}.json"
 
@@ -121,6 +125,8 @@ class DetectionEvaluator:
             dt_filtered = filter_instances(dts, gt_cls)
             gt_filtered = filter_instances(gts, gt_cls)
 
+            logger.info("%d detections" % dt_filtered.shape[0])
+            logger.info("%d ground truth" % gt_filtered.shape[0])
             if dt_filtered.shape[0] > 0:
                 error_types = self.assign(dt_filtered, gt_filtered)
                 class_data[gt_cls] = error_types
@@ -224,6 +230,7 @@ class DetectionEvaluator:
 
             summary[cls_name] = [ap, *tp_metrics, cds]
             self.plot(rec_interp, prec_interp, cls_name)
+        logger.info("summary = %s" % summary)
         return summary
 
     def plot(self, rec_interp, prec_interp, cls_name) -> None:
