@@ -44,7 +44,7 @@ class DetectionCfg:
     sim_fn_type: SimFnType = SimFnType.CENTER
     n_rec_samples: int = 101  # 101 gives us one sample at ever integer from 0 to 100
     cds_weights: Tuple[float] = (3, 1, 1, 1)
-    tp_thresh: float = 2.0
+    tp_thresh: float = 2.0  # in meters
     significant_digits: int = 3
 
 

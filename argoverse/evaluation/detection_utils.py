@@ -123,6 +123,16 @@ def compute_match_matrix(dts: np.ndarray, gts: np.ndarray, metric: SimFnType) ->
 
 
 def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndarray:
+    """Distance functions between detections and ground truth.
+
+    Args:
+        dts: Detections.
+        gts: Ground truth labels.
+        metric: Distance function type.
+
+    Returns:
+        Distance between the detections and ground truth, using the provided metric.
+    """
     if metric == DistFnType.TRANSLATION:
         dt_centers = np.vstack(dts["translation"].array)
         gt_centers = np.vstack(gts["translation"].array)
