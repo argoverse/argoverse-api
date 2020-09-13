@@ -26,6 +26,14 @@ def quat2rotmat(q: np.ndarray) -> np.ndarray:
         R: Array of shape (3, 3) representing a rotation matrix.
     """
     assert np.isclose(np.linalg.norm(q), 1.0, atol=1e-12)
-    w, x, y, z = q
-    q_scipy = np.array([x, y, z, w])
-    return Rotation.from_quat(q_scipy).as_dcm()
+    return Rotation.from_quat(quat_first2last(q)).as_dcm()
+
+
+def quat_first2last(q: np.ndarray) -> np.ndarray:
+    """Re-order a scalar-first [w, x, y, z] quaternion format used by Argoverse to the scalar-last format in scipy."""
+    return q[..., [1, 2, 3, 0]]
+
+
+def quat_last2first(q: np.ndarray) -> np.ndarray:
+    """Re-order a scalar-last [x, y, z, w] quaternion format used by scipy to the scalar-first format in Argoverse."""
+    return q[..., [3, 0, 1, 2]]

@@ -18,6 +18,8 @@ import pandas as pd
 from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation as R
 
+from argoverse.utils.transform import quat_first2last
+
 
 class SimFnType(Enum):
     CENTER = auto()
@@ -120,14 +122,6 @@ def compute_match_matrix(dts: np.ndarray, gts: np.ndarray, metric: SimFnType) ->
     return sims
 
 
-def get_error_types(match_scores: np.ndarray, thresh: float, metric: SimFnType) -> np.ndarray:
-    # Euclidean distance represented as a "similarity" metric.
-    if metric == SimFnType.CENTER:
-        return match_scores > -thresh
-    else:
-        raise NotImplemented("This similarity metric is not implemented!")
-
-
 def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndarray:
     if metric == DistFnType.TRANSLATION:
         dt_centers = np.vstack(dts["translation"].array)
@@ -142,8 +136,11 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
         scale_errors = 1 - (inter / union)
         return scale_errors
     elif metric == DistFnType.ORIENTATION:
-        dt_yaws = R.from_quat(np.vstack(dts["quaternion"].array)[:, [3, 0, 1, 2]]).as_euler("xyz")[:, 2]
-        gt_yaws = R.from_quat(np.vstack(gts["quaternion"].array)[:, [3, 0, 1, 2]]).as_euler("xyz")[:, 2]
+        # re-order quaternions to go from Argoverse format to scipy format, then the third euler angle (z) is yaw
+        dt_yaws = R.from_quat(quat_first2last(np.vstack(dts["quaternion"].array))).as_euler("xyz")[:, 2]
+        gt_yaws = R.from_quat(quat_first2last(np.vstack(gts["quaternion"].array))).as_euler("xyz")[:, 2]
+        # the orientation distance is the absolute distance between the two yaws
+        # the '(d + pi) % 2pi - pi' is necessary to keep the distance within the interval [0, 2pi)
         orientation_errors = np.abs((dt_yaws - gt_yaws + np.pi) % (2 * np.pi) - np.pi)
         return orientation_errors
     else:

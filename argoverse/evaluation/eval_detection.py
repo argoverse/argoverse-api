@@ -1,8 +1,8 @@
 # <Copyright 2020, Argo AI, LLC. Released under the MIT license.>
+import logging
 import os
 from collections import defaultdict
 from dataclasses import dataclass
-import logging
 from multiprocessing import Pool
 from pathlib import Path
 from typing import List, Tuple
@@ -19,7 +19,6 @@ from argoverse.evaluation.detection_utils import (
     compute_match_matrix,
     dist_fn,
     filter_instances,
-    get_error_types,
     get_ranks,
     interp,
 )
@@ -33,10 +32,11 @@ class DetectionCfg:
 
     Args:
         sim_ths: The similarity thresholds for determining a true positive.
-        sim_fn_type: The type of similarity function to be used for calculating average precision.
-        n_rec_samples: The number of recall points to sample uniformly in [0, 1].
+        sim_fn_type: The type of similarity function to be used for calculating
+                     average precision.
+        n_rec_samples: Number of recall points to sample uniformly in [0, 1].
         dcs: The weight vector for the detection composite score (DCS).
-        tp_threshold: The center distance threshold for the true positive metrics.
+        tp_threshold: Center distance threshold for the true positive metrics.
         significant_digits: The precision for metrics.
     """
 
@@ -112,7 +112,7 @@ class DetectionEvaluator:
         log_id = gt_fpath.parents[1].stem
         logger.info("log_id = %s", log_id)
         ts = gt_fpath.stem.split("_")[-1]
-        dt_fpath = self.dt_fpath / f"{log_id}/per_sweep_annotations_amodal/tracked_object_labels_{ts}.json"
+        dt_fpath = self.dt_fpath / f"{log_id}/per_sweep_annotations_amodal/" f"tracked_object_labels_{ts}.json"
 
         dts = np.array(read_label(dt_fpath))
         gts = np.array(read_label(gt_fpath))
@@ -157,13 +157,15 @@ class DetectionEvaluator:
         # Grab the corresponding similarity score for each assignment.
         match_scores = np.take_along_axis(match_matrix[ranks].T, gt_matches, axis=0).squeeze(0)
 
-        # Find the indices of the "first" detection assigned to each GT annotation.
+        # Find the indices of the "first" detection assigned to each GT.
         unique_gt_matches, unique_dt_matches = np.unique(gt_matches, return_index=True)
-        for i, thresh in enumerate(self.dt_cfg.sim_ths):
-            tp_mask = get_error_types(match_scores[unique_dt_matches], thresh, self.dt_cfg.sim_fn_type)
+        for i, thr in enumerate(self.dt_cfg.sim_ths):
+
+            # tp_mask may need to be defined differently with other similarity metrics
+            tp_mask = match_scores[unique_dt_matches] > -thr
             error_types[unique_dt_matches, i] = tp_mask
 
-            if thresh == self.dt_cfg.tp_thresh and np.count_nonzero(tp_mask) > 0:
+            if thr == self.dt_cfg.tp_thresh and np.count_nonzero(tp_mask) > 0:
                 dt_tp_indices = unique_dt_matches[tp_mask]
                 gt_tp_indices = unique_gt_matches[tp_mask]
 
@@ -219,7 +221,9 @@ class DetectionEvaluator:
 
             # TP Error Metrics
             tp_metrics = np.mean(cls_stats[:, num_ths : num_ths + 3], axis=0)
+            tp_metrics[2] /= np.pi / 2  # normalize orientation
 
+            # clip so that we don't get negative values in (1 - ATE)
             cds_summands = np.hstack((ap, np.clip(1 - tp_metrics, a_min=0, a_max=None)))
 
             # Ranking metric
