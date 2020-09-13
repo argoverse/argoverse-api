@@ -1,4 +1,5 @@
 # <Copyright 2020, Argo AI, LLC. Released under the MIT license.>
+import argparse
 import logging
 import os
 from collections import defaultdict
@@ -7,7 +8,6 @@ from multiprocessing import Pool
 from pathlib import Path
 from typing import List, Tuple
 
-import click
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -250,11 +250,14 @@ class DetectionEvaluator:
         plt.close()
 
 
-@click.command()
-@click.option("--dt_fpath", "-d", help="Detection root folder path.", type=click.Path(exists=True), required=True)
-@click.option("--gt_fpath", "-g", help="Ground truth root folder path.", type=click.Path(exists=True), required=True)
-@click.option("--fig_fpath", "-f", help="Figures root folder path.", type=str, default="figs/")
 def main(dt_fpath: str, gt_fpath: str, fig_fpath: str) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("-d", "--dt_fpath", type=str, help="Detection root folder path.", required=True)
+    parser.add_argument("-g", "--gt_fpath", type=str, help="Ground truth root folder path.", required=True)
+    parser.add_argument("-f", "--fig_fpath", type=str, help="Figures root folder path.", default="figs/")
+    args = parser.parse_args()
+    logger.info("args == %s", args)
+
     dt_fpath = Path(dt_fpath)
     gt_fpath = Path(gt_fpath)
     fig_fpath = Path(fig_fpath)
