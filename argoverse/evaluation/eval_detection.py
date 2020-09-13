@@ -42,7 +42,7 @@ class DetectionCfg:
 
     sim_ths: Tuple[float] = (0.5, 1.0, 2.0, 4.0)
     sim_fn_type: SimFnType = SimFnType.CENTER
-    n_rec_samples: int = 101
+    n_rec_samples: int = 101  # 101 gives us one sample at ever integer from 0 to 100
     cds_weights: Tuple[float] = (3, 1, 1, 1)
     tp_thresh: float = 2.0
     significant_digits: int = 3
@@ -234,7 +234,7 @@ class DetectionEvaluator:
         logger.info("summary = %s" % summary)
         return summary
 
-    def plot(self, rec_interp, prec_interp, cls_name) -> None:
+    def plot(self, rec_interp: np.ndarray, prec_interp: np.ndarray, cls_name: str) -> None:
         """Plot and save the precision recall curve.
 
         Args:
