@@ -18,7 +18,7 @@ import pandas as pd
 from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation as R
 
-from argoverse.utils.transform import quat_first2last
+from argoverse.utils.transform import quat_argo2scipy_vectorized
 
 
 class SimFnType(Enum):
@@ -148,10 +148,10 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
     elif metric == DistFnType.ORIENTATION:
         # re-order quaternions to go from Argoverse format to scipy format, then the third euler angle (z) is yaw
         dt_quats = np.vstack(dts["quaternion"].array)
-        dt_yaws = R.from_quat(quat_first2last(dt_quats)).as_euler("xyz")[:, 2]
+        dt_yaws = R.from_quat(quat_argo2scipy_vectorized(dt_quats)).as_euler("xyz")[:, 2]
 
         gt_quats = np.vstack(gts["quaternion"].array)
-        gt_yaws = R.from_quat(quat_first2last(gt_quats)).as_euler("xyz")[:, 2]
+        gt_yaws = R.from_quat(quat_argo2scipy_vectorized(gt_quats)).as_euler("xyz")[:, 2]
 
         signed_orientation_errors = normalize_angle(dt_yaws - gt_yaws)
         orientation_errors = np.abs(signed_orientation_errors)

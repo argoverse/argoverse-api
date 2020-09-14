@@ -12,7 +12,7 @@ from scipy.spatial.transform import Rotation as R
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
 from argoverse.evaluation.detection_utils import DistFnType, SimFnType, compute_match_matrix, dist_fn
 from argoverse.evaluation.eval_detection import DetectionCfg, DetectionEvaluator
-from argoverse.utils.transform import quat2rotmat, quat_last2first
+from argoverse.utils.transform import quat_scipy2argo_vectorized
 
 TEST_DATA_LOC = pathlib.Path(__file__).parent.parent / "tests" / "test_data" / "detection"
 logging.getLogger("matplotlib.font_manager").disabled = True
@@ -58,15 +58,15 @@ def test_orientation_distance() -> None:
     # check all of the 45 degree angles
     vecs_45_apart = [angle * np.array([0, 0, 1]) for angle in np.arange(0, 2 * np.pi, np.pi / 4)]
     for i in range(len(vecs_45_apart) - 1):
-        df1 = DataFrame([{"quaternion": quat_last2first(R.from_rotvec(vecs_45_apart[i]).as_quat())}])
-        df2 = DataFrame([{"quaternion": quat_last2first(R.from_rotvec(vecs_45_apart[i + 1]).as_quat())}])
+        df1 = DataFrame([{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(vecs_45_apart[i]).as_quat())}])
+        df2 = DataFrame([{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(vecs_45_apart[i + 1]).as_quat())}])
         assert np.isclose(dist_fn(df1, df2, DistFnType.ORIENTATION), np.pi / 4)
         assert np.isclose(dist_fn(df2, df1, DistFnType.ORIENTATION), np.pi / 4)
     # check all of the 90 degree angles
     vecs_90_apart = [angle * np.array([0, 0, 1]) for angle in np.arange(0, 2 * np.pi, np.pi / 2)]
     for i in range(len(vecs_90_apart) - 1):
-        df1 = DataFrame([{"quaternion": quat_last2first(R.from_rotvec(vecs_90_apart[i]).as_quat())}])
-        df2 = DataFrame([{"quaternion": quat_last2first(R.from_rotvec(vecs_90_apart[i + 1]).as_quat())}])
+        df1 = DataFrame([{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(vecs_90_apart[i]).as_quat())}])
+        df2 = DataFrame([{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(vecs_90_apart[i + 1]).as_quat())}])
         assert np.isclose(dist_fn(df1, df2, DistFnType.ORIENTATION), np.pi / 2)
         assert np.isclose(dist_fn(df2, df1, DistFnType.ORIENTATION), np.pi / 2)
 
