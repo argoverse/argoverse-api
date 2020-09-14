@@ -51,7 +51,7 @@ def filter_instances(
         annos: The instances to be filtered.
         target_class: The name of the class of interest.
         filter_metric: The range metric used for filtering.
-    
+
     Returns:
         The filtered annotations.
     """
@@ -90,7 +90,7 @@ def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
     Args:
         prec: Precision at all recall levels.
         method: Accumulation method.
-    
+
     Returns:
         Interpolated precision at all recall levels.
     """
@@ -109,7 +109,7 @@ def compute_match_matrix(dts: np.ndarray, gts: np.ndarray, metric: SimFnType) ->
         dts: Detections.
         gts: Ground truth labels.
         metric: Similarity metric type.
-    
+
     Returns:
         Interpolated precision at all recall levels.
     """
@@ -147,8 +147,11 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
         return scale_errors
     elif metric == DistFnType.ORIENTATION:
         # re-order quaternions to go from Argoverse format to scipy format, then the third euler angle (z) is yaw
-        dt_yaws = R.from_quat(quat_first2last(np.vstack(dts["quaternion"].array))).as_euler("xyz")[:, 2]
-        gt_yaws = R.from_quat(quat_first2last(np.vstack(gts["quaternion"].array))).as_euler("xyz")[:, 2]
+        dt_quats = np.vstack(dts["quaternion"].array)
+        dt_yaws = R.from_quat(quat_first2last(dt_quats)).as_euler("xyz")[:, 2]
+
+        gt_quats = np.vstack(gts["quaternion"].array)
+        gt_yaws = R.from_quat(quat_first2last(gt_quats)).as_euler("xyz")[:, 2]
         # the orientation distance is the absolute distance between the two yaws
         # the '(d + pi) % 2pi - pi' is necessary to keep the distance within the interval [0, 2pi)
         orientation_errors = np.abs((dt_yaws - gt_yaws + np.pi) % (2 * np.pi) - np.pi)

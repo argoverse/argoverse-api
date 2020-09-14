@@ -8,6 +8,7 @@ from multiprocessing import Pool
 from pathlib import Path
 from typing import List, Tuple
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -23,6 +24,7 @@ from argoverse.evaluation.detection_utils import (
     interp,
 )
 
+matplotlib.use("Agg")
 logger = logging.getLogger(__name__)
 
 
@@ -61,7 +63,7 @@ class DetectionEvaluator:
 
     dt_fpath: Path = Path("detections")
     gt_fpath: Path = Path("/data/argoverse")
-    figures_fpath: Path = Path("figs")
+    fig_fpath: Path = Path("figs")
     dt_cfg: DetectionCfg = DetectionCfg()
 
     def evaluate(self) -> pd.DataFrame:
@@ -107,7 +109,7 @@ class DetectionEvaluator:
             gt_fpath: The ground truth file path.
 
         Returns:
-            The aggregated data used for summarization. 
+            The aggregated data used for summarization.
         """
         log_id = gt_fpath.parents[1].stem
         logger.info("log_id = %s", log_id)
@@ -195,8 +197,8 @@ class DetectionEvaluator:
         summary = defaultdict(list)
         rec_interp = np.linspace(0, 1, self.dt_cfg.n_rec_samples)
         num_ths = len(self.dt_cfg.sim_ths)
-        if not self.figures_fpath.is_dir():
-            self.figures_fpath.mkdir(parents=True, exist_ok=True)
+        if not self.fig_fpath.is_dir():
+            self.fig_fpath.mkdir(parents=True, exist_ok=True)
         for cls_name, cls_stats in data.items():
             num_inst = cls_inst_map[cls_name]
             ranks = cls_stats[:, -1].argsort()[::-1]
@@ -246,11 +248,11 @@ class DetectionEvaluator:
         plt.title("PR Curve")
         plt.xlabel("Recall")
         plt.ylabel("Precision")
-        plt.savefig(f"{self.figures_fpath}/{cls_name}.png")
+        plt.savefig(f"{self.fig_fpath}/{cls_name}.png")
         plt.close()
 
 
-def main(dt_fpath: str, gt_fpath: str, fig_fpath: str) -> None:
+def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("-d", "--dt_fpath", type=str, help="Detection root folder path.", required=True)
     parser.add_argument("-g", "--gt_fpath", type=str, help="Ground truth root folder path.", required=True)
@@ -258,11 +260,11 @@ def main(dt_fpath: str, gt_fpath: str, fig_fpath: str) -> None:
     args = parser.parse_args()
     logger.info("args == %s", args)
 
-    dt_fpath = Path(dt_fpath)
-    gt_fpath = Path(gt_fpath)
-    fig_fpath = Path(fig_fpath)
+    dt_fpath = Path(args.dt_fpath)
+    gt_fpath = Path(args.gt_fpath)
+    fig_fpath = Path(args.fig_fpath)
 
-    evaluator = DetectionEvaluator(dt_fpath, gt_fpath)
+    evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath)
     metrics = evaluator.evaluate()
     print(metrics)
 
