@@ -215,7 +215,8 @@ class DetectionEvaluator:
 
                 precs = interp(precs)
                 prec_interp = np.interp(rec_interp, recs, precs, right=0)
-                ap_th = prec_interp.mean()
+                prec_trun = prec_interp[10 + 1 :]
+                ap_th = prec_trun.mean()
                 summary[cls_name] += [ap_th]
 
             # AP Metric

@@ -152,9 +152,23 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
 
         gt_quats = np.vstack(gts["quaternion"].array)
         gt_yaws = R.from_quat(quat_first2last(gt_quats)).as_euler("xyz")[:, 2]
-        # the orientation distance is the absolute distance between the two yaws
-        # the '(d + pi) % 2pi - pi' is necessary to keep the distance within the interval [0, 2pi)
-        orientation_errors = np.abs((dt_yaws - gt_yaws + np.pi) % (2 * np.pi) - np.pi)
+
+        signed_orientation_errors = normalize_angle(dt_yaws - gt_yaws)
+        orientation_errors = np.abs(signed_orientation_errors)
         return orientation_errors
     else:
         raise NotImplemented("This distance metric is not implemented!")
+
+
+def normalize_angle(angle: float) -> float:
+    """Map angle (in radians) to [0, 2π].
+
+    Args:
+        angle: Angle (in radians).
+
+    Returns:
+        The angle (in radians) mapped to the interval [0, 2π].
+    """
+    period = 2 * np.pi
+    phase_shift = np.pi
+    return (angle + np.pi) % period - phase_shift
