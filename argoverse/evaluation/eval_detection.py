@@ -3,16 +3,17 @@ import argparse
 import logging
 import os
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from multiprocessing import Pool
 from pathlib import Path
-from typing import List, Tuple
+from typing import DefaultDict, List, Tuple
 
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
 from argoverse.data_loading.object_label_record import read_label
 from argoverse.evaluation.detection_utils import (
     DistFnType,
@@ -36,18 +37,20 @@ class DetectionCfg:
         sim_ths: The similarity thresholds for determining a true positive.
         sim_fn_type: The type of similarity function to be used for calculating
                      average precision.
-        n_rec_samples: Number of recall points to sample uniformly in [0, 1].
+        n_rec_samples: Number of recall points to sample uniformly in [0, 1]. 
+        Default to 100 recall samples.
         dcs: The weight vector for the detection composite score (DCS).
-        tp_threshold: Center distance threshold for the true positive metrics.
+        tp_threshold: Center distance threshold for the true positive metrics (in meters).
         significant_digits: The precision for metrics.
     """
 
-    sim_ths: Tuple[float] = (0.5, 1.0, 2.0, 4.0)
+    sim_ths: List[float] = field(default_factory=lambda: [0.5, 1.0, 2.0, 4.0])
     sim_fn_type: SimFnType = SimFnType.CENTER
-    n_rec_samples: int = 101  # 101 gives us one sample at ever integer from 0 to 100
-    cds_weights: Tuple[float] = (3, 1, 1, 1)
-    tp_thresh: float = 2.0  # in meters
+    n_rec_samples: int = 101
+    cds_weights: List[float] = field(default_factory=lambda: [3, 1, 1, 1])
+    tp_thresh: float = 2.0
     significant_digits: int = 3
+    detection_classes: List[str] = field(default_factory=lambda: list(OBJ_CLASS_MAPPING_DICT.keys()))
 
 
 @dataclass
@@ -67,73 +70,77 @@ class DetectionEvaluator:
     dt_cfg: DetectionCfg = DetectionCfg()
 
     def evaluate(self) -> pd.DataFrame:
-        """Evaluate detection output and return metrics.
+        """Evaluate detection output and return metrics. The multiprocessing
+        library is used for parallel assignment between detections and ground truth
+        annotations.
 
         Returns:
             The evaluation metrics.
         """
-
         dt_fpaths = list(self.dt_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
         gt_fpaths = list(self.gt_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
 
         assert len(dt_fpaths) == len(gt_fpaths)
-        data = defaultdict(list)
-        cls_inst_map = defaultdict(int)
+        data: DefaultDict[str, np.ndarray] = defaultdict(list)
+        cls_to_ninst: DefaultDict[str, int] = defaultdict(int)
 
         with Pool(os.cpu_count()) as p:
             accum = p.map(self.accumulate, gt_fpaths)
+        # [self.accumulate(gt_fpath) for gt_fpath in gt_fpaths]
+
         for frame_stats, frame_cls_to_inst in accum:
             for cls_name, cls_stats in frame_stats.items():
                 data[cls_name].append(cls_stats)
             for cls_name, num_inst in frame_cls_to_inst.items():
-                cls_inst_map[cls_name] += num_inst
+                cls_to_ninst[cls_name] += num_inst
 
         data = defaultdict(np.ndarray, {k: np.vstack(v) for k, v in data.items()})
+        init_data = {k: [0, 1.0, 1.0, 1.0, 0] for k in self.dt_cfg.detection_classes}
 
-        summary = self.summarize(data, cls_inst_map)
-        summary = (
-            pd.DataFrame.from_dict(summary, orient="index", columns=["AP", "ATE", "ASE", "AOE", "WDCS"])
-            .round(self.dt_cfg.significant_digits)
-            .sort_index()
-        )
-        summary.index = summary.index.str.capitalize()
+        columns = ["AP", "ATE", "ASE", "AOE", "CDS"]
+        summary = pd.DataFrame.from_dict(init_data, orient="index", columns=columns)
 
-        summary.loc[""] = ["", "", "", "", ""]
-        summary.loc["Means"] = summary.iloc[:-1].mean().round(self.dt_cfg.significant_digits)
+        summary_update = pd.DataFrame.from_dict(self.summarize(data, cls_to_ninst), orient="index", columns=columns)
+
+        summary.update(summary_update)
+        summary = summary.round(self.dt_cfg.significant_digits)
+        summary.index = summary.index.str.title()
+
+        summary.loc["Average Metrics"] = summary.mean().round(self.dt_cfg.significant_digits)
         return summary
 
     def accumulate(self, gt_fpath: Path) -> Tuple[np.ndarray, np.ndarray]:
         """Accumulate the statistics for each LiDAR frame.
 
         Args:
-            gt_fpath: The ground truth file path.
+            gt_fpath: Ground truth file path.
 
         Returns:
-            The aggregated data used for summarization.
+            cls_stats: Class statistics of shape (N, 8)
+            cls_to_ninst: Mapping of the class names to the number of instances in the ground
+                          truth dataset.
         """
         log_id = gt_fpath.parents[1].stem
-        logger.info("log_id = %s", log_id)
+        logger.info(f"log_id = {log_id}")
         ts = gt_fpath.stem.split("_")[-1]
         dt_fpath = self.dt_fpath / f"{log_id}/per_sweep_annotations_amodal/" f"tracked_object_labels_{ts}.json"
 
         dts = np.array(read_label(dt_fpath))
         gts = np.array(read_label(gt_fpath))
-        gt_clss = np.array([gt.label_class for gt in gts])
 
-        class_data = defaultdict(list)
-        class_to_ninst = defaultdict(int)
-        for gt_cls in np.unique(gt_clss):
-            dt_filtered = filter_instances(dts, gt_cls)
-            gt_filtered = filter_instances(gts, gt_cls)
+        cls_stats = defaultdict(list)
+        cls_to_ninst = defaultdict(int)
+        for dt_cls in self.dt_cfg.detection_classes:
+            dt_filtered = filter_instances(dts, dt_cls)
+            gt_filtered = filter_instances(gts, dt_cls)
 
             logger.info("%d detections" % dt_filtered.shape[0])
             logger.info("%d ground truth" % gt_filtered.shape[0])
             if dt_filtered.shape[0] > 0:
-                error_types = self.assign(dt_filtered, gt_filtered)
-                class_data[gt_cls] = error_types
+                cls_stats[dt_cls] = self.assign(dt_filtered, gt_filtered)
 
-            class_to_ninst[gt_cls] = gt_filtered.shape[0]
-        return class_data, class_to_ninst
+            cls_to_ninst[dt_cls] = gt_filtered.shape[0]
+        return cls_stats, cls_to_ninst
 
     def assign(self, dts: np.ndarray, gts: np.ndarray) -> List:
         """Attempt assignment of each detection to a ground truth label.
@@ -184,40 +191,47 @@ class DetectionEvaluator:
 
         return np.hstack((error_types, scores))
 
-    def summarize(self, data: defaultdict, cls_inst_map: defaultdict) -> defaultdict:
+    def summarize(
+        self, data: DefaultDict[str, np.ndarray], cls_to_ninst: DefaultDict[str, int]
+    ) -> DefaultDict[str, List]:
         """Calculate and print the detection metrics.
 
         Args:
             data: The aggregated data used for summarization.
-            cls_inst_map: Map of classes to number of instances.
+            cls_to_ninst: Map of classes to number of instances.
 
         Returns:
             summary: The summary statistics.
         """
-        summary = defaultdict(list)
-        rec_interp = np.linspace(0, 1, self.dt_cfg.n_rec_samples)
+        summary: DefaultDict[str, List] = defaultdict(list)
+        recalls_interpolated = np.linspace(0, 1, self.dt_cfg.n_rec_samples)
         num_ths = len(self.dt_cfg.sim_ths)
         if not self.fig_fpath.is_dir():
             self.fig_fpath.mkdir(parents=True, exist_ok=True)
+
         for cls_name, cls_stats in data.items():
-            num_inst = cls_inst_map[cls_name]
+            ninst = cls_to_ninst[cls_name]
             ranks = cls_stats[:, -1].argsort()[::-1]
             cls_stats = cls_stats[ranks]
+
             for i, _ in enumerate(self.dt_cfg.sim_ths):
                 tp = cls_stats[:, i].astype(bool)
 
                 cumulative_tp = np.cumsum(tp, dtype=np.int)
                 cumulative_fp = np.cumsum(~tp, dtype=np.int)
-                cumulative_fn = num_inst - cumulative_tp
+                cumulative_fn = ninst - cumulative_tp
 
-                precs = cumulative_tp / (cumulative_tp + cumulative_fp + np.finfo(float).eps)
-                recs = cumulative_tp / (cumulative_tp + cumulative_fn)
+                precisions = cumulative_tp / (cumulative_tp + cumulative_fp + np.finfo(float).eps)
+                recalls = cumulative_tp / (cumulative_tp + cumulative_fn)
 
-                precs = interp(precs)
-                prec_interp = np.interp(rec_interp, recs, precs, right=0)
-                prec_trun = prec_interp[10 + 1 :]
-                ap_th = prec_trun.mean()
+                precisions = interp(precisions)
+                precisions_interpolated = np.interp(recalls_interpolated, recalls, precisions, right=0)
+
+                prec_truncated = precisions_interpolated[10 + 1 :]
+                ap_th = prec_truncated.mean()
                 summary[cls_name] += [ap_th]
+
+                self.plot(recalls_interpolated, precisions_interpolated, cls_name)
 
             # AP Metric
             ap = np.array(summary[cls_name][:num_ths]).mean()
@@ -233,8 +247,8 @@ class DetectionEvaluator:
             cds = np.average(cds_summands, weights=self.dt_cfg.cds_weights)
 
             summary[cls_name] = [ap, *tp_metrics, cds]
-            self.plot(rec_interp, prec_interp, cls_name)
-        logger.info("summary = %s" % summary)
+
+        logger.info(f"summary = {summary}")
         return summary
 
     def plot(self, rec_interp: np.ndarray, prec_interp: np.ndarray, cls_name: str) -> None:
@@ -259,7 +273,7 @@ def main() -> None:
     parser.add_argument("-g", "--gt_fpath", type=str, help="Ground truth root folder path.", required=True)
     parser.add_argument("-f", "--fig_fpath", type=str, help="Figures root folder path.", default="figs/")
     args = parser.parse_args()
-    logger.info("args == %s", args)
+    logger.info(f"args == {args}")
 
     dt_fpath = Path(args.dt_fpath)
     gt_fpath = Path(args.gt_fpath)

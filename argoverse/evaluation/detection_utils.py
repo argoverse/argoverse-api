@@ -45,12 +45,13 @@ def filter_instances(
     filter_metric: FilterMetric = FilterMetric.EUCLIDEAN,
     max_dist: float = 50.0,
 ) -> np.ndarray:
-    """Filter the annotations based on a set of conditions.
+    """Filter the GT annotations based on a set of conditions (e.g., distance from egovehicle).
 
     Args:
-        annos: The instances to be filtered.
+        instances: The instances to be filtered.
         target_class: The name of the class of interest.
         filter_metric: The range metric used for filtering.
+        max_dist: The maximum distance for range filtering.
 
     Returns:
         The filtered annotations.

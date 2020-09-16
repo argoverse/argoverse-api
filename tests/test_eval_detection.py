@@ -21,7 +21,7 @@ logging.getLogger("matplotlib.font_manager").disabled = True
 @pytest.fixture
 def evaluator() -> DetectionEvaluator:
     """Define an evaluator that compares a set of results to itself."""
-    detection_cfg = DetectionCfg(significant_digits=32)
+    detection_cfg = DetectionCfg(significant_digits=32, detection_classes=["VEHICLE"])
     return DetectionEvaluator(
         TEST_DATA_LOC / "detections", TEST_DATA_LOC, TEST_DATA_LOC / "test_figures", detection_cfg
     )
@@ -73,19 +73,19 @@ def test_orientation_distance() -> None:
 
 def test_ap(metrics: DataFrame) -> None:
     """Test that AP is 1 for the self-compared results."""
-    assert metrics.AP.Means == 1
+    assert metrics.AP.loc["Average Metrics"] == 1
 
 
 def test_translation_error(metrics: DataFrame) -> None:
     """Test that ATE is 0 for the self-compared results."""
-    assert metrics.ATE.Means == 0
+    assert metrics.ATE.loc["Average Metrics"] == 0
 
 
 def test_scale_error(metrics: DataFrame) -> None:
     """Test that ASE is 0 for the self-compared results."""
-    assert metrics.ASE.Means == 0
+    assert metrics.ASE.loc["Average Metrics"] == 0
 
 
 def test_orientation_error(metrics: DataFrame) -> None:
     """Test that AOE is 0 for the self-compared results."""
-    assert metrics.AOE.Means == 0
+    assert metrics.AOE.loc["Average Metrics"] == 0
