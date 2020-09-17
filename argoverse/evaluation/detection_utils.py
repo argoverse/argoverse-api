@@ -42,7 +42,7 @@ class FilterMetric(Enum):
 
 
 def filter_instances(
-    instances: np.ndarray,
+    instances: List[ObjectLabelRecord],
     target_class: str,
     filter_metric: FilterMetric = FilterMetric.EUCLIDEAN,
     max_dist: float = 50.0,
@@ -50,7 +50,7 @@ def filter_instances(
     """Filter the GT annotations based on a set of conditions (e.g., distance from egovehicle).
 
     Args:
-        instances: The instances to be filtered.
+        instances: The instances to be filtered (N,).
         target_class: The name of the class of interest.
         filter_metric: The range metric used for filtering.
         max_dist: The maximum distance for range filtering.
@@ -67,8 +67,9 @@ def filter_instances(
         if centers.shape[0] > 0:
             dt_dists = np.linalg.norm(centers, axis=1)
             filtered_annos = instances[dt_dists < max_dist]
-
-        return filtered_annos
+    else:
+        raise NotImplementedError("This filter metric is not implemented!")
+    return filtered_annos
 
 
 def get_ranks(dts: List[ObjectLabelRecord]) -> Tuple[np.ndarray, np.ndarray]:

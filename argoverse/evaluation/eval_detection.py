@@ -3,7 +3,7 @@ import argparse
 import logging
 import os
 from collections import defaultdict
-from dataclasses import MISSING, dataclass, field
+from dataclasses import dataclass, field
 from multiprocessing import Pool
 from pathlib import Path
 from typing import DefaultDict, List, Tuple
@@ -68,9 +68,9 @@ class DetectionEvaluator:
         dt_cfg: The detection configuration settings.
     """
 
-    dt_fpath: Path = MISSING
-    gt_fpath: Path = MISSING
-    fig_fpath: Path = MISSING
+    dt_fpath: Path
+    gt_fpath: Path
+    fig_fpath: Path
     dt_cfg: DetectionCfg = DetectionCfg()
 
     def evaluate(self) -> pd.DataFrame:
@@ -90,6 +90,7 @@ class DetectionEvaluator:
 
         with Pool(os.cpu_count()) as p:
             accum = p.map(self.accumulate, gt_fpaths)
+        # self.accumulate(gt_fpaths[0])
 
         for frame_stats, frame_cls_to_inst in accum:
             for cls_name, cls_stats in frame_stats.items():
