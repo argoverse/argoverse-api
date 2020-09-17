@@ -4,7 +4,7 @@
 Accepts detections (in Argoverse ground truth format) and ground truth labels
 for computing evaluation metrics for 3d object detection. We have five different,
 metrics: mAP, ATE, ASE, AOE, and DCS. A true positive for mAP is defined as the
-highest confidence prediction within a specified euclidean distance threshold
+highest confidence prediction within a specified Euclidean distance threshold
 from a bird's-eye view. We prefer these metrics instead of IoU due to the
 increased interpretability of the error modes in a set of detections.
 
@@ -162,13 +162,13 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
 
 
 def normalize_angle(angle: float) -> float:
-    """Map angle (in radians) to [0, 2π].
+    """Map angle (in radians) to [0, 2π).
 
     Args:
         angle: Angle (in radians).
 
     Returns:
-        The angle (in radians) mapped to the interval [0, 2π].
+        The angle (in radians) mapped to the interval [0, 2π).
     """
     period = 2 * np.pi
     phase_shift = np.pi

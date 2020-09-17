@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import DefaultDict, List, Tuple
 
 import matplotlib
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -25,7 +24,12 @@ from argoverse.evaluation.detection_utils import (
     interp,
 )
 
-matplotlib.use("Agg")
+matplotlib.use("Agg")  # isort:skip
+
+
+import matplotlib.pyplot as plt  # isort:skip
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,8 +41,7 @@ class DetectionCfg:
         sim_ths: The similarity thresholds for determining a true positive.
         sim_fn_type: The type of similarity function to be used for calculating
                      average precision.
-        n_rec_samples: Number of recall points to sample uniformly in [0, 1]. 
-        Default to 100 recall samples.
+        n_rec_samples: Number of recall points to sample uniformly in [0, 1]. Default to 101 recall samples.
         dcs: The weight vector for the detection composite score (DCS).
         tp_threshold: Center distance threshold for the true positive metrics (in meters).
         significant_digits: The precision for metrics.
@@ -51,6 +54,7 @@ class DetectionCfg:
     tp_thresh: float = 2.0
     significant_digits: int = 3
     detection_classes: List[str] = field(default_factory=lambda: list(OBJ_CLASS_MAPPING_DICT.keys()))
+    save_figs: bool = False
 
 
 @dataclass
@@ -86,7 +90,6 @@ class DetectionEvaluator:
 
         with Pool(os.cpu_count()) as p:
             accum = p.map(self.accumulate, gt_fpaths)
-        # [self.accumulate(gt_fpath) for gt_fpath in gt_fpaths]
 
         for frame_stats, frame_cls_to_inst in accum:
             for cls_name, cls_stats in frame_stats.items():
@@ -95,11 +98,12 @@ class DetectionEvaluator:
                 cls_to_ninst[cls_name] += num_inst
 
         data = defaultdict(np.ndarray, {k: np.vstack(v) for k, v in data.items()})
-        init_data = {k: [0, 1.0, 1.0, 1.0, 0] for k in self.dt_cfg.detection_classes}
 
         columns = ["AP", "ATE", "ASE", "AOE", "CDS"]
-        summary = pd.DataFrame.from_dict(init_data, orient="index", columns=columns)
 
+        # Initialize metrics table [0, 1.0, 1.0, 1.0, 0] represents the default value for each column.
+        init_data = {k: [0, 1.0, 1.0, 1.0, 0] for k in self.dt_cfg.detection_classes}
+        summary = pd.DataFrame.from_dict(init_data, orient="index", columns=columns)
         summary_update = pd.DataFrame.from_dict(self.summarize(data, cls_to_ninst), orient="index", columns=columns)
 
         summary.update(summary_update)
@@ -109,7 +113,7 @@ class DetectionEvaluator:
         summary.loc["Average Metrics"] = summary.mean().round(self.dt_cfg.significant_digits)
         return summary
 
-    def accumulate(self, gt_fpath: Path) -> Tuple[np.ndarray, np.ndarray]:
+    def accumulate(self, gt_fpath: Path) -> Tuple[DefaultDict[str, np.ndarray], DefaultDict[str, int]]:
         """Accumulate the statistics for each LiDAR frame.
 
         Args:
@@ -134,20 +138,20 @@ class DetectionEvaluator:
             dt_filtered = filter_instances(dts, dt_cls)
             gt_filtered = filter_instances(gts, dt_cls)
 
-            logger.info("%d detections" % dt_filtered.shape[0])
-            logger.info("%d ground truth" % gt_filtered.shape[0])
+            logger.info(f"{dt_filtered.shape[0]} detections")
+            logger.info(f"{gt_filtered.shape[0]} ground truth")
             if dt_filtered.shape[0] > 0:
                 cls_stats[dt_cls] = self.assign(dt_filtered, gt_filtered)
 
             cls_to_ninst[dt_cls] = gt_filtered.shape[0]
         return cls_stats, cls_to_ninst
 
-    def assign(self, dts: np.ndarray, gts: np.ndarray) -> List:
+    def assign(self, dts: np.ndarray, gts: np.ndarray) -> np.ndarray:
         """Attempt assignment of each detection to a ground truth label.
 
         Args:
-            dts: Detections.
-            gts: Ground truth labels.
+            dts: Detections of shape (N,).
+            gts: Ground truth labels of shape (M,).
 
         Returns:
             True positives, false positives, scores, and translation errors.
@@ -204,7 +208,7 @@ class DetectionEvaluator:
             summary: The summary statistics.
         """
         summary: DefaultDict[str, List] = defaultdict(list)
-        recalls_interpolated = np.linspace(0, 1, self.dt_cfg.n_rec_samples)
+        recalls_interp = np.linspace(0, 1, self.dt_cfg.n_rec_samples)
         num_ths = len(self.dt_cfg.sim_ths)
         if not self.fig_fpath.is_dir():
             self.fig_fpath.mkdir(parents=True, exist_ok=True)
@@ -225,13 +229,14 @@ class DetectionEvaluator:
                 recalls = cumulative_tp / (cumulative_tp + cumulative_fn)
 
                 precisions = interp(precisions)
-                precisions_interpolated = np.interp(recalls_interpolated, recalls, precisions, right=0)
+                precisions_interp = np.interp(recalls_interp, recalls, precisions, right=0)
 
-                prec_truncated = precisions_interpolated[10 + 1 :]
+                prec_truncated = precisions_interp[10 + 1 :]
                 ap_th = prec_truncated.mean()
                 summary[cls_name] += [ap_th]
 
-                self.plot(recalls_interpolated, precisions_interpolated, cls_name)
+                if self.dt_cfg.save_figs:
+                    self.plot(recalls_interp, precisions_interp, cls_name)
 
             # AP Metric
             ap = np.array(summary[cls_name][:num_ths]).mean()
@@ -255,8 +260,8 @@ class DetectionEvaluator:
         """Plot and save the precision recall curve.
 
         Args:
-            rec_interp: The interpolated recall data.
-            prec_interp: The interpolated precision data.
+            rec_interp: Interpolated recall data of shape (101,).
+            prec_interp: Interpolated precision data of shape (101,).
             cls_name: Class name.
         """
         plt.plot(rec_interp, prec_interp)
