@@ -19,4 +19,8 @@ repos:
     hooks:
     - id: black
       args: ["-l", "120"]
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: d6e31ae
+    hooks:
+    -   id: mypy
 exclude: "docs/.*$"

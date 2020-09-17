@@ -1,24 +1,20 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 import argparse
 import glob
-import json
 import logging
 import os
 import pathlib
 import pickle
-import sys
 from pathlib import Path
-from typing import Any, Dict, List, TextIO, Tuple, Union
+from typing import Any, Dict, List, TextIO, Union
 
 import motmetrics as mm
 import numpy as np
 from shapely.geometry.polygon import Polygon
 
-from argoverse.evaluation.eval_utils import get_pc_inside_bbox, label_to_bbox
+from argoverse.evaluation.eval_utils import label_to_bbox
 from argoverse.utils.json_utils import read_json_file
-from argoverse.utils.ply_loader import load_ply
 from argoverse.utils.se3 import SE3
-from argoverse.utils.transform import quat2rotmat
 
 mh = mm.metrics.create()
 logger = logging.getLogger(__name__)
@@ -82,7 +78,9 @@ def get_distance_iou_3d(x1: np.ndarray, x2: np.ndarray, name: str = "bbox") -> f
     return float(score)
 
 
-def get_orientation_error_deg(yaw1: float, yaw2: float) -> float:
+def get_orientation_error_deg(
+    yaw1: Union[float, np.ndarray], yaw2: Union[float, np.ndarray]
+) -> Union[float, np.ndarray]:
     """
     Compute the smallest difference between 2 angles, in magnitude (absolute difference).
     First, find the difference between the two yaw angles; since
@@ -119,7 +117,7 @@ def get_orientation_error_deg(yaw1: float, yaw2: float) -> float:
     return float(error)
 
 
-def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
+def get_distance(x1: Dict[str, np.ndarray], x2: Dict[str, np.ndarray], name: str) -> float:
     """Get the distance between two poses, returns nan if distance is larger than detection threshold.
 
     Args:

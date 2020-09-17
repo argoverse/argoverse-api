@@ -96,7 +96,7 @@ def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
         method: Accumulation method.
 
     Returns:
-        Interpolated precision at all recall levels.
+        prec_interp: Interpolated precision at all recall levels.
     """
     if method == InterpType.ALL:
         prec_interp = np.maximum.accumulate(prec[::-1])[::-1]
@@ -164,14 +164,11 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
         raise NotImplemented("This distance metric is not implemented!")
 
 
-def normalize_angle(angle: float) -> float:
-    """Map angle (in radians) from domain [-π, π] to [0, 2π).
-
-    Args:
-        angle: Angle (in radians) in domain [-π, π].
+def normalize_angle(angle: np.ndarray) -> np.ndarray:
+    """Map angle (in radians) from domain [-π, π] to [0, π).
 
     Returns:
-        The angle (in radians) mapped to the interval [0, 2π).
+        The angle (in radians) mapped to the interval [0, π].
     """
     period = 2 * np.pi
     phase_shift = np.pi
