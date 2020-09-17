@@ -2,7 +2,7 @@
 import argparse
 import logging
 import os
-from collections import defaultdict
+from collections import ChainMap, defaultdict
 from dataclasses import dataclass, field
 from multiprocessing import Pool
 from pathlib import Path
@@ -11,6 +11,7 @@ from typing import DefaultDict, List, Tuple
 import matplotlib
 import numpy as np
 import pandas as pd
+from pandas.core import frame
 
 from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
 from argoverse.data_loading.object_label_record import read_label
@@ -33,22 +34,27 @@ import matplotlib.pyplot as plt  # isort:skip
 logger = logging.getLogger(__name__)
 
 
+METRIC_NAMES: List[str] = ["AP", "ATE", "ASE", "AOE", "CDS"]
+METRIC_DEFAULT_VALUES: List[float] = [0, 1.0, 1.0, 1.0, 0]
+
+
 @dataclass
 class DetectionCfg:
     """Instantiates a DetectionCfg object for configuring a DetectionEvaluator.
 
     Args:
-        sim_ths: The similarity thresholds for determining a true positive.
-        sim_fn_type: The type of similarity function to be used for calculating
-                     average precision.
+        affinity_threshs: The affinity thresholds for determining a true positive.
+        affinity_fn_type: The type of affinity function to be used for calculating average precision.
         n_rec_samples: Number of recall points to sample uniformly in [0, 1]. Default to 101 recall samples.
-        dcs: The weight vector for the detection composite score (DCS).
-        tp_threshold: Center distance threshold for the true positive metrics (in meters).
+        cds_weights: The weight vector for the detection composite score (CDS).
+        tp_thresh: Center distance threshold for the true positive metrics (in meters).
         significant_digits: The precision for metrics.
+        detection_classes: Detection classes for evaluation.
+        save_figs: Flag to save figures.
     """
 
-    sim_ths: List[float] = field(default_factory=lambda: [0.5, 1.0, 2.0, 4.0])
-    sim_fn_type: SimFnType = SimFnType.CENTER
+    affinity_threshs: List[float] = field(default_factory=lambda: [0.5, 1.0, 2.0, 4.0])
+    affinity_fn_type: SimFnType = SimFnType.CENTER
     n_rec_samples: int = 101
     cds_weights: List[float] = field(default_factory=lambda: [3, 1, 1, 1])
     tp_thresh: float = 2.0
@@ -62,16 +68,16 @@ class DetectionEvaluator:
     """Instantiates a DetectionEvaluator object for evaluation.
 
     Args:
-        dt_fpath: The path to the folder which contains the detections.
-        gt_fpath: The path to the folder which contains all the logs.
-        fig_fpath: The path to the folder which will contain the output figures.
-        dt_cfg: The detection configuration settings.
+        detection_fpath: The path to the folder which contains the detections.
+        ground_truth_fpath: The path to the folder which contains all the logs.
+        figures_fpath: The path to the folder which will contain the output figures.
+        detection_cfg: The detection configuration settings.
     """
 
-    dt_fpath: Path
-    gt_fpath: Path
-    fig_fpath: Path
-    dt_cfg: DetectionCfg = DetectionCfg()
+    detection_fpath: Path
+    ground_truth_fpath: Path
+    figures_fpath: Path
+    detection_cfg: DetectionCfg = DetectionCfg()
 
     def evaluate(self) -> pd.DataFrame:
         """Evaluate detection output and return metrics. The multiprocessing
@@ -79,10 +85,11 @@ class DetectionEvaluator:
         annotations.
 
         Returns:
-            The evaluation metrics.
+            Evaluation metrics of shape (C + 1, K) where C + 1 is the number of classes
+            plus a row for their means. K refers to the number of evaluation metrics.
         """
-        dt_fpaths = list(self.dt_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
-        gt_fpaths = list(self.gt_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
+        dt_fpaths = list(self.detection_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
+        gt_fpaths = list(self.ground_truth_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
 
         assert len(dt_fpaths) == len(gt_fpaths)
         data: DefaultDict[str, np.ndarray] = defaultdict(list)
@@ -90,7 +97,6 @@ class DetectionEvaluator:
 
         with Pool(os.cpu_count()) as p:
             accum = p.map(self.accumulate, gt_fpaths)
-        # self.accumulate(gt_fpaths[0])
 
         for frame_stats, frame_cls_to_inst in accum:
             for cls_name, cls_stats in frame_stats.items():
@@ -100,18 +106,17 @@ class DetectionEvaluator:
 
         data = defaultdict(np.ndarray, {k: np.vstack(v) for k, v in data.items()})
 
-        columns = ["AP", "ATE", "ASE", "AOE", "CDS"]
-
-        # Initialize metrics table [0, 1.0, 1.0, 1.0, 0] represents the default value for each column.
-        init_data = {k: [0, 1.0, 1.0, 1.0, 0] for k in self.dt_cfg.detection_classes}
-        summary = pd.DataFrame.from_dict(init_data, orient="index", columns=columns)
-        summary_update = pd.DataFrame.from_dict(self.summarize(data, cls_to_ninst), orient="index", columns=columns)
+        init_data = {k: METRIC_DEFAULT_VALUES for k in self.detection_cfg.detection_classes}
+        summary = pd.DataFrame.from_dict(init_data, orient="index", columns=METRIC_NAMES)
+        summary_update = pd.DataFrame.from_dict(
+            self.summarize(data, cls_to_ninst), orient="index", columns=METRIC_NAMES
+        )
 
         summary.update(summary_update)
-        summary = summary.round(self.dt_cfg.significant_digits)
+        summary = summary.round(self.detection_cfg.significant_digits)
         summary.index = summary.index.str.title()
 
-        summary.loc["Average Metrics"] = summary.mean().round(self.dt_cfg.significant_digits)
+        summary.loc["Average Metrics"] = summary.mean().round(self.detection_cfg.significant_digits)
         return summary
 
     def accumulate(self, gt_fpath: Path) -> Tuple[DefaultDict[str, np.ndarray], DefaultDict[str, int]]:
@@ -129,14 +134,14 @@ class DetectionEvaluator:
         logger.info(f"log_id = {log_id}")
         ts = gt_fpath.stem.split("_")[-1]
 
-        dt_fpath = self.dt_fpath / f"{log_id}/per_sweep_annotations_amodal/" f"tracked_object_labels_{ts}.json"
+        dt_fpath = self.detection_fpath / f"{log_id}/per_sweep_annotations_amodal/" f"tracked_object_labels_{ts}.json"
 
         dts = np.array(read_label(str(dt_fpath)))
         gts = np.array(read_label(str(gt_fpath)))
 
         cls_stats = defaultdict(list)
         cls_to_ninst = defaultdict(int)
-        for dt_cls in self.dt_cfg.detection_classes:
+        for dt_cls in self.detection_cfg.detection_classes:
             dt_filtered = filter_instances(dts, dt_cls)
             gt_filtered = filter_instances(gts, dt_cls)
 
@@ -158,13 +163,13 @@ class DetectionEvaluator:
         Returns:
             True positives, false positives, scores, and translation errors.
         """
-        n_threshs = len(self.dt_cfg.sim_ths)
+        n_threshs = len(self.detection_cfg.affinity_threshs)
         error_types = np.zeros((dts.shape[0], n_threshs + 3))
         scores, ranks = get_ranks(dts)
         if gts.shape[0] == 0:
             return np.hstack((error_types, scores))
 
-        affinity_matrix = compute_affinity_matrix(dts, gts, self.dt_cfg.sim_fn_type)
+        affinity_matrix = compute_affinity_matrix(dts, gts, self.detection_cfg.affinity_fn_type)
 
         # Get the most similar GT label for each detection.
         gt_matches = np.expand_dims(affinity_matrix[ranks].argmax(axis=1), axis=0)
@@ -174,13 +179,13 @@ class DetectionEvaluator:
 
         # Find the indices of the "first" detection assigned to each GT.
         unique_gt_matches, unique_dt_matches = np.unique(gt_matches, return_index=True)
-        for i, thr in enumerate(self.dt_cfg.sim_ths):
+        for i, thr in enumerate(self.detection_cfg.affinity_threshs):
 
             # tp_mask may need to be defined differently with other similarity metrics
             tp_mask = affinities[unique_dt_matches] > -thr
             error_types[unique_dt_matches, i] = tp_mask
 
-            if thr == self.dt_cfg.tp_thresh and np.count_nonzero(tp_mask) > 0:
+            if thr == self.detection_cfg.tp_thresh and np.count_nonzero(tp_mask) > 0:
                 dt_tp_indices = unique_dt_matches[tp_mask]
                 gt_tp_indices = unique_gt_matches[tp_mask]
 
@@ -210,17 +215,17 @@ class DetectionEvaluator:
             summary: The summary statistics.
         """
         summary: DefaultDict[str, List] = defaultdict(list)
-        recalls_interp = np.linspace(0, 1, self.dt_cfg.n_rec_samples)
-        num_ths = len(self.dt_cfg.sim_ths)
-        if not self.fig_fpath.is_dir():
-            self.fig_fpath.mkdir(parents=True, exist_ok=True)
+        recalls_interp = np.linspace(0, 1, self.detection_cfg.n_rec_samples)
+        num_ths = len(self.detection_cfg.affinity_threshs)
+        if not self.figures_fpath.is_dir():
+            self.figures_fpath.mkdir(parents=True, exist_ok=True)
 
         for cls_name, cls_stats in data.items():
             ninst = cls_to_ninst[cls_name]
             ranks = cls_stats[:, -1].argsort()[::-1]
             cls_stats = cls_stats[ranks]
 
-            for i, _ in enumerate(self.dt_cfg.sim_ths):
+            for i, _ in enumerate(self.detection_cfg.affinity_threshs):
                 tp = cls_stats[:, i].astype(bool)
 
                 cumulative_tp = np.cumsum(tp, dtype=np.int)
@@ -237,7 +242,7 @@ class DetectionEvaluator:
                 ap_th = prec_truncated.mean()
                 summary[cls_name] += [ap_th]
 
-                if self.dt_cfg.save_figs:
+                if self.detection_cfg.save_figs:
                     self.plot(recalls_interp, precisions_interp, cls_name)
 
             # AP Metric
@@ -251,7 +256,7 @@ class DetectionEvaluator:
             cds_summands = np.hstack((ap, np.clip(1 - tp_metrics, a_min=0, a_max=None)))
 
             # Ranking metric
-            cds = np.average(cds_summands, weights=self.dt_cfg.cds_weights)
+            cds = np.average(cds_summands, weights=self.detection_cfg.cds_weights)
 
             summary[cls_name] = [ap, *tp_metrics, cds]
 
@@ -270,7 +275,7 @@ class DetectionEvaluator:
         plt.title("PR Curve")
         plt.xlabel("Recall")
         plt.ylabel("Precision")
-        plt.savefig(f"{self.fig_fpath}/{cls_name}.png")
+        plt.savefig(f"{self.figures_fpath}/{cls_name}.png")
         plt.close()
 
 
