@@ -19,6 +19,7 @@ from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation as R
 
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
+from argoverse.evaluation.eval_tracking import get_orientation_error_deg
 from argoverse.utils.transform import quat_argo2scipy_vectorized
 
 
@@ -113,7 +114,7 @@ def compute_match_matrix(dts: List[ObjectLabelRecord], gts: List[ObjectLabelReco
         metric: Similarity metric type.
 
     Returns:
-        Interpolated precision at all recall levels.
+        sims: Similarity scores between detections and ground truth annotations (N, M).
     """
     if metric == SimFnType.CENTER:
         dt_centers = np.array([dt.translation for dt in dts])
@@ -163,10 +164,10 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
 
 
 def normalize_angle(angle: float) -> float:
-    """Map angle (in radians) to [0, 2π).
+    """Map angle (in radians) from domain [-π, π] to [0, 2π).
 
     Args:
-        angle: Angle (in radians).
+        angle: Angle (in radians) in domain [-π, π].
 
     Returns:
         The angle (in radians) mapped to the interval [0, 2π).

@@ -3,7 +3,7 @@ import argparse
 import logging
 import os
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import MISSING, dataclass, field
 from multiprocessing import Pool
 from pathlib import Path
 from typing import DefaultDict, List, Tuple
@@ -68,9 +68,9 @@ class DetectionEvaluator:
         dt_cfg: The detection configuration settings.
     """
 
-    dt_fpath: Path = Path("detections")
-    gt_fpath: Path = Path("/data/argoverse")
-    fig_fpath: Path = Path("figs")
+    dt_fpath: Path = MISSING
+    gt_fpath: Path = MISSING
+    fig_fpath: Path = MISSING
     dt_cfg: DetectionCfg = DetectionCfg()
 
     def evaluate(self) -> pd.DataFrame:
