@@ -127,10 +127,11 @@ class DetectionEvaluator:
         log_id = gt_fpath.parents[1].stem
         logger.info(f"log_id = {log_id}")
         ts = gt_fpath.stem.split("_")[-1]
+
         dt_fpath = self.dt_fpath / f"{log_id}/per_sweep_annotations_amodal/" f"tracked_object_labels_{ts}.json"
 
-        dts = np.array(read_label(dt_fpath))
-        gts = np.array(read_label(gt_fpath))
+        dts = np.array(read_label(str(dt_fpath)))
+        gts = np.array(read_label(str(gt_fpath)))
 
         cls_stats = defaultdict(list)
         cls_to_ninst = defaultdict(int)
@@ -260,8 +261,8 @@ class DetectionEvaluator:
         """Plot and save the precision recall curve.
 
         Args:
-            rec_interp: Interpolated recall data of shape (101,).
-            prec_interp: Interpolated precision data of shape (101,).
+            rec_interp: Interpolated recall data of shape (N,).
+            prec_interp: Interpolated precision data of shape (N,).
             cls_name: Class name.
         """
         plt.plot(rec_interp, prec_interp)

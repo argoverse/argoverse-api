@@ -18,6 +18,7 @@ import pandas as pd
 from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation as R
 
+from argoverse.data_loading.object_label_record import ObjectLabelRecord
 from argoverse.utils.transform import quat_argo2scipy_vectorized
 
 
@@ -69,15 +70,15 @@ def filter_instances(
         return filtered_annos
 
 
-def get_ranks(dts: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def get_ranks(dts: List[ObjectLabelRecord]) -> Tuple[np.ndarray, np.ndarray]:
     """Get the rankings for the detections.
 
     Args:
-        dts: Detections.
+        dts: Detections (N,).
 
     Returns:
-        scores: The detection scores.
-        ranks: The ranking for the detections.
+        scores: The detection scores (N,).
+        ranks: The ranking for the detections (N,).
 
     """
     scores = np.array([dt.score for dt in dts])
@@ -89,7 +90,7 @@ def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
     """Interpolate the precision over all recall levels.
 
     Args:
-        prec: Precision at all recall levels.
+        prec: Precision at all recall levels (N,).
         method: Accumulation method.
 
     Returns:
@@ -102,13 +103,13 @@ def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
     return prec_interp
 
 
-def compute_match_matrix(dts: np.ndarray, gts: np.ndarray, metric: SimFnType) -> np.ndarray:
+def compute_match_matrix(dts: List[ObjectLabelRecord], gts: List[ObjectLabelRecord], metric: SimFnType) -> np.ndarray:
     """Calculate the match matrix between detections and ground truth labels,
     using a specified similarity function.
 
     Args:
-        dts: Detections.
-        gts: Ground truth labels.
+        dts: Detections (N,).
+        gts: Ground truth labels (M,).
         metric: Similarity metric type.
 
     Returns:
