@@ -81,7 +81,6 @@ def get_ranks(dts: List[ObjectLabelRecord]) -> Tuple[np.ndarray, np.ndarray]:
     Returns:
         scores: The detection scores (N,).
         ranks: The ranking for the detections (N,).
-
     """
     scores = np.array([dt.score for dt in dts])
     ranks = scores.argsort()[::-1]
@@ -96,7 +95,7 @@ def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
         method: Accumulation method.
 
     Returns:
-        prec_interp: Interpolated precision at all recall levels.
+        prec_interp: Interpolated precision at all recall levels (N,).
     """
     if method == InterpType.ALL:
         prec_interp = np.maximum.accumulate(prec[::-1])[::-1]
@@ -105,7 +104,9 @@ def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
     return prec_interp
 
 
-def compute_match_matrix(dts: List[ObjectLabelRecord], gts: List[ObjectLabelRecord], metric: SimFnType) -> np.ndarray:
+def compute_affinity_matrix(
+    dts: List[ObjectLabelRecord], gts: List[ObjectLabelRecord], metric: SimFnType
+) -> np.ndarray:
     """Calculate the match matrix between detections and ground truth labels,
     using a specified similarity function.
 

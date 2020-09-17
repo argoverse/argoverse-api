@@ -10,7 +10,7 @@ from pandas.core.frame import DataFrame
 from scipy.spatial.transform import Rotation as R
 
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
-from argoverse.evaluation.detection_utils import DistFnType, SimFnType, compute_match_matrix, dist_fn
+from argoverse.evaluation.detection_utils import DistFnType, SimFnType, compute_affinity_matrix, dist_fn
 from argoverse.evaluation.eval_detection import DetectionCfg, DetectionEvaluator
 from argoverse.utils.transform import quat_scipy2argo_vectorized
 
@@ -36,7 +36,7 @@ def test_center_similarity() -> None:
     """Test that the Center similarity function works."""
     olr1 = np.array([ObjectLabelRecord(np.array([0, 0, 0, 0]), np.array([0, 0, 0]), 5.0, 5.0, 5.0, 0)])
     olr2 = np.array([ObjectLabelRecord(np.array([0, 0, 0, 0]), np.array([3, 4, 0]), 5.0, 5.0, 5.0, 0)])
-    assert compute_match_matrix(olr1, olr2, SimFnType.CENTER) == -5
+    assert compute_affinity_matrix(olr1, olr2, SimFnType.CENTER) == -5
 
 
 def test_translation_distance() -> None:

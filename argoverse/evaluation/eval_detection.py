@@ -17,7 +17,7 @@ from argoverse.data_loading.object_label_record import read_label
 from argoverse.evaluation.detection_utils import (
     DistFnType,
     SimFnType,
-    compute_match_matrix,
+    compute_affinity_matrix,
     dist_fn,
     filter_instances,
     get_ranks,
@@ -164,20 +164,20 @@ class DetectionEvaluator:
         if gts.shape[0] == 0:
             return np.hstack((error_types, scores))
 
-        match_matrix = compute_match_matrix(dts, gts, self.dt_cfg.sim_fn_type)
+        affinity_matrix = compute_affinity_matrix(dts, gts, self.dt_cfg.sim_fn_type)
 
         # Get the most similar GT label for each detection.
-        gt_matches = np.expand_dims(match_matrix[ranks].argmax(axis=1), axis=0)
+        gt_matches = np.expand_dims(affinity_matrix[ranks].argmax(axis=1), axis=0)
 
         # Grab the corresponding similarity score for each assignment.
-        match_scores = np.take_along_axis(match_matrix[ranks].T, gt_matches, axis=0).squeeze(0)
+        affinities = np.take_along_axis(affinity_matrix[ranks].T, gt_matches, axis=0).squeeze(0)
 
         # Find the indices of the "first" detection assigned to each GT.
         unique_gt_matches, unique_dt_matches = np.unique(gt_matches, return_index=True)
         for i, thr in enumerate(self.dt_cfg.sim_ths):
 
             # tp_mask may need to be defined differently with other similarity metrics
-            tp_mask = match_scores[unique_dt_matches] > -thr
+            tp_mask = affinities[unique_dt_matches] > -thr
             error_types[unique_dt_matches, i] = tp_mask
 
             if thr == self.dt_cfg.tp_thresh and np.count_nonzero(tp_mask) > 0:
