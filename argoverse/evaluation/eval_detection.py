@@ -170,7 +170,7 @@ class DetectionEvaluator:
         metrics = np.zeros((dts.shape[0], n_threshs + len(TP_METRIC_NAMES)))
         scores, ranks = get_ranks(dts)
         if gts.shape[0] == 0:
-            return np.hstack((metrics, scores))
+            return metrics, scores
 
         affinity_matrix = compute_affinity_matrix(dts, gts, self.detection_cfg.affinity_fn_type)
 
@@ -202,7 +202,6 @@ class DetectionEvaluator:
                 metrics[dt_tp_indices, n_threshs : n_threshs + 3] = np.vstack(
                     (trans_error, scale_error, orient_error)
                 ).T
-
         return metrics, scores
 
     def summarize(
