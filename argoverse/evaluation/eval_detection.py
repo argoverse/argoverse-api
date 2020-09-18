@@ -2,7 +2,7 @@
 import argparse
 import logging
 import os
-from collections import ChainMap, defaultdict
+from collections import defaultdict
 from dataclasses import dataclass, field
 from multiprocessing import Pool
 from pathlib import Path
@@ -34,7 +34,8 @@ import matplotlib.pyplot as plt  # isort:skip
 logger = logging.getLogger(__name__)
 
 
-METRIC_NAMES: List[str] = ["AP", "ATE", "ASE", "AOE", "CDS"]
+TP_METRIC_NAMES = ["ATE", "ASE", "AOE"]
+METRIC_NAMES: List[str] = ["AP"] + TP_METRIC_NAMES + ["CDS"]
 METRIC_DEFAULT_VALUES: List[float] = [0, 1.0, 1.0, 1.0, 0]
 
 
@@ -148,12 +149,13 @@ class DetectionEvaluator:
             logger.info(f"{dt_filtered.shape[0]} detections")
             logger.info(f"{gt_filtered.shape[0]} ground truth")
             if dt_filtered.shape[0] > 0:
-                cls_stats[dt_cls] = self.assign(dt_filtered, gt_filtered)
+                metrics, scores = self.assign(dt_filtered, gt_filtered)
+                cls_stats[dt_cls] = np.hstack((metrics, scores))
 
             cls_to_ninst[dt_cls] = gt_filtered.shape[0]
         return cls_stats, cls_to_ninst
 
-    def assign(self, dts: np.ndarray, gts: np.ndarray) -> np.ndarray:
+    def assign(self, dts: np.ndarray, gts: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """Attempt assignment of each detection to a ground truth label.
 
         Args:
@@ -161,13 +163,14 @@ class DetectionEvaluator:
             gts: Ground truth labels of shape (M,).
 
         Returns:
-            True positives, false positives, scores, and translation errors.
+            metrics: Flags indicating true/false positive and true positive errors (N, 8).
+            scores: Corresponding scores for the true positives/false positives (N,)
         """
         n_threshs = len(self.detection_cfg.affinity_threshs)
-        error_types = np.zeros((dts.shape[0], n_threshs + 3))
+        metrics = np.zeros((dts.shape[0], n_threshs + len(TP_METRIC_NAMES)))
         scores, ranks = get_ranks(dts)
         if gts.shape[0] == 0:
-            return np.hstack((error_types, scores))
+            return np.hstack((metrics, scores))
 
         affinity_matrix = compute_affinity_matrix(dts, gts, self.detection_cfg.affinity_fn_type)
 
@@ -183,7 +186,7 @@ class DetectionEvaluator:
 
             # tp_mask may need to be defined differently with other similarity metrics
             tp_mask = affinities[unique_dt_matches] > -thr
-            error_types[unique_dt_matches, i] = tp_mask
+            metrics[unique_dt_matches, i] = tp_mask
 
             if thr == self.detection_cfg.tp_thresh and np.count_nonzero(tp_mask) > 0:
                 dt_tp_indices = unique_dt_matches[tp_mask]
@@ -196,11 +199,11 @@ class DetectionEvaluator:
                 scale_error = dist_fn(dt_df, gt_df, DistFnType.SCALE)
                 orient_error = dist_fn(dt_df, gt_df, DistFnType.ORIENTATION)
 
-                error_types[dt_tp_indices, n_threshs : n_threshs + 3] = np.vstack(
+                metrics[dt_tp_indices, n_threshs : n_threshs + 3] = np.vstack(
                     (trans_error, scale_error, orient_error)
                 ).T
 
-        return np.hstack((error_types, scores))
+        return metrics, scores
 
     def summarize(
         self, data: DefaultDict[str, np.ndarray], cls_to_ninst: DefaultDict[str, int]
@@ -238,8 +241,7 @@ class DetectionEvaluator:
                 precisions = interp(precisions)
                 precisions_interp = np.interp(recalls_interp, recalls, precisions, right=0)
 
-                prec_truncated = precisions_interp[10 + 1 :]
-                ap_th = prec_truncated.mean()
+                ap_th = precisions_interp.mean()
                 summary[cls_name] += [ap_th]
 
                 if self.detection_cfg.save_figs:
