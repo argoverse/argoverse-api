@@ -274,8 +274,7 @@ class DetectionEvaluator:
             # Select only the true positives for each instance.
             tp_metrics_mask = ~np.isnan(cls_stats[:, num_ths : num_ths + NUM_TP_METRICS]).all(axis=1)
 
-            # If there are no true positives set errors to 1 (and orientation to np.pi / 2 due to normalization below)
-            # TODO We might consider normalizing the translation error with a max detection distance.
+            # If there are no true positives set tp errors to their maximum values due to normalization below)
             if ~tp_metrics_mask.any():
                 tp_metrics = self.detection_cfg.tp_normalization_terms
             else:
