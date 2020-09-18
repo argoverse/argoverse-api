@@ -3,7 +3,7 @@ import argparse
 import logging
 import os
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import Field, dataclass, field
 from multiprocessing import Pool
 from pathlib import Path
 from typing import DefaultDict, List, Tuple
@@ -17,6 +17,7 @@ from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
 from argoverse.data_loading.object_label_record import read_label
 from argoverse.evaluation.detection_utils import (
     DistFnType,
+    FilterMetric,
     SimFnType,
     compute_affinity_matrix,
     dist_fn,
@@ -49,21 +50,27 @@ class DetectionCfg:
         affinity_threshs: The affinity thresholds for determining a true positive.
         affinity_fn_type: The type of affinity function to be used for calculating average precision.
         n_rec_samples: Number of recall points to sample uniformly in [0, 1]. Default to 101 recall samples.
-        cds_weights: The weight vector for the detection composite score (CDS).
         tp_thresh: Center distance threshold for the true positive metrics (in meters).
         significant_digits: The precision for metrics.
         detection_classes: Detection classes for evaluation.
+        detection_metric: The detection metric to use for filtering of both detections and ground truth annotations.
+        max_detection_range: The max distance (under a specific metric) for a a detection or ground truth to be considered for evaluation.
         save_figs: Flag to save figures.
     """
 
     affinity_threshs: List[float] = field(default_factory=lambda: [0.5, 1.0, 2.0, 4.0])
     affinity_fn_type: SimFnType = SimFnType.CENTER
     n_rec_samples: int = 101
-    cds_weights: List[float] = field(default_factory=lambda: [3, 1, 1, 1])
     tp_thresh: float = 2.0
     significant_digits: int = 3
     detection_classes: List[str] = field(default_factory=lambda: list(OBJ_CLASS_MAPPING_DICT.keys()))
+    detection_metric: FilterMetric = FilterMetric.EUCLIDEAN
+    max_detection_range: float = 50.0
     save_figs: bool = False
+    tp_normalization_terms: np.ndarray = field(init=False)
+
+    def __post_init__(self):
+        self.tp_normalization_terms: np.ndarray = np.array([self.tp_thresh, 1.0, np.pi])
 
 
 @dataclass
@@ -145,8 +152,18 @@ class DetectionEvaluator:
         cls_stats = defaultdict(list)
         cls_to_ninst = defaultdict(int)
         for dt_cls in self.detection_cfg.detection_classes:
-            dt_filtered = filter_instances(dts, dt_cls)
-            gt_filtered = filter_instances(gts, dt_cls)
+            dt_filtered = filter_instances(
+                dts,
+                dt_cls,
+                filter_metric=self.detection_cfg.detection_metric,
+                max_detection_range=self.detection_cfg.max_detection_range,
+            )
+            gt_filtered = filter_instances(
+                gts,
+                dt_cls,
+                filter_metric=self.detection_cfg.detection_metric,
+                max_detection_range=self.detection_cfg.max_detection_range,
+            )
 
             logger.info(f"{dt_filtered.shape[0]} detections")
             logger.info(f"{gt_filtered.shape[0]} ground truth")
@@ -260,16 +277,16 @@ class DetectionEvaluator:
             # If there are no true positives set errors to 1 (and orientation to np.pi / 2 due to normalization below)
             # TODO We might consider normalizing the translation error with a max detection distance.
             if ~tp_metrics_mask.any():
-                tp_metrics = np.array([1.0, 1.0, np.pi])
+                tp_metrics = self.detection_cfg.tp_normalization_terms
             else:
                 # Calculate TP metrics.
                 tp_metrics = np.mean(cls_stats[:, num_ths : num_ths + NUM_TP_METRICS][tp_metrics_mask], axis=0)
 
-            # Normalize orientation.
-            tp_metrics[2] /= np.pi
+            # Convert errors to scores
+            tp_scores = 1 - (tp_metrics / self.detection_cfg.tp_normalization_terms)
 
-            # Ranking metric (AP * (1 - TP_METRICS)). Clipped to ensure >= 0.
-            cds = ap * np.clip(1 - tp_metrics, a_min=0, a_max=None).sum()
+            # Compute Composite Detection Score (CDS)
+            cds = ap * tp_scores.mean()
 
             summary[cls_name] = [ap, *tp_metrics, cds]
 
