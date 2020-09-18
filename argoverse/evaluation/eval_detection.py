@@ -35,8 +35,10 @@ logger = logging.getLogger(__name__)
 
 
 TP_METRIC_NAMES = ["ATE", "ASE", "AOE"]
+NUM_TP_METRICS = len(TP_METRIC_NAMES)
+
 METRIC_NAMES: List[str] = ["AP"] + TP_METRIC_NAMES + ["CDS"]
-METRIC_DEFAULT_VALUES: List[float] = [0, 1.0, 1.0, 1.0, 0]
+METRIC_DEFAULT_VALUES: List[float] = [0.0, 1.0, 1.0, 1.0, 0.0]
 
 
 @dataclass
@@ -107,7 +109,7 @@ class DetectionEvaluator:
 
         data = defaultdict(np.ndarray, {k: np.vstack(v) for k, v in data.items()})
 
-        init_data = {k: METRIC_DEFAULT_VALUES for k in self.detection_cfg.detection_classes}
+        init_data = {dt_cls: METRIC_DEFAULT_VALUES for dt_cls in self.detection_cfg.detection_classes}
         summary = pd.DataFrame.from_dict(init_data, orient="index", columns=METRIC_NAMES)
         summary_update = pd.DataFrame.from_dict(
             self.summarize(data, cls_to_ninst), orient="index", columns=METRIC_NAMES
@@ -167,7 +169,8 @@ class DetectionEvaluator:
             scores: Corresponding scores for the true positives/false positives (N,)
         """
         n_threshs = len(self.detection_cfg.affinity_threshs)
-        metrics = np.zeros((dts.shape[0], n_threshs + len(TP_METRIC_NAMES)))
+        metrics = np.zeros((dts.shape[0], n_threshs + NUM_TP_METRICS))
+        metrics[:, n_threshs : n_threshs + NUM_TP_METRICS] = 1
         scores, ranks = get_ranks(dts)
         if gts.shape[0] == 0:
             return metrics, scores
@@ -199,7 +202,7 @@ class DetectionEvaluator:
                 scale_error = dist_fn(dt_df, gt_df, DistFnType.SCALE)
                 orient_error = dist_fn(dt_df, gt_df, DistFnType.ORIENTATION)
 
-                metrics[dt_tp_indices, n_threshs : n_threshs + 3] = np.vstack(
+                metrics[dt_tp_indices, n_threshs : n_threshs + NUM_TP_METRICS] = np.vstack(
                     (trans_error, scale_error, orient_error)
                 ).T
         return metrics, scores
@@ -250,7 +253,7 @@ class DetectionEvaluator:
             ap = np.array(summary[cls_name][:num_ths]).mean()
 
             # TP Error Metrics
-            tp_metrics = np.mean(cls_stats[:, num_ths : num_ths + 3], axis=0)
+            tp_metrics = np.mean(cls_stats[:, num_ths : num_ths + NUM_TP_METRICS], axis=0)
             tp_metrics[2] /= np.pi / 2  # normalize orientation
 
             # clip so that we don't get negative values in (1 - ATE)
