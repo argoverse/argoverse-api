@@ -170,7 +170,9 @@ class DetectionEvaluator:
         """
         n_threshs = len(self.detection_cfg.affinity_threshs)
         metrics = np.zeros((dts.shape[0], n_threshs + NUM_TP_METRICS))
-        metrics[:, n_threshs : n_threshs + NUM_TP_METRICS] = 1
+
+        # Set the true positive metrics to np.nan since error is undefined on false positives.
+        metrics[:, n_threshs : n_threshs + NUM_TP_METRICS] = np.nan
         scores, ranks = get_ranks(dts)
         if gts.shape[0] == 0:
             return metrics, scores
@@ -252,15 +254,22 @@ class DetectionEvaluator:
             # AP Metric
             ap = np.array(summary[cls_name][:num_ths]).mean()
 
-            # TP Error Metrics
-            tp_metrics = np.mean(cls_stats[:, num_ths : num_ths + NUM_TP_METRICS], axis=0)
-            tp_metrics[2] /= np.pi / 2  # normalize orientation
+            # Select only the true positives for each instance.
+            tp_metrics_mask = ~np.isnan(cls_stats[:, num_ths : num_ths + NUM_TP_METRICS]).all(axis=1)
 
-            # clip so that we don't get negative values in (1 - ATE)
-            cds_summands = np.hstack((ap, np.clip(1 - tp_metrics, a_min=0, a_max=None)))
+            # If there are no true positives set errors to 1 (and orientation to np.pi / 2 due to normalization below)
+            # TODO We might consider normalizing the translation error with a max detection distance.
+            if ~tp_metrics_mask.any():
+                tp_metrics = np.array([1.0, 1.0, np.pi])
+            else:
+                # Calculate TP metrics.
+                tp_metrics = np.mean(cls_stats[:, num_ths : num_ths + NUM_TP_METRICS][tp_metrics_mask], axis=0)
 
-            # Ranking metric
-            cds = np.average(cds_summands, weights=self.detection_cfg.cds_weights)
+            # Normalize orientation.
+            tp_metrics[2] /= np.pi
+
+            # Ranking metric (AP * (1 - TP_METRICS)). Clipped to ensure >= 0.
+            cds = ap * np.clip(1 - tp_metrics, a_min=0, a_max=None).sum()
 
             summary[cls_name] = [ap, *tp_metrics, cds]
 
