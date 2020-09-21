@@ -1,1 +1,13 @@
-{"rotation": [1, 0, 0, 0], "translation": [2, 0, 0]}
+{
+    "rotation": [
+        1,
+        0,
+        0,
+        0
+    ],
+    "translation": [
+        2,
+        0,
+        0
+    ]
+}
