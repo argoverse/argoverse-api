@@ -36,13 +36,14 @@ def _read_city_name(path: str) -> str:
 
 
 class ArgoverseTrackingLoader:
-    def __init__(self, root_dir: str, return_missing_image_as: Optional[str] = None) -> None:
+    def __init__(self, root_dir: str, return_missing_image_as: Optional[str] = "closest") -> None:
         """
         root_dir: directory of the dataset
         return_missing_image_as: specify what to return when there are image with missing timestamp (default = None).
                             None        -> None,
                             'backward'  -> closest previous timestamp,
-                            'forward'   -> closest next timestamp
+                            'forward'   -> closest next timestamp,
+                            'closest' -> closest in either direction
                             """
         # initialize class member
         self.CAMERA_LIST = CAMERA_LIST
@@ -191,16 +192,51 @@ class ArgoverseTrackingLoader:
 
                     self._image_list_sync[log][camera] = []
                     for i, x in enumerate(self._image_timestamp_list_sync[log][camera]):
+                        closest_gap_backward = None
+                        closest_ts_backward = None
+                        closest_gap_forward = None
+                        closest_ts_forward = None
                         if x is None:
-                            if self.return_missing_image_as == "backward" and i != 0:
-                                x = self._image_timestamp_list_sync[log][camera][i - 1]
-                            elif (
-                                self.return_missing_image_as == "forward"
-                                and i != len(self._image_timestamp_list_sync[log][camera]) - 1
-                            ):
-                                x = self._image_timestamp_list_sync[log][camera][i + 1]
+                            # missing timestamp
+                            new_timestamp = None
+                            if i != 0:
+                                for ii in range(i - 1, -1, -1):  # loop backward
+                                    x = self._image_timestamp_list_sync[log][camera][ii]
+                                    if x is not None:
+                                        closest_gap_backward = self._lidar_timestamp_list[log][i] - x
+                                        assert closest_gap_backward > 0
+                                        closest_ts_backward = x
+                                        break
+                            if i != len(self._image_timestamp_list_sync[log][camera]) - 1:
+                                for ii in range(
+                                    i + 1, len(self._image_timestamp_list_sync[log][camera])
+                                ):  # loop forward
+                                    x = self._image_timestamp_list_sync[log][camera][ii]
+                                    if x is not None:
+                                        closest_gap_forward = x - self._lidar_timestamp_list[log][i]
+                                        assert closest_gap_forward > 0
+                                        closest_ts_forward = x
+                                        break
+                            if self.return_missing_image_as == "closest":
+                                if i == 0:  # first timestamp, take forward
+                                    new_timestamp = closest_ts_forward
+                                elif (
+                                    i == len(self._image_timestamp_list_sync[log][camera]) - 1
+                                ):  # last timestamp, take backwards
+                                    new_timestamp = closest_ts_backward
+                                else:
+                                    if closest_gap_forward > closest_gap_backward:
+                                        new_timestamp = closest_ts_backward
+                                    else:
+                                        new_timestamp = closest_ts_forward
+                            elif self.return_missing_image_as == "forward":
+                                new_timestamp = closest_ts_forward
+                            elif self.return_missing_image_as == "backward":
+                                new_timestamp = closest_ts_backward
                             else:
-                                x = None
+                                new_timestamp = None
+
+                            x = new_timestamp
 
                         self._image_list_sync[log][camera].append(
                             self.get_image_at_timestamp(x, camera=camera, log_id=log, load=False)
