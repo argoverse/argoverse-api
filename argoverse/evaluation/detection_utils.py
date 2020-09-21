@@ -42,20 +42,20 @@ class FilterMetric(Enum):
 
 
 def filter_instances(
-    instances: List[ObjectLabelRecord], target_class: str, filter_metric: FilterMetric, max_detection_range: float
+    instances: List[ObjectLabelRecord], target_class_name: str, filter_metric: FilterMetric, max_detection_range: float
 ) -> np.ndarray:
-    """Filter the GT annotations based on a set of conditions (e.g., distance from egovehicle).
+    """Filter the GT annotations based on a set of conditions (classname and distance from egovehicle).
 
     Args:
         instances: The instances to be filtered (N,).
-        target_class: The name of the class of interest.
+        target_class_name: The name of the class of interest.
         filter_metric: The range metric used for filtering.
         max_detection_range: The maximum distance for range filtering.
 
     Returns:
         The filtered annotations.
     """
-    instances = np.array([instance for instance in instances if instance.label_class == target_class])
+    instances = np.array([instance for instance in instances if instance.label_class == target_class_name])
 
     if filter_metric == FilterMetric.EUCLIDEAN:
         centers = np.array([dt.translation for dt in instances])
@@ -128,8 +128,8 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
     """Distance functions between detections and ground truth.
 
     Args:
-        dts: Detections.
-        gts: Ground truth labels.
+        dts: Detections (N,).
+        gts: Ground truth labels (M,).
         metric: Distance function type.
 
     Returns:

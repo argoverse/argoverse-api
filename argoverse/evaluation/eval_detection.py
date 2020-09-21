@@ -1,4 +1,58 @@
 # <Copyright 2020, Argo AI, LLC. Released under the MIT license.>
+"""Detection evaluation for the Argoverse detection leaderboard.
+
+Evaluation:
+
+    Precision/Recall
+
+        1. Average Precision: Standard VOC-style average precision calculation
+            except a true positive requires a bird's eye center distance of less
+            than a predefined threshold.
+
+    True Positive Errors
+
+        All true positive errors -- as the name implies -- accumulate error solely
+        when an object is a true positive match to a ground truth detection. The matching
+        criterion is represented by `tp_thresh` in the DetectionCfg class.
+
+        1. Average Translation Error: The average Euclidean distance (center-based) between a
+            detection and its ground truth assignment.
+
+        2. Average Scale Error: The average intersection over union (IoU) after the prediction
+            and assigned ground truth's pose has been aligned.
+        
+        3. Average Orientation Error: The average angular distance between the detection and
+            the assigned ground truth. We choose the smallest angle between the two different
+            headings when calculating the error.
+
+    Composite Scores
+
+        1. Composite Detection Score: The ranking metric for the detection leaderboard. This
+            is computed as the product of mAP with the sum of the complements of the true positive
+            errors (after normalization), i.e.,
+
+            Average Translation Measure (ATM): ATE / TP_THRESHOLD; 0 <= 1 - ATE / TP_THRESHOLD <= 1
+            Average Scaling Measure (ASM): 1 - ASE / 1;  0 <= 1 - ASE / 1 <= 1
+            Average Orientation Measure (AOM): 1 - AOE / PI; 0 <= 1 - AOE / PI <= 1
+
+            These (as well as AP) are averaged over each detection class to produce:
+
+            mAP, mATM, mASM, mAOM.
+
+            Lastly, the Composite Detection Score is computed as:
+
+            CDS = mAP * (mATE + mASE + mAOE); 0 <= mAP * (mATE + mASE + mAOE) <= 1.
+
+        ** In the case of no true positives under the specified threshold, the true positive measures
+            will assume their upper bounds of 1.0. respectively.
+
+Results:
+
+    The results are represented as a (C + 1, P) table, where C + 1 represents the number of evaluation classes
+    in addition to the mean statistics average across all classes, and P refers to the number of included statistics, 
+    e.g. AP, ATE, ASE, AOE, CDS by default.
+
+"""
 import argparse
 import logging
 import os
@@ -35,11 +89,14 @@ import matplotlib.pyplot as plt  # isort:skip
 logger = logging.getLogger(__name__)
 
 
-TP_METRIC_NAMES = ["ATE", "ASE", "AOE"]
-NUM_TP_METRICS = len(TP_METRIC_NAMES)
+TP_ERROR_NAMES = ["ATE", "ASE", "AOE"]
+N_TP_ERRORS = len(TP_ERROR_NAMES)
 
-METRIC_NAMES: List[str] = ["AP"] + TP_METRIC_NAMES + ["CDS"]
-METRIC_DEFAULT_VALUES: List[float] = [0.0, 1.0, 1.0, 1.0, 0.0]
+STATISTIC_NAMES: List[str] = ["AP"] + TP_ERROR_NAMES + ["CDS"]
+
+MEASURE_DEFAULT_VALUES: List[float] = [0.0, 1.0, 1.0, 1.0, 0.0]
+
+MAX_YAW_ERROR = np.pi
 
 
 @dataclass
@@ -65,12 +122,12 @@ class DetectionCfg:
     significant_digits: int = 3
     detection_classes: List[str] = field(default_factory=lambda: list(OBJ_CLASS_MAPPING_DICT.keys()))
     detection_metric: FilterMetric = FilterMetric.EUCLIDEAN
-    max_detection_range: float = 50.0
+    max_detection_range: float = 100.0
     save_figs: bool = False
     tp_normalization_terms: np.ndarray = field(init=False)
 
     def __post_init__(self):
-        self.tp_normalization_terms: np.ndarray = np.array([self.tp_thresh, 1.0, np.pi])
+        self.tp_normalization_terms: np.ndarray = np.array([self.tp_thresh, 1.0, MAX_YAW_ERROR])
 
 
 @dataclass
@@ -116,10 +173,10 @@ class DetectionEvaluator:
 
         data = defaultdict(np.ndarray, {k: np.vstack(v) for k, v in data.items()})
 
-        init_data = {dt_cls: METRIC_DEFAULT_VALUES for dt_cls in self.detection_cfg.detection_classes}
-        summary = pd.DataFrame.from_dict(init_data, orient="index", columns=METRIC_NAMES)
+        init_data = {dt_cls: MEASURE_DEFAULT_VALUES for dt_cls in self.detection_cfg.detection_classes}
+        summary = pd.DataFrame.from_dict(init_data, orient="index", columns=STATISTIC_NAMES)
         summary_update = pd.DataFrame.from_dict(
-            self.summarize(data, cls_to_ninst), orient="index", columns=METRIC_NAMES
+            self.summarize(data, cls_to_ninst), orient="index", columns=STATISTIC_NAMES
         )
 
         summary.update(summary_update)
@@ -136,7 +193,8 @@ class DetectionEvaluator:
             gt_fpath: Ground truth file path.
 
         Returns:
-            cls_stats: Class statistics of shape (N, 8)
+            cls_stats: Class statistics of shape ((N, K + S) where K is the number of true positive thresholds used
+                for AP computation and S is the number of true positive errors.
             cls_to_ninst: Mapping of the class names to the number of instances in the ground
                           truth dataset.
         """
@@ -151,16 +209,16 @@ class DetectionEvaluator:
 
         cls_stats = defaultdict(list)
         cls_to_ninst = defaultdict(int)
-        for dt_cls in self.detection_cfg.detection_classes:
+        for class_name in self.detection_cfg.detection_classes:
             dt_filtered = filter_instances(
                 dts,
-                dt_cls,
+                class_name,
                 filter_metric=self.detection_cfg.detection_metric,
                 max_detection_range=self.detection_cfg.max_detection_range,
             )
             gt_filtered = filter_instances(
                 gts,
-                dt_cls,
+                class_name,
                 filter_metric=self.detection_cfg.detection_metric,
                 max_detection_range=self.detection_cfg.max_detection_range,
             )
@@ -169,9 +227,9 @@ class DetectionEvaluator:
             logger.info(f"{gt_filtered.shape[0]} ground truth")
             if dt_filtered.shape[0] > 0:
                 metrics, scores = self.assign(dt_filtered, gt_filtered)
-                cls_stats[dt_cls] = np.hstack((metrics, scores))
+                cls_stats[class_name] = np.hstack((metrics, scores))
 
-            cls_to_ninst[dt_cls] = gt_filtered.shape[0]
+            cls_to_ninst[class_name] = gt_filtered.shape[0]
         return cls_stats, cls_to_ninst
 
     def assign(self, dts: np.ndarray, gts: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
@@ -182,14 +240,15 @@ class DetectionEvaluator:
             gts: Ground truth labels of shape (M,).
 
         Returns:
-            metrics: Flags indicating true/false positive and true positive errors (N, 8).
+            metrics: Matrix of true/false positive concatenated with true positive errors (N, K + S) where K is the number
+                of true positive thresholds used for AP computation and S is the number of true positive errors.
             scores: Corresponding scores for the true positives/false positives (N,)
         """
         n_threshs = len(self.detection_cfg.affinity_threshs)
-        metrics = np.zeros((dts.shape[0], n_threshs + NUM_TP_METRICS))
+        metrics = np.zeros((dts.shape[0], n_threshs + N_TP_ERRORS))
 
         # Set the true positive metrics to np.nan since error is undefined on false positives.
-        metrics[:, n_threshs : n_threshs + NUM_TP_METRICS] = np.nan
+        metrics[:, n_threshs : n_threshs + N_TP_ERRORS] = np.nan
         scores, ranks = get_ranks(dts)
         if gts.shape[0] == 0:
             return metrics, scores
@@ -197,9 +256,11 @@ class DetectionEvaluator:
         affinity_matrix = compute_affinity_matrix(dts, gts, self.detection_cfg.affinity_fn_type)
 
         # Get the most similar GT label for each detection.
-        gt_matches = np.expand_dims(affinity_matrix[ranks].argmax(axis=1), axis=0)
+        gt_matches = affinity_matrix[ranks].argmax(axis=1)[np.newaxis, :]
 
-        # Grab the corresponding similarity score for each assignment.
+        # The affinity matrix is an N by M matrix of the detections and ground truth labels respectively.
+        # We want to take the corresponding affinity for each of the initial assignments using `gt_matches`.
+        # The following line grabs the max affinity for each detection to a ground truth label.
         affinities = np.take_along_axis(affinity_matrix[ranks].T, gt_matches, axis=0).squeeze(0)
 
         # Find the indices of the "first" detection assigned to each GT.
@@ -221,7 +282,7 @@ class DetectionEvaluator:
                 scale_error = dist_fn(dt_df, gt_df, DistFnType.SCALE)
                 orient_error = dist_fn(dt_df, gt_df, DistFnType.ORIENTATION)
 
-                metrics[dt_tp_indices, n_threshs : n_threshs + NUM_TP_METRICS] = np.vstack(
+                metrics[dt_tp_indices, n_threshs : n_threshs + N_TP_ERRORS] = np.vstack(
                     (trans_error, scale_error, orient_error)
                 ).T
         return metrics, scores
@@ -272,14 +333,14 @@ class DetectionEvaluator:
             ap = np.array(summary[cls_name][:num_ths]).mean()
 
             # Select only the true positives for each instance.
-            tp_metrics_mask = ~np.isnan(cls_stats[:, num_ths : num_ths + NUM_TP_METRICS]).all(axis=1)
+            tp_metrics_mask = ~np.isnan(cls_stats[:, num_ths : num_ths + N_TP_ERRORS]).all(axis=1)
 
             # If there are no true positives set tp errors to their maximum values due to normalization below)
             if ~tp_metrics_mask.any():
                 tp_metrics = self.detection_cfg.tp_normalization_terms
             else:
                 # Calculate TP metrics.
-                tp_metrics = np.mean(cls_stats[:, num_ths : num_ths + NUM_TP_METRICS][tp_metrics_mask], axis=0)
+                tp_metrics = np.mean(cls_stats[:, num_ths : num_ths + N_TP_ERRORS][tp_metrics_mask], axis=0)
 
             # Convert errors to scores
             tp_scores = 1 - (tp_metrics / self.detection_cfg.tp_normalization_terms)
