@@ -11,11 +11,13 @@ from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLo
 from argoverse.utils.camera_stats import CAMERA_LIST
 
 TEST_DATA_LOC = pathlib.Path(__file__).parent.parent / "tests" / "test_data" / "tracking"
+LOG_ID = "2"
 
 
 @pytest.fixture
 def data_loader() -> ArgoverseTrackingLoader:
-    return ArgoverseTrackingLoader(TEST_DATA_LOC)
+    argoverse_loader = ArgoverseTrackingLoader(TEST_DATA_LOC)
+    return argoverse_loader.get(LOG_ID)
 
 
 def test_get_city_name(data_loader: ArgoverseTrackingLoader) -> None:
@@ -51,21 +53,19 @@ def test_image_list_sync(data_loader: ArgoverseTrackingLoader) -> None:
 def test_image_timestamp_sync(data_loader: ArgoverseTrackingLoader) -> None:
     assert set(data_loader.image_timestamp_list_sync.keys()) == set(CAMERA_LIST)
     for camera in CAMERA_LIST:
-        assert 3 not in data_loader.image_timestamp_list_sync[camera]
+        assert data_loader.image_timestamp_list_sync[camera][4] == 3
 
 
 def test_lidar_list(data_loader: ArgoverseTrackingLoader) -> None:
-    assert len(data_loader.lidar_list) == 3
+    assert len(data_loader.lidar_list) == 5
 
 
 def test_labale_list(data_loader: ArgoverseTrackingLoader) -> None:
-    assert len(data_loader.label_list) == 3
+    assert len(data_loader.label_list) == 5
 
 
 def test_image_timestamp_list(data_loader: ArgoverseTrackingLoader) -> None:
     assert set(data_loader.image_timestamp_list.keys()) == set(CAMERA_LIST)
-    for camera in CAMERA_LIST:
-        assert 3 in data_loader.image_timestamp_list[camera]
 
 
 def test_timestamp_image_dict(data_loader: ArgoverseTrackingLoader) -> None:
@@ -75,8 +75,8 @@ def test_timestamp_image_dict(data_loader: ArgoverseTrackingLoader) -> None:
 
 
 def test_timestamp_lidar_map(data_loader: ArgoverseTrackingLoader) -> None:
-    assert len(data_loader.timestamp_lidar_dict) == 3
-    assert len(data_loader.lidar_timestamp_list) == 3
+    assert len(data_loader.timestamp_lidar_dict) == 5
+    assert len(data_loader.lidar_timestamp_list) == 5
 
 
 def test_data_loader_get(data_loader: ArgoverseTrackingLoader) -> None:
