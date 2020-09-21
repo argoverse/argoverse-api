@@ -76,8 +76,8 @@ from argoverse.evaluation.detection_utils import (
     compute_affinity_matrix,
     dist_fn,
     filter_instances,
-    get_ranks,
     interp,
+    rank,
 )
 
 matplotlib.use("Agg")  # isort:skip
@@ -89,14 +89,21 @@ import matplotlib.pyplot as plt  # isort:skip
 logger = logging.getLogger(__name__)
 
 
-TP_ERROR_NAMES = ["ATE", "ASE", "AOE"]
-N_TP_ERRORS = len(TP_ERROR_NAMES)
+TP_ERROR_NAMES: List[str] = ["ATE", "ASE", "AOE"]
+N_TP_ERRORS: int = len(TP_ERROR_NAMES)
 
 STATISTIC_NAMES: List[str] = ["AP"] + TP_ERROR_NAMES + ["CDS"]
 
-MEASURE_DEFAULT_VALUES: List[float] = [0.0, 1.0, 1.0, 1.0, 0.0]
-
 MAX_YAW_ERROR = np.pi
+
+MIN_AP: float = 0.0
+MAX_ATM: float = 1.0
+MAX_ASM: float = 1.0
+MAX_AOM: float = 1.0
+MIN_CDS: float = 0.0
+MEASURE_DEFAULT_VALUES: List[float] = [MIN_AP, MAX_ATM, MAX_ASM, MAX_AOM, MIN_CDS]
+
+MAX_NUM_BOXES: int = 500
 
 
 @dataclass
@@ -196,7 +203,7 @@ class DetectionEvaluator:
             cls_stats: Class statistics of shape ((N, K + S) where K is the number of true positive thresholds used
                 for AP computation and S is the number of true positive errors.
             cls_to_ninst: Mapping of the class names to the number of instances in the ground
-                          truth dataset.
+                truth dataset.
         """
         log_id = gt_fpath.parents[1].stem
         logger.info(f"log_id = {log_id}")
@@ -226,7 +233,8 @@ class DetectionEvaluator:
             logger.info(f"{dt_filtered.shape[0]} detections")
             logger.info(f"{gt_filtered.shape[0]} ground truth")
             if dt_filtered.shape[0] > 0:
-                metrics, scores = self.assign(dt_filtered, gt_filtered)
+                ranked_detections, scores = rank(dt_filtered)
+                metrics = self.assign(ranked_detections, gt_filtered)
                 cls_stats[class_name] = np.hstack((metrics, scores))
 
             cls_to_ninst[class_name] = gt_filtered.shape[0]
@@ -244,24 +252,28 @@ class DetectionEvaluator:
                 of true positive thresholds used for AP computation and S is the number of true positive errors.
             scores: Corresponding scores for the true positives/false positives (N,)
         """
+
+        # Ensure the number of boxes considered per class is at most `MAX_NUM_BOXES`.
+        if dts.shape[0] > MAX_NUM_BOXES:
+            dts = dts[:MAX_NUM_BOXES]
+
         n_threshs = len(self.detection_cfg.affinity_threshs)
         metrics = np.zeros((dts.shape[0], n_threshs + N_TP_ERRORS))
 
         # Set the true positive metrics to np.nan since error is undefined on false positives.
         metrics[:, n_threshs : n_threshs + N_TP_ERRORS] = np.nan
-        scores, ranks = get_ranks(dts)
         if gts.shape[0] == 0:
-            return metrics, scores
+            return metrics
 
         affinity_matrix = compute_affinity_matrix(dts, gts, self.detection_cfg.affinity_fn_type)
 
         # Get the most similar GT label for each detection.
-        gt_matches = affinity_matrix[ranks].argmax(axis=1)[np.newaxis, :]
+        gt_matches = affinity_matrix.argmax(axis=1)[np.newaxis, :]
 
         # The affinity matrix is an N by M matrix of the detections and ground truth labels respectively.
         # We want to take the corresponding affinity for each of the initial assignments using `gt_matches`.
         # The following line grabs the max affinity for each detection to a ground truth label.
-        affinities = np.take_along_axis(affinity_matrix[ranks].T, gt_matches, axis=0).squeeze(0)
+        affinities = np.take_along_axis(affinity_matrix.T, gt_matches, axis=0).squeeze(0)
 
         # Find the indices of the "first" detection assigned to each GT.
         unique_gt_matches, unique_dt_matches = np.unique(gt_matches, return_index=True)
@@ -275,7 +287,7 @@ class DetectionEvaluator:
                 dt_tp_indices = unique_dt_matches[tp_mask]
                 gt_tp_indices = unique_gt_matches[tp_mask]
 
-                dt_df = pd.DataFrame([dt.__dict__ for dt in dts[ranks][dt_tp_indices]])
+                dt_df = pd.DataFrame([dt.__dict__ for dt in dts[dt_tp_indices]])
                 gt_df = pd.DataFrame([gt.__dict__ for gt in gts[gt_tp_indices]])
 
                 trans_error = dist_fn(dt_df, gt_df, DistFnType.TRANSLATION)
@@ -285,7 +297,7 @@ class DetectionEvaluator:
                 metrics[dt_tp_indices, n_threshs : n_threshs + N_TP_ERRORS] = np.vstack(
                     (trans_error, scale_error, orient_error)
                 ).T
-        return metrics, scores
+        return metrics
 
     def summarize(
         self, data: DefaultDict[str, np.ndarray], cls_to_ninst: DefaultDict[str, int]

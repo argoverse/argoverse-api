@@ -44,7 +44,7 @@ class FilterMetric(Enum):
 def filter_instances(
     instances: List[ObjectLabelRecord], target_class_name: str, filter_metric: FilterMetric, max_detection_range: float
 ) -> np.ndarray:
-    """Filter the GT annotations based on a set of conditions (classname and distance from egovehicle).
+    """Filter the GT annotations based on a set of conditions (class name and distance from egovehicle).
 
     Args:
         instances: The instances to be filtered (N,).
@@ -69,19 +69,20 @@ def filter_instances(
     return filtered_annos
 
 
-def get_ranks(dts: List[ObjectLabelRecord]) -> Tuple[np.ndarray, np.ndarray]:
+def rank(dts: List[ObjectLabelRecord]) -> Tuple[np.ndarray, np.ndarray]:
     """Get the rankings for the detections.
 
     Args:
         dts: Detections (N,).
 
     Returns:
-        scores: The detection scores (N,).
         ranks: The ranking for the detections (N,).
+        scores: The detection scores (N,).
     """
     scores = np.array([dt.score for dt in dts])
     ranks = scores.argsort()[::-1]
-    return np.expand_dims(scores, 1)[ranks], ranks
+    ranked_detections = dts[ranks]
+    return ranked_detections, scores[:, np.newaxis]
 
 
 def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
