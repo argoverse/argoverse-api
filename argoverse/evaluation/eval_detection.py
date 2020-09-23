@@ -98,11 +98,11 @@ STATISTIC_NAMES: List[str] = ["AP"] + TP_ERROR_NAMES + ["CDS"]
 
 MAX_YAW_ERROR: float = np.pi
 
-# Higher is better
+# Higher is better.
 MIN_AP: float = 0.0
 MIN_CDS: float = 0.0
 
-# Lower is better
+# Lower is better.
 MAX_NORMALIZED_ATE: float = 1.0
 MAX_NORMALIZED_ASE: float = 1.0
 MAX_NORMALIZED_AOE: float = 1.0
@@ -110,7 +110,10 @@ MAX_NORMALIZED_AOE: float = 1.0
 # Each measure is in [0, 1].
 MEASURE_DEFAULT_VALUES: List[float] = [MIN_AP, MAX_NORMALIZED_ATE, MAX_NORMALIZED_ASE, MAX_NORMALIZED_AOE, MIN_CDS]
 
+# Max number of boxes considered per class per scene.
 MAX_NUM_BOXES: int = 500
+
+SIGNIFICANT_DIGITS: float = 3
 
 
 @dataclass
@@ -122,19 +125,18 @@ class DetectionCfg:
         affinity_fn_type: The type of affinity function to be used for calculating average precision.
         n_rec_samples: Number of recall points to sample uniformly in [0, 1]. Default to 101 recall samples.
         tp_thresh: Center distance threshold for the true positive metrics (in meters).
-        significant_digits: The precision for metrics.
         detection_classes: Detection classes for evaluation.
         detection_metric: The detection metric to use for filtering of both detections and ground truth annotations.
         max_detection_range: The max distance (under a specific metric in meters) for a detection or ground truth to be
             considered for evaluation.
         save_figs: Flag to save figures.
+        tp_normalization_terms: Normalization constants for ATE, ASE, and AOE.
     """
 
     affinity_threshs: List[float] = field(default_factory=lambda: [0.5, 1.0, 2.0, 4.0])  # Meters
     affinity_fn_type: AffFnType = AffFnType.CENTER
     n_rec_samples: int = 101
     tp_thresh: float = 2.0  # Meters
-    significant_digits: int = 3
     detection_classes: List[str] = field(default_factory=lambda: list(OBJ_CLASS_MAPPING_DICT.keys()))
     detection_metric: FilterMetric = FilterMetric.EUCLIDEAN
     max_detection_range: float = 100.0  # Meters
@@ -195,10 +197,10 @@ class DetectionEvaluator:
         )
 
         summary.update(summary_update)
-        summary = summary.round(self.detection_cfg.significant_digits)
+        summary = summary.round(SIGNIFICANT_DIGITS)
         summary.index = summary.index.str.title()
 
-        summary.loc["Average Metrics"] = summary.mean().round(self.detection_cfg.significant_digits)
+        summary.loc["Average Metrics"] = summary.mean().round(SIGNIFICANT_DIGITS)
         return summary
 
     def accumulate(self, gt_fpath: Path) -> Tuple[DefaultDict[str, np.ndarray], DefaultDict[str, int]]:
@@ -275,7 +277,7 @@ class DetectionEvaluator:
 
         affinity_matrix = compute_affinity_matrix(dts, gts, self.detection_cfg.affinity_fn_type)
 
-        # Get the most similar GT label for each detection.
+        # Get the GT label for each max-affinity GT label, detection pair.
         gt_matches = affinity_matrix.argmax(axis=1)[np.newaxis, :]
 
         # The affinity matrix is an N by M matrix of the detections and ground truth labels respectively.
@@ -287,7 +289,7 @@ class DetectionEvaluator:
         unique_gt_matches, unique_dt_matches = np.unique(gt_matches, return_index=True)
         for i, thr in enumerate(self.detection_cfg.affinity_threshs):
 
-            # tp_mask may need to be defined differently with other similarity metrics
+            # tp_mask may need to be defined differently with other affinities
             tp_mask = affinities[unique_dt_matches] > -thr
             metrics[unique_dt_matches, i] = tp_mask
 
