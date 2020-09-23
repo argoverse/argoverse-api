@@ -10,7 +10,7 @@ from pandas.core.frame import DataFrame
 from scipy.spatial.transform import Rotation as R
 
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
-from argoverse.evaluation.detection_utils import DistFnType, SimFnType, compute_affinity_matrix, dist_fn
+from argoverse.evaluation.detection_utils import DistFnType, SimFnType, compute_affinity_matrix, dist_fn, iou_aligned_3d
 from argoverse.evaluation.eval_detection import DetectionCfg, DetectionEvaluator
 from argoverse.utils.transform import quat_scipy2argo_vectorized
 
@@ -34,41 +34,62 @@ def metrics(evaluator: DetectionEvaluator) -> DataFrame:
 
 def test_center_similarity() -> None:
     """Test that the Center similarity function works."""
-    olr1 = np.array([ObjectLabelRecord(np.array([0, 0, 0, 0]), np.array([0, 0, 0]), 5.0, 5.0, 5.0, 0)])
-    olr2 = np.array([ObjectLabelRecord(np.array([0, 0, 0, 0]), np.array([3, 4, 0]), 5.0, 5.0, 5.0, 0)])
-    assert compute_affinity_matrix(olr1, olr2, SimFnType.CENTER) == -5
+    dts = np.array([ObjectLabelRecord(np.array([0, 0, 0, 0]), np.array([0, 0, 0]), 5.0, 5.0, 5.0, 0)])
+    gts = np.array([ObjectLabelRecord(np.array([0, 0, 0, 0]), np.array([3, 4, 0]), 5.0, 5.0, 5.0, 0)])
+    assert compute_affinity_matrix(dts, gts, SimFnType.CENTER) == -5
 
 
 def test_translation_distance() -> None:
-    """Test that the translation distance function works."""
-    df1 = DataFrame([{"translation": [0.0, 0.0, 0.0]}])
-    df2 = DataFrame([{"translation": [5.0, 5.0, 5.0]}])
-    assert dist_fn(df1, df2, DistFnType.TRANSLATION) == 75 ** (1 / 2)
+    """Intialize a detection and a ground truth label with only translation
+    parameters. Verify that calculated distance matches expected distance under
+    the specified `DistFnType`.
+    """
+    dts = DataFrame([{"translation": [0.0, 0.0, 0.0]}])
+    gts = DataFrame([{"translation": [5.0, 5.0, 5.0]}])
+    assert dist_fn(dts, gts, DistFnType.TRANSLATION) == 75 ** (1 / 2)
 
 
 def test_scale_distance() -> None:
-    """Test that the scale distance function works."""
-    df1 = DataFrame([{"width": 5, "height": 5, "length": 5}])
-    df2 = DataFrame([{"width": 10, "height": 10, "length": 10}])
-    assert (dist_fn(df1, df2, DistFnType.SCALE) == 1 - 0.125).all()
+    """Intialize a detection and a ground truth label with only shape
+    parameters (only shape parameters due to alignment assumption).
+    Verify that calculated scale error matches the expected value.
+    """
+    dts = DataFrame([{"width": 5, "height": 5, "length": 5}])
+    gts = DataFrame([{"width": 10, "height": 10, "length": 10}])
+    assert (dist_fn(dts, gts, DistFnType.SCALE) == 1 - 0.125).all()
 
 
 def test_orientation_distance() -> None:
-    """Test that the orientation distance function works."""
+    """Intialize a detection and a ground truth label with only orientation
+    parameters. Verify that calculated orientation error matches the expected
+    smallest angle between the detection and ground truth label.
+    """
     # check all of the 45 degree angles
     vecs_45_apart = [angle * np.array([0, 0, 1]) for angle in np.arange(0, 2 * np.pi, np.pi / 4)]
     for i in range(len(vecs_45_apart) - 1):
-        df1 = DataFrame([{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(vecs_45_apart[i]).as_quat())}])
-        df2 = DataFrame([{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(vecs_45_apart[i + 1]).as_quat())}])
-        assert np.isclose(dist_fn(df1, df2, DistFnType.ORIENTATION), np.pi / 4)
-        assert np.isclose(dist_fn(df2, df1, DistFnType.ORIENTATION), np.pi / 4)
+        dts = DataFrame([{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(vecs_45_apart[i]).as_quat())}])
+        gts = DataFrame([{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(vecs_45_apart[i + 1]).as_quat())}])
+        assert np.isclose(dist_fn(dts, gts, DistFnType.ORIENTATION), np.pi / 4)
+        assert np.isclose(dist_fn(gts, dts, DistFnType.ORIENTATION), np.pi / 4)
     # check all of the 90 degree angles
     vecs_90_apart = [angle * np.array([0, 0, 1]) for angle in np.arange(0, 2 * np.pi, np.pi / 2)]
     for i in range(len(vecs_90_apart) - 1):
-        df1 = DataFrame([{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(vecs_90_apart[i]).as_quat())}])
-        df2 = DataFrame([{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(vecs_90_apart[i + 1]).as_quat())}])
-        assert np.isclose(dist_fn(df1, df2, DistFnType.ORIENTATION), np.pi / 2)
-        assert np.isclose(dist_fn(df2, df1, DistFnType.ORIENTATION), np.pi / 2)
+        dts = DataFrame([{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(vecs_90_apart[i]).as_quat())}])
+        gts = DataFrame([{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(vecs_90_apart[i + 1]).as_quat())}])
+        assert np.isclose(dist_fn(dts, gts, DistFnType.ORIENTATION), np.pi / 2)
+        assert np.isclose(dist_fn(gts, dts, DistFnType.ORIENTATION), np.pi / 2)
+
+
+def test_iou_aligned_3d() -> None:
+    """Intialize a detection and a ground truth label with only shape
+    parameters (only shape parameters due to alignment assumption).
+    Verify that calculated intersection-over-union matches the expected
+    value between the detection and ground truth label.
+    """
+    dt_dims = DataFrame([{"width": 10, "height": 3, "length": 4}])
+    gt_dims = DataFrame([{"width": 5, "height": 2, "length": 9}])
+
+    assert (iou_aligned_3d(dt_dims, gt_dims) == (40.0 / 270.0)).all()
 
 
 def test_ap(metrics: DataFrame) -> None:

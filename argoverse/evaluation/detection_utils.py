@@ -47,7 +47,7 @@ def filter_instances(
     """Filter the GT annotations based on a set of conditions (class name and distance from egovehicle).
 
     Args:
-        instances: The instances to be filtered (N,).
+        instances: The instances to be filtered (N, ).
         target_class_name: The name of the class of interest.
         filter_metric: The range metric used for filtering.
         max_detection_range: The maximum distance for range filtering.
@@ -76,8 +76,8 @@ def rank(dts: List[ObjectLabelRecord]) -> Tuple[np.ndarray, np.ndarray]:
         dts: Detections (N,).
 
     Returns:
-        ranks: The ranking for the detections (N,).
-        scores: The detection scores (N,).
+        ranks: The ranking for the detections (N, ).
+        scores: The detection scores (N, ).
     """
     scores = np.array([dt.score for dt in dts])
     ranks = scores.argsort()[::-1]
@@ -89,7 +89,7 @@ def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
     """Interpolate the precision over all recall levels.
 
     Args:
-        prec: Precision at all recall levels (N,).
+        prec: Precision at all recall levels (N, ).
         method: Accumulation method.
 
     Returns:
@@ -109,8 +109,8 @@ def compute_affinity_matrix(
     using a specified similarity function.
 
     Args:
-        dts: Detections (N,).
-        gts: Ground truth labels (M,).
+        dts: Detections (N, ).
+        gts: Ground truth labels (M, ).
         metric: Similarity metric type.
 
     Returns:
@@ -129,8 +129,8 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
     """Distance functions between detections and ground truth.
 
     Args:
-        dts: Detections (N,).
-        gts: Ground truth labels (M,).
+        dts: Detections (N, ).
+        gts: Ground truth labels (M, ).
         metric: Distance function type.
 
     Returns:
@@ -144,9 +144,7 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
     elif metric == DistFnType.SCALE:
         dt_dims = dts[["width", "length", "height"]]
         gt_dims = gts[["width", "length", "height"]]
-        inter = np.minimum(dt_dims, gt_dims).prod(axis=1)
-        union = np.maximum(dt_dims, gt_dims).prod(axis=1)
-        scale_errors = 1 - (inter / union)
+        scale_errors = 1 - iou_aligned_3d(dt_dims, gt_dims)
         return scale_errors
     elif metric == DistFnType.ORIENTATION:
         # re-order quaternions to go from Argoverse format to scipy format, then the third euler angle (z) is yaw
@@ -161,6 +159,24 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
         return orientation_errors
     else:
         raise NotImplemented("This distance metric is not implemented!")
+
+
+def iou_aligned_3d(dt_dims: pd.DataFrame, gt_dims: pd.DataFrame) -> np.ndarray:
+    """Calculate the 3d, axis-aligned (vertical axis alignment) intersection-over-union (IoU)
+    between the detections and the ground truth labels after aligning their poses.
+
+    Args:
+        dt_dims: Detections (N, 3).
+        gt_dims: Ground truth labels (N, 3).
+    
+    Returns:
+        Intersection-over-union between the detections and their assigned ground
+        truth labels (N, ).
+
+    """
+    inter = np.minimum(dt_dims, gt_dims).prod(axis=1)
+    union = np.maximum(dt_dims, gt_dims).prod(axis=1)
+    return (inter / union).values
 
 
 def normalize_angle(angle: np.ndarray) -> np.ndarray:

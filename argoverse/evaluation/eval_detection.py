@@ -52,6 +52,8 @@ Results:
     in addition to the mean statistics average across all classes, and P refers to the number of included statistics, 
     e.g. AP, ATE, ASE, AOE, CDS by default.
 
+    Note: The `evaluate` function will use all available logical cores on the machine.
+
 """
 import argparse
 import logging
