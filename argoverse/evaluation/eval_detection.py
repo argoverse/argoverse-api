@@ -72,9 +72,9 @@ from pandas.core import frame
 from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
 from argoverse.data_loading.object_label_record import read_label
 from argoverse.evaluation.detection_utils import (
+    AffFnType,
     DistFnType,
     FilterMetric,
-    SimFnType,
     compute_affinity_matrix,
     dist_fn,
     filter_instances,
@@ -125,7 +125,7 @@ class DetectionCfg:
     """
 
     affinity_threshs: List[float] = field(default_factory=lambda: [0.5, 1.0, 2.0, 4.0])
-    affinity_fn_type: SimFnType = SimFnType.CENTER
+    affinity_fn_type: AffFnType = AffFnType.CENTER
     n_rec_samples: int = 101
     tp_thresh: float = 2.0
     significant_digits: int = 3

@@ -23,7 +23,7 @@ from argoverse.evaluation.eval_tracking import get_orientation_error_deg
 from argoverse.utils.transform import quat_argo2scipy_vectorized
 
 
-class SimFnType(Enum):
+class AffFnType(Enum):
     CENTER = auto()
 
 
@@ -103,10 +103,10 @@ def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
 
 
 def compute_affinity_matrix(
-    dts: List[ObjectLabelRecord], gts: List[ObjectLabelRecord], metric: SimFnType
+    dts: List[ObjectLabelRecord], gts: List[ObjectLabelRecord], metric: AffFnType
 ) -> np.ndarray:
     """Calculate the match matrix between detections and ground truth labels,
-    using a specified similarity function.
+    using a specified affinity function.
 
     Args:
         dts: Detections (N, ).
@@ -116,7 +116,7 @@ def compute_affinity_matrix(
     Returns:
         sims: Similarity scores between detections and ground truth annotations (N, M).
     """
-    if metric == SimFnType.CENTER:
+    if metric == AffFnType.CENTER:
         dt_centers = np.array([dt.translation for dt in dts])
         gt_centers = np.array([gt.translation for gt in gts])
         sims = -cdist(dt_centers, gt_centers)
