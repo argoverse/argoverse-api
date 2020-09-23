@@ -98,11 +98,14 @@ STATISTIC_NAMES: List[str] = ["AP"] + TP_ERROR_NAMES + ["CDS"]
 
 MAX_YAW_ERROR: float = np.pi
 
+# Higher is better
 MIN_AP: float = 0.0
+MIN_CDS: float = 0.0
+
+# Lower is better
 MAX_NORMALIZED_ATE: float = 1.0
 MAX_NORMALIZED_ASE: float = 1.0
 MAX_NORMALIZED_AOE: float = 1.0
-MIN_CDS: float = 0.0
 
 # Each measure is in [0, 1].
 MEASURE_DEFAULT_VALUES: List[float] = [MIN_AP, MAX_NORMALIZED_ATE, MAX_NORMALIZED_ASE, MAX_NORMALIZED_AOE, MIN_CDS]
