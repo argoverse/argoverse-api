@@ -125,19 +125,23 @@ def test_iou_aligned_3d() -> None:
 
 def test_ap(metrics: DataFrame) -> None:
     """Test that AP is 1 for the self-compared results."""
-    assert metrics.AP.loc["Average Metrics"] == 1
+    expected_result: float = 1.0
+    assert metrics.AP.loc["Average Metrics"] == expected_result
 
 
 def test_translation_error(metrics: DataFrame) -> None:
     """Test that ATE is 0 for the self-compared results."""
-    assert metrics.ATE.loc["Average Metrics"] == 0
+    expected_result: float = 0.0
+    assert metrics.ATE.loc["Average Metrics"] == expected_result
 
 
 def test_scale_error(metrics: DataFrame) -> None:
     """Test that ASE is 0 for the self-compared results."""
-    assert metrics.ASE.loc["Average Metrics"] == 0
+    expected_result: float = 0.0
+    assert metrics.ASE.loc["Average Metrics"] == expected_result
 
 
 def test_orientation_error(metrics: DataFrame) -> None:
     """Test that AOE is 0 for the self-compared results."""
-    assert metrics.AOE.loc["Average Metrics"] == 0
+    expected_result: float = 0.0
+    assert metrics.AOE.loc["Average Metrics"] == expected_result
