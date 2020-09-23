@@ -103,6 +103,8 @@ MAX_NORM_ATE: float = 1.0
 MAX_NORM_ASE: float = 1.0
 MAX_NORM_AOE: float = 1.0
 MIN_CDS: float = 0.0
+
+# Each measure is in [0, 1].
 MEASURE_DEFAULT_VALUES: List[float] = [MIN_AP, MAX_NORM_ATE, MAX_NORM_ASE, MAX_NORM_AOE, MIN_CDS]
 
 MAX_NUM_BOXES: int = 500
@@ -120,18 +122,19 @@ class DetectionCfg:
         significant_digits: The precision for metrics.
         detection_classes: Detection classes for evaluation.
         detection_metric: The detection metric to use for filtering of both detections and ground truth annotations.
-        max_detection_range: The max distance (under a specific metric) for a a detection or ground truth to be considered for evaluation.
+        max_detection_range: The max distance (under a specific metric in meters) for a a detection or ground truth to be
+            considered for evaluation.
         save_figs: Flag to save figures.
     """
 
-    affinity_threshs: List[float] = field(default_factory=lambda: [0.5, 1.0, 2.0, 4.0])
+    affinity_threshs: List[float] = field(default_factory=lambda: [0.5, 1.0, 2.0, 4.0])  # Meters
     affinity_fn_type: AffFnType = AffFnType.CENTER
     n_rec_samples: int = 101
-    tp_thresh: float = 2.0
+    tp_thresh: float = 2.0  # Meters
     significant_digits: int = 3
     detection_classes: List[str] = field(default_factory=lambda: list(OBJ_CLASS_MAPPING_DICT.keys()))
     detection_metric: FilterMetric = FilterMetric.EUCLIDEAN
-    max_detection_range: float = 100.0
+    max_detection_range: float = 100.0  # Meters
     save_figs: bool = False
     tp_normalization_terms: np.ndarray = field(init=False)
 
