@@ -70,7 +70,7 @@ def filter_instances(
 
 
 def rank(dts: List[ObjectLabelRecord]) -> Tuple[np.ndarray, np.ndarray]:
-    """Get the rankings for the detections.
+    """Get the rankings for the detections, according to detector confidence.
 
     Args:
         dts: Detections (N,).
