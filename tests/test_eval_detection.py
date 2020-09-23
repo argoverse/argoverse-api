@@ -32,12 +32,12 @@ def metrics(evaluator: DetectionEvaluator) -> DataFrame:
     return evaluator.evaluate()
 
 
-def test_center_similarity() -> None:
+def test_affinity_center() -> None:
     """Intialize a detection and a ground truth label. Verify that calculated distance matches expected affinity
     under the specified `AffFnType`.
     """
-    dts = np.array([ObjectLabelRecord(np.array([0, 0, 0, 0]), np.array([0, 0, 0]), 5.0, 5.0, 5.0, 0)])
-    gts = np.array([ObjectLabelRecord(np.array([0, 0, 0, 0]), np.array([3, 4, 0]), 5.0, 5.0, 5.0, 0)])
+    dts = [ObjectLabelRecord(np.array([0, 0, 0, 0]), np.array([0, 0, 0]), 5.0, 5.0, 5.0, 0)]
+    gts = [ObjectLabelRecord(np.array([0, 0, 0, 0]), np.array([3, 4, 0]), 5.0, 5.0, 5.0, 0)]
     assert compute_affinity_matrix(dts, gts, AffFnType.CENTER) == -5
 
 
@@ -91,7 +91,9 @@ def test_iou_aligned_3d() -> None:
     dt_dims = DataFrame([{"width": 10, "height": 3, "length": 4}])
     gt_dims = DataFrame([{"width": 5, "height": 2, "length": 9}])
 
-    assert (iou_aligned_3d(dt_dims, gt_dims) == (40.0 / 270.0)).all()
+    # Intersection is 40 = 4 * 5 * 2 (min of all dimensions).
+    # Union is the sum of the two volumes, minus intersection: 270 = (10 * 3 * 4) + (5 * 2 * 9) - 40.
+    assert (iou_aligned_3d(dt_dims, gt_dims) == (40 / 270.0)).all()
 
 
 def test_ap(metrics: DataFrame) -> None:

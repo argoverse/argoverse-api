@@ -163,7 +163,8 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
 
 def iou_aligned_3d(dt_dims: pd.DataFrame, gt_dims: pd.DataFrame) -> np.ndarray:
     """Calculate the 3d, axis-aligned (vertical axis alignment) intersection-over-union (IoU)
-    between the detections and the ground truth labels after aligning their poses.
+    between the detections and the ground truth labels. Both objects are aligned to their
+    +x axis and their centroids are placed at the origin before computation of the IoU.
 
     Args:
         dt_dims: Detections (N, 3).

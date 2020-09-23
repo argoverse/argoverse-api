@@ -96,16 +96,16 @@ N_TP_ERRORS: int = len(TP_ERROR_NAMES)
 
 STATISTIC_NAMES: List[str] = ["AP"] + TP_ERROR_NAMES + ["CDS"]
 
-MAX_YAW_ERROR = np.pi
+MAX_YAW_ERROR: float = np.pi
 
 MIN_AP: float = 0.0
-MAX_NORM_ATE: float = 1.0
-MAX_NORM_ASE: float = 1.0
-MAX_NORM_AOE: float = 1.0
+MAX_NORMALIZED_ATE: float = 1.0
+MAX_NORMALIZED_ASE: float = 1.0
+MAX_NORMALIZED_AOE: float = 1.0
 MIN_CDS: float = 0.0
 
 # Each measure is in [0, 1].
-MEASURE_DEFAULT_VALUES: List[float] = [MIN_AP, MAX_NORM_ATE, MAX_NORM_ASE, MAX_NORM_AOE, MIN_CDS]
+MEASURE_DEFAULT_VALUES: List[float] = [MIN_AP, MAX_NORMALIZED_ATE, MAX_NORMALIZED_ASE, MAX_NORMALIZED_AOE, MIN_CDS]
 
 MAX_NUM_BOXES: int = 500
 
@@ -122,7 +122,7 @@ class DetectionCfg:
         significant_digits: The precision for metrics.
         detection_classes: Detection classes for evaluation.
         detection_metric: The detection metric to use for filtering of both detections and ground truth annotations.
-        max_detection_range: The max distance (under a specific metric in meters) for a a detection or ground truth to be
+        max_detection_range: The max distance (under a specific metric in meters) for a detection or ground truth to be
             considered for evaluation.
         save_figs: Flag to save figures.
     """
