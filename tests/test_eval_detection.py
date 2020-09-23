@@ -37,8 +37,26 @@ def test_affinity_center() -> None:
     """Intialize a detection and a ground truth label. Verify that calculated distance matches expected affinity
     under the specified `AffFnType`.
     """
-    dts: List[ObjectLabelRecord] = [ObjectLabelRecord(np.array([0, 0, 0, 0]), np.array([0, 0, 0]), 5.0, 5.0, 5.0, 0)]
-    gts: List[ObjectLabelRecord] = [ObjectLabelRecord(np.array([0, 0, 0, 0]), np.array([3, 4, 0]), 5.0, 5.0, 5.0, 0)]
+    dts: List[ObjectLabelRecord] = [
+        ObjectLabelRecord(
+            quaternion=np.array([0, 0, 0, 0]),
+            translation=np.array([0, 0, 0]),
+            length=5.0,
+            width=5.0,
+            height=5.0,
+            occlusion=0,
+        )
+    ]
+    gts: List[ObjectLabelRecord] = [
+        ObjectLabelRecord(
+            quaternion=np.array([0, 0, 0, 0]),
+            translation=np.array([3, 4, 0]),
+            length=5.0,
+            width=5.0,
+            height=5.0,
+            occlusion=0,
+        )
+    ]
 
     expected_result: float = -5
     assert compute_affinity_matrix(dts, gts, AffFnType.CENTER) == expected_result
@@ -52,7 +70,7 @@ def test_translation_distance() -> None:
     dts: DataFrame = DataFrame([{"translation": [0.0, 0.0, 0.0]}])
     gts: DataFrame = DataFrame([{"translation": [5.0, 5.0, 5.0]}])
 
-    expected_result: float = 75.0 ** (1 / 2)
+    expected_result: float = np.sqrt(25 + 25 + 25)
     assert dist_fn(dts, gts, DistFnType.TRANSLATION) == expected_result
 
 

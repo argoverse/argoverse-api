@@ -17,10 +17,8 @@ Evaluation:
 
         1. Average Translation Error: The average Euclidean distance (center-based) between a
             detection and its ground truth assignment.
-
         2. Average Scale Error: The average intersection over union (IoU) after the prediction
             and assigned ground truth's pose has been aligned.
-        
         3. Average Orientation Error: The average angular distance between the detection and
             the assigned ground truth. We choose the smallest angle between the two different
             headings when calculating the error.

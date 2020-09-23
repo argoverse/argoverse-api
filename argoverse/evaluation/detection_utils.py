@@ -130,11 +130,11 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
 
     Args:
         dts: Detections (N, ).
-        gts: Ground truth labels (M, ).
+        gts: Ground truth labels (N, ).
         metric: Distance function type.
 
     Returns:
-        Distance between the detections and ground truth, using the provided metric.
+        Distance between the detections and ground truth, using the provided metric (N, ).
     """
     if metric == DistFnType.TRANSLATION:
         dt_centers = np.vstack(dts["translation"].array)
