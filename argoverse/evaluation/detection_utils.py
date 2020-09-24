@@ -128,8 +128,8 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
     """Distance functions between detections and ground truth.
 
     Args:
-        dts: Detections (N, ).
-        gts: Ground truth labels (N, ).
+        dts: Detections (N, D) where D is the number of attributes in `ObjectLabelRecord`.
+        gts: Ground truth labels (N, D) where D is the number of attributes in `ObjectLabelRecord`.
         metric: Distance function type.
 
     Returns:

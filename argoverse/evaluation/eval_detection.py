@@ -296,6 +296,7 @@ class DetectionEvaluator(NamedTuple):
                 dt_tp_indices = unique_dt_matches[tp_mask]
                 gt_tp_indices = unique_gt_matches[tp_mask]
 
+                # Form DataFrame of shape (N, D) where D is the number of attributes in `ObjectLabelRecord`.
                 dt_df = pd.DataFrame([dt.__dict__ for dt in dts[dt_tp_indices]])
                 gt_df = pd.DataFrame([gt.__dict__ for gt in gts[gt_tp_indices]])
 
