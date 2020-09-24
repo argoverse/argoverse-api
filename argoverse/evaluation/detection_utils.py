@@ -153,7 +153,7 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
         gt_quats = np.vstack(gts["quaternion"].array)
         gt_yaws = R.from_quat(quat_argo2scipy_vectorized(gt_quats)).as_euler("xyz")[:, 2]
 
-        orientation_errors = wrap(dt_yaws - gt_yaws)
+        orientation_errors = wrap_angle(dt_yaws - gt_yaws)
         return orientation_errors
     else:
         raise NotImplemented("This distance metric is not implemented!")
@@ -178,7 +178,7 @@ def iou_aligned_3d(dt_dims: pd.DataFrame, gt_dims: pd.DataFrame) -> np.ndarray:
     return (inter / union).values
 
 
-def wrap(angles: np.ndarray, period: float = np.pi) -> np.ndarray:
+def wrap_angle(angles: np.ndarray, period: float = np.pi) -> np.ndarray:
     """Map angles (in radians) from domain [-∞, ∞] to [0, π). This function is
         the inverse of `np.unwrap`.
 

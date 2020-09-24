@@ -10,13 +10,13 @@ from typing import Any, Dict, List, Optional, TextIO, Union
 
 import motmetrics as mm
 import numpy as np
+from click.core import Option
 from shapely.geometry.polygon import Polygon
 
 from argoverse.evaluation.eval_utils import label_to_bbox
 from argoverse.utils.json_utils import read_json_file
-from click.core import Option
 
-from .detection_utils import wrap
+from .detection_utils import wrap_angle
 
 mh = mm.metrics.create()
 logger = logging.getLogger(__name__)
@@ -98,7 +98,7 @@ def get_distance(x1: Dict[str, np.ndarray], x2: Dict[str, np.ndarray], name: str
         return get_distance_iou_3d(x1, x2, name)
     elif name == "orientation":
         theta = np.array([x1["orientation"]] - x2["orientation"])
-        dist = wrap(theta).item()
+        dist = wrap_angle(theta).item()
 
         # Convert to degrees.
         return np.rad2deg(dist)
