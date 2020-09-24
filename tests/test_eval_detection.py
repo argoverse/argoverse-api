@@ -65,7 +65,7 @@ def metrics(evaluator: DetectionEvaluator) -> DataFrame:
 
 
 def test_affinity_center() -> None:
-    """Intialize a detection and a ground truth label. Verify that calculated distance matches expected affinity
+    """Initialize a detection and a ground truth label. Verify that calculated distance matches expected affinity
     under the specified `AffFnType`.
     """
     dts: List[ObjectLabelRecord] = [
@@ -94,7 +94,7 @@ def test_affinity_center() -> None:
 
 
 def test_translation_distance() -> None:
-    """Intialize a detection and a ground truth label with only translation
+    """Initialize a detection and a ground truth label with only translation
     parameters. Verify that calculated distance matches expected distance under
     the specified `DistFnType`.
     """
@@ -106,7 +106,7 @@ def test_translation_distance() -> None:
 
 
 def test_scale_distance() -> None:
-    """Intialize a detection and a ground truth label with only shape
+    """Initialize a detection and a ground truth label with only shape
     parameters (only shape parameters due to alignment assumption).
     Verify that calculated scale error matches the expected value.
     """
@@ -118,7 +118,7 @@ def test_scale_distance() -> None:
 
 
 def test_orientation_quarter_angles() -> None:
-    """Intialize a detection and a ground truth label with only orientation
+    """Initialize a detection and a ground truth label with only orientation
     parameters. Verify that calculated orientation error matches the expected
     smallest angle ((2 * np.pi) / 4) between the detection and ground truth label.
     """
@@ -138,8 +138,8 @@ def test_orientation_quarter_angles() -> None:
         assert np.isclose(dist_fn(gts, dts, DistFnType.ORIENTATION), expected_result)
 
 
-def test_orientation_eigth_angles() -> None:
-    """Intialize a detection and a ground truth label with only orientation
+def test_orientation_eighth_angles() -> None:
+    """Initialize a detection and a ground truth label with only orientation
     parameters. Verify that calculated orientation error matches the expected
     smallest angle ((2 * np.pi) / 8) between the detection and ground truth label.
     """
@@ -158,7 +158,7 @@ def test_orientation_eigth_angles() -> None:
 
 
 def test_iou_aligned_3d() -> None:
-    """Intialize a detection and a ground truth label with only shape
+    """Initialize a detection and a ground truth label with only shape
     parameters (only shape parameters due to alignment assumption).
     Verify that calculated intersection-over-union matches the expected
     value between the detection and ground truth label.
