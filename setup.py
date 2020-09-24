@@ -60,7 +60,7 @@ setup(
         "pillow",
         "imageio",
         "pyntcloud @ git+https://github.com/daavoo/pyntcloud#egg=pyntcloud-0.1.0",
-        "scipy>=1.2.1",
+        "scipy>=1.4.0",
         "shapely",
         "sklearn",
         "typing_extensions",
