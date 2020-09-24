@@ -19,7 +19,6 @@ from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation as R
 
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
-from argoverse.evaluation.eval_tracking import get_orientation_error_deg
 from argoverse.utils.transform import quat_argo2scipy_vectorized
 
 
@@ -147,15 +146,14 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
         scale_errors = 1 - iou_aligned_3d(dt_dims, gt_dims)
         return scale_errors
     elif metric == DistFnType.ORIENTATION:
-        # re-order quaternions to go from Argoverse format to scipy format, then the third euler angle (z) is yaw
+        # Re-order quaternions to go from Argoverse format to scipy format, then the third euler angle (z) is yaw.
         dt_quats = np.vstack(dts["quaternion"].array)
         dt_yaws = R.from_quat(quat_argo2scipy_vectorized(dt_quats)).as_euler("xyz")[:, 2]
 
         gt_quats = np.vstack(gts["quaternion"].array)
         gt_yaws = R.from_quat(quat_argo2scipy_vectorized(gt_quats)).as_euler("xyz")[:, 2]
 
-        signed_orientation_errors = normalize_angle(dt_yaws - gt_yaws)
-        orientation_errors = np.abs(signed_orientation_errors)
+        orientation_errors = wrap(dt_yaws - gt_yaws)
         return orientation_errors
     else:
         raise NotImplemented("This distance metric is not implemented!")
@@ -180,12 +178,24 @@ def iou_aligned_3d(dt_dims: pd.DataFrame, gt_dims: pd.DataFrame) -> np.ndarray:
     return (inter / union).values
 
 
-def normalize_angle(angle: np.ndarray) -> np.ndarray:
-    """Map angle (in radians) from domain [-π, π] to [0, π).
+def wrap(angles: np.ndarray, period: float = np.pi) -> np.ndarray:
+    """Map angles (in radians) from domain [-∞, ∞] to [0, π). This function is
+        the inverse of `np.unwrap`.
 
     Returns:
-        The angle (in radians) mapped to the interval [0, π].
+        The angles (in radians) mapped to the interval [0, π).
     """
-    period = 2 * np.pi
-    phase_shift = np.pi
-    return (angle + np.pi) % period - phase_shift
+
+    # Map angles to [0, ∞].
+    angles = np.abs(angles)
+
+    # Calculate floor division and remainder simultaneously.
+    divs, mods = np.divmod(angles, period)
+
+    # Select angles which exceed specified period.
+    angle_complement_mask = np.nonzero(divs)
+
+    # Take set complement of `mods` w.r.t. the set [0, π].
+    # `mods` must be nonzero, thus the image is the interval [0, π).
+    angles[angle_complement_mask] = period - mods[angle_complement_mask]
+    return angles

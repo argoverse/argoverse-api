@@ -1,15 +1,16 @@
-#!/usr/bin/python3
+# <Copyright 2020, Argo AI, LLC. Released under the MIT license.>
 
 import os
 import shutil
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 from pathlib import Path
-from typing import Any, Mapping, NamedTuple, Tuple
+from typing import Any, DefaultDict, Dict, List, Mapping, NamedTuple, Tuple
 
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from argoverse.evaluation.eval_tracking import eval_tracks, get_orientation_error_deg
+from argoverse.evaluation.detection_utils import wrap
+from argoverse.evaluation.eval_tracking import eval_tracks
 from argoverse.utils.json_utils import save_json_dict
 
 _ROOT = Path(__file__).resolve().parent
@@ -72,7 +73,7 @@ class TrackedObjRec(NamedTuple):
 class TrackedObjects:
     def __init__(self, log_id: str, is_gt: bool) -> None:
         """ """
-        self.ts_to_trackedlabels_dict = defaultdict(list)
+        self.ts_to_trackedlabels_dict: DefaultDict[int, List[Dict]] = defaultdict(list)
         self.log_id = log_id
 
         tracks_type = "gt" if is_gt else "pred"
@@ -436,74 +437,74 @@ def test_1obj_poor_orientation() -> None:
 
 def test_orientation_error1() -> None:
     """ """
-    yaw1 = np.deg2rad(179)
-    yaw2 = np.deg2rad(-179)
+    yaw1 = np.deg2rad([179])
+    yaw2 = np.deg2rad([-179])
 
-    error_deg = get_orientation_error_deg(yaw1, yaw2)
+    error_deg = np.rad2deg(wrap(yaw1 - yaw2))
     assert np.allclose(error_deg, 2.0, atol=1e-2)
 
 
 def test_orientation_error2() -> None:
     """ """
-    yaw1 = np.deg2rad(-179)
-    yaw2 = np.deg2rad(179)
+    yaw1 = np.deg2rad([-179])
+    yaw2 = np.deg2rad([179])
 
-    error_deg = get_orientation_error_deg(yaw1, yaw2)
+    error_deg = np.rad2deg(wrap(yaw1 - yaw2))
     print(error_deg)
     assert np.allclose(error_deg, 2.0, atol=1e-2)
 
 
 def test_orientation_error3() -> None:
     """ """
-    yaw1 = np.deg2rad(179)
-    yaw2 = np.deg2rad(178)
+    yaw1 = np.deg2rad([179])
+    yaw2 = np.deg2rad([178])
 
-    error_deg = get_orientation_error_deg(yaw1, yaw2)
+    error_deg = np.rad2deg(wrap(yaw1 - yaw2))
     assert np.allclose(error_deg, 1.0, atol=1e-2)
 
 
 def test_orientation_error4() -> None:
     """ """
-    yaw1 = np.deg2rad(178)
-    yaw2 = np.deg2rad(179)
+    yaw1 = np.deg2rad([178])
+    yaw2 = np.deg2rad([179])
 
-    error_deg = get_orientation_error_deg(yaw1, yaw2)
+    error_deg = np.rad2deg(wrap(yaw1 - yaw2))
     assert np.allclose(error_deg, 1.0, atol=1e-2)
 
 
 def test_orientation_error5() -> None:
     """ """
-    yaw1 = np.deg2rad(3)
-    yaw2 = np.deg2rad(-3)
+    yaw1 = np.deg2rad([3])
+    yaw2 = np.deg2rad([-3])
 
-    error_deg = get_orientation_error_deg(yaw1, yaw2)
+    error_deg = np.rad2deg(wrap(yaw1 - yaw2))
     assert np.allclose(error_deg, 6.0, atol=1e-2)
 
 
 def test_orientation_error6() -> None:
     """ """
-    yaw1 = np.deg2rad(-3)
-    yaw2 = np.deg2rad(3)
+    yaw1 = np.deg2rad([-3])
+    yaw2 = np.deg2rad([3])
 
-    error_deg = get_orientation_error_deg(yaw1, yaw2)
+    error_deg = np.rad2deg(wrap(yaw1 - yaw2))
     assert np.allclose(error_deg, 6.0, atol=1e-2)
 
 
 def test_orientation_error7() -> None:
     """ """
-    yaw1 = np.deg2rad(-177)
-    yaw2 = np.deg2rad(-179)
+    yaw1 = np.deg2rad([-177])
+    yaw2 = np.deg2rad([-179])
 
-    error_deg = get_orientation_error_deg(yaw1, yaw2)
+    error_deg = np.rad2deg(wrap(yaw1 - yaw2))
     assert np.allclose(error_deg, 2.0, atol=1e-2)
 
 
 def test_orientation_error8() -> None:
     """ """
-    yaw1 = np.deg2rad(-179)
-    yaw2 = np.deg2rad(-177)
+    yaw1 = np.deg2rad([-179])
+    yaw2 = np.deg2rad([-177])
 
-    error_deg = get_orientation_error_deg(yaw1, yaw2)
+    error_deg = np.rad2deg(wrap(yaw1 - yaw2))
     assert np.allclose(error_deg, 2.0, atol=1e-2)
 
 

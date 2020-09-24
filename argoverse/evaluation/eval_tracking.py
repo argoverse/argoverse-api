@@ -6,7 +6,7 @@ import os
 import pathlib
 import pickle
 from pathlib import Path
-from typing import Any, Dict, List, TextIO, Union
+from typing import Any, Dict, List, Optional, TextIO, Union
 
 import motmetrics as mm
 import numpy as np
@@ -14,7 +14,9 @@ from shapely.geometry.polygon import Polygon
 
 from argoverse.evaluation.eval_utils import label_to_bbox
 from argoverse.utils.json_utils import read_json_file
-from argoverse.utils.se3 import SE3
+from click.core import Option
+
+from .detection_utils import wrap
 
 mh = mm.metrics.create()
 logger = logging.getLogger(__name__)
@@ -78,45 +80,6 @@ def get_distance_iou_3d(x1: np.ndarray, x2: np.ndarray, name: str = "bbox") -> f
     return float(score)
 
 
-def get_orientation_error_deg(
-    yaw1: Union[float, np.ndarray], yaw2: Union[float, np.ndarray]
-) -> Union[float, np.ndarray]:
-    """
-    Compute the smallest difference between 2 angles, in magnitude (absolute difference).
-    First, find the difference between the two yaw angles; since
-    each angle is guaranteed to be [-pi,pi] as the output of arctan2, then their 
-    difference is bounded to [-2pi,2pi].
-    
-    If the difference exceeds pi, then its corresponding angle in [-pi,0]
-    would be smaller in magnitude. On the other hand, if the difference is
-    less than -pi degrees, then we are guaranteed its counterpart in [0,pi]
-    would be smaller in magnitude.
-
-    Ref:
-    https://stackoverflow.com/questions/1878907/the-smallest-difference-between-2-angles
-
-        Args:
-        -   yaw1: angle around unit circle, in radians in [-pi,pi]
-        -   yaw2: angle around unit circle, in radians in [-pi,pi]
-
-        Returns:
-        -   error: smallest difference between 2 angles, in degrees
-    """
-    EPSILON = 1e-5
-    assert -(np.pi + EPSILON) < yaw1 and yaw1 < (np.pi + EPSILON)
-    assert -(np.pi + EPSILON) < yaw2 and yaw2 < (np.pi + EPSILON)
-
-    error = np.rad2deg(yaw1 - yaw2)
-    if error > 180:
-        error -= 360
-    if error < -180:
-        error += 360
-
-    # get positive angle difference instead of signed angle difference
-    error = np.abs(error)
-    return float(error)
-
-
 def get_distance(x1: Dict[str, np.ndarray], x2: Dict[str, np.ndarray], name: str) -> float:
     """Get the distance between two poses, returns nan if distance is larger than detection threshold.
 
@@ -134,7 +97,11 @@ def get_distance(x1: Dict[str, np.ndarray], x2: Dict[str, np.ndarray], name: str
     elif name == "iou":
         return get_distance_iou_3d(x1, x2, name)
     elif name == "orientation":
-        return get_orientation_error_deg(x1["orientation"], x2["orientation"])
+        theta = np.array([x1["orientation"]] - x2["orientation"])
+        dist = wrap(theta).item()
+
+        # Convert to degrees.
+        return np.rad2deg(dist)
     else:
         raise ValueError("Not implemented..")
 
@@ -146,7 +113,7 @@ def eval_tracks(
     d_max: float,
     out_file: TextIO,
     centroid_method: str,
-    diffatt: str,
+    diffatt: Optional[str],
     category: str = "VEHICLE",
 ) -> None:
     """Evaluate tracking output.
