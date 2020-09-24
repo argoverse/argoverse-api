@@ -13,7 +13,8 @@ Evaluation:
 
         All true positive errors -- as the name implies -- accumulate error solely
         when an object is a true positive match to a ground truth detection. The matching
-        criterion is represented by `tp_thresh` in the DetectionCfg class.
+        criterion is represented by `tp_thresh` in the DetectionCfg class. In our challege,
+        we use a `tp_thresh` of 2 meters.
 
         1. Average Translation Error: The average Euclidean distance (center-based) between a
             detection and its ground truth assignment.
@@ -202,15 +203,16 @@ class DetectionEvaluator:
         return summary
 
     def accumulate(self, gt_fpath: Path) -> Tuple[DefaultDict[str, np.ndarray], DefaultDict[str, int]]:
-        """Accumulate the statistics for each LiDAR frame.
+        """Accumulate the true/false positives (boolean flags) and true positive errors for each class.
 
         Args:
             gt_fpath: Ground truth file path.
 
         Returns:
-            cls_stats: Class statistics of shape ((N, K + S) where K is the number of true positive thresholds used
-                for AP computation and S is the number of true positive errors.
-            cls_to_ninst: Mapping of the class names to the number of instances in the ground
+            cls_to_accum: Class to accumulated statistics dictionary of shape |C| -> (N, K + S) where C
+                is the number of detection classes, K is the number of true positive thresholds used for
+                AP computation, and S is the number of true positive errors.
+            cls_to_ninst: Mapping of shape |C| -> (1, ) the class names to the number of instances in the ground
                 truth dataset.
         """
         log_id = gt_fpath.parents[1].stem
@@ -222,7 +224,7 @@ class DetectionEvaluator:
         dts = np.array(read_label(str(dt_fpath)))
         gts = np.array(read_label(str(gt_fpath)))
 
-        cls_stats = defaultdict(list)
+        cls_to_accum = defaultdict(list)
         cls_to_ninst = defaultdict(int)
         for class_name in self.detection_cfg.detection_classes:
             dt_filtered = filter_instances(
@@ -243,10 +245,10 @@ class DetectionEvaluator:
             if dt_filtered.shape[0] > 0:
                 ranked_detections, scores = rank(dt_filtered)
                 metrics = self.assign(ranked_detections, gt_filtered)
-                cls_stats[class_name] = np.hstack((metrics, scores))
+                cls_to_accum[class_name] = np.hstack((metrics, scores))
 
             cls_to_ninst[class_name] = gt_filtered.shape[0]
-        return cls_stats, cls_to_ninst
+        return cls_to_accum, cls_to_ninst
 
     def assign(self, dts: np.ndarray, gts: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """Attempt assignment of each detection to a ground truth label.
@@ -285,13 +287,18 @@ class DetectionEvaluator:
 
         # Find the indices of the "first" detection assigned to each GT.
         unique_gt_matches, unique_dt_matches = np.unique(gt_matches, return_index=True)
-        for i, thr in enumerate(self.detection_cfg.affinity_threshs):
+        for i, thresh in enumerate(self.detection_cfg.affinity_threshs):
 
-            # tp_mask may need to be defined differently with other affinities
-            tp_mask = affinities[unique_dt_matches] > -thr
+            # `tp_mask` may need to be defined differently with other affinities
+            tp_mask = affinities[unique_dt_matches] > -thresh
             metrics[unique_dt_matches, i] = tp_mask
 
-            if thr == self.detection_cfg.tp_thresh and np.count_nonzero(tp_mask) > 0:
+            # Only compute true positive error when `thresh` is equal to the tp threshold.
+            is_tp_thresh = thresh == self.detection_cfg.tp_thresh
+            # Ensure that there are true positives of the respective class in the frame.
+            has_true_positives = np.count_nonzero(tp_mask) > 0
+
+            if is_tp_thresh and has_true_positives:
                 dt_tp_indices = unique_dt_matches[tp_mask]
                 gt_tp_indices = unique_gt_matches[tp_mask]
 
@@ -393,7 +400,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("-d", "--dt_fpath", type=str, help="Detection root folder path.", required=True)
     parser.add_argument("-g", "--gt_fpath", type=str, help="Ground truth root folder path.", required=True)
-    parser.add_argument("-f", "--fig_fpath", type=str, help="Figures root folder path.", default="figs/")
+    parser.add_argument("-f", "--fig_fpath", type=str, help="Figures root folder path.", default="figs")
     args = parser.parse_args()
     logger.info(f"args == {args}")
 
