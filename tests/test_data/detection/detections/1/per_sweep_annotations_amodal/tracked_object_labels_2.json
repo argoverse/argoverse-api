@@ -29,9 +29,9 @@
         "label_class": "VEHICLE",
         "length": 2,
         "rotation": {
-            "w": 0,
+            "w": 0.707,
             "x": 0.0,
-            "y": 1.0,
+            "y": 0.707,
             "z": 0
         },
         "score": 1.0,

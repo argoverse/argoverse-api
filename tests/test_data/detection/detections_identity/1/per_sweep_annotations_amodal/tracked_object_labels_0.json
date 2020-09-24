@@ -3,7 +3,7 @@
         "center": {
             "x": 0,
             "y": 0,
-            "z": 0.1
+            "z": 0
         },
         "height": 2,
         "label_class": "VEHICLE",

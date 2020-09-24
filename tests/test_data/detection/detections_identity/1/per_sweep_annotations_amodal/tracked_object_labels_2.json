@@ -3,7 +3,7 @@
         "center": {
             "x": 0,
             "y": 0,
-            "z": 0.1
+            "z": 0
         },
         "height": 2,
         "label_class": "VEHICLE",
@@ -15,7 +15,7 @@
             "z": 0
         },
         "score": 1.0,
-        "timestamp": 0,
+        "timestamp": 2,
         "track_label_uuid": "00000000-0000-0000-0000-000000000000",
         "width": 2
     },
@@ -31,11 +31,11 @@
         "rotation": {
             "w": 0,
             "x": 0.0,
-            "y": 0.0,
-            "z": 1
+            "y": 1.0,
+            "z": 0
         },
         "score": 1.0,
-        "timestamp": 0,
+        "timestamp": 2,
         "track_label_uuid": "00000000-0000-0000-0000-000000000001",
         "width": 2
     }

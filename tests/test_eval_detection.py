@@ -20,8 +20,17 @@ logging.getLogger("matplotlib.font_manager").disabled = True
 
 
 @pytest.fixture
-def evaluator() -> DetectionEvaluator:
+def evaluator_identity() -> DetectionEvaluator:
     """Define an evaluator that compares a set of results to itself."""
+    detection_cfg = DetectionCfg(detection_classes=["VEHICLE"])
+    return DetectionEvaluator(
+        TEST_DATA_LOC / "detections_identity", TEST_DATA_LOC, TEST_DATA_LOC / "test_figures", detection_cfg
+    )
+
+
+@pytest.fixture
+def evaluator() -> DetectionEvaluator:
+    """Definte an evaluator that compares a set of detections with known error to the ground truth."""
     detection_cfg = DetectionCfg(detection_classes=["VEHICLE"])
     return DetectionEvaluator(
         TEST_DATA_LOC / "detections", TEST_DATA_LOC, TEST_DATA_LOC / "test_figures", detection_cfg
@@ -29,7 +38,14 @@ def evaluator() -> DetectionEvaluator:
 
 
 @pytest.fixture
+def metrics_identity(evaluator_identity: DetectionEvaluator) -> DataFrame:
+    """Get the metrics for an evaluator that compares a set of results to itself."""
+    return evaluator_identity.evaluate()
+
+
+@pytest.fixture
 def metrics(evaluator: DetectionEvaluator) -> DataFrame:
+    """Get the metrics for an evaluator with known error."""
     return evaluator.evaluate()
 
 
@@ -141,25 +157,31 @@ def test_iou_aligned_3d() -> None:
     assert iou_aligned_3d(dt_dims, gt_dims) == expected_result
 
 
-def test_ap(metrics: DataFrame) -> None:
+def test_ap(metrics_identity: DataFrame, metrics: DataFrame) -> None:
     """Test that AP is 1 for the self-compared results."""
     expected_result: float = 1.0
-    assert metrics.AP.loc["Average Metrics"] == expected_result
+    assert metrics_identity.AP.loc["Average Metrics"] == expected_result
 
 
-def test_translation_error(metrics: DataFrame) -> None:
+def test_translation_error(metrics_identity: DataFrame, metrics: DataFrame) -> None:
     """Test that ATE is 0 for the self-compared results."""
-    expected_result: float = 0.0
-    assert metrics.ATE.loc["Average Metrics"] == expected_result
+    expected_result_identity: float = 0.0
+    expected_result_det: float = 0.017  # 0.1 / 6, one of six dets is off by 0.1
+    assert metrics_identity.ATE.loc["Average Metrics"] == expected_result_identity
+    assert metrics.ATE.loc["Average Metrics"] == expected_result_det
 
 
-def test_scale_error(metrics: DataFrame) -> None:
+def test_scale_error(metrics_identity: DataFrame, metrics: DataFrame) -> None:
     """Test that ASE is 0 for the self-compared results."""
-    expected_result: float = 0.0
-    assert metrics.ASE.loc["Average Metrics"] == expected_result
+    expected_result_identity: float = 0.0
+    expected_result_det: float = 0.033  # 0.2 / 6, one of six dets is off by 20% in IoU
+    assert metrics_identity.ASE.loc["Average Metrics"] == expected_result_identity
+    assert metrics.ASE.loc["Average Metrics"] == expected_result_det
 
 
-def test_orientation_error(metrics: DataFrame) -> None:
+def test_orientation_error(metrics_identity: DataFrame, metrics: DataFrame) -> None:
     """Test that AOE is 0 for the self-compared results."""
-    expected_result: float = 0.0
-    assert metrics.AOE.loc["Average Metrics"] == expected_result
+    expected_result_identity: float = 0.0
+    expected_result_det: float = 0.524  # pi / 6, since one of six dets is off by pi
+    assert metrics_identity.AOE.loc["Average Metrics"] == expected_result_identity
+    assert metrics.AOE.loc["Average Metrics"] == expected_result_det
