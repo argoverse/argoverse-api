@@ -29,6 +29,15 @@ def evaluator_identity() -> DetectionEvaluator:
 
 
 @pytest.fixture
+def evaluator_assignment() -> DetectionEvaluator:
+    """Define an evaluator that compares a set of results to one with an extra detection to check assignment."""
+    detection_cfg = DetectionCfg(detection_classes=["VEHICLE"])
+    return DetectionEvaluator(
+        TEST_DATA_LOC / "detections_assignment", TEST_DATA_LOC, TEST_DATA_LOC / "test_figures", detection_cfg
+    )
+
+
+@pytest.fixture
 def evaluator() -> DetectionEvaluator:
     """Definte an evaluator that compares a set of detections with known error to the ground truth."""
     detection_cfg = DetectionCfg(detection_classes=["VEHICLE"])
@@ -41,6 +50,12 @@ def evaluator() -> DetectionEvaluator:
 def metrics_identity(evaluator_identity: DetectionEvaluator) -> DataFrame:
     """Get the metrics for an evaluator that compares a set of results to itself."""
     return evaluator_identity.evaluate()
+
+
+@pytest.fixture
+def metrics_assignment(evaluator_assignment: DetectionEvaluator) -> DataFrame:
+    """Get the metrics for an evaluator that has extra detections to test for assignment errors."""
+    return evaluator_assignment.evaluate()
 
 
 @pytest.fixture
@@ -155,6 +170,12 @@ def test_iou_aligned_3d() -> None:
     # Union is the sum of the two volumes, minus intersection: 270 = (10 * 3 * 4) + (5 * 2 * 9) - 40.
     expected_result: float = 40 / 270.0
     assert iou_aligned_3d(dt_dims, gt_dims) == expected_result
+
+
+def test_assignment(metrics_assignment: DataFrame) -> None:
+    """Verify that assignment works as expected; should have one duplicate in the provided results."""
+    expected_result: float = 0.928
+    assert metrics_assignment.AP.loc["Average Metrics"] == expected_result
 
 
 def test_ap(metrics_identity: DataFrame, metrics: DataFrame) -> None:
