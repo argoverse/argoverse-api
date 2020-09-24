@@ -10,7 +10,6 @@ from typing import Any, Dict, List, Optional, TextIO, Union
 
 import motmetrics as mm
 import numpy as np
-from click.core import Option
 from shapely.geometry.polygon import Polygon
 
 from argoverse.evaluation.eval_utils import label_to_bbox
