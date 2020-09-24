@@ -32,17 +32,17 @@ def quat2rotmat(q: np.ndarray) -> np.ndarray:
 
 
 def quat_argo2scipy(q: np.ndarray) -> np.ndarray:
-    """Re-order a scalar-first [w, x, y, z] quaternion format used by Argoverse to the scalar-last format in SciPy."""
+    """Re-order Argoverse's scalar-first [w,x,y,z] quaternion order to Scipy's scalar-last [x,y,z,w]"""
     w, x, y, z = q
     q_scipy = np.array([x, y, z, w])
     return q_scipy
 
 
 def quat_argo2scipy_vectorized(q: np.ndarray) -> np.ndarray:
-    """Re-order a scalar-first [w, x, y, z] quaternion format used by Argoverse to the scalar-last format in SciPy."""
+    """"Re-order Argoverse's scalar-first [w,x,y,z] quaternion order to Scipy's scalar-last [x,y,z,w]"""
     return q[..., [1, 2, 3, 0]]
 
 
 def quat_scipy2argo_vectorized(q: np.ndarray) -> np.ndarray:
-    """Re-order a scalar-first [w, x, y, z] quaternion format used by Argoverse to the scalar-last format in SciPy."""
+    """"Re-order Scipy's scalar-last [x,y,z,w] quaternion order to Argoverse's scalar-first [w,x,y,z]."""
     return q[..., [3, 0, 1, 2]]
