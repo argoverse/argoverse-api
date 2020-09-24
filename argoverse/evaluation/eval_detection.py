@@ -58,10 +58,9 @@ import argparse
 import logging
 import os
 from collections import defaultdict
-from dataclasses import Field, dataclass, field
 from multiprocessing import Pool
 from pathlib import Path
-from typing import DefaultDict, List, Tuple
+from typing import DefaultDict, List, NamedTuple, Tuple
 
 import matplotlib
 import numpy as np
@@ -115,8 +114,7 @@ MAX_NUM_BOXES: int = 500
 SIGNIFICANT_DIGITS: float = 3
 
 
-@dataclass
-class DetectionCfg:
+class DetectionCfg(NamedTuple):
     """Instantiates a DetectionCfg object for configuring a DetectionEvaluator.
 
     Args:
@@ -132,22 +130,18 @@ class DetectionCfg:
         tp_normalization_terms: Normalization constants for ATE, ASE, and AOE.
     """
 
-    affinity_threshs: List[float] = field(default_factory=lambda: [0.5, 1.0, 2.0, 4.0])  # Meters
+    affinity_threshs: List[float] = [0.5, 1.0, 2.0, 4.0]  # Meters
     affinity_fn_type: AffFnType = AffFnType.CENTER
     n_rec_samples: int = 101
     tp_thresh: float = 2.0  # Meters
-    detection_classes: List[str] = field(default_factory=lambda: list(OBJ_CLASS_MAPPING_DICT.keys()))
+    detection_classes: List[str] = list(OBJ_CLASS_MAPPING_DICT.keys())
     detection_metric: FilterMetric = FilterMetric.EUCLIDEAN
     max_detection_range: float = 100.0  # Meters
     save_figs: bool = False
-    tp_normalization_terms: np.ndarray = field(init=False)
-
-    def __post_init__(self):
-        self.tp_normalization_terms: np.ndarray = np.array([self.tp_thresh, 1.0, MAX_YAW_ERROR])
+    tp_normalization_terms: np.ndarray = np.array([tp_thresh, 1.0, MAX_YAW_ERROR])
 
 
-@dataclass
-class DetectionEvaluator:
+class DetectionEvaluator(NamedTuple):
     """Instantiates a DetectionEvaluator object for evaluation.
 
     Args:
