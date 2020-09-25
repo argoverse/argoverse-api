@@ -4,7 +4,7 @@ import pathlib
 
 import numpy as np
 
-from argoverse.utils.ply_loader import load_ply
+from argoverse.utils.ply_loader import load_ply, load_ply_xyzir
 
 _TEST_DIR = pathlib.Path(__file__).parent
 
@@ -28,3 +28,9 @@ def test_load_ply():
     )
 
     assert (pc == pc_gt).all()
+
+def test_load_ply_xyzir():
+    """ Ensure intensity (i.e. reflectance) and ring index can be loaded """
+    ply_fpath = _TEST_DIR / "test_data/tracking/1/lidar/PC_0.ply"
+    pc = load_ply_xyzir(ply_fpath)
+    assert pc.shape == (10,5)
