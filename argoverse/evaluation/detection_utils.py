@@ -124,6 +124,31 @@ def compute_affinity_matrix(
     return sims
 
 
+def calc_ap(gts_sorted_by_conf: np.ndarray, recalls_interp: np.ndarray, ninst: int) -> Tuple[float, np.ndarray]:
+    """ Compute precision and recall, interpolated over n fixed recall points.
+
+    Args:
+        gts_sorted_by_conf: The ground truths, sorted by confidence.
+        recalls_interp: The interpolated recall values.
+        ninst: Number of instances of this class.
+    Returns:
+        ap_th: The thresholded AP
+        precisions_interp: The interpolated precision values.
+    """
+    tp = gts_sorted_by_conf
+
+    cumulative_tp = np.cumsum(tp, dtype=np.int)
+    cumulative_fp = np.cumsum(~tp, dtype=np.int)
+    cumulative_fn = ninst - cumulative_tp
+
+    precisions = cumulative_tp / (cumulative_tp + cumulative_fp + np.finfo(float).eps)
+    recalls = cumulative_tp / (cumulative_tp + cumulative_fn)
+    precisions = interp(precisions)
+    precisions_interp = np.interp(recalls_interp, recalls, precisions, right=0)
+    ap_th = precisions_interp.mean()
+    return ap_th, precisions_interp
+
+
 def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndarray:
     """Distance functions between detections and ground truth.
 
