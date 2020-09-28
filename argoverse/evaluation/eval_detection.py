@@ -329,7 +329,7 @@ class DetectionEvaluator(NamedTuple):
 
         for cls_name, cls_stats in data.items():
             ninst = cls_to_ninst[cls_name]
-            ranks = cls_stats[:, -1].argsort()[::-1]
+            ranks = cls_stats[:, -1].argsort()[::-1]  # sort by last column, i.e. confidences
             cls_stats = cls_stats[ranks]
 
             for i, _ in enumerate(self.detection_cfg.affinity_threshs):
