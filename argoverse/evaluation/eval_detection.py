@@ -309,6 +309,32 @@ class DetectionEvaluator(NamedTuple):
                 ).T
         return metrics
 
+    def calc_ap(
+        self, gts_sorted_by_conf: np.ndarray, recalls_interp: np.ndarray, ninst: int
+    ) -> Tuple[float, np.ndarray]:
+        """ Compute precision and recall, interpolated over n fixed recall points.
+
+        Args:
+            gts_sorted_by_conf: The ground truths, sorted by confidence.
+            recalls_interp: The interpolated recall values.
+            ninst: Number of instances of this class.
+        Returns:
+            ap_th: The thresholded AP
+            precisions_interp: The interpolated precision values.
+        """
+        tp = gts_sorted_by_conf
+
+        cumulative_tp = np.cumsum(tp, dtype=np.int)
+        cumulative_fp = np.cumsum(~tp, dtype=np.int)
+        cumulative_fn = ninst - cumulative_tp
+
+        precisions = cumulative_tp / (cumulative_tp + cumulative_fp + np.finfo(float).eps)
+        recalls = cumulative_tp / (cumulative_tp + cumulative_fn)
+        precisions = interp(precisions)
+        precisions_interp = np.interp(recalls_interp, recalls, precisions, right=0)
+        ap_th = precisions_interp.mean()
+        return ap_th, precisions_interp
+
     def summarize(
         self, data: DefaultDict[str, np.ndarray], cls_to_ninst: DefaultDict[str, int]
     ) -> DefaultDict[str, List]:
@@ -334,18 +360,7 @@ class DetectionEvaluator(NamedTuple):
 
             for i, _ in enumerate(self.detection_cfg.affinity_threshs):
                 tp = cls_stats[:, i].astype(bool)
-
-                cumulative_tp = np.cumsum(tp, dtype=np.int)
-                cumulative_fp = np.cumsum(~tp, dtype=np.int)
-                cumulative_fn = ninst - cumulative_tp
-
-                precisions = cumulative_tp / (cumulative_tp + cumulative_fp + np.finfo(float).eps)
-                recalls = cumulative_tp / (cumulative_tp + cumulative_fn)
-
-                precisions = interp(precisions)
-                precisions_interp = np.interp(recalls_interp, recalls, precisions, right=0)
-
-                ap_th = precisions_interp.mean()
+                ap_th, precisions_interp = self.calc_ap(tp, recalls_interp, ninst)
                 summary[cls_name] += [ap_th]
 
                 if self.detection_cfg.save_figs:
