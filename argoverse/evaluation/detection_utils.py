@@ -46,7 +46,7 @@ def filter_instances(
     """Filter the GT annotations based on a set of conditions (class name and distance from egovehicle).
 
     Args:
-        instances: Instances to be filtered (N, ).
+        instances: Instances to be filtered (N,).
         target_class_name: Name of the class of interest.
         filter_metric: Range metric used for filtering.
         max_detection_range: Maximum distance for range filtering.
@@ -75,8 +75,8 @@ def rank(dts: List[ObjectLabelRecord]) -> Tuple[np.ndarray, np.ndarray]:
         dts: Detections (N,).
 
     Returns:
-        ranks: Ranking for the detections (N, ).
-        scores: Detection scores (N, ).
+        ranks: Ranking for the detections (N,).
+        scores: Detection scores (N,).
     """
     scores = np.array([dt.score for dt in dts])
     ranks = scores.argsort()[::-1]
@@ -88,11 +88,11 @@ def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
     """Interpolate the precision over all recall levels.
 
     Args:
-        prec: Precision at all recall levels (N, ).
+        prec: Precision at all recall levels (N,).
         method: Accumulation method.
 
     Returns:
-        prec_interp: Interpolated precision at all recall levels (N, ).
+        prec_interp: Interpolated precision at all recall levels (N,).
     """
     if method == InterpType.ALL:
         prec_interp = np.maximum.accumulate(prec[::-1])[::-1]
@@ -108,8 +108,8 @@ def compute_affinity_matrix(
     using a specified affinity function type.
 
     Args:
-        dts: Detections (N, ).
-        gts: Ground truth labels (M, ).
+        dts: Detections (N,).
+        gts: Ground truth labels (M,).
         metric: Affinity metric type.
 
     Returns:
@@ -158,7 +158,7 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
         metric: Distance function type.
 
     Returns:
-        Distance between the detections and ground truth, using the provided metric (N, ).
+        Distance between the detections and ground truth, using the provided metric (N,).
     """
     if metric == DistFnType.TRANSLATION:
         dt_centers = np.vstack(dts["translation"].array)
@@ -195,7 +195,7 @@ def iou_aligned_3d(dt_dims: pd.DataFrame, gt_dims: pd.DataFrame) -> np.ndarray:
     
     Returns:
         Intersection-over-union between the detections and their assigned ground
-        truth labels (N, ).
+        truth labels (N,).
 
     """
     inter = np.minimum(dt_dims, gt_dims).prod(axis=1)

@@ -207,7 +207,7 @@ class DetectionEvaluator(NamedTuple):
             cls_to_accum: Class to accumulated statistics dictionary of shape |C| -> (N, K + S) where C
                 is the number of detection classes, K is the number of true positive thresholds used for
                 AP computation, and S is the number of true positive errors.
-            cls_to_ninst: Mapping of shape |C| -> (1, ) the class names to the number of instances in the ground
+            cls_to_ninst: Mapping of shape |C| -> (1,) the class names to the number of instances in the ground
                 truth dataset.
         """
         log_id = gt_fpath.parents[1].stem
