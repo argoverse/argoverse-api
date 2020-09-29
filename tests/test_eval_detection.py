@@ -22,7 +22,7 @@ logging.getLogger("matplotlib.font_manager").disabled = True
 @pytest.fixture
 def evaluator_identity() -> DetectionEvaluator:
     """Define an evaluator that compares a set of results to itself."""
-    detection_cfg = DetectionCfg(detection_classes=["VEHICLE"])
+    detection_cfg = DetectionCfg(dt_classes=["VEHICLE"])
     return DetectionEvaluator(
         TEST_DATA_LOC / "detections_identity", TEST_DATA_LOC, TEST_DATA_LOC / "test_figures", detection_cfg
     )
@@ -31,7 +31,7 @@ def evaluator_identity() -> DetectionEvaluator:
 @pytest.fixture
 def evaluator_assignment() -> DetectionEvaluator:
     """Define an evaluator that compares a set of results to one with an extra detection to check assignment."""
-    detection_cfg = DetectionCfg(detection_classes=["VEHICLE"])
+    detection_cfg = DetectionCfg(dt_classes=["VEHICLE"])
     return DetectionEvaluator(
         TEST_DATA_LOC / "detections_assignment", TEST_DATA_LOC, TEST_DATA_LOC / "test_figures", detection_cfg
     )
@@ -40,7 +40,7 @@ def evaluator_assignment() -> DetectionEvaluator:
 @pytest.fixture
 def evaluator() -> DetectionEvaluator:
     """Definte an evaluator that compares a set of detections with known error to the ground truth."""
-    detection_cfg = DetectionCfg(detection_classes=["VEHICLE"])
+    detection_cfg = DetectionCfg(dt_classes=["VEHICLE"])
     return DetectionEvaluator(
         TEST_DATA_LOC / "detections", TEST_DATA_LOC, TEST_DATA_LOC / "test_figures", detection_cfg
     )

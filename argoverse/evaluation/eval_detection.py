@@ -95,6 +95,7 @@ N_TP_ERRORS: int = len(TP_ERROR_NAMES)
 
 STATISTIC_NAMES: List[str] = ["AP"] + TP_ERROR_NAMES + ["CDS"]
 
+MAX_SCALE_ERROR: float = 1.0
 MAX_YAW_ERROR: float = np.pi
 
 # Higher is better.
@@ -106,9 +107,6 @@ MAX_NORMALIZED_ATE: float = 1.0
 MAX_NORMALIZED_ASE: float = 1.0
 MAX_NORMALIZED_AOE: float = 1.0
 
-# Each measure is in [0, 1].
-MEASURE_DEFAULT_VALUES: List[float] = [MIN_AP, MAX_NORMALIZED_ATE, MAX_NORMALIZED_ASE, MAX_NORMALIZED_AOE, MIN_CDS]
-
 # Max number of boxes considered per class per scene.
 MAX_NUM_BOXES: int = 500
 
@@ -119,43 +117,45 @@ class DetectionCfg(NamedTuple):
     """Instantiates a DetectionCfg object for configuring a DetectionEvaluator.
 
     Args:
-        affinity_threshs: The affinity thresholds for determining a true positive.
-        affinity_fn_type: The type of affinity function to be used for calculating average precision.
+        affinity_threshs: Affinity thresholds for determining a true positive.
+        affinity_fn_type: Type of affinity function to be used for calculating average precision.
         n_rec_samples: Number of recall points to sample uniformly in [0, 1]. Default to 101 recall samples.
         tp_thresh: Center distance threshold for the true positive metrics (in meters).
-        detection_classes: Detection classes for evaluation.
-        detection_metric: The detection metric to use for filtering of both detections and ground truth annotations.
-        max_detection_range: The max distance (under a specific metric in meters) for a detection or ground truth to be
+        dt_classes: Detection classes for evaluation.
+        dt_metric: Detection metric to use for filtering of both detections and ground truth annotations.
+        max_dt_range: The max distance (under a specific metric in meters) for a detection or ground truth to be
             considered for evaluation.
         save_figs: Flag to save figures.
         tp_normalization_terms: Normalization constants for ATE, ASE, and AOE.
+        summary_default_vals: Evaluation summary default values.
     """
 
     affinity_threshs: List[float] = [0.5, 1.0, 2.0, 4.0]  # Meters
     affinity_fn_type: AffFnType = AffFnType.CENTER
     n_rec_samples: int = 101
     tp_thresh: float = 2.0  # Meters
-    detection_classes: List[str] = list(OBJ_CLASS_MAPPING_DICT.keys())
-    detection_metric: FilterMetric = FilterMetric.EUCLIDEAN
-    max_detection_range: float = 100.0  # Meters
+    dt_classes: List[str] = list(OBJ_CLASS_MAPPING_DICT.keys())
+    dt_metric: FilterMetric = FilterMetric.EUCLIDEAN
+    max_dt_range: float = 100.0  # Meters
     save_figs: bool = False
-    tp_normalization_terms: np.ndarray = np.array([tp_thresh, 1.0, MAX_YAW_ERROR])
+    tp_normalization_terms: np.ndarray = np.array([tp_thresh, MAX_SCALE_ERROR, MAX_YAW_ERROR])
+    summary_default_vals: np.ndarray = np.array([MIN_AP, tp_thresh, MAX_NORMALIZED_ASE, MAX_NORMALIZED_AOE, MIN_CDS])
 
 
 class DetectionEvaluator(NamedTuple):
     """Instantiates a DetectionEvaluator object for evaluation.
 
     Args:
-        detection_fpath: The path to the folder which contains the detections.
-        ground_truth_fpath: The path to the folder which contains all the logs.
-        figures_fpath: The path to the folder which will contain the output figures.
-        detection_cfg: The detection configuration settings.
+        dt_fpath_root: Path to the folder which contains the detections.
+        gt_fpath_root: Path to the folder which contains the split of logs.
+        figs_fpath: Path to the folder which will contain the output figures.
+        cfg: Detection configuration settings.
     """
 
-    detection_fpath: Path
-    ground_truth_fpath: Path
-    figures_fpath: Path
-    detection_cfg: DetectionCfg = DetectionCfg()
+    dt_root_fpath: Path
+    gt_root_fpath: Path
+    figs_fpath: Path
+    cfg: DetectionCfg = DetectionCfg()
 
     def evaluate(self) -> pd.DataFrame:
         """Evaluate detection output and return metrics. The multiprocessing
@@ -166,8 +166,8 @@ class DetectionEvaluator(NamedTuple):
             Evaluation metrics of shape (C + 1, K) where C + 1 is the number of classes.
             plus a row for their means. K refers to the number of evaluation metrics.
         """
-        dt_fpaths = list(self.detection_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
-        gt_fpaths = list(self.ground_truth_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
+        dt_fpaths = list(self.dt_root_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
+        gt_fpaths = list(self.gt_root_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
 
         assert len(dt_fpaths) == len(gt_fpaths)
         data: DefaultDict[str, np.ndarray] = defaultdict(list)
@@ -184,7 +184,7 @@ class DetectionEvaluator(NamedTuple):
 
         data = defaultdict(np.ndarray, {k: np.vstack(v) for k, v in data.items()})
 
-        init_data = {dt_cls: MEASURE_DEFAULT_VALUES for dt_cls in self.detection_cfg.detection_classes}
+        init_data = {dt_cls: self.cfg.summary_default_vals for dt_cls in self.cfg.dt_classes}
         summary = pd.DataFrame.from_dict(init_data, orient="index", columns=STATISTIC_NAMES)
         summary_update = pd.DataFrame.from_dict(
             self.summarize(data, cls_to_ninst), orient="index", columns=STATISTIC_NAMES
@@ -214,25 +214,19 @@ class DetectionEvaluator(NamedTuple):
         logger.info(f"log_id = {log_id}")
         ts = gt_fpath.stem.split("_")[-1]
 
-        dt_fpath = self.detection_fpath / f"{log_id}/per_sweep_annotations_amodal/" f"tracked_object_labels_{ts}.json"
+        dt_fpath = self.dt_root_fpath / f"{log_id}/per_sweep_annotations_amodal/" f"tracked_object_labels_{ts}.json"
 
         dts = np.array(read_label(str(dt_fpath)))
         gts = np.array(read_label(str(gt_fpath)))
 
         cls_to_accum = defaultdict(list)
         cls_to_ninst = defaultdict(int)
-        for class_name in self.detection_cfg.detection_classes:
+        for class_name in self.cfg.dt_classes:
             dt_filtered = filter_instances(
-                dts,
-                class_name,
-                filter_metric=self.detection_cfg.detection_metric,
-                max_detection_range=self.detection_cfg.max_detection_range,
+                dts, class_name, filter_metric=self.cfg.dt_metric, max_detection_range=self.cfg.max_dt_range
             )
             gt_filtered = filter_instances(
-                gts,
-                class_name,
-                filter_metric=self.detection_cfg.detection_metric,
-                max_detection_range=self.detection_cfg.max_detection_range,
+                gts, class_name, filter_metric=self.cfg.dt_metric, max_detection_range=self.cfg.max_dt_range
             )
 
             logger.info(f"{dt_filtered.shape[0]} detections")
@@ -262,7 +256,7 @@ class DetectionEvaluator(NamedTuple):
         if dts.shape[0] > MAX_NUM_BOXES:
             dts = dts[:MAX_NUM_BOXES]
 
-        n_threshs = len(self.detection_cfg.affinity_threshs)
+        n_threshs = len(self.cfg.affinity_threshs)
         metrics = np.zeros((dts.shape[0], n_threshs + N_TP_ERRORS))
 
         # Set the true positive metrics to np.nan since error is undefined on false positives.
@@ -270,7 +264,7 @@ class DetectionEvaluator(NamedTuple):
         if gts.shape[0] == 0:
             return metrics
 
-        affinity_matrix = compute_affinity_matrix(dts, gts, self.detection_cfg.affinity_fn_type)
+        affinity_matrix = compute_affinity_matrix(dts, gts, self.cfg.affinity_fn_type)
 
         # Get the GT label for each max-affinity GT label, detection pair.
         gt_matches = affinity_matrix.argmax(axis=1)[np.newaxis, :]
@@ -282,14 +276,14 @@ class DetectionEvaluator(NamedTuple):
 
         # Find the indices of the "first" detection assigned to each GT.
         unique_gt_matches, unique_dt_matches = np.unique(gt_matches, return_index=True)
-        for i, thresh in enumerate(self.detection_cfg.affinity_threshs):
+        for i, thresh in enumerate(self.cfg.affinity_threshs):
 
             # `tp_mask` may need to be defined differently with other affinities.
             tp_mask = affinities[unique_dt_matches] > -thresh
             metrics[unique_dt_matches, i] = tp_mask
 
             # Only compute true positive error when `thresh` is equal to the tp threshold.
-            is_tp_thresh = thresh == self.detection_cfg.tp_thresh
+            is_tp_thresh = thresh == self.cfg.tp_thresh
             # Ensure that there are true positives of the respective class in the frame.
             has_true_positives = np.count_nonzero(tp_mask) > 0
 
@@ -323,22 +317,22 @@ class DetectionEvaluator(NamedTuple):
             summary: The summary statistics.
         """
         summary: DefaultDict[str, List] = defaultdict(list)
-        recalls_interp = np.linspace(0, 1, self.detection_cfg.n_rec_samples)
-        num_ths = len(self.detection_cfg.affinity_threshs)
-        if not self.figures_fpath.is_dir():
-            self.figures_fpath.mkdir(parents=True, exist_ok=True)
+        recalls_interp = np.linspace(0, 1, self.cfg.n_rec_samples)
+        num_ths = len(self.cfg.affinity_threshs)
+        if not self.figs_fpath.is_dir():
+            self.figs_fpath.mkdir(parents=True, exist_ok=True)
 
         for cls_name, cls_stats in data.items():
             ninst = cls_to_ninst[cls_name]
             ranks = cls_stats[:, -1].argsort()[::-1]  # sort by last column, i.e. confidences
             cls_stats = cls_stats[ranks]
 
-            for i, _ in enumerate(self.detection_cfg.affinity_threshs):
+            for i, _ in enumerate(self.cfg.affinity_threshs):
                 tp = cls_stats[:, i].astype(bool)
                 ap_th, precisions_interp = calc_ap(tp, recalls_interp, ninst)
                 summary[cls_name] += [ap_th]
 
-                if self.detection_cfg.save_figs:
+                if self.cfg.save_figs:
                     self.plot(recalls_interp, precisions_interp, cls_name)
 
             # AP Metric.
@@ -349,13 +343,14 @@ class DetectionEvaluator(NamedTuple):
 
             # If there are no true positives set tp errors to their maximum values due to normalization below).
             if ~tp_metrics_mask.any():
-                tp_metrics = self.detection_cfg.tp_normalization_terms
+                tp_metrics = self.cfg.tp_normalization_terms
             else:
                 # Calculate TP metrics.
                 tp_metrics = np.mean(cls_stats[:, num_ths : num_ths + N_TP_ERRORS][tp_metrics_mask], axis=0)
 
             # Convert errors to scores.
-            tp_scores = 1 - (tp_metrics / self.detection_cfg.tp_normalization_terms)
+            tp_scores = 1 - (tp_metrics / self.cfg.tp_normalization_terms)
+            print((tp_metrics / self.cfg.tp_normalization_terms))
 
             # Compute Composite Detection Score (CDS).
             cds = ap * tp_scores.mean()
@@ -377,7 +372,7 @@ class DetectionEvaluator(NamedTuple):
         plt.title("PR Curve")
         plt.xlabel("Recall")
         plt.ylabel("Precision")
-        plt.savefig(f"{self.figures_fpath}/{cls_name}.png")
+        plt.savefig(f"{self.figs_fpath}/{cls_name}.png")
         plt.close()
 
 
