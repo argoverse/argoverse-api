@@ -174,7 +174,7 @@ def test_iou_aligned_3d() -> None:
 
 def test_assignment(metrics_assignment: DataFrame) -> None:
     """Verify that assignment works as expected; should have one duplicate in the provided results."""
-    expected_result: float = 0.928
+    expected_result: float = 0.976
     assert metrics_assignment.AP.loc["Average Metrics"] == expected_result
 
 
