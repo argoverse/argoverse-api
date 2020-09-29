@@ -46,13 +46,13 @@ def filter_instances(
     """Filter the GT annotations based on a set of conditions (class name and distance from egovehicle).
 
     Args:
-        instances: The instances to be filtered (N, ).
-        target_class_name: The name of the class of interest.
-        filter_metric: The range metric used for filtering.
-        max_detection_range: The maximum distance for range filtering.
+        instances: Instances to be filtered (N,).
+        target_class_name: Name of the class of interest.
+        filter_metric: Range metric used for filtering.
+        max_detection_range: Maximum distance for range filtering.
 
     Returns:
-        The filtered annotations.
+        Filtered annotations.
     """
     instances = np.array([instance for instance in instances if instance.label_class == target_class_name])
 
@@ -75,8 +75,8 @@ def rank(dts: List[ObjectLabelRecord]) -> Tuple[np.ndarray, np.ndarray]:
         dts: Detections (N,).
 
     Returns:
-        ranks: The ranking for the detections (N, ).
-        scores: The detection scores (N, ).
+        ranks: Ranking for the detections (N,).
+        scores: Detection scores (N,).
     """
     scores = np.array([dt.score for dt in dts])
     ranks = scores.argsort()[::-1]
@@ -88,7 +88,7 @@ def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
     """Interpolate the precision over all recall levels.
 
     Args:
-        prec: Precision at all recall levels (N, ).
+        prec: Precision at all recall levels (N,).
         method: Accumulation method.
 
     Returns:
@@ -104,16 +104,16 @@ def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
 def compute_affinity_matrix(
     dts: List[ObjectLabelRecord], gts: List[ObjectLabelRecord], metric: AffFnType
 ) -> np.ndarray:
-    """Calculate the match matrix between detections and ground truth labels,
-    using a specified affinity function.
+    """Calculate the affinity matrix between detections and ground truth labels,
+    using a specified affinity function type.
 
     Args:
-        dts: Detections (N, ).
-        gts: Ground truth labels (M, ).
-        metric: Similarity metric type.
+        dts: Detections (N,).
+        gts: Ground truth labels (M,).
+        metric: Affinity metric type.
 
     Returns:
-        sims: Similarity scores between detections and ground truth annotations (N, M).
+        sims: Affinity scores between detections and ground truth annotations (N, M).
     """
     if metric == AffFnType.CENTER:
         dt_centers = np.array([dt.translation for dt in dts])
@@ -124,18 +124,18 @@ def compute_affinity_matrix(
     return sims
 
 
-def calc_ap(gts_sorted_by_conf: np.ndarray, recalls_interp: np.ndarray, ninst: int) -> Tuple[float, np.ndarray]:
-    """ Compute precision and recall, interpolated over n fixed recall points.
+def calc_ap(gt_ranked: np.ndarray, recalls_interp: np.ndarray, ninst: int) -> Tuple[float, np.ndarray]:
+    """Compute precision and recall, interpolated over n fixed recall points.
 
     Args:
-        gts_sorted_by_conf: The ground truths, sorted by confidence.
-        recalls_interp: The interpolated recall values.
+        gt_ranked: Ground truths, ranked by confidence.
+        recalls_interp: Interpolated recall values.
         ninst: Number of instances of this class.
     Returns:
-        ap_th: The thresholded AP
-        precisions_interp: The interpolated precision values.
+        avg_precision: Average precision.
+        precisions_interp: Interpolated precision values.
     """
-    tp = gts_sorted_by_conf
+    tp = gt_ranked
 
     cumulative_tp = np.cumsum(tp, dtype=np.int)
     cumulative_fp = np.cumsum(~tp, dtype=np.int)
@@ -145,8 +145,8 @@ def calc_ap(gts_sorted_by_conf: np.ndarray, recalls_interp: np.ndarray, ninst: i
     recalls = cumulative_tp / (cumulative_tp + cumulative_fn)
     precisions = interp(precisions)
     precisions_interp = np.interp(recalls_interp, recalls, precisions, right=0)
-    ap_th = precisions_interp.mean()
-    return ap_th, precisions_interp
+    avg_precision = precisions_interp.mean()
+    return avg_precision, precisions_interp
 
 
 def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndarray:
@@ -158,7 +158,7 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
         metric: Distance function type.
 
     Returns:
-        Distance between the detections and ground truth, using the provided metric (N, ).
+        Distance between the detections and ground truth, using the provided metric (N,).
     """
     if metric == DistFnType.TRANSLATION:
         dt_centers = np.vstack(dts["translation"].array)
@@ -195,7 +195,7 @@ def iou_aligned_3d(dt_dims: pd.DataFrame, gt_dims: pd.DataFrame) -> np.ndarray:
     
     Returns:
         Intersection-over-union between the detections and their assigned ground
-        truth labels (N, ).
+        truth labels (N,).
 
     """
     inter = np.minimum(dt_dims, gt_dims).prod(axis=1)

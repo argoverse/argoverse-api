@@ -163,7 +163,7 @@ class DetectionEvaluator(NamedTuple):
         annotations.
 
         Returns:
-            Evaluation metrics of shape (C + 1, K) where C + 1 is the number of classes
+            Evaluation metrics of shape (C + 1, K) where C + 1 is the number of classes.
             plus a row for their means. K refers to the number of evaluation metrics.
         """
         dt_fpaths = list(self.detection_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
@@ -207,7 +207,7 @@ class DetectionEvaluator(NamedTuple):
             cls_to_accum: Class to accumulated statistics dictionary of shape |C| -> (N, K + S) where C
                 is the number of detection classes, K is the number of true positive thresholds used for
                 AP computation, and S is the number of true positive errors.
-            cls_to_ninst: Mapping of shape |C| -> (1, ) the class names to the number of instances in the ground
+            cls_to_ninst: Mapping of shape |C| -> (1,) the class names to the number of instances in the ground
                 truth dataset.
         """
         log_id = gt_fpath.parents[1].stem
@@ -255,7 +255,7 @@ class DetectionEvaluator(NamedTuple):
         Returns:
             metrics: Matrix of true/false positive concatenated with true positive errors (N, K + S) where K is the number
                 of true positive thresholds used for AP computation and S is the number of true positive errors.
-            scores: Corresponding scores for the true positives/false positives (N,)
+            scores: Corresponding scores for the true positives/false positives (N,).
         """
 
         # Ensure the number of boxes considered per class is at most `MAX_NUM_BOXES`.
@@ -284,7 +284,7 @@ class DetectionEvaluator(NamedTuple):
         unique_gt_matches, unique_dt_matches = np.unique(gt_matches, return_index=True)
         for i, thresh in enumerate(self.detection_cfg.affinity_threshs):
 
-            # `tp_mask` may need to be defined differently with other affinities
+            # `tp_mask` may need to be defined differently with other affinities.
             tp_mask = affinities[unique_dt_matches] > -thresh
             metrics[unique_dt_matches, i] = tp_mask
 
@@ -341,23 +341,23 @@ class DetectionEvaluator(NamedTuple):
                 if self.detection_cfg.save_figs:
                     self.plot(recalls_interp, precisions_interp, cls_name)
 
-            # AP Metric
+            # AP Metric.
             ap = np.array(summary[cls_name][:num_ths]).mean()
 
             # Select only the true positives for each instance.
             tp_metrics_mask = ~np.isnan(cls_stats[:, num_ths : num_ths + N_TP_ERRORS]).all(axis=1)
 
-            # If there are no true positives set tp errors to their maximum values due to normalization below)
+            # If there are no true positives set tp errors to their maximum values due to normalization below).
             if ~tp_metrics_mask.any():
                 tp_metrics = self.detection_cfg.tp_normalization_terms
             else:
                 # Calculate TP metrics.
                 tp_metrics = np.mean(cls_stats[:, num_ths : num_ths + N_TP_ERRORS][tp_metrics_mask], axis=0)
 
-            # Convert errors to scores
+            # Convert errors to scores.
             tp_scores = 1 - (tp_metrics / self.detection_cfg.tp_normalization_terms)
 
-            # Compute Composite Detection Score (CDS)
+            # Compute Composite Detection Score (CDS).
             cds = ap * tp_scores.mean()
 
             summary[cls_name] = [ap, *tp_metrics, cds]
