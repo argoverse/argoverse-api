@@ -60,7 +60,7 @@ import os
 from collections import defaultdict
 from multiprocessing import Pool
 from pathlib import Path
-from typing import DefaultDict, List, NamedTuple, Tuple
+from typing import DefaultDict, List, NamedTuple
 
 import matplotlib
 import numpy as np
@@ -68,18 +68,7 @@ import pandas as pd
 from pandas.core import frame
 
 from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
-from argoverse.data_loading.object_label_record import read_label
-from argoverse.evaluation.detection_utils import (
-    AffFnType,
-    DistFnType,
-    FilterMetric,
-    calc_ap,
-    compute_affinity_matrix,
-    dist_fn,
-    filter_instances,
-    interp,
-    rank,
-)
+from argoverse.evaluation.detection_utils import AffFnType, DetectionCfg, FilterMetric, accumulate, calc_ap
 
 matplotlib.use("Agg")  # isort:skip
 
@@ -95,51 +84,7 @@ N_TP_ERRORS: int = len(TP_ERROR_NAMES)
 
 STATISTIC_NAMES: List[str] = ["AP"] + TP_ERROR_NAMES + ["CDS"]
 
-MAX_SCALE_ERROR: float = 1.0
-MAX_YAW_ERROR: float = np.pi
-
-# Higher is better.
-MIN_AP: float = 0.0
-MIN_CDS: float = 0.0
-
-# Lower is better.
-MAX_NORMALIZED_ATE: float = 1.0
-MAX_NORMALIZED_ASE: float = 1.0
-MAX_NORMALIZED_AOE: float = 1.0
-
-# Max number of boxes considered per class per scene.
-MAX_NUM_BOXES: int = 500
-
 SIGNIFICANT_DIGITS: float = 3
-
-
-class DetectionCfg(NamedTuple):
-    """Instantiates a DetectionCfg object for configuring a DetectionEvaluator.
-
-    Args:
-        affinity_threshs: Affinity thresholds for determining a true positive.
-        affinity_fn_type: Type of affinity function to be used for calculating average precision.
-        n_rec_samples: Number of recall points to sample uniformly in [0, 1]. Default to 101 recall samples.
-        tp_thresh: Center distance threshold for the true positive metrics (in meters).
-        dt_classes: Detection classes for evaluation.
-        dt_metric: Detection metric to use for filtering of both detections and ground truth annotations.
-        max_dt_range: The max distance (under a specific metric in meters) for a detection or ground truth to be
-            considered for evaluation.
-        save_figs: Flag to save figures.
-        tp_normalization_terms: Normalization constants for ATE, ASE, and AOE.
-        summary_default_vals: Evaluation summary default values.
-    """
-
-    affinity_threshs: List[float] = [0.5, 1.0, 2.0, 4.0]  # Meters
-    affinity_fn_type: AffFnType = AffFnType.CENTER
-    n_rec_samples: int = 101
-    tp_thresh: float = 2.0  # Meters
-    dt_classes: List[str] = list(OBJ_CLASS_MAPPING_DICT.keys())
-    dt_metric: FilterMetric = FilterMetric.EUCLIDEAN
-    max_dt_range: float = 100.0  # Meters
-    save_figs: bool = False
-    tp_normalization_terms: np.ndarray = np.array([tp_thresh, MAX_SCALE_ERROR, MAX_YAW_ERROR])
-    summary_default_vals: np.ndarray = np.array([MIN_AP, tp_thresh, MAX_NORMALIZED_ASE, MAX_NORMALIZED_AOE, MIN_CDS])
 
 
 class DetectionEvaluator(NamedTuple):
@@ -173,8 +118,9 @@ class DetectionEvaluator(NamedTuple):
         data: DefaultDict[str, np.ndarray] = defaultdict(list)
         cls_to_ninst: DefaultDict[str, int] = defaultdict(int)
 
+        args = [(self.dt_root_fpath, gt_fpath, self.cfg) for gt_fpath in gt_fpaths]
         with Pool(os.cpu_count()) as p:
-            accum = p.map(self.accumulate, gt_fpaths)
+            accum = p.starmap(accumulate, args)
 
         for frame_stats, frame_cls_to_inst in accum:
             for cls_name, cls_stats in frame_stats.items():
@@ -196,113 +142,6 @@ class DetectionEvaluator(NamedTuple):
 
         summary.loc["Average Metrics"] = summary.mean().round(SIGNIFICANT_DIGITS)
         return summary
-
-    def accumulate(self, gt_fpath: Path) -> Tuple[DefaultDict[str, np.ndarray], DefaultDict[str, int]]:
-        """Accumulate the true/false positives (boolean flags) and true positive errors for each class.
-
-        Args:
-            gt_fpath: Ground truth file path.
-
-        Returns:
-            cls_to_accum: Class to accumulated statistics dictionary of shape |C| -> (N, K + S) where C
-                is the number of detection classes, K is the number of true positive thresholds used for
-                AP computation, and S is the number of true positive errors.
-            cls_to_ninst: Mapping of shape |C| -> (1,) the class names to the number of instances in the ground
-                truth dataset.
-        """
-        log_id = gt_fpath.parents[1].stem
-        logger.info(f"log_id = {log_id}")
-        ts = gt_fpath.stem.split("_")[-1]
-
-        dt_fpath = self.dt_root_fpath / f"{log_id}/per_sweep_annotations_amodal/" f"tracked_object_labels_{ts}.json"
-
-        dts = np.array(read_label(str(dt_fpath)))
-        gts = np.array(read_label(str(gt_fpath)))
-
-        cls_to_accum = defaultdict(list)
-        cls_to_ninst = defaultdict(int)
-        for class_name in self.cfg.dt_classes:
-            dt_filtered = filter_instances(
-                dts, class_name, filter_metric=self.cfg.dt_metric, max_detection_range=self.cfg.max_dt_range
-            )
-            gt_filtered = filter_instances(
-                gts, class_name, filter_metric=self.cfg.dt_metric, max_detection_range=self.cfg.max_dt_range
-            )
-
-            logger.info(f"{dt_filtered.shape[0]} detections")
-            logger.info(f"{gt_filtered.shape[0]} ground truth")
-            if dt_filtered.shape[0] > 0:
-                ranked_detections, scores = rank(dt_filtered)
-                metrics = self.assign(ranked_detections, gt_filtered)
-                cls_to_accum[class_name] = np.hstack((metrics, scores))
-
-            cls_to_ninst[class_name] = gt_filtered.shape[0]
-        return cls_to_accum, cls_to_ninst
-
-    def assign(self, dts: np.ndarray, gts: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        """Attempt assignment of each detection to a ground truth label.
-
-        Args:
-            dts: Detections of shape (N,).
-            gts: Ground truth labels of shape (M,).
-
-        Returns:
-            metrics: Matrix of true/false positive concatenated with true positive errors (N, K + S) where K is the number
-                of true positive thresholds used for AP computation and S is the number of true positive errors.
-            scores: Corresponding scores for the true positives/false positives (N,).
-        """
-
-        # Ensure the number of boxes considered per class is at most `MAX_NUM_BOXES`.
-        if dts.shape[0] > MAX_NUM_BOXES:
-            dts = dts[:MAX_NUM_BOXES]
-
-        n_threshs = len(self.cfg.affinity_threshs)
-        metrics = np.zeros((dts.shape[0], n_threshs + N_TP_ERRORS))
-
-        # Set the true positive metrics to np.nan since error is undefined on false positives.
-        metrics[:, n_threshs : n_threshs + N_TP_ERRORS] = np.nan
-        if gts.shape[0] == 0:
-            return metrics
-
-        affinity_matrix = compute_affinity_matrix(dts, gts, self.cfg.affinity_fn_type)
-
-        # Get the GT label for each max-affinity GT label, detection pair.
-        gt_matches = affinity_matrix.argmax(axis=1)[np.newaxis, :]
-
-        # The affinity matrix is an N by M matrix of the detections and ground truth labels respectively.
-        # We want to take the corresponding affinity for each of the initial assignments using `gt_matches`.
-        # The following line grabs the max affinity for each detection to a ground truth label.
-        affinities = np.take_along_axis(affinity_matrix.T, gt_matches, axis=0).squeeze(0)
-
-        # Find the indices of the "first" detection assigned to each GT.
-        unique_gt_matches, unique_dt_matches = np.unique(gt_matches, return_index=True)
-        for i, thresh in enumerate(self.cfg.affinity_threshs):
-
-            # `tp_mask` may need to be defined differently with other affinities.
-            tp_mask = affinities[unique_dt_matches] > -thresh
-            metrics[unique_dt_matches, i] = tp_mask
-
-            # Only compute true positive error when `thresh` is equal to the tp threshold.
-            is_tp_thresh = thresh == self.cfg.tp_thresh
-            # Ensure that there are true positives of the respective class in the frame.
-            has_true_positives = np.count_nonzero(tp_mask) > 0
-
-            if is_tp_thresh and has_true_positives:
-                dt_tp_indices = unique_dt_matches[tp_mask]
-                gt_tp_indices = unique_gt_matches[tp_mask]
-
-                # Form DataFrame of shape (N, D) where D is the number of attributes in `ObjectLabelRecord`.
-                dt_df = pd.DataFrame([dt.__dict__ for dt in dts[dt_tp_indices]])
-                gt_df = pd.DataFrame([gt.__dict__ for gt in gts[gt_tp_indices]])
-
-                trans_error = dist_fn(dt_df, gt_df, DistFnType.TRANSLATION)
-                scale_error = dist_fn(dt_df, gt_df, DistFnType.SCALE)
-                orient_error = dist_fn(dt_df, gt_df, DistFnType.ORIENTATION)
-
-                metrics[dt_tp_indices, n_threshs : n_threshs + N_TP_ERRORS] = np.vstack(
-                    (trans_error, scale_error, orient_error)
-                ).T
-        return metrics
 
     def summarize(
         self, data: DefaultDict[str, np.ndarray], cls_to_ninst: DefaultDict[str, int]
