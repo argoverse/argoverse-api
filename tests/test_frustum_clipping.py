@@ -53,7 +53,7 @@ def test_fit_plane_to_point_cloud() -> None:
     pc = np.array([[0, 2, 1], [1, 2, 1], [0, 0, 0]])
     a, b, c, d = fit_plane_to_point_cloud(pc)
 
-    assert d == 0  # touching origin
+    assert np.isclose(d, 0) # touching origin
     normal = np.array([a, b, c])
     normal /= np.linalg.norm(normal)
     gt_normal = np.array([0.0, -1.0, 2.0])
