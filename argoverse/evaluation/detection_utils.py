@@ -104,7 +104,9 @@ def accumulate(
     """Accumulate the true/false positives (boolean flags) and true positive errors for each class.
 
     Args:
+        dt_root_fpath: Detections root folder file path.
         gt_fpath: Ground truth file path.
+        cfg: Detection configuration.
 
     Returns:
         cls_to_accum: Class to accumulated statistics dictionary of shape |C| -> (N, K + S) where C
