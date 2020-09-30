@@ -7,7 +7,6 @@ metrics: mAP, ATE, ASE, AOE, and DCS. A true positive for mAP is defined as the
 highest confidence prediction within a specified Euclidean distance threshold
 from a bird's-eye view. We prefer these metrics instead of IoU due to the
 increased interpretability of the error modes in a set of detections.
-
 """
 
 import logging
@@ -27,7 +26,7 @@ from argoverse.data_loading.object_label_record import ObjectLabelRecord, read_l
 from argoverse.utils.transform import quat_argo2scipy_vectorized
 
 matplotlib.use("Agg")  # isort:skip
-import matplotlib.pyplot as plt  # isort:skip
+import matplotlib.pyplot as plt  # isort:skip  #noqa: E402
 
 
 logger = logging.getLogger(__name__)
@@ -274,7 +273,7 @@ def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
     if method == InterpType.ALL:
         prec_interp = np.maximum.accumulate(prec[::-1])[::-1]
     else:
-        raise NotImplemented("This interpolation method is not implemented!")
+        raise NotImplementedError("This interpolation method is not implemented!")
     return prec_interp
 
 
@@ -297,7 +296,7 @@ def compute_affinity_matrix(
         gt_centers = np.array([gt.translation for gt in gts])
         sims = -cdist(dt_centers, gt_centers)
     else:
-        raise NotImplemented("This similarity metric is not implemented!")
+        raise NotImplementedError("This similarity metric is not implemented!")
     return sims
 
 
@@ -358,7 +357,7 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
         orientation_errors = wrap_angle(dt_yaws - gt_yaws)
         return orientation_errors
     else:
-        raise NotImplemented("This distance metric is not implemented!")
+        raise NotImplementedError("This distance metric is not implemented!")
 
 
 def iou_aligned_3d(dt_dims: pd.DataFrame, gt_dims: pd.DataFrame) -> np.ndarray:
