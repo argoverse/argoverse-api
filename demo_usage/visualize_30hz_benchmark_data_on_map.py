@@ -11,9 +11,6 @@ from pathlib import Path
 from typing import Any
 
 import imageio
-# all mayavi imports MUST come before matplotlib, else Tkinter exceptions
-# will be thrown, e.g. "unrecognized selector sent to instance"
-import mayavi
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -23,13 +20,12 @@ from argoverse.map_representation.map_api import ArgoverseMap
 from argoverse.utils.camera_stats import RING_CAMERA_LIST, STEREO_CAMERA_LIST
 from argoverse.utils.cuboid_interior import filter_point_cloud_to_bbox_2D_vectorized
 from argoverse.utils.ffmpeg_utils import write_nonsequential_idx_video, write_video
-from argoverse.utils.geometry import filter_point_cloud_to_polygon, rotate_polygon_about_pt
+from argoverse.utils.geometry import rotate_polygon_about_pt
 from argoverse.utils.mpl_plotting_utils import draw_lane_polygons, plot_bbox_2D
 from argoverse.utils.pkl_utils import load_pkl_dictionary
 from argoverse.utils.ply_loader import load_ply
 from argoverse.utils.se3 import SE3
 from argoverse.visualization.ground_visualization import draw_ground_pts_in_image
-from argoverse.visualization.mayavi_utils import draw_lidar
 from argoverse.visualization.mpl_point_cloud_vis import draw_point_cloud_bev
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)

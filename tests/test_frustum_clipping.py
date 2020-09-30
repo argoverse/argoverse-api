@@ -333,7 +333,7 @@ def test_generate_frustum_planes_stereo() -> None:
     if planes is None:
         assert False
     left_plane, right_plane, near_plane, low_plane, top_plane = planes
-    
+
     fx = K[0, 0]
     left_plane_gt = np.array([fx, 0.0, img_width / 2.0, 0.0])
     right_plane_gt = np.array([-fx, 0.0, img_width / 2.0, 0.0])
