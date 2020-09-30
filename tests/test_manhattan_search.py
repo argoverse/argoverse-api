@@ -70,7 +70,7 @@ def test_find_all_polygon_bboxes_overlapping_query_bbox(polygons_and_gt_bboxes):
 
 def test_compute_polygon_bboxes(polygons_and_gt_bboxes):
     """Test for correctness of compute_polygon_bboxes."""
-    polygon_bboxes = compute_polygon_bboxes(np.array(polygons_and_gt_bboxes[0]))
+    polygon_bboxes = compute_polygon_bboxes(np.array(polygons_and_gt_bboxes[0], dtype=object))
     gt_polygon_bboxes = np.array(polygons_and_gt_bboxes[1])
     assert np.allclose(polygon_bboxes, gt_polygon_bboxes)
 
@@ -83,7 +83,7 @@ def test_prune_polygons_manhattan_dist_find_nearby(
     query_pt: np.ndarray, query_search_range_manhattan: float, gt_indices: Sequence[int], polygons_and_gt_bboxes
 ):
     """Test for correctness of prune_polygons_manhattan_dist."""
-    polygons = np.array(polygons_and_gt_bboxes[0])
+    polygons = np.array(polygons_and_gt_bboxes[0], dtype=object)
     pruned_polygons = prune_polygons_manhattan_dist(query_pt, polygons.copy(), query_search_range_manhattan)
     gt_pruned_polygons = np.array([polygons[i] for i in gt_indices], dtype="O")
     assert_np_obj_arrs_eq(gt_pruned_polygons, pruned_polygons)
@@ -91,7 +91,7 @@ def test_prune_polygons_manhattan_dist_find_nearby(
 
 def test_find_local_polygons(polygons_and_gt_bboxes):
     """Test for correctness of find_local_polygons."""
-    polygons = np.array(polygons_and_gt_bboxes[0])
+    polygons = np.array(polygons_and_gt_bboxes[0], dtype=object)
     poly_bboxes = np.array(polygons_and_gt_bboxes[1])
     query_bbox = np.array([-1.5, 0.5, 1.5, 1.5])
 

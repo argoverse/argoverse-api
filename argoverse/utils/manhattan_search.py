@@ -146,7 +146,7 @@ def find_local_polygons(
 
 
 def prune_polygons_manhattan_dist(
-    query_pt: np.ndarray, points_xyz: np.ndarray, query_search_range_manhattan: int = 200
+    query_pt: np.ndarray, points_xyz: np.ndarray, query_search_range_manhattan: float = 200.0
 ) -> np.ndarray:
     """ Prune polygon points based on a search area defined by the manhattan distance.
 
