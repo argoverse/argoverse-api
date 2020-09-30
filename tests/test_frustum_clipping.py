@@ -167,7 +167,7 @@ def test_clip_segment_v3_plane_n() -> None:
 def test_form_right_clipping_plane() -> None:
     """Test form_right_clipping_plane(). Use 4 points to fit the right clipping plane."""
     fx = 10.0
-    img_width = 30.0
+    img_width = 30
     right_plane = form_right_clipping_plane(fx, img_width)
 
     Y_OFFSET = 10  # arbitrary extent down the imager
@@ -187,7 +187,7 @@ def test_form_right_clipping_plane() -> None:
 def test_form_left_clipping_plane() -> None:
     """Test form_left_clipping_plane(). Use 4 points to fit the left clipping plane."""
     fx = 10.0
-    img_width = 30.0
+    img_width = 30
     left_plane = form_left_clipping_plane(fx, img_width)
 
     Y_OFFSET = 10
@@ -206,7 +206,7 @@ def test_form_left_clipping_plane() -> None:
 def test_form_top_clipping_plane() -> None:
     """Test form_top_clipping_plane(). Use 3 points to fit the TOP clipping plane."""
     fx = 10.0
-    img_height = 45.0
+    img_height = 45
     top_plane = form_top_clipping_plane(fx, img_height)
 
     img_width = 1000.0
@@ -226,7 +226,7 @@ def test_form_top_clipping_plane() -> None:
 def test_form_low_clipping_plane() -> None:
     """Test form_low_clipping_plane()."""
     fx = 12.0
-    img_height = 35.0
+    img_height = 35
     low_plane = form_low_clipping_plane(fx, img_height)
 
     img_width = 10000
@@ -246,8 +246,8 @@ def test_form_low_clipping_plane() -> None:
 
 def test_form_near_clipping_plane() -> None:
     """Test form_near_clipping_plane(). Use 4 points to fit the near clipping plane."""
-    img_width = 10.0
-    img_height = 15.0
+    img_width = 10
+    img_height = 15
     near_clip_dist = 30.0
     near_plane = form_near_clipping_plane(near_clip_dist)
 
