@@ -288,8 +288,9 @@ def test_generate_frustum_planes_ring_cam() -> None:
     camera_name = "ring_front_right"
     img_height = 1200
     img_width = 1920
-    planes = generate_frustum_planes(K, camera_name, near_clip_dist=near_clip_dist)
-    [left_plane, right_plane, near_plane, low_plane, top_plane] = planes
+    left_plane, right_plane, near_plane, low_plane, top_plane = generate_frustum_planes(
+        K, camera_name, near_clip_dist=near_clip_dist
+    )
 
     fx = K[0, 0]
     left_plane_gt = np.array([fx, 0.0, img_width / 2.0, 0.0])
@@ -327,9 +328,10 @@ def test_generate_frustum_planes_stereo() -> None:
     camera_name = "stereo_front_left"
     img_height = 2056
     img_width = 2464
-    planes = generate_frustum_planes(K, camera_name, near_clip_dist=near_clip_dist)
-    [left_plane, right_plane, near_plane, low_plane, top_plane] = planes
-
+    left_plane, right_plane, near_plane, low_plane, top_plane = generate_frustum_planes(
+        K, camera_name, near_clip_dist=near_clip_dist
+    )
+    
     fx = K[0, 0]
     left_plane_gt = np.array([fx, 0.0, img_width / 2.0, 0.0])
     right_plane_gt = np.array([-fx, 0.0, img_width / 2.0, 0.0])
