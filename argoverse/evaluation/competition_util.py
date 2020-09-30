@@ -9,12 +9,12 @@ import uuid
 import zipfile
 from typing import Dict, List, Optional, Tuple, Union
 
+import h5py
 import numpy as np
 from scipy.spatial import ConvexHull
 from shapely.geometry import Polygon
 from sklearn.cluster.dbscan_ import DBSCAN
 
-import h5py
 import quaternion
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
