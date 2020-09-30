@@ -67,8 +67,7 @@ import numpy as np
 import pandas as pd
 from pandas.core import frame
 
-from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
-from argoverse.evaluation.detection_utils import AffFnType, DetectionCfg, FilterMetric, accumulate, calc_ap
+from argoverse.evaluation.detection_utils import DetectionCfg, accumulate, calc_ap
 
 matplotlib.use("Agg")  # isort:skip
 
