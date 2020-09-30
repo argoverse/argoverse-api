@@ -16,6 +16,8 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import DefaultDict, List, NamedTuple, Tuple
 
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.spatial.distance import cdist
@@ -24,6 +26,9 @@ from scipy.spatial.transform import Rotation as R
 from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
 from argoverse.data_loading.object_label_record import ObjectLabelRecord, read_label
 from argoverse.utils.transform import quat_argo2scipy_vectorized
+
+matplotlib.use("Agg")
+
 
 logger = logging.getLogger(__name__)
 
@@ -396,3 +401,20 @@ def wrap_angle(angles: np.ndarray, period: float = np.pi) -> np.ndarray:
     # `mods` must be nonzero, thus the image is the interval [0, π).
     angles[angle_complement_mask] = period - mods[angle_complement_mask]
     return angles
+
+
+def plot(rec_interp: np.ndarray, prec_interp: np.ndarray, cls_name: str, figs_fpath: Path) -> None:
+    """Plot and save the precision recall curve.
+
+    Args:
+        rec_interp: Interpolated recall data of shape (N,).
+        prec_interp: Interpolated precision data of shape (N,).
+        cls_name: Class name.
+        figs_fpath: Path to the folder which will contain the output figures.
+    """
+    plt.plot(rec_interp, prec_interp)
+    plt.title("PR Curve")
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
+    plt.savefig(f"{figs_fpath}/{cls_name}.png")
+    plt.close()

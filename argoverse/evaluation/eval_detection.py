@@ -62,18 +62,11 @@ from multiprocessing import Pool
 from pathlib import Path
 from typing import DefaultDict, List, NamedTuple
 
-import matplotlib
 import numpy as np
 import pandas as pd
 from pandas.core import frame
 
-from argoverse.evaluation.detection_utils import DetectionCfg, accumulate, calc_ap
-
-matplotlib.use("Agg")  # isort:skip
-
-
-import matplotlib.pyplot as plt  # isort:skip
-
+from argoverse.evaluation.detection_utils import DetectionCfg, accumulate, calc_ap, plot
 
 logger = logging.getLogger(__name__)
 
@@ -171,7 +164,7 @@ class DetectionEvaluator(NamedTuple):
                 summary[cls_name] += [ap_th]
 
                 if self.cfg.save_figs:
-                    self.plot(recalls_interp, precisions_interp, cls_name)
+                    plot(recalls_interp, precisions_interp, cls_name, self.figs_fpath)
 
             # AP Metric.
             ap = np.array(summary[cls_name][:num_ths]).mean()
@@ -197,21 +190,6 @@ class DetectionEvaluator(NamedTuple):
 
         logger.info(f"summary = {summary}")
         return summary
-
-    def plot(self, rec_interp: np.ndarray, prec_interp: np.ndarray, cls_name: str) -> None:
-        """Plot and save the precision recall curve.
-
-        Args:
-            rec_interp: Interpolated recall data of shape (N,).
-            prec_interp: Interpolated precision data of shape (N,).
-            cls_name: Class name.
-        """
-        plt.plot(rec_interp, prec_interp)
-        plt.title("PR Curve")
-        plt.xlabel("Recall")
-        plt.ylabel("Precision")
-        plt.savefig(f"{self.figs_fpath}/{cls_name}.png")
-        plt.close()
 
 
 def main() -> None:
