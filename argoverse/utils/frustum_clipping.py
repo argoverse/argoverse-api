@@ -251,7 +251,11 @@ def generate_frustum_planes(K: np.ndarray, camera_name: str, near_clip_dist: flo
     return planes
 
 
-def clip_segment_v3_plane_n(p1: np.ndarray, p2: np.ndarray, planes: List[np.ndarray]) -> Tuple[np.ndarray, np.ndarray]:
+def clip_segment_v3_plane_n(
+    p1: np.ndarray,
+    p2: np.ndarray,
+    planes: List[np.ndarray]
+) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
     """Iterate over the frustum planes and intersect them with the segment.
 
     This  updating the min/max, bailing out early if the min > max.
