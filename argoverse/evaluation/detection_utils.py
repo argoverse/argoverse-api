@@ -17,7 +17,6 @@ from pathlib import Path
 from typing import DefaultDict, List, NamedTuple, Tuple
 
 import matplotlib
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.spatial.distance import cdist
@@ -27,7 +26,8 @@ from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
 from argoverse.data_loading.object_label_record import ObjectLabelRecord, read_label
 from argoverse.utils.transform import quat_argo2scipy_vectorized
 
-matplotlib.use("Agg")
+matplotlib.use("Agg")  # isort:skip
+import matplotlib.pyplot as plt  # isort:skip
 
 
 logger = logging.getLogger(__name__)
