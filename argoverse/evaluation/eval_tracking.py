@@ -100,9 +100,9 @@ def get_distance(x1: Dict[str, np.ndarray], x2: Dict[str, np.ndarray], name: str
         dist = wrap_angle(theta).item()
 
         # Convert to degrees.
-        return np.rad2deg(dist)
+        return float(np.rad2deg(dist))
     else:
-        raise ValueError("Not implemented..")
+        raise NotImplementedError("Not implemented..")
 
 
 def eval_tracks(

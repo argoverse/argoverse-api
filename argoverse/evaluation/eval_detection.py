@@ -137,7 +137,7 @@ class DetectionEvaluator(NamedTuple):
 
     def summarize(
         self, data: DefaultDict[str, np.ndarray], cls_to_ninst: DefaultDict[str, int]
-    ) -> DefaultDict[str, List]:
+    ) -> DefaultDict[str, List[float]]:
         """Calculate and print the detection metrics.
 
         Args:
@@ -147,7 +147,7 @@ class DetectionEvaluator(NamedTuple):
         Returns:
             summary: The summary statistics.
         """
-        summary: DefaultDict[str, List] = defaultdict(list)
+        summary: DefaultDict[str, List[float]] = defaultdict(list)
         recalls_interp = np.linspace(0, 1, self.cfg.n_rec_samples)
         num_ths = len(self.cfg.affinity_threshs)
         if not self.figs_fpath.is_dir():
