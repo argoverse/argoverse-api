@@ -38,8 +38,7 @@ skip_if_mayavi_missing = pytest.mark.skipif(
 
 @skip_if_mayavi_missing  # type: ignore
 def test_plot_frustum_planes_and_normals() -> None:
-    """
-    """
+    """"""
 
     assert planes is not None
     plot_frustum_planes_and_normals(planes, cuboid_verts=None, near_clip_dist=0.5)
@@ -47,8 +46,7 @@ def test_plot_frustum_planes_and_normals() -> None:
 
 @skip_if_mayavi_missing  # type: ignore
 def test_populate_frustum_voxels() -> None:
-    """
-    """
+    """"""
     fig, axis_pair = plt.subplots(1, 1, figsize=(20, 15))
 
     assert planes is not None
@@ -57,7 +55,6 @@ def test_populate_frustum_voxels() -> None:
 
 @skip_if_mayavi_missing  # type: ignore
 def test_get_perpendicular() -> None:
-    """
-    """
+    """"""
     n = [0, 1, 1]
     result = get_perpendicular(n)

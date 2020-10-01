@@ -45,7 +45,7 @@ class DatasetOnMapVisualizer:
     ) -> None:
         """We will cache the accumulated trajectories per city, per log, and per frame
         for the tracking benchmark.
-            """
+        """
         self.plot_lane_tangent_arrows = True
         self.plot_lidar_bev = True
         self.plot_lidar_in_img = False
@@ -311,8 +311,7 @@ class DatasetOnMapVisualizer:
 
 
 def visualize_30hz_benchmark_data_on_map(args: Any) -> None:
-    """
-    """
+    """"""
     domv = DatasetOnMapVisualizer(
         args.dataset_dir, args.experiment_prefix, log_id=args.log_id, use_existing_files=args.use_existing_files
     )

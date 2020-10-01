@@ -16,7 +16,10 @@ from argoverse.data_loading.frame_record import FrameRecord
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
 from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
 from argoverse.data_loading.synchronization_database import SynchronizationDB
-from argoverse.data_loading.trajectory_loader import TrajectoryLabel, load_json_track_labels
+from argoverse.data_loading.trajectory_loader import (
+    TrajectoryLabel,
+    load_json_track_labels,
+)
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.pkl_utils import load_pkl_dictionary, save_pkl_dictionary
 from argoverse.utils.se3 import SE3
@@ -26,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 class PerFrameLabelAccumulator:
-    """ We will cache the accumulated track label trajectories per city, per log, and per frame.
+    """We will cache the accumulated track label trajectories per city, per log, and per frame.
     In order to plot each frame sequentially, one at a time, we need to aggregate beforehand
     the tracks and cuboids for each frame.
 
@@ -43,7 +46,7 @@ class PerFrameLabelAccumulator:
     def __init__(
         self, dataset_dir: str, labels_dir: str, experiment_prefix: str, bboxes_3d: bool = False, save: bool = True
     ) -> None:
-        """ Initialize PerFrameLabelAccumulator object for use with tracking benchmark data.
+        """Initialize PerFrameLabelAccumulator object for use with tracking benchmark data.
 
         Args:
             dataset_dir (str): Dataset directory.
@@ -126,7 +129,7 @@ class PerFrameLabelAccumulator:
         logger.info(f"Miami has {MIAMI_CUBOID_COUNT} and Pittsburgh has {PITT_CUBOID_COUNT} cuboids")
 
     def get_log_trajectory_labels(self, log_id: str) -> Optional[List[TrajectoryLabel]]:
-        """ Create a very large list with all of the trajectory data.
+        """Create a very large list with all of the trajectory data.
 
         Treat a single object cuboid label as one step in a trajectory.
         Then we can share the same representation for both.
@@ -144,7 +147,7 @@ class PerFrameLabelAccumulator:
             return None
 
     def place_trajectory_in_city_frame(self, traj_label: TrajectoryLabel, log_id: str) -> np.ndarray:
-        """ Place trajectory in the city frame
+        """Place trajectory in the city frame
         Args:
             traj_label (TrajectoryLabel): instance of the TrajectoryLabel class.
             log_id (str): Log id.
@@ -209,7 +212,7 @@ class PerFrameLabelAccumulator:
     def convert_bbox_to_city_frame(
         self, lidar_timestamp_ns: int, dataset_dir: str, log_id: str, bbox_ego_frame: np.ndarray
     ) -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
-        """ Convert bounding box to city frame.
+        """Convert bounding box to city frame.
         Args:
             lidar_timestamp_ns (int): Lidar timestamp.
             dataset_dir (str): representing full path to the log_ids.

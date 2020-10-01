@@ -5,7 +5,9 @@ import pathlib
 
 import pytest
 
-from argoverse.data_loading.simple_track_dataloader import SimpleArgoverseTrackingDataLoader
+from argoverse.data_loading.simple_track_dataloader import (
+    SimpleArgoverseTrackingDataLoader,
+)
 
 _TEST_DATA = pathlib.Path(__file__).parent / "test_data" / "tracking"
 _LOG_ID = "1"
@@ -65,9 +67,9 @@ def test_get_closest_lidar_fpath_found_match(data_loader: SimpleArgoverseTrackin
 
 
 def test_get_closest_lidar_fpath_no_match(data_loader: SimpleArgoverseTrackingDataLoader) -> None:
-    """ LiDAR rotates at 10 Hz (sensor message per 100 ms). Test if camera measurement
-        just barely outside 51 ms allowed buffer. Max LiDAR timestamp in log is 2.
-        51 ms, not 50 ms, is allowed to give time for occasional delay.
+    """LiDAR rotates at 10 Hz (sensor message per 100 ms). Test if camera measurement
+    just barely outside 51 ms allowed buffer. Max LiDAR timestamp in log is 2.
+    51 ms, not 50 ms, is allowed to give time for occasional delay.
     """
     max_allowed_interval = ((100 / 2) + 1) * 1e6
     log_max_lidar_timestamp = 2

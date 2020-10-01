@@ -190,18 +190,18 @@ class ObjectLabelRecord:
 def form_obj_label_from_json(label: Dict[str, Any]) -> Tuple[np.array, str]:
     """Construct object from loaded json.
 
-    The dictionary loaded from saved json file is expected to have the
-    following fields::
+     The dictionary loaded from saved json file is expected to have the
+     following fields::
 
-        ['frame_index', 'center', 'rotation', 'length', 'width', 'height',
-        'track_label_uuid', 'occlusion', 'on_driveable_surface', 'key_frame',
-        'stationary', 'label_class']
+         ['frame_index', 'center', 'rotation', 'length', 'width', 'height',
+         'track_label_uuid', 'occlusion', 'on_driveable_surface', 'key_frame',
+         'stationary', 'label_class']
 
-   Args:
-        label: Python dictionary that was loaded from saved json file
+    Args:
+         label: Python dictionary that was loaded from saved json file
 
-    Returns:
-        Tuple of (bbox_ego_frame, color); bbox is a numpy array of shape (4,3); color is "g" or "r"
+     Returns:
+         Tuple of (bbox_ego_frame, color); bbox is a numpy array of shape (4,3); color is "g" or "r"
     """
     tr_x = label["center"]["x"]
     tr_y = label["center"]["y"]

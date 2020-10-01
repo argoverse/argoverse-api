@@ -32,11 +32,11 @@ def compare_paths(paths_lhs: List[List[str]], paths_rhs: List[List[str]]) -> boo
 
 def get_sample_graph() -> Mapping[str, Sequence[str]]:
     """
-        Args:
-            None
+    Args:
+        None
 
-        Returns:
-            graph: Python dictionary representing an adjacency list
+    Returns:
+        graph: Python dictionary representing an adjacency list
     """
     graph = {"1": ["2", "3", "4"], "2": ["5", "6"], "5": ["9", "10"], "4": ["7", "8"], "7": ["11", "12"]}
     return graph

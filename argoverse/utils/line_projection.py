@@ -11,7 +11,7 @@ from argoverse.utils.polyline_density import interpolate_polyline_to_ref_density
 def project_to_line_seq(
     trajectory: np.ndarray, lines: Sequence[np.ndarray], interpolate_more: bool = True
 ) -> Tuple[float, np.ndarray]:
-    """ Project a trajectory onto a line sequence.
+    """Project a trajectory onto a line sequence.
 
     Args:
         trajectory: An array of shape (N,2) that we will project onto a polyline.
@@ -35,7 +35,7 @@ def project_to_line_seq(
 def project_to_line(
     trajectory: np.ndarray, center_polyline: np.ndarray, enforce_same_density: bool = False
 ) -> Tuple[float, np.ndarray]:
-    """ Project a trajectory onto a polyline.
+    """Project a trajectory onto a polyline.
 
     Args:
         trajectory: An array of shape (N,2) that we will project onto a polyline.

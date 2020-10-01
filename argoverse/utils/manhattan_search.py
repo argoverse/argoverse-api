@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def compute_polygon_bboxes(polygons: np.ndarray) -> np.ndarray:
-    """ Compute the minimum size enclosing xy bounding box for each polygon that is provided as input.
+    """Compute the minimum size enclosing xy bounding box for each polygon that is provided as input.
     Args:
         polygons: an array of type 'O' (object) with shape (n,). Each object has shape (m, 3+).
 
@@ -29,7 +29,7 @@ def compute_polygon_bboxes(polygons: np.ndarray) -> np.ndarray:
 
 
 def compute_point_cloud_bbox(point_cloud: np.ndarray, verbose: bool = False) -> np.ndarray:
-    """ Given a set of 2D or 3D points, find the minimum size axis-aligned bounding box in the xy plane (ground plane).
+    """Given a set of 2D or 3D points, find the minimum size axis-aligned bounding box in the xy plane (ground plane).
 
     Args:
         point_cloud: an array of dim (N,3) or (N,2).
@@ -55,7 +55,7 @@ def compute_point_cloud_bbox(point_cloud: np.ndarray, verbose: bool = False) -> 
 
 
 def find_all_polygon_bboxes_overlapping_query_bbox(polygon_bboxes: np.ndarray, query_bbox: np.ndarray) -> np.ndarray:
-    """ Find all the overlapping polygon bounding boxes.
+    """Find all the overlapping polygon bounding boxes.
 
     Each bounding box has the following structure:
         bbox = np.array([x_min,y_min,x_max,y_max])
@@ -118,7 +118,7 @@ def find_local_polygons(
     query_min_y: float,
     query_max_y: float,
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """ Find local polygons. We always also return indices.
+    """Find local polygons. We always also return indices.
 
     Take a collection of precomputed polygon bounding boxes, and compare with a query bounding box then returns the
     polygons that overlap, along with their array indices.
@@ -148,7 +148,7 @@ def find_local_polygons(
 def prune_polygons_manhattan_dist(
     query_pt: np.ndarray, points_xyz: np.ndarray, query_search_range_manhattan: float = 200.0
 ) -> np.ndarray:
-    """ Prune polygon points based on a search area defined by the manhattan distance.
+    """Prune polygon points based on a search area defined by the manhattan distance.
 
     Take a collection of small point clouds and return only point clouds that fall within a manhattan search radius of
     the 2D query point.

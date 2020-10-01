@@ -14,18 +14,18 @@ from argoverse.utils.centerline_utils import (
 
 def temp_test_straight_centerline_to_polygon() -> None:
     """
-        Try converting a simple straight polyline into a polygon. Represents
-        the conversion from a centerline to a lane segment polygon.
+    Try converting a simple straight polyline into a polygon. Represents
+    the conversion from a centerline to a lane segment polygon.
 
-        Note that the returned polygon will ba a Numpy array of
-        shape (2N+1,2), with duplicate first and last vertices.
-        Dots below signify the centerline coordinates.
+    Note that the returned polygon will ba a Numpy array of
+    shape (2N+1,2), with duplicate first and last vertices.
+    Dots below signify the centerline coordinates.
 
-                |   .   |
-                |   .   |
-                |   .   |
-                |   .   |
-        """
+            |   .   |
+            |   .   |
+            |   .   |
+            |   .   |
+    """
     # create centerline: Numpy array of shape (N,2)
     centerline = np.array([[0, 2.0], [0.0, 0.0], [0.0, -2.0]])
 

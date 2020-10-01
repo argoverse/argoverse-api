@@ -29,8 +29,8 @@ skip_if_not_mayavi = pytest.mark.skipif(MISSING_MAYAVI, reason="mayavi not insta
 @skip_if_not_mayavi  # type: ignore
 def test_mayavi_import_basic() -> None:
     """
-        To test if Mayavi is installed correctly, generate lines around
-        surface of a torus and render them.
+    To test if Mayavi is installed correctly, generate lines around
+    surface of a torus and render them.
     """
     n_mer, n_long = 6, 11
     pi = np.pi
@@ -194,8 +194,7 @@ def test_draw_lidar_argoverse() -> None:
 
 @skip_if_not_mayavi  # type: ignore
 def test_draw_coordinate_frame_at_origin() -> None:
-    """Test :ref:`draw_coordinate_frame_at_origin`.
-    """
+    """Test :ref:`draw_coordinate_frame_at_origin`."""
     fig = mayavi.mlab.figure(bgcolor=(1, 1, 1), size=(2000, 1000))
     fig = draw_coordinate_frame_at_origin(fig)
     mayavi.mlab.close(fig)

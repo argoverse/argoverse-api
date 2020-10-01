@@ -25,7 +25,10 @@ from argoverse.utils.manhattan_search import (
     find_all_polygon_bboxes_overlapping_query_bbox,
     find_local_polygons,
 )
-from argoverse.utils.mpl_plotting_utils import plot_lane_segment_patch, visualize_centerline
+from argoverse.utils.mpl_plotting_utils import (
+    plot_lane_segment_patch,
+    visualize_centerline,
+)
 from argoverse.utils.pkl_utils import load_pkl_dictionary
 from argoverse.utils.se2 import SE2
 
@@ -790,7 +793,7 @@ class ArgoverseMap:
     def get_candidate_centerlines_for_traj(
         self, xy: np.ndarray, city_name: str, viz: bool = False, max_search_radius: float = 50.0
     ) -> List[np.ndarray]:
-        """ Get centerline candidates upto a threshold. .
+        """Get centerline candidates upto a threshold. .
 
         Algorithm:
         1. Take the lanes in the bubble of last obs coordinate

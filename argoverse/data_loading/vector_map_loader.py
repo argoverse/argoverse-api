@@ -44,7 +44,17 @@ import os
 import pathlib
 import sys
 import xml.etree.ElementTree as ET
-from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union, cast
+from typing import (
+    Any,
+    Dict,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Tuple,
+    Union,
+    cast,
+)
 
 import numpy as np
 
@@ -64,13 +74,13 @@ class Node:
 
     def __init__(self, id: int, x: float, y: float, height: Optional[float] = None):
         """
-            Args:
-                id: representing unique node ID
-                x: x-coordinate in city reference system
-                y: y-coordinate in city reference system
+        Args:
+            id: representing unique node ID
+            x: x-coordinate in city reference system
+            y: y-coordinate in city reference system
 
-            Returns:
-                None
+        Returns:
+            None
         """
         self.id = id
         self.x = x

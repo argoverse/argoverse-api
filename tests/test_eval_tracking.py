@@ -46,11 +46,11 @@ def check_mkdir(dirpath: str) -> None:
 
 def yaw_to_quaternion3d(yaw: float) -> Tuple[float, float, float, float]:
     """
-		Args:
-		-   yaw: rotation about the z-axis, in radians
-		Returns:
-		-   qx,qy,qz,qw: quaternion coefficients
-	"""
+    Args:
+    -   yaw: rotation about the z-axis, in radians
+    Returns:
+    -   qx,qy,qz,qw: quaternion coefficients
+    """
     qx, qy, qz, qw = Rotation.from_euler("z", yaw).as_quat()
     return qx, qy, qz, qw
 
@@ -82,9 +82,9 @@ class TrackedObjects:
 
     def add_obj(self, o: TrackedObjRec, ts_ns: int) -> None:
         """
-			Args:
-			-	ts_ns: timestamp in nanoseconds
-		"""
+        Args:
+            - ts_ns: timestamp in nanoseconds
+        """
         self.ts_to_trackedlabels_dict[ts_ns] += [
             {
                 "center": {"x": o.cx, "y": o.cy, "z": o.cz},
@@ -100,9 +100,9 @@ class TrackedObjects:
 
     def save_to_disk(self) -> None:
         """
-		Labels and predictions should be saved in JSON e.g.
-			`tracked_object_labels_315969629019741000.json`
-		"""
+        Labels and predictions should be saved in JSON e.g.
+                `tracked_object_labels_315969629019741000.json`
+        """
         for ts_ns, ts_trackedlabels in self.ts_to_trackedlabels_dict.items():
             json_fpath = f"{self.log_dir}/per_sweep_annotations_amodal/"
             check_mkdir(json_fpath)
@@ -114,9 +114,9 @@ def dump_1obj_scenario_json(
     centers: List[Tuple[int, int, int]], yaw_angles: List[float], log_id: str, is_gt: bool
 ) -> None:
     """
-	Egovehicle stationary (represented by `o`).
-	Sequence of 4-nanosecond timestamps.
-	"""
+    Egovehicle stationary (represented by `o`).
+    Sequence of 4-nanosecond timestamps.
+    """
     t_objs = TrackedObjects(log_id=log_id, is_gt=is_gt)
 
     l = 2
@@ -182,25 +182,25 @@ def run_eval(exp_name: str) -> Mapping[str, Any]:
 
 def get_1obj_gt_scenario() -> Tuple[List[Tuple[int, int, int]], List[float]]:
     """
-	Egovehicle stationary (represented by `o`).
-	Seqeuence of 4-nanosecond timestamps.
+    Egovehicle stationary (represented by `o`).
+    Seqeuence of 4-nanosecond timestamps.
 
-	|-|
-	| |
-	|-|
+    |-|
+    | |
+    |-|
 
-	|-|
-	| |
-	|-|
-			o (x,y,z) = (0,0,0)
-	|-|
-	| |
-	|-|
+    |-|
+    | |
+    |-|
+                    o (x,y,z) = (0,0,0)
+    |-|
+    | |
+    |-|
 
-	|-|
-	| | (x,y,z)=(-3,2,0)
-	|-|
-	"""
+    |-|
+    | | (x,y,z)=(-3,2,0)
+    |-|
+    """
     centers = []
     # timestamp 0
     cx = -3
@@ -314,17 +314,17 @@ def test_1obj_offset_translation() -> None:
 
 def test_1obj_poor_translation() -> None:
     """
-	Miss in 1st frame, TP in 2nd frame,
-	lost in 3rd frame, retrack as TP in 4th frame
+    Miss in 1st frame, TP in 2nd frame,
+    lost in 3rd frame, retrack as TP in 4th frame
 
-	Yields 1 fragmentation. Prec=0.5, recall=0.5, F1=0.5
+    Yields 1 fragmentation. Prec=0.5, recall=0.5, F1=0.5
 
-	mostly tracked if it is successfully tracked
-	for at least 80% of its life span
+    mostly tracked if it is successfully tracked
+    for at least 80% of its life span
 
-	If a track is only recovered for less than 20% of its
-	total length, it is said to be mostly lost (ML)
-	"""
+    If a track is only recovered for less than 20% of its
+    total length, it is said to be mostly lost (ML)
+    """
     log_id = "1obj_poor_translation"
 
     centers = []
@@ -512,8 +512,8 @@ def test_orientation_error8() -> None:
 
 def get_mot16_scenario_a() -> Tuple[List[Tuple[int, int, int]], List[float]]:
     """
-	https://arxiv.org/pdf/1603.00831.pdf
-	"""
+    https://arxiv.org/pdf/1603.00831.pdf
+    """
     centers = []
     # timestamp 0
     cx = 0
@@ -557,8 +557,8 @@ def get_mot16_scenario_a() -> Tuple[List[Tuple[int, int, int]], List[float]]:
 
 def test_mot16_scenario_a() -> None:
     """
-	See page 8 of MOT16 paper: https://arxiv.org/pdf/1603.00831.pdf
-	"""
+    See page 8 of MOT16 paper: https://arxiv.org/pdf/1603.00831.pdf
+    """
     log_id = "mot16_scenario_a"
     gt_centers, gt_yaw_angles = get_mot16_scenario_a()
     dump_1obj_scenario_json(gt_centers, gt_yaw_angles, log_id, is_gt=True)
@@ -638,9 +638,9 @@ def test_mot16_scenario_a() -> None:
 
 def test_mot16_scenario_b() -> None:
     """
-	See page 8 of MOT16 paper: https://arxiv.org/pdf/1603.00831.pdf
-	Scenario `a` and Scenario `b` share the same ground truth.
-	"""
+    See page 8 of MOT16 paper: https://arxiv.org/pdf/1603.00831.pdf
+    Scenario `a` and Scenario `b` share the same ground truth.
+    """
     log_id = "mot16_scenario_b"
     gt_centers, gt_yaw_angles = get_mot16_scenario_a()
     dump_1obj_scenario_json(gt_centers, gt_yaw_angles, log_id, is_gt=True)

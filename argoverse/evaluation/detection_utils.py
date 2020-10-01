@@ -368,7 +368,7 @@ def iou_aligned_3d(dt_dims: pd.DataFrame, gt_dims: pd.DataFrame) -> np.ndarray:
     Args:
         dt_dims: Detections (N, 3).
         gt_dims: Ground truth labels (N, 3).
-    
+
     Returns:
         Intersection-over-union between the detections and their assigned ground
         truth labels (N,).

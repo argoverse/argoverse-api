@@ -25,16 +25,14 @@ def add_lane_segment_to_ax(
     ymin: float,
     ymax: float,
 ) -> None:
-    """
-        """
+    """"""
     plot_lane_segment_patch(lane_polygon, ax, color=patch_color, alpha=0.3)
 
 
 def find_lane_segment_bounds_in_table(
     avm: ArgoverseMap, city_name: str, lane_segment_id: int
 ) -> Tuple[float, float, float, float]:
-    """
-        """
+    """"""
     match_found = False
     # find the lane segment inside the table
     for table_idx, table_lane_id in avm.city_halluc_tableidx_to_laneid_map[city_name].items():
@@ -49,9 +47,7 @@ def find_lane_segment_bounds_in_table(
 
 
 def verify_halluc_lane_extent_index(enable_lane_boundaries: bool = False) -> None:
-    """
-
-        """
+    """"""
     avm = ArgoverseMap()
 
     city_names = ["MIA", "PIT"]
@@ -171,8 +167,7 @@ def verify_halluc_lane_extent_index(enable_lane_boundaries: bool = False) -> Non
 
 
 def verify_point_in_polygon_for_lanes() -> None:
-    """
-        """
+    """"""
     avm = ArgoverseMap()
 
     # ref_query_x = 422.
@@ -215,8 +210,7 @@ def plot_nearby_halluc_lanes(
     patch_color: str = "r",
     radius: float = 20.0,
 ) -> None:
-    """
-        """
+    """"""
     nearby_lane_ids = avm.get_lane_ids_in_xy_bbox(query_x, query_y, city_name, radius)
     for nearby_lane_id in nearby_lane_ids:
         halluc_lane_polygon = avm.get_lane_segment_polygon(nearby_lane_id, city_name)
@@ -226,11 +220,11 @@ def plot_nearby_halluc_lanes(
 
 def verify_lane_tangent_vector() -> None:
     """
-        debug low confidence lane tangent predictions
+    debug low confidence lane tangent predictions
 
-        I noticed that the confidence score of lane direction is
-        pretty low (almost zero) in some logs
-        """
+    I noticed that the confidence score of lane direction is
+    pretty low (almost zero) in some logs
+    """
     POSE_FILE_DIR = "../debug_lane_tangent"
 
     # both of these are Pittsburgh logs

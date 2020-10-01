@@ -50,7 +50,7 @@ def save_bev_img(
     pc: np.ndarray,
 ) -> None:
     """
-    Plot results on bev images and save 
+    Plot results on bev images and save
     """
     image_size = 2000
     image_scale = 10
@@ -123,14 +123,14 @@ def save_bev_img(
 
 
 def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3) -> np.array:
-    """ Perform B-Spline smoothing of trajectories for temporal noise reduction
-    
+    """Perform B-Spline smoothing of trajectories for temporal noise reduction
+
     Args:
         x: N-length np array
         y: N-length np array
         s: smoothing condition
         k: degree of the spline fit
-        
+
     Returns:
         smoothed trajectory
     """
@@ -144,11 +144,11 @@ def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3) -> np.arra
 
 
 def derivative(x: np.array) -> np.array:
-    """ Compute time derivatives for velocity and acceleration
-    
+    """Compute time derivatives for velocity and acceleration
+
     Args:
         x: N-length Numpy array, with indices at consecutive timestamps
-    
+
     Returns:
         dx/dt: N-length Numpy array, with derivative of x w.r.t. timestep
     """
@@ -162,10 +162,10 @@ def derivative(x: np.array) -> np.array:
 def compute_v_a(traj: np.array) -> Tuple[np.array, np.array]:
     """
     Compute velocity and acceleration
-    
+
     Args:
         traj: Numpy array of shape Nx3 representing 3-d trajectory
-    
+
     Returns:
         velocity: Numpy array representing (d traj)/dt
         acceleration: Numpy array representing (d velocity)/dt

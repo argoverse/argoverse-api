@@ -4,22 +4,27 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from argoverse.utils.interpolate import compute_lane_width, compute_mid_pivot_arc, compute_midpoint_line, interp_arc
+from argoverse.utils.interpolate import (
+    compute_lane_width,
+    compute_mid_pivot_arc,
+    compute_midpoint_line,
+    interp_arc,
+)
 
 
 def test_compute_lane_width_straight() -> None:
     """
-        Compute the lane width of the following straight lane segment
-        (waypoints indicated with "o" symbol):
+    Compute the lane width of the following straight lane segment
+    (waypoints indicated with "o" symbol):
 
-                o   o
-                |   |
-                o   o
-                |   |
-                o   o
+            o   o
+            |   |
+            o   o
+            |   |
+            o   o
 
-        We can swap boundaries for this lane, and the width should be identical.
-        """
+    We can swap boundaries for this lane, and the width should be identical.
+    """
     left_even_pts = np.array([[1, 1], [1, 0], [1, -1]])
     right_even_pts = np.array([[-1, 1], [-1, 0], [-1, -1]])
     lane_width = compute_lane_width(left_even_pts, right_even_pts)
@@ -33,19 +38,19 @@ def test_compute_lane_width_straight() -> None:
 
 def test_compute_lane_width_telescoping() -> None:
     """
-        Compute the lane width of the following straight lane segment
-        (waypoints indicated with "o" symbol):
+    Compute the lane width of the following straight lane segment
+    (waypoints indicated with "o" symbol):
 
-           o          o
-           \\        //
-                o        o
-                \\     //
-                 o     o
-                  \\ //
-                    o
+       o          o
+       \\        //
+            o        o
+            \\     //
+             o     o
+              \\ //
+                o
 
-        We can swap boundaries for this lane, and the width should be identical.
-        """
+    We can swap boundaries for this lane, and the width should be identical.
+    """
     left_even_pts = np.array([[3, 2], [2, 1], [1, 0], [0, -1]])
     right_even_pts = np.array([[-3, 2], [-2, 1], [-1, 0], [0, -1]])
     lane_width = compute_lane_width(left_even_pts, right_even_pts)
@@ -282,7 +287,7 @@ def test_compute_midpoint_line_curved_maintain_4_waypts() -> None:
     Make sure that if we provide left and right boundary polylines,
     we can get the correct centerline by averaging left and right waypoints.
 
-    Note that because of the curve and the arc interpolation, the land width and centerline in the middle points 
+    Note that because of the curve and the arc interpolation, the land width and centerline in the middle points
     will be shifted.
     """
     right_ln_bnds = np.array([[-1, 3], [1, 3], [4, 0], [4, -2]])

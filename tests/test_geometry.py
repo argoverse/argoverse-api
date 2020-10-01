@@ -2,7 +2,11 @@
 
 import numpy as np
 
-from argoverse.utils.geometry import filter_point_cloud_to_polygon, point_inside_polygon, rotate_polygon_about_pt
+from argoverse.utils.geometry import (
+    filter_point_cloud_to_polygon,
+    point_inside_polygon,
+    rotate_polygon_about_pt,
+)
 
 """
 Unit tests for argoverse/utils/geometry.py
@@ -11,8 +15,8 @@ Unit tests for argoverse/utils/geometry.py
 
 def test_rotate_polygon_about_pt_2d_triangle_0deg_origin() -> None:
     """
-        Rotate a triangle 0 degrees counterclockwise, about the origin
-        """
+    Rotate a triangle 0 degrees counterclockwise, about the origin
+    """
     polygon_pts = np.array([[0, 0], [4, 0], [4, 4]])
     theta = 0  # radians, which is 0 degrees
     c = np.cos(theta)
@@ -25,8 +29,8 @@ def test_rotate_polygon_about_pt_2d_triangle_0deg_origin() -> None:
 
 def test_rotate_polygon_about_pt_2d_triangle_90deg_origin() -> None:
     """
-        Rotate a triangle 90 degrees counterclockwise, about the origin
-        """
+    Rotate a triangle 90 degrees counterclockwise, about the origin
+    """
     polygon_pts = np.array([[0, 0], [4, 0], [4, 4]])
     theta = np.pi / 2  # radians, which is 90 degrees
     c = np.cos(theta)
@@ -41,9 +45,9 @@ def test_rotate_polygon_about_pt_2d_triangle_90deg_origin() -> None:
 
 def test_rotate_polygon_about_pt_2d_triangle_0deg_nonorigin() -> None:
     """
-        Rotate a triangle 0 degrees counterclockwise, but this time
-        not rotating about the origin.
-        """
+    Rotate a triangle 0 degrees counterclockwise, but this time
+    not rotating about the origin.
+    """
     polygon_pts = np.array([[0, 0], [4, 0], [4, 4]])
     theta = 0  # radians, which is 0 degrees
     c = np.cos(theta)
@@ -56,9 +60,9 @@ def test_rotate_polygon_about_pt_2d_triangle_0deg_nonorigin() -> None:
 
 def test_rotate_polygon_about_pt_2d_triangle_90deg_nonorigin() -> None:
     """
-        Rotate a triangle 90 degrees counterclockwise, but this time
-        not rotating about the origin. Instead we rotate about (2,2).
-        """
+    Rotate a triangle 90 degrees counterclockwise, but this time
+    not rotating about the origin. Instead we rotate about (2,2).
+    """
     polygon_pts = np.array([[0, 0], [4, 0], [4, 4]])
     theta = np.pi / 2  # radians, which is 90 degrees
     c = np.cos(theta)

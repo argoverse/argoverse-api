@@ -18,8 +18,8 @@ D_MAX = 100
 
 def test_in_distance_range() -> None:
     """
-        test for in_distance_range_pose()
-        """
+    test for in_distance_range_pose()
+    """
 
     assert eval_tracking.in_distance_range_pose(np.array([0, 0]), np.array([1, 1]), 0, 2)
     assert not eval_tracking.in_distance_range_pose(np.array([0, 0]), np.array([1, 1]), 0, 0.5)
@@ -30,30 +30,30 @@ def test_in_distance_range() -> None:
 
 def test_get_pc_inside_box() -> None:
     """
-        test get_pc_inside_box(pc_raw,bbox) *bbox format is [p0,p1,p2,h]
+    test get_pc_inside_box(pc_raw,bbox) *bbox format is [p0,p1,p2,h]
 
-                    - -------- -
-                   /|         /|
-                  - -------- - . h
-                  | |        | |
-                  . p2 --------
-                  |/         |/
-                 p0 -------- p1
+                - -------- -
+               /|         /|
+              - -------- - . h
+              | |        | |
+              . p2 --------
+              |/         |/
+             p0 -------- p1
 
 
-        :test lidar data:
-        x    y    z  intensity  laser_number
-        0  0.0  0.0  5.0        4.0          31.0
-        1  1.0  0.0  5.0        1.0          14.0
-        2  2.0  0.0  5.0        0.0          16.0
-        3  3.0  0.0  5.0       20.0          30.0
-        4  4.0  0.0  5.0        3.0          29.0
-        5  5.0  0.0  5.0        1.0          11.0
-        6  6.0  0.0  5.0       31.0          13.0
-        7  7.0  0.0  5.0        2.0          28.0
-        8  8.0  0.0  5.0        5.0          27.0
-        9  9.0  0.0  5.0        6.0          10.0
-        """
+    :test lidar data:
+    x    y    z  intensity  laser_number
+    0  0.0  0.0  5.0        4.0          31.0
+    1  1.0  0.0  5.0        1.0          14.0
+    2  2.0  0.0  5.0        0.0          16.0
+    3  3.0  0.0  5.0       20.0          30.0
+    4  4.0  0.0  5.0        3.0          29.0
+    5  5.0  0.0  5.0        1.0          11.0
+    6  6.0  0.0  5.0       31.0          13.0
+    7  7.0  0.0  5.0        2.0          28.0
+    8  8.0  0.0  5.0        5.0          27.0
+    9  9.0  0.0  5.0        6.0          10.0
+    """
     bbox = np.array([np.array([[0], [0], [0]]), np.array([[2], [0], [0]]), np.array([[0], [5], [0]]), np.array(10)])
 
     pc = ply_loader.load_ply(str(TEST_DATA_LOC / "1/lidar/PC_0.ply"))

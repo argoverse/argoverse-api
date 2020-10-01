@@ -16,14 +16,14 @@ logger = logging.getLogger(__name__)
 
 
 def get_timestamps_from_sensor_folder(sensor_folder_wildcard: str) -> np.ndarray:
-    """ Timestamp always lies at end of filename
+    """Timestamp always lies at end of filename
 
-        Args:
-            sensor_folder_wildcard: string to glob to find all filepaths for a particular
-                        sensor files within a single log run
+    Args:
+        sensor_folder_wildcard: string to glob to find all filepaths for a particular
+                    sensor files within a single log run
 
-        Returns:
-            Numpy array of integers, representing timestamps
+    Returns:
+        Numpy array of integers, representing timestamps
     """
 
     path_generator = glob.glob(sensor_folder_wildcard)
@@ -34,22 +34,22 @@ def get_timestamps_from_sensor_folder(sensor_folder_wildcard: str) -> np.ndarray
 
 def find_closest_integer_in_ref_arr(query_int: int, ref_arr: np.ndarray) -> Tuple[int, int]:
     """
-        Find the closest integer to any integer inside a reference array, and the corresponding
-        difference.
+    Find the closest integer to any integer inside a reference array, and the corresponding
+    difference.
 
-        In our use case, the query integer represents a nanosecond-discretized timestamp, and the
-        reference array represents a numpy array of nanosecond-discretized timestamps.
+    In our use case, the query integer represents a nanosecond-discretized timestamp, and the
+    reference array represents a numpy array of nanosecond-discretized timestamps.
 
-        Instead of sorting the whole array of timestamp differences, we just
-        take the minimum value (to speed up this function).
+    Instead of sorting the whole array of timestamp differences, we just
+    take the minimum value (to speed up this function).
 
-        Args:
-            query_int: query integer,
-            ref_arr: Numpy array of integers
+    Args:
+        query_int: query integer,
+        ref_arr: Numpy array of integers
 
-        Returns:
-            integer, representing the closest integer found in a reference array to a query
-            integer, representing the integer difference between the match and query integers
+    Returns:
+        integer, representing the closest integer found in a reference array to a query
+        integer, representing the integer difference between the match and query integers
     """
     closest_ind = np.argmin(np.absolute(ref_arr - query_int))
     closest_int = cast(int, ref_arr[closest_ind])  # mypy does not understand numpy arrays
@@ -76,15 +76,15 @@ class SynchronizationDB:
     MAX_LIDAR_ANYCAM_TIMESTAMP_DIFF = 102 * (1.0 / 2) * (1.0 / 1000) * 1e9
 
     def __init__(self, dataset_dir: str, collect_single_log_id: Optional[str] = None) -> None:
-        """ Build the SynchronizationDB.
-            Note that the timestamps for each camera channel are not identical, but they are clustered together.
+        """Build the SynchronizationDB.
+        Note that the timestamps for each camera channel are not identical, but they are clustered together.
 
-            Args:
-                dataset_dir: path to dataset.
-                collect_single_log_id: log id to process. (All if not set)
+        Args:
+            dataset_dir: path to dataset.
+            collect_single_log_id: log id to process. (All if not set)
 
-            Returns:
-                None
+        Returns:
+            None
         """
         logger.info("Building SynchronizationDB")
 
@@ -112,20 +112,19 @@ class SynchronizationDB:
             self.per_log_lidartimestamps_index[log_id] = lidar_timestamps
 
     def get_valid_logs(self) -> Iterable[str]:
-        """ Return the log_ids for which the SynchronizationDatabase contains pose information.
-        """
+        """Return the log_ids for which the SynchronizationDatabase contains pose information."""
         return self.per_log_camtimestamps_index.keys()
 
     def get_closest_lidar_timestamp(self, cam_timestamp: int, log_id: str) -> Optional[int]:
-        """ Given an image timestamp, find the synchronized corresponding LiDAR timestamp.
-            This LiDAR timestamp should have the closest absolute timestamp to the image timestamp.
+        """Given an image timestamp, find the synchronized corresponding LiDAR timestamp.
+        This LiDAR timestamp should have the closest absolute timestamp to the image timestamp.
 
-            Args:
-                cam_timestamp: integer
-                log_id: string
+        Args:
+            cam_timestamp: integer
+            log_id: string
 
-            Returns:
-                closest_lidar_timestamp: closest timestamp
+        Returns:
+            closest_lidar_timestamp: closest timestamp
         """
         if log_id not in self.per_log_lidartimestamps_index:
             return None
@@ -147,16 +146,16 @@ class SynchronizationDB:
         return closest_lidar_timestamp
 
     def get_closest_cam_channel_timestamp(self, lidar_timestamp: int, camera_name: str, log_id: str) -> Optional[int]:
-        """ Given a LiDAR timestamp, find the synchronized corresponding image timestamp for a particular camera.
-            This image timestamp should have the closest absolute timestamp.
+        """Given a LiDAR timestamp, find the synchronized corresponding image timestamp for a particular camera.
+        This image timestamp should have the closest absolute timestamp.
 
-            Args:
-                lidar_timestamp: integer
-                camera_name: string, representing path to log directories
-                log_id: string
+        Args:
+            lidar_timestamp: integer
+            camera_name: string, representing path to log directories
+            log_id: string
 
-            Returns:
-                closest_cam_ch_timestamp: closest timestamp
+        Returns:
+            closest_cam_ch_timestamp: closest timestamp
         """
         if (
             log_id not in self.per_log_camtimestamps_index

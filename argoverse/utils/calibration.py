@@ -155,7 +155,7 @@ class Calibration:
         return np.linalg.inv((self.extrinsic)).dot(self.cart2hom(pts_3d_rect).transpose()).transpose()[:, 0:3]
 
     def project_image_to_ego(self, uv_depth: np.array) -> np.ndarray:
-        """ Project 2D image with depth to egovehicle coordinate.
+        """Project 2D image with depth to egovehicle coordinate.
 
         Args:
             uv_depth: nx3 first two channels are uv, 3rd channel
@@ -168,7 +168,7 @@ class Calibration:
         return self.project_cam_to_ego(uv_cam)
 
     def project_image_to_cam(self, uv_depth: np.array) -> np.ndarray:
-        """ Project 2D image with depth to camera coordinate.
+        """Project 2D image with depth to camera coordinate.
 
         Args:
             uv_depth: nx3 first two channels are uv, 3rd channel
@@ -217,7 +217,7 @@ def load_image(img_filename: Union[str, Path]) -> np.ndarray:
 
 
 def load_calib(calib_filepath: Union[str, Path]) -> Dict[Any, Calibration]:
-    """ Load Calibration object for all camera from calibration filepath
+    """Load Calibration object for all camera from calibration filepath
 
     Args:
         calib_filepath (str): path to the calibration file
