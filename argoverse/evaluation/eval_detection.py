@@ -30,9 +30,9 @@ Evaluation:
             is computed as the product of mAP with the sum of the complements of the true positive
             errors (after normalization), i.e.,
 
-            Average Translation Measure (ATM): ATE / TP_THRESHOLD; 0 <= 1 - ATE / TP_THRESHOLD <= 1
-            Average Scaling Measure (ASM): 1 - ASE / 1;  0 <= 1 - ASE / 1 <= 1
-            Average Orientation Measure (AOM): 1 - AOE / PI; 0 <= 1 - AOE / PI <= 1
+            - Average Translation Measure (ATM): ATE / TP_THRESHOLD; 0 <= 1 - ATE / TP_THRESHOLD <= 1
+            - Average Scaling Measure (ASM): 1 - ASE / 1;  0 <= 1 - ASE / 1 <= 1
+            - Average Orientation Measure (AOM): 1 - AOE / PI; 0 <= 1 - AOE / PI <= 1
 
             These (as well as AP) are averaged over each detection class to produce:
 
