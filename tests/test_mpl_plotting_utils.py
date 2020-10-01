@@ -15,7 +15,7 @@ from argoverse.utils.mpl_plotting_utils import (
 )
 
 
-def test_draw_polygon_mpl_smokescreen_nolinewidth():
+def test_draw_polygon_mpl_smokescreen_nolinewidth() -> None:
     """
         """
     ax = plt.axes([1, 1, 1, 1])
@@ -27,7 +27,7 @@ def test_draw_polygon_mpl_smokescreen_nolinewidth():
     plt.close("all")
 
 
-def test_draw_polygon_mpl_smokescreen_with_linewidth():
+def test_draw_polygon_mpl_smokescreen_with_linewidth() -> None:
     """
         """
     ax = plt.axes([1, 1, 1, 1])
@@ -40,7 +40,7 @@ def test_draw_polygon_mpl_smokescreen_with_linewidth():
     plt.close("all")
 
 
-def test_plot_lane_segment_patch_smokescreen():
+def test_plot_lane_segment_patch_smokescreen() -> None:
     """
         """
     ax = plt.axes([1, 1, 1, 1])
@@ -51,7 +51,7 @@ def test_plot_lane_segment_patch_smokescreen():
     plt.close("all")
 
 
-def test_plot_nearby_centerlines_smokescreen():
+def test_plot_nearby_centerlines_smokescreen() -> None:
     """
         """
     ax = plt.axes([1, 1, 1, 1])
@@ -72,7 +72,7 @@ def test_plot_nearby_centerlines_smokescreen():
     plt.close("all")
 
 
-def test_animate_polyline_smokescreen():
+def test_animate_polyline_smokescreen() -> None:
     """
         
         """
