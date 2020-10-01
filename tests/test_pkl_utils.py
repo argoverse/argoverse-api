@@ -36,7 +36,12 @@ def test_save_pickle_from_disk() -> None:
     {'a': 1, 'b':'2', 'c':[9,8,7,6,5,'d','c','b','a'], 'd': np.array([True,False,True]) }
     """
     pkl_fpath = _TEST_DIR / "test_data/pkl_test_file.pkl"
-    intended_dict = {"a": 1, "b": "2", "c": [9, 8, 7, 6, 5, "d", "c", "b", "a"], "d": np.array([True, False, True])}
+    intended_dict = {
+        "a": 1,
+        "b": "2",
+        "c": [9, 8, 7, 6, 5, "d", "c", "b", "a"],
+        "d": np.array([True, False, True]),
+    }
     save_pkl_dictionary(pkl_fpath, intended_dict)
 
     with open(pkl_fpath, "rb") as f:
@@ -52,7 +57,12 @@ def test_load_pickle_from_disk() -> None:
 
     We demonstrate that we can load Numpy arrays and lists from Pickle files.
     """
-    gt_dict = {"a": 1, "b": "2", "c": [9, 8, 7, 6, 5, "d", "c", "b", "a"], "d": np.array([True, False, True])}
+    gt_dict = {
+        "a": 1,
+        "b": "2",
+        "c": [9, 8, 7, 6, 5, "d", "c", "b", "a"],
+        "d": np.array([True, False, True]),
+    }
     pkl_fpath = _TEST_DIR / "test_data/pkl_test_file.pkl"
     loaded_pkl_dict = load_pkl_dictionary(pkl_fpath)
     dictionaries_are_equal(gt_dict, loaded_pkl_dict)

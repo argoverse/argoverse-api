@@ -69,7 +69,12 @@ def save_bev_img(
 
     for bbox, difficulty_att in zip(list_bboxes, list_difficulty_att):
 
-        qw, qx, qy, qz = bbox["rotation"]["w"], bbox["rotation"]["x"], bbox["rotation"]["y"], bbox["rotation"]["z"]
+        qw, qx, qy, qz = (
+            bbox["rotation"]["w"],
+            bbox["rotation"]["x"],
+            bbox["rotation"]["y"],
+            bbox["rotation"]["z"],
+        )
         theta_local = np.arctan2(2 * (qw * qz + qx * qy), 1 - 2 * (qy * qy + qz * qz))
         pose_local = np.array([bbox["center"]["x"], bbox["center"]["y"], bbox["center"]["z"]])
 
@@ -83,9 +88,20 @@ def save_bev_img(
         color = (color_0, color_1, color_2)
 
         w, l, h = bbox["width"], bbox["length"], bbox["height"]
-        bbox_2d = np.array([[-l / 2, -w / 2, 0], [l / 2, -w / 2, 0], [-l / 2, w / 2, 0], [l / 2, w / 2, 0]])
+        bbox_2d = np.array(
+            [
+                [-l / 2, -w / 2, 0],
+                [l / 2, -w / 2, 0],
+                [-l / 2, w / 2, 0],
+                [l / 2, w / 2, 0],
+            ]
+        )
         R = np.array(
-            [[np.cos(theta_local), -np.sin(theta_local), 0], [np.sin(theta_local), np.cos(theta_local), 0], [0, 0, 1]]
+            [
+                [np.cos(theta_local), -np.sin(theta_local), 0],
+                [np.sin(theta_local), np.cos(theta_local), 0],
+                [0, 0, 1],
+            ]
         )
         bbox_2d = np.matmul(R, bbox_2d.transpose()).transpose() + pose_local[0:3]
         edge_2d = np.array([[0, 1], [0, 2], [2, 3], [1, 3]])
@@ -115,11 +131,22 @@ def save_bev_img(
 
     offset = 0
     for key in dict_color.keys():
-        cv2.putText(img, key, (100 + offset, image_size - 50), font, fontScale, dict_color[key], lineType)
+        cv2.putText(
+            img,
+            key,
+            (100 + offset, image_size - 50),
+            font,
+            fontScale,
+            dict_color[key],
+            lineType,
+        )
         offset += 150
 
     print("Saving img: ", path_imgs)
-    cv2.imwrite(os.path.join(path_imgs, "%s_%s_%d.jpg" % (dataset_name, log_id, lidar_timestamp)), img * 255)
+    cv2.imwrite(
+        os.path.join(path_imgs, "%s_%s_%d.jpg" % (dataset_name, log_id, lidar_timestamp)),
+        img * 255,
+    )
 
 
 def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3) -> np.array:
@@ -153,7 +180,13 @@ def derivative(x: np.array) -> np.array:
         dx/dt: N-length Numpy array, with derivative of x w.r.t. timestep
     """
     x_tensor = torch.Tensor(x).unsqueeze(0).unsqueeze(0)
-    x_padded = torch.cat((x_tensor, (x_tensor[:, :, -1] - x_tensor[:, :, -2] + x_tensor[:, :, -1]).unsqueeze(0)), dim=2)
+    x_padded = torch.cat(
+        (
+            x_tensor,
+            (x_tensor[:, :, -1] - x_tensor[:, :, -2] + x_tensor[:, :, -1]).unsqueeze(0),
+        ),
+        dim=2,
+    )
     filters = torch.Tensor([-1, 1]).unsqueeze(0).unsqueeze(0)
 
     return F.conv1d(x_padded, filters)[0, 0].numpy()
@@ -305,9 +338,10 @@ def make_att_files(root_dir: str) -> None:
                 ), "zero-length track"
                 dict_tracks[id_track]["length_track"] = length_track
 
-                dict_tracks[id_track]["list_vel"], dict_tracks[id_track]["list_acc"] = compute_v_a(
-                    dict_tracks[id_track]["list_center_w"]
-                )
+                (
+                    dict_tracks[id_track]["list_vel"],
+                    dict_tracks[id_track]["list_acc"],
+                ) = compute_v_a(dict_tracks[id_track]["list_center_w"])
                 dict_tracks[id_track]["num_missing"] = (
                     dict_tracks[id_track]["length_track"] - dict_tracks[id_track]["exists"].sum()
                 )

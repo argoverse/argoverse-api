@@ -132,10 +132,16 @@ def accumulate(
     cls_to_ninst = defaultdict(int)
     for class_name in cfg.dt_classes:
         dt_filtered = filter_instances(
-            dts, class_name, filter_metric=cfg.dt_metric, max_detection_range=cfg.max_dt_range
+            dts,
+            class_name,
+            filter_metric=cfg.dt_metric,
+            max_detection_range=cfg.max_dt_range,
         )
         gt_filtered = filter_instances(
-            gts, class_name, filter_metric=cfg.dt_metric, max_detection_range=cfg.max_dt_range
+            gts,
+            class_name,
+            filter_metric=cfg.dt_metric,
+            max_detection_range=cfg.max_dt_range,
         )
 
         logger.info(f"{dt_filtered.shape[0]} detections")
@@ -217,7 +223,10 @@ def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
 
 
 def filter_instances(
-    instances: List[ObjectLabelRecord], target_class_name: str, filter_metric: FilterMetric, max_detection_range: float
+    instances: List[ObjectLabelRecord],
+    target_class_name: str,
+    filter_metric: FilterMetric,
+    max_detection_range: float,
 ) -> np.ndarray:
     """Filter the GT annotations based on a set of conditions (class name and distance from egovehicle).
 

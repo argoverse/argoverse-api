@@ -67,5 +67,8 @@ class SE3:
             chained_se3: instance of SE3 class
         """
         chained_transform_matrix = self.transform_matrix.dot(right_se3.transform_matrix)
-        chained_se3 = SE3(rotation=chained_transform_matrix[:3, :3], translation=chained_transform_matrix[:3, 3])
+        chained_se3 = SE3(
+            rotation=chained_transform_matrix[:3, :3],
+            translation=chained_transform_matrix[:3, 3],
+        )
         return chained_se3

@@ -38,7 +38,13 @@ def get_sample_graph() -> Mapping[str, Sequence[str]]:
     Returns:
         graph: Python dictionary representing an adjacency list
     """
-    graph = {"1": ["2", "3", "4"], "2": ["5", "6"], "5": ["9", "10"], "4": ["7", "8"], "7": ["11", "12"]}
+    graph = {
+        "1": ["2", "3", "4"],
+        "2": ["5", "6"],
+        "5": ["9", "10"],
+        "4": ["7", "8"],
+        "7": ["11", "12"],
+    }
     return graph
 
 
@@ -61,6 +67,12 @@ def test_bfs_enumerate_paths_depth3() -> None:
 def test_bfs_enumerate_paths_depth2() -> None:
     """Graph is in adjacent list representation."""
     graph = get_sample_graph()
-    paths_ref_depth2 = [["1", "3"], ["1", "2", "6"], ["1", "4", "8"], ["1", "2", "5"], ["1", "4", "7"]]
+    paths_ref_depth2 = [
+        ["1", "3"],
+        ["1", "2", "6"],
+        ["1", "4", "8"],
+        ["1", "2", "5"],
+        ["1", "4", "7"],
+    ]
     paths = bfs_enumerate_paths(graph, "1", max_depth=2)
     assert compare_paths(paths_ref_depth2, paths)

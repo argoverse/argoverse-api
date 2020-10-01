@@ -16,10 +16,7 @@ from argoverse.data_loading.frame_record import FrameRecord
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
 from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
 from argoverse.data_loading.synchronization_database import SynchronizationDB
-from argoverse.data_loading.trajectory_loader import (
-    TrajectoryLabel,
-    load_json_track_labels,
-)
+from argoverse.data_loading.trajectory_loader import TrajectoryLabel, load_json_track_labels
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.pkl_utils import load_pkl_dictionary, save_pkl_dictionary
 from argoverse.utils.se3 import SE3
@@ -44,7 +41,12 @@ class PerFrameLabelAccumulator:
     """
 
     def __init__(
-        self, dataset_dir: str, labels_dir: str, experiment_prefix: str, bboxes_3d: bool = False, save: bool = True
+        self,
+        dataset_dir: str,
+        labels_dir: str,
+        experiment_prefix: str,
+        bboxes_3d: bool = False,
+        save: bool = True,
     ) -> None:
         """Initialize PerFrameLabelAccumulator object for use with tracking benchmark data.
 
@@ -165,7 +167,11 @@ class PerFrameLabelAccumulator:
 
         # store NUM_CUBOID_VERTS (x,y,z) coords per cuboid
         traj_city_fr = np.zeros((seq_len, NUM_CUBOID_VERTS, 3))
-        rand_color = (float(np.random.rand()), float(np.random.rand()), float(np.random.rand()))
+        rand_color = (
+            float(np.random.rand()),
+            float(np.random.rand()),
+            float(np.random.rand()),
+        )
         logger.info(f"On log {log_id} with {traj_label.track_uuid}")
         for t in range(seq_len):
 
@@ -210,7 +216,11 @@ class PerFrameLabelAccumulator:
         return traj_city_fr
 
     def convert_bbox_to_city_frame(
-        self, lidar_timestamp_ns: int, dataset_dir: str, log_id: str, bbox_ego_frame: np.ndarray
+        self,
+        lidar_timestamp_ns: int,
+        dataset_dir: str,
+        log_id: str,
+        bbox_ego_frame: np.ndarray,
     ) -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
         """Convert bounding box to city frame.
         Args:

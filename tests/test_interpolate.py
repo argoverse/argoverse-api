@@ -4,12 +4,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from argoverse.utils.interpolate import (
-    compute_lane_width,
-    compute_mid_pivot_arc,
-    compute_midpoint_line,
-    interp_arc,
-)
+from argoverse.utils.interpolate import compute_lane_width, compute_mid_pivot_arc, compute_midpoint_line, interp_arc
 
 
 def test_compute_lane_width_straight() -> None:

@@ -231,7 +231,10 @@ def load_calib(calib_filepath: Union[str, Path]) -> Dict[Any, Calibration]:
     calib_list = {}
     for camera in CAMERA_LIST:
         cam_config = get_calibration_config(calib, camera)
-        calib_cam = next((c for c in calib["camera_data_"] if c["key"] == f"image_raw_{camera}"), None)
+        calib_cam = next(
+            (c for c in calib["camera_data_"] if c["key"] == f"image_raw_{camera}"),
+            None,
+        )
 
         if calib_cam is None:
             continue
@@ -520,7 +523,10 @@ def distort_single(radius_undist: float, distort_coeffs: List[float]) -> float:
 
 
 def project_lidar_to_undistorted_img(
-    lidar_points_h: np.ndarray, calib_data: Dict[str, Any], camera_name: str, remove_nan: bool = False
+    lidar_points_h: np.ndarray,
+    calib_data: Dict[str, Any],
+    camera_name: str,
+    remove_nan: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, CameraConfig]:
     camera_config = get_calibration_config(calib_data, camera_name)
 
@@ -543,7 +549,12 @@ def project_lidar_to_undistorted_img(
 # uv_cam: Numpy array of shape (N,3) with dtype np.float32
 # valid_pts_bool: Numpy array of shape (N,) with dtype bool
 # camera configuration : (only if you asked for it).
-_ReturnWithOptConfig = Tuple[Optional[np.ndarray], Optional[np.ndarray], Optional[np.ndarray], Optional[CameraConfig]]
+_ReturnWithOptConfig = Tuple[
+    Optional[np.ndarray],
+    Optional[np.ndarray],
+    Optional[np.ndarray],
+    Optional[CameraConfig],
+]
 _ReturnWithoutOptConfig = Tuple[Optional[np.ndarray], Optional[np.ndarray], Optional[np.ndarray]]
 
 

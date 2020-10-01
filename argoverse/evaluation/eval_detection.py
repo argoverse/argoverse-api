@@ -181,7 +181,10 @@ class DetectionEvaluator(NamedTuple):
                 tp_metrics = self.cfg.tp_normalization_terms
             else:
                 # Calculate TP metrics.
-                tp_metrics = np.mean(cls_stats[:, num_ths : num_ths + N_TP_ERRORS][tp_metrics_mask], axis=0)
+                tp_metrics = np.mean(
+                    cls_stats[:, num_ths : num_ths + N_TP_ERRORS][tp_metrics_mask],
+                    axis=0,
+                )
 
             # Convert errors to scores.
             tp_scores = 1 - (tp_metrics / self.cfg.tp_normalization_terms)
@@ -199,7 +202,13 @@ class DetectionEvaluator(NamedTuple):
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("-d", "--dt_fpath", type=str, help="Detection root folder path.", required=True)
-    parser.add_argument("-g", "--gt_fpath", type=str, help="Ground truth root folder path.", required=True)
+    parser.add_argument(
+        "-g",
+        "--gt_fpath",
+        type=str,
+        help="Ground truth root folder path.",
+        required=True,
+    )
     parser.add_argument("-f", "--fig_fpath", type=str, help="Figures root folder path.", default="figs")
     args = parser.parse_args()
     logger.info(f"args == {args}")

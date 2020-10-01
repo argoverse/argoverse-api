@@ -25,10 +25,7 @@ from argoverse.utils.manhattan_search import (
     find_all_polygon_bboxes_overlapping_query_bbox,
     find_local_polygons,
 )
-from argoverse.utils.mpl_plotting_utils import (
-    plot_lane_segment_patch,
-    visualize_centerline,
-)
+from argoverse.utils.mpl_plotting_utils import plot_lane_segment_patch, visualize_centerline
 from argoverse.utils.pkl_utils import load_pkl_dictionary
 from argoverse.utils.se2 import SE2
 
@@ -64,7 +61,10 @@ class ArgoverseMap:
         self.im_scale_factor = 50
 
         self.city_lane_centerlines_dict = self.build_centerline_index()
-        self.city_halluc_bbox_table, self.city_halluc_tableidx_to_laneid_map = self.build_hallucinated_lane_bbox_index()
+        (
+            self.city_halluc_bbox_table,
+            self.city_halluc_tableidx_to_laneid_map,
+        ) = self.build_hallucinated_lane_bbox_index()
         self.city_rasterized_da_roi_dict = self.build_city_driveable_area_roi_index()
         self.city_rasterized_ground_height_dict = self.build_city_ground_height_index()
 
@@ -164,7 +164,9 @@ class ArgoverseMap:
 
         return city_lane_centerlines_dict
 
-    def build_city_driveable_area_roi_index(self) -> Mapping[str, Mapping[str, np.ndarray]]:
+    def build_city_driveable_area_roi_index(
+        self,
+    ) -> Mapping[str, Mapping[str, np.ndarray]]:
         """
         Load driveable area files from disk. Dilate driveable area to get ROI (takes about 1/2 second).
 
@@ -225,7 +227,10 @@ class ArgoverseMap:
                     p_city = city_Transformation_pklimage * p_pklimage
         """
         da_mat = self.city_rasterized_da_roi_dict[city_name]["da_mat"]
-        return (da_mat, self.city_rasterized_da_roi_dict[city_name]["npyimage_to_city_se2"])
+        return (
+            da_mat,
+            self.city_rasterized_da_roi_dict[city_name]["npyimage_to_city_se2"],
+        )
 
     def get_rasterized_roi(self, city_name: str) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -240,9 +245,14 @@ class ArgoverseMap:
                     p_city = city_Transformation_pklimage * p_pklimage
         """
         roi_mat = self.city_rasterized_da_roi_dict[city_name]["roi_mat"]
-        return (roi_mat, self.city_rasterized_da_roi_dict[city_name]["npyimage_to_city_se2"])
+        return (
+            roi_mat,
+            self.city_rasterized_da_roi_dict[city_name]["npyimage_to_city_se2"],
+        )
 
-    def build_hallucinated_lane_bbox_index(self) -> Tuple[Mapping[str, Any], Mapping[str, Any]]:
+    def build_hallucinated_lane_bbox_index(
+        self,
+    ) -> Tuple[Mapping[str, Any], Mapping[str, Any]]:
         """
         Populate the pre-computed hallucinated extent of each lane polygon, to allow for fast
         queries.
@@ -288,7 +298,10 @@ class ArgoverseMap:
                     p_city = city_Transformation_pklimage * p_pklimage
         """
         ground_height_mat = self.city_rasterized_ground_height_dict[city_name]["ground_height"]
-        return (ground_height_mat, self.city_rasterized_ground_height_dict[city_name]["npyimage_to_city_se2"])
+        return (
+            ground_height_mat,
+            self.city_rasterized_ground_height_dict[city_name]["npyimage_to_city_se2"],
+        )
 
     def remove_ground_surface(
         self, point_cloud: np.ndarray, city_name: str, return_logicals: bool = False
@@ -424,7 +437,10 @@ class ArgoverseMap:
         if layer_name == "roi":
             layer_raster_mat, npyimage_to_city_se2_mat = self.get_rasterized_roi(city_name)
         elif layer_name == "driveable_area":
-            layer_raster_mat, npyimage_to_city_se2_mat = self.get_rasterized_driveable_area(city_name)
+            (
+                layer_raster_mat,
+                npyimage_to_city_se2_mat,
+            ) = self.get_rasterized_driveable_area(city_name)
         else:
             raise ValueError("layer_name should be wither roi or driveable_area.")
 
@@ -567,10 +583,24 @@ class ArgoverseMap:
         lane_dir_vector = next_waypoint - prev_waypoint
         if visualize:
             plt.plot(centerline[:, 0], centerline[:, 1], color="y")
-            plt.scatter(query_xy_city_coords[0], query_xy_city_coords[1], 200, marker=".", color="b")
+            plt.scatter(
+                query_xy_city_coords[0],
+                query_xy_city_coords[1],
+                200,
+                marker=".",
+                color="b",
+            )
             dx = lane_dir_vector[0] * 10
             dy = lane_dir_vector[1] * 10
-            plt.arrow(query_xy_city_coords[0], query_xy_city_coords[1], dx, dy, color="r", width=0.3, zorder=2)
+            plt.arrow(
+                query_xy_city_coords[0],
+                query_xy_city_coords[1],
+                dx,
+                dy,
+                color="r",
+                width=0.3,
+                zorder=2,
+            )
             centerline_length = centerline.shape[0]
             for i in range(centerline_length):
                 plt.scatter(centerline[i, 0], centerline[i, 1], i / 5.0, marker=".", color="k")
@@ -581,7 +611,11 @@ class ArgoverseMap:
         return lane_dir_vector, confidence
 
     def get_lane_ids_in_xy_bbox(
-        self, query_x: float, query_y: float, city_name: str, query_search_range_manhattan: float = 5.0
+        self,
+        query_x: float,
+        query_y: float,
+        city_name: str,
+        query_search_range_manhattan: float = 5.0,
     ) -> List[int]:
         """
         Prune away all lane segments based on Manhattan distance. We vectorize this instead
@@ -610,7 +644,8 @@ class ArgoverseMap:
         query_max_y = query_y + query_search_range_manhattan
 
         overlap_indxs = find_all_polygon_bboxes_overlapping_query_bbox(
-            self.city_halluc_bbox_table[city_name], np.array([query_min_x, query_min_y, query_max_x, query_max_y])
+            self.city_halluc_bbox_table[city_name],
+            np.array([query_min_x, query_min_y, query_max_x, query_max_y]),
         )
 
         if len(overlap_indxs) == 0:
@@ -791,7 +826,11 @@ class ArgoverseMap:
         return candidate_cl
 
     def get_candidate_centerlines_for_traj(
-        self, xy: np.ndarray, city_name: str, viz: bool = False, max_search_radius: float = 50.0
+        self,
+        xy: np.ndarray,
+        city_name: str,
+        viz: bool = False,
+        max_search_radius: float = 50.0,
     ) -> List[np.ndarray]:
         """Get centerline candidates upto a threshold. .
 
@@ -856,7 +895,15 @@ class ArgoverseMap:
             plt.figure(0, figsize=(8, 7))
             for centerline_coords in candidate_centerlines:
                 visualize_centerline(centerline_coords)
-            plt.plot(xy[:, 0], xy[:, 1], "-", color="#d33e4c", alpha=1, linewidth=1, zorder=15)
+            plt.plot(
+                xy[:, 0],
+                xy[:, 1],
+                "-",
+                color="#d33e4c",
+                alpha=1,
+                linewidth=1,
+                zorder=15,
+            )
 
             final_x = xy[-1, 0]
             final_y = xy[-1, 1]
@@ -906,7 +953,13 @@ class ArgoverseMap:
                 for child in child_lanes:
                     centerline = self.get_lane_segment_centerline(child, city_name)
                     cl_length = LineString(centerline).length
-                    curr_lane_ids = self.dfs(child, city_name, dist + cl_length, threshold, extend_along_predecessor)
+                    curr_lane_ids = self.dfs(
+                        child,
+                        city_name,
+                        dist + cl_length,
+                        threshold,
+                        extend_along_predecessor,
+                    )
                     traversed_lanes.extend(curr_lane_ids)
             if len(traversed_lanes) == 0:
                 return [[lane_id]]
@@ -926,9 +979,18 @@ class ArgoverseMap:
         """
         lane_segment_polygon = self.get_lane_segment_polygon(lane_segment_id, city_name)
         if legend:
-            plt.plot(lane_segment_polygon[:, 0], lane_segment_polygon[:, 1], color="dimgray", label=lane_segment_id)
+            plt.plot(
+                lane_segment_polygon[:, 0],
+                lane_segment_polygon[:, 1],
+                color="dimgray",
+                label=lane_segment_id,
+            )
         else:
-            plt.plot(lane_segment_polygon[:, 0], lane_segment_polygon[:, 1], color="lightgrey")
+            plt.plot(
+                lane_segment_polygon[:, 0],
+                lane_segment_polygon[:, 1],
+                color="lightgrey",
+            )
         plt.axis("equal")
 
     def get_lane_segments_containing_xy(self, query_x: float, query_y: float, city_name: str) -> List[int]:
@@ -954,14 +1016,24 @@ class ArgoverseMap:
             for lane_id in neighborhood_lane_ids:
                 lane_polygon = self.get_lane_segment_polygon(lane_id, city_name)
                 inside = point_inside_polygon(
-                    lane_polygon.shape[0], lane_polygon[:, 0], lane_polygon[:, 1], query_x, query_y
+                    lane_polygon.shape[0],
+                    lane_polygon[:, 0],
+                    lane_polygon[:, 1],
+                    query_x,
+                    query_y,
                 )
                 if inside:
                     occupied_lane_ids += [lane_id]
         return occupied_lane_ids
 
     def plot_nearby_halluc_lanes(
-        self, ax: plt.Axes, city_name: str, query_x: float, query_y: float, patch_color: str = "r", radius: float = 20
+        self,
+        ax: plt.Axes,
+        city_name: str,
+        query_x: float,
+        query_y: float,
+        patch_color: str = "r",
+        radius: float = 20,
     ) -> None:
         """
         Plot lane segment for nearby lanes of the specified x, y location
@@ -992,7 +1064,12 @@ class ArgoverseMap:
         lane_bboxes = self.city_to_lane_bboxes_dict[city_name]
         xmin, xmax, ymin, ymax = query_bbox
         local_lane_polygons, _ = find_local_polygons(
-            copy.deepcopy(lane_polygons), copy.deepcopy(lane_bboxes), xmin, xmax, ymin, ymax
+            copy.deepcopy(lane_polygons),
+            copy.deepcopy(lane_bboxes),
+            xmin,
+            xmax,
+            ymin,
+            ymax,
         )
         return local_lane_polygons
 
@@ -1012,12 +1089,21 @@ class ArgoverseMap:
         da_bboxes = self.city_to_da_bboxes_dict[city_name]
         xmin, xmax, ymin, ymax = query_bbox
         local_das, _ = find_local_polygons(
-            copy.deepcopy(driveable_areas), copy.deepcopy(da_bboxes), xmin, xmax, ymin, ymax
+            copy.deepcopy(driveable_areas),
+            copy.deepcopy(da_bboxes),
+            xmin,
+            xmax,
+            ymin,
+            ymax,
         )
         return local_das
 
     def find_local_lane_centerlines(
-        self, query_x: float, query_y: float, city_name: str, query_search_range_manhattan: float = 80.0
+        self,
+        query_x: float,
+        query_y: float,
+        city_name: str,
+        query_search_range_manhattan: float = 80.0,
     ) -> np.ndarray:
         """
         Find local lane centerline to the specified x,y location

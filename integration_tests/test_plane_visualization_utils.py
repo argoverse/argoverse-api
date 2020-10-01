@@ -32,7 +32,8 @@ if not MAYAVI_MISSING:
 
 
 skip_if_mayavi_missing = pytest.mark.skipif(
-    MAYAVI_MISSING, reason="Could not test functionality that depends on mayavi because mayavi is missing."
+    MAYAVI_MISSING,
+    reason="Could not test functionality that depends on mayavi because mayavi is missing.",
 )
 
 

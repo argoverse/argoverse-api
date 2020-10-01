@@ -111,7 +111,10 @@ class TrackedObjects:
 
 
 def dump_1obj_scenario_json(
-    centers: List[Tuple[int, int, int]], yaw_angles: List[float], log_id: str, is_gt: bool
+    centers: List[Tuple[int, int, int]],
+    yaw_angles: List[float],
+    log_id: str,
+    is_gt: bool,
 ) -> None:
     """
     Egovehicle stationary (represented by `o`).

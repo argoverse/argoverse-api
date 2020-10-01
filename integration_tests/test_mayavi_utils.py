@@ -149,7 +149,11 @@ def test_plot_bbox_3d_mayavi_drawtext() -> None:
 
     for cuboid_verts in [cuboid_1_verts, cuboid_2_verts]:
         fig = plot_bbox_3d_mayavi(
-            fig, cuboid_verts, line_width=linewidth, draw_text="box 0th vertex is here", text_scale=(0.1, 0.1, 0.1)
+            fig,
+            cuboid_verts,
+            line_width=linewidth,
+            draw_text="box 0th vertex is here",
+            text_scale=(0.1, 0.1, 0.1),
         )
     mayavi.mlab.close(fig)
 

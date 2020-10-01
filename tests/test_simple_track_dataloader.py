@@ -5,9 +5,7 @@ import pathlib
 
 import pytest
 
-from argoverse.data_loading.simple_track_dataloader import (
-    SimpleArgoverseTrackingDataLoader,
-)
+from argoverse.data_loading.simple_track_dataloader import SimpleArgoverseTrackingDataLoader
 
 _TEST_DATA = pathlib.Path(__file__).parent / "test_data" / "tracking"
 _LOG_ID = "1"
@@ -22,12 +20,16 @@ def test_get_city_name(data_loader: SimpleArgoverseTrackingDataLoader) -> None:
     assert data_loader.get_city_name(_LOG_ID) == "PIT"
 
 
-def test_get_log_calibration_data(data_loader: SimpleArgoverseTrackingDataLoader) -> None:
+def test_get_log_calibration_data(
+    data_loader: SimpleArgoverseTrackingDataLoader,
+) -> None:
     # Just check that it doesn't raise.
     assert data_loader.get_log_calibration_data(_LOG_ID)
 
 
-def test_get_city_to_egovehicle_se3(data_loader: SimpleArgoverseTrackingDataLoader) -> None:
+def test_get_city_to_egovehicle_se3(
+    data_loader: SimpleArgoverseTrackingDataLoader,
+) -> None:
     assert data_loader.get_city_to_egovehicle_se3(_LOG_ID, 0) is not None
     assert data_loader.get_city_to_egovehicle_se3(_LOG_ID, 100) is None
 
@@ -37,17 +39,23 @@ def test_get_closest_im_fpath(data_loader: SimpleArgoverseTrackingDataLoader) ->
     assert data_loader.get_closest_im_fpath(_LOG_ID, "nonexisting_camera_name", 0) is None
 
 
-def test_get_ordered_log_ply_fpaths(data_loader: SimpleArgoverseTrackingDataLoader) -> None:
+def test_get_ordered_log_ply_fpaths(
+    data_loader: SimpleArgoverseTrackingDataLoader,
+) -> None:
     # Test data doesn't have cameras so we cannot currently test this if we
     assert len(data_loader.get_ordered_log_ply_fpaths(_LOG_ID)) == 3
 
 
-def test_get_labels_at_lidar_timestamp(data_loader: SimpleArgoverseTrackingDataLoader) -> None:
+def test_get_labels_at_lidar_timestamp(
+    data_loader: SimpleArgoverseTrackingDataLoader,
+) -> None:
     assert data_loader.get_labels_at_lidar_timestamp(_LOG_ID, 0) is not None
     assert data_loader.get_labels_at_lidar_timestamp(_LOG_ID, 100) is None
 
 
-def test_get_closest_im_fpath_exists(data_loader: SimpleArgoverseTrackingDataLoader) -> None:
+def test_get_closest_im_fpath_exists(
+    data_loader: SimpleArgoverseTrackingDataLoader,
+) -> None:
     # Test data does have ring front cameras at timestamps 0,1,2,3. Compare with ground truth (gt)
     im_fpath = data_loader.get_closest_im_fpath(_LOG_ID, "ring_front_right", 2)
     assert im_fpath is not None
@@ -56,7 +64,9 @@ def test_get_closest_im_fpath_exists(data_loader: SimpleArgoverseTrackingDataLoa
     assert "/".join(im_fpath.split("/")[-5:]) == gt_im_fpath
 
 
-def test_get_closest_lidar_fpath_found_match(data_loader: SimpleArgoverseTrackingDataLoader) -> None:
+def test_get_closest_lidar_fpath_found_match(
+    data_loader: SimpleArgoverseTrackingDataLoader,
+) -> None:
     """ Just barely within 51 ms allowed buffer"""
     cam_timestamp = int(50 * 1e6)
     ply_fpath = data_loader.get_closest_lidar_fpath(_LOG_ID, cam_timestamp)
@@ -66,7 +76,9 @@ def test_get_closest_lidar_fpath_found_match(data_loader: SimpleArgoverseTrackin
     assert "/".join(ply_fpath.split("/")[-5:]) == gt_ply_fpath
 
 
-def test_get_closest_lidar_fpath_no_match(data_loader: SimpleArgoverseTrackingDataLoader) -> None:
+def test_get_closest_lidar_fpath_no_match(
+    data_loader: SimpleArgoverseTrackingDataLoader,
+) -> None:
     """LiDAR rotates at 10 Hz (sensor message per 100 ms). Test if camera measurement
     just barely outside 51 ms allowed buffer. Max LiDAR timestamp in log is 2.
     51 ms, not 50 ms, is allowed to give time for occasional delay.
@@ -78,7 +90,9 @@ def test_get_closest_lidar_fpath_no_match(data_loader: SimpleArgoverseTrackingDa
     assert ply_fpath is None
 
 
-def test_get_ordered_log_cam_fpaths(data_loader: SimpleArgoverseTrackingDataLoader) -> None:
+def test_get_ordered_log_cam_fpaths(
+    data_loader: SimpleArgoverseTrackingDataLoader,
+) -> None:
     """ Make sure all images for one camera in one log are returned in correct order. """
     camera_name = "ring_rear_right"
     cam_img_fpaths = data_loader.get_ordered_log_cam_fpaths(_LOG_ID, camera_name)

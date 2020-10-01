@@ -43,7 +43,11 @@ extensions = [
 ]
 templates_path: List[str] = []
 exclude_patterns: List[str] = []
-source_suffix: Dict[str, str] = {".rst": "restructuredtext", ".txt": "restructuredtext", ".md": "markdown"}
+source_suffix: Dict[str, str] = {
+    ".rst": "restructuredtext",
+    ".txt": "restructuredtext",
+    ".md": "markdown",
+}
 
 # -- Options for HTML output -------------------------------------------------
 html_theme: str = "sphinx_rtd_theme"

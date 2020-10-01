@@ -27,9 +27,18 @@ def assert_np_obj_arrs_eq(pruned_polygons: np.ndarray, gt_pruned_polygons: np.nd
 @pytest.mark.parametrize(
     "point_cloud, gt_bbox",
     [
-        (np.array([[-0.3, 0.5], [0.2, 0.1], [-0.5, 1.9]]), np.array([-0.5, 0.1, 0.2, 1.9])),
-        (np.array([[-0.3, 0.5], [-0.3, 0.5], [-0.3, 0.5]]), np.array([-0.3, 0.5, -0.3, 0.5])),
-        (np.array([[-0.3, 0.5, 50.1], [0.2, 0.1, -100.3], [-0.5, 1.9, -0.01]]), np.array([-0.5, 0.1, 0.2, 1.9])),
+        (
+            np.array([[-0.3, 0.5], [0.2, 0.1], [-0.5, 1.9]]),
+            np.array([-0.5, 0.1, 0.2, 1.9]),
+        ),
+        (
+            np.array([[-0.3, 0.5], [-0.3, 0.5], [-0.3, 0.5]]),
+            np.array([-0.3, 0.5, -0.3, 0.5]),
+        ),
+        (
+            np.array([[-0.3, 0.5, 50.1], [0.2, 0.1, -100.3], [-0.5, 1.9, -0.01]]),
+            np.array([-0.5, 0.1, 0.2, 1.9]),
+        ),
     ],
 )  # type: ignore
 def test_compute_point_cloud_bbox_2d(point_cloud: np.ndarray, gt_bbox: np.ndarray) -> None:
@@ -52,7 +61,13 @@ def polygons_and_gt_bboxes() -> Tuple[List[np.ndarray], List[np.ndarray]]:
     gt_poly_3_bbox = np.array([0.5, 2.5, 1.5, 3.5])
     gt_poly_4_bbox = np.array([-2.5, -1.5, 1.5, 1.75])
     gt_poly_5_bbox = np.array([1.5, 0.5, 1.5, 1.1])
-    gt_poly_bboxes = [gt_poly_1_bbox, gt_poly_2_bbox, gt_poly_3_bbox, gt_poly_4_bbox, gt_poly_5_bbox]
+    gt_poly_bboxes = [
+        gt_poly_1_bbox,
+        gt_poly_2_bbox,
+        gt_poly_3_bbox,
+        gt_poly_4_bbox,
+        gt_poly_5_bbox,
+    ]
 
     return polygons, gt_poly_bboxes
 
@@ -79,7 +94,11 @@ def test_compute_polygon_bboxes(polygons_and_gt_bboxes: Tuple[List[np.ndarray], 
 
 @pytest.mark.parametrize(
     "query_pt, query_search_range_manhattan, gt_indices",
-    [(np.array([-0.5, 1.5]), 0.5, [0, 1, 3]), (np.array([-0.5, 1.5]), 0.499, [0, 3]), (np.array([0, 2]), 0.24, [])],
+    [
+        (np.array([-0.5, 1.5]), 0.5, [0, 1, 3]),
+        (np.array([-0.5, 1.5]), 0.499, [0, 3]),
+        (np.array([0, 2]), 0.24, []),
+    ],
 )  # type: ignore
 def test_prune_polygons_manhattan_dist_find_nearby(
     query_pt: np.ndarray,

@@ -32,7 +32,11 @@ def test_SE2_constructor() -> None:
     cos_theta = np.cos(theta)
     sin_theta = np.sin(theta)
     T_mat_gt = np.array(
-        [[cos_theta, -sin_theta, translation_vector[0]], [sin_theta, cos_theta, translation_vector[1]], [0, 0, 1.0]]
+        [
+            [cos_theta, -sin_theta, translation_vector[0]],
+            [sin_theta, cos_theta, translation_vector[1]],
+            [0, 0, 1.0],
+        ]
     )
 
     assert np.allclose(dst_se2_src.rotation, rotation_matrix)

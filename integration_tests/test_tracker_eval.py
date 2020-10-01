@@ -54,7 +54,14 @@ def test_get_pc_inside_box() -> None:
     8  8.0  0.0  5.0        5.0          27.0
     9  9.0  0.0  5.0        6.0          10.0
     """
-    bbox = np.array([np.array([[0], [0], [0]]), np.array([[2], [0], [0]]), np.array([[0], [5], [0]]), np.array(10)])
+    bbox = np.array(
+        [
+            np.array([[0], [0], [0]]),
+            np.array([[2], [0], [0]]),
+            np.array([[0], [5], [0]]),
+            np.array(10),
+        ]
+    )
 
     pc = ply_loader.load_ply(str(TEST_DATA_LOC / "1/lidar/PC_0.ply"))
 

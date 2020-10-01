@@ -9,7 +9,11 @@ from matplotlib.axes import Axes
 __all__ = ["draw_point_cloud_bev"]
 
 AXIS_INDEX = [0, 1]
-AXIS_LIMITS = [[-80, 80], [-90, 90], [-10, 50]]  # X axis range  # Y axis range  # Z axis range
+AXIS_LIMITS = [
+    [-80, 80],
+    [-90, 90],
+    [-10, 50],
+]  # X axis range  # Y axis range  # Z axis range
 AXIS_NAME = ["X", "Y", "Z"]
 
 
