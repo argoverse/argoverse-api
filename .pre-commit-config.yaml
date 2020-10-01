@@ -23,5 +23,5 @@ repos:
     rev: d6e31ae
     hooks:
     - id: mypy
-      args: ["--ignore-missing", "--strict"]
+      args: ["--ignore-missing", "--strict", "--pretty"]
 exclude: "docs/.*$"
