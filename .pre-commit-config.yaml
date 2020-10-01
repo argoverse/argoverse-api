@@ -14,8 +14,8 @@ repos:
     hooks:
     - id: isort
       args: ["--profile", "black"]
--   repo: https://github.com/python/black.git
-    rev: 1bbb01b
+-   repo: https://github.com/psf/black
+    rev: 172c0a7
     hooks:
     - id: black
       args: ["-l", "120"]
