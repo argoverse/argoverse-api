@@ -149,7 +149,7 @@ def accumulate(
     return cls_to_accum, cls_to_ninst
 
 
-def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> Tuple[np.ndarray, np.ndarray]:
+def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
     """Attempt assignment of each detection to a ground truth label.
 
     Args:

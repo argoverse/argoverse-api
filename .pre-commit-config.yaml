@@ -22,5 +22,6 @@ repos:
 -   repo: https://github.com/pre-commit/mirrors-mypy
     rev: d6e31ae
     hooks:
-    -   id: mypy
+    - id: mypy
+      args: ["--ignore-missing", "--strict"]
 exclude: "docs/.*$"
