@@ -4,7 +4,7 @@ python:
     - "3.7"
 
 install:
-    - pip install tox-travis==0.12 tox==3.12.1 pre-commit==1.17.0
+    - pip install tox-travis tox pre-commit
 
 script:
     - travis_wait 45 tox
