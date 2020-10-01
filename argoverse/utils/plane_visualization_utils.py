@@ -1,7 +1,7 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
 import sys
-from typing import List, Optional, Sequence
+from typing import List, Optional
 
 import numpy as np
 
@@ -16,7 +16,7 @@ from argoverse.visualization.mayavi_utils import (
 )
 
 
-def populate_frustum_voxels(planes: Sequence[np.ndarray], fig: Figure, axis_pair: str) -> Figure:
+def populate_frustum_voxels(planes: List[np.ndarray], fig: Figure, axis_pair: str) -> Figure:
     """
     Generate grid in xy plane, and then treat it as grid in xz (ground) plane
     in camera coordinate system.
@@ -52,7 +52,7 @@ def populate_frustum_voxels(planes: Sequence[np.ndarray], fig: Figure, axis_pair
 
 
 def plot_frustum_planes_and_normals(
-    planes: Sequence[np.ndarray], cuboid_verts: Optional[np.ndarray] = None, near_clip_dist: float = 0.5
+    planes: List[np.ndarray], cuboid_verts: Optional[np.ndarray] = None, near_clip_dist: float = 0.5
 ) -> None:
     """
     Args:

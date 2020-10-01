@@ -21,7 +21,7 @@ _TEST_DIR = pathlib.Path(__file__).parent.parent / "tests"
 skip_if_mayavi = pytest.mark.skipif(not MISSING_MAYAVI, reason="mayavi installed")
 
 
-@skip_if_mayavi
+@skip_if_mayavi  # type: ignore
 def test_raises_when_we_try_to_use_a_missing_mayavi() -> None:
     n_mer, n_long = 6, 11
     pi = np.pi

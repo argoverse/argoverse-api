@@ -11,7 +11,7 @@ _TEST_DATA = pathlib.Path(__file__).parent / "test_data" / "tracking"
 _LOG_ID = "1"
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore
 def data_loader() -> SimpleArgoverseTrackingDataLoader:
     return SimpleArgoverseTrackingDataLoader(os.fspath(_TEST_DATA), os.fspath(_TEST_DATA))
 
@@ -48,14 +48,18 @@ def test_get_labels_at_lidar_timestamp(data_loader: SimpleArgoverseTrackingDataL
 def test_get_closest_im_fpath_exists(data_loader: SimpleArgoverseTrackingDataLoader) -> None:
     # Test data does have ring front cameras at timestamps 0,1,2,3. Compare with ground truth (gt)
     im_fpath = data_loader.get_closest_im_fpath(_LOG_ID, "ring_front_right", 2)
+    assert im_fpath is not None
+
     gt_im_fpath = f"test_data/tracking/{_LOG_ID}/ring_front_right/ring_front_right_2.jpg"
     assert "/".join(im_fpath.split("/")[-5:]) == gt_im_fpath
 
 
 def test_get_closest_lidar_fpath_found_match(data_loader: SimpleArgoverseTrackingDataLoader) -> None:
     """ Just barely within 51 ms allowed buffer"""
-    cam_timestamp = 50 * 1e6
+    cam_timestamp = int(50 * 1e6)
     ply_fpath = data_loader.get_closest_lidar_fpath(_LOG_ID, cam_timestamp)
+
+    assert ply_fpath is not None
     gt_ply_fpath = f"test_data/tracking/{_LOG_ID}/lidar/PC_2.ply"
     assert "/".join(ply_fpath.split("/")[-5:]) == gt_ply_fpath
 
@@ -67,7 +71,7 @@ def test_get_closest_lidar_fpath_no_match(data_loader: SimpleArgoverseTrackingDa
     """
     max_allowed_interval = ((100 / 2) + 1) * 1e6
     log_max_lidar_timestamp = 2
-    cam_timestamp = log_max_lidar_timestamp + max_allowed_interval + 1
+    cam_timestamp = int(log_max_lidar_timestamp + max_allowed_interval + 1)
     ply_fpath = data_loader.get_closest_lidar_fpath(_LOG_ID, cam_timestamp)
     assert ply_fpath is None
 

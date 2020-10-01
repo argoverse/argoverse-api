@@ -23,7 +23,7 @@ import pytest
 
 _TEST_DIR: Path = pathlib.Path(__file__).parent.parent / "tests"
 
-skip_if_not_mayavi: pytest.mark.MarkDecorator = pytest.mark.skipif(MISSING_MAYAVI, reason="mayavi not installed")
+skip_if_not_mayavi = pytest.mark.skipif(MISSING_MAYAVI, reason="mayavi not installed")
 
 
 @skip_if_not_mayavi  # type: ignore

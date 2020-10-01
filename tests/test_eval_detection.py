@@ -11,15 +11,22 @@ from pandas.core.frame import DataFrame
 from scipy.spatial.transform import Rotation as R
 
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
-from argoverse.evaluation.detection_utils import AffFnType, DistFnType, compute_affinity_matrix, dist_fn, iou_aligned_3d
-from argoverse.evaluation.eval_detection import SIGNIFICANT_DIGITS, DetectionCfg, DetectionEvaluator
+from argoverse.evaluation.detection_utils import (
+    AffFnType,
+    DetectionCfg,
+    DistFnType,
+    compute_affinity_matrix,
+    dist_fn,
+    iou_aligned_3d,
+)
+from argoverse.evaluation.eval_detection import DetectionEvaluator
 from argoverse.utils.transform import quat_scipy2argo_vectorized
 
 TEST_DATA_LOC = pathlib.Path(__file__).parent.parent / "tests" / "test_data" / "detection"
 logging.getLogger("matplotlib.font_manager").disabled = True
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore
 def evaluator_identity() -> DetectionEvaluator:
     """Define an evaluator that compares a set of results to itself."""
     detection_cfg = DetectionCfg(dt_classes=["VEHICLE"])
@@ -28,7 +35,7 @@ def evaluator_identity() -> DetectionEvaluator:
     )
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore
 def evaluator_assignment() -> DetectionEvaluator:
     """Define an evaluator that compares a set of results to one with an extra detection to check assignment."""
     detection_cfg = DetectionCfg(dt_classes=["VEHICLE"])
@@ -37,7 +44,7 @@ def evaluator_assignment() -> DetectionEvaluator:
     )
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore
 def evaluator() -> DetectionEvaluator:
     """Definte an evaluator that compares a set of detections with known error to the ground truth."""
     detection_cfg = DetectionCfg(dt_classes=["VEHICLE"])
@@ -46,19 +53,19 @@ def evaluator() -> DetectionEvaluator:
     )
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore
 def metrics_identity(evaluator_identity: DetectionEvaluator) -> DataFrame:
     """Get the metrics for an evaluator that compares a set of results to itself."""
     return evaluator_identity.evaluate()
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore
 def metrics_assignment(evaluator_assignment: DetectionEvaluator) -> DataFrame:
     """Get the metrics for an evaluator that has extra detections to test for assignment errors."""
     return evaluator_assignment.evaluate()
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore
 def metrics(evaluator: DetectionEvaluator) -> DataFrame:
     """Get the metrics for an evaluator with known error."""
     return evaluator.evaluate()
