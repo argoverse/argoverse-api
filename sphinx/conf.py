@@ -41,13 +41,13 @@ extensions = [
     "sphinx_autodoc_typehints",
     "recommonmark",
 ]
-templates_path: List = []
-exclude_patterns: List = []
-source_suffix: Dict = {".rst": "restructuredtext", ".txt": "restructuredtext", ".md": "markdown"}
+templates_path: List[str] = []
+exclude_patterns: List[str] = []
+source_suffix: Dict[str, str] = {".rst": "restructuredtext", ".txt": "restructuredtext", ".md": "markdown"}
 
 # -- Options for HTML output -------------------------------------------------
 html_theme: str = "sphinx_rtd_theme"
-html_static_path: List = []
+html_static_path: List[str] = []
 
 
 # -- Extension configuration -------------------------------------------------
@@ -78,7 +78,7 @@ intersphinx_mapping = {
 # Extra configuration
 
 
-def setup(app):
+def setup(app: sphinx.application.Sphinx) -> None:
     app.add_config_value(
         "recommonmark_config",
         {
