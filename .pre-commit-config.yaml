@@ -10,10 +10,10 @@ repos:
     - id: end-of-file-fixer
     - id: debug-statements
 -   repo: https://github.com/pre-commit/mirrors-isort.git
-    rev: dc9ed97
+    rev: 687aecc
     hooks:
     - id: isort
-      args: ["-w", "120", "--multi-line=3", "--trailing-comma", "--force-grid-wrap=0", "--use-parentheses"]
+      args: ["--profile", "black"]
 -   repo: https://github.com/python/black.git
     rev: 1bbb01b
     hooks:

@@ -41,6 +41,7 @@ Evaluation:
             - mASM
             - mAOM
 
+
             Lastly, the Composite Detection Score is computed as:
 
             CDS = mAP * (mATE + mASE + mAOE); 0 <= mAP * (mATE + mASE + mAOE) <= 1.
