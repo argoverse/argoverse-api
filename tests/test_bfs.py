@@ -2,7 +2,7 @@
 
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
-from typing import List, Mapping, MutableSequence, Sequence
+from typing import List, Mapping, Sequence
 
 from argoverse.utils.bfs import bfs_enumerate_paths
 
