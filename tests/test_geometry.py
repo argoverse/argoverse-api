@@ -9,7 +9,7 @@ Unit tests for argoverse/utils/geometry.py
 """
 
 
-def test_rotate_polygon_about_pt_2d_triangle_0deg_origin():
+def test_rotate_polygon_about_pt_2d_triangle_0deg_origin() -> None:
     """
         Rotate a triangle 0 degrees counterclockwise, about the origin
         """
@@ -23,7 +23,7 @@ def test_rotate_polygon_about_pt_2d_triangle_0deg_origin():
     assert np.allclose(polygon_pts, rot_polygon)
 
 
-def test_rotate_polygon_about_pt_2d_triangle_90deg_origin():
+def test_rotate_polygon_about_pt_2d_triangle_90deg_origin() -> None:
     """
         Rotate a triangle 90 degrees counterclockwise, about the origin
         """
@@ -39,7 +39,7 @@ def test_rotate_polygon_about_pt_2d_triangle_90deg_origin():
     assert np.allclose(gt_rot_polygon, rot_polygon)
 
 
-def test_rotate_polygon_about_pt_2d_triangle_0deg_nonorigin():
+def test_rotate_polygon_about_pt_2d_triangle_0deg_nonorigin() -> None:
     """
         Rotate a triangle 0 degrees counterclockwise, but this time
         not rotating about the origin.
@@ -54,7 +54,7 @@ def test_rotate_polygon_about_pt_2d_triangle_0deg_nonorigin():
     assert np.allclose(polygon_pts, rot_polygon)
 
 
-def test_rotate_polygon_about_pt_2d_triangle_90deg_nonorigin():
+def test_rotate_polygon_about_pt_2d_triangle_90deg_nonorigin() -> None:
     """
         Rotate a triangle 90 degrees counterclockwise, but this time
         not rotating about the origin. Instead we rotate about (2,2).
@@ -71,7 +71,7 @@ def test_rotate_polygon_about_pt_2d_triangle_90deg_nonorigin():
     assert np.allclose(gt_rot_polygon, rot_polygon)
 
 
-def test_rotate_polygon_about_pt_3d():
+def test_rotate_polygon_about_pt_3d() -> None:
     """
     Rotate a point cloud in xy plane, but keep z fixed. in other words,
     perform a 3D rotation about Z-axis (rotation about yaw axis).
@@ -93,7 +93,7 @@ def test_rotate_polygon_about_pt_3d():
     assert np.allclose(rotated_pts, gt_rotated_pts)
 
 
-def test_filter_point_cloud_to_polygon_2d_triangle():
+def test_filter_point_cloud_to_polygon_2d_triangle() -> None:
     """
         Test points that fall within a triangle symbol centered at
         the origin. The shape resembles:
@@ -130,7 +130,7 @@ def test_filter_point_cloud_to_polygon_2d_triangle():
     assert np.allclose(point_cloud_2d[interior_gt_bool], interior_pts)
 
 
-def test_filter_point_cloud_to_polygon_2d_triangle_and_3d_pointcloud():
+def test_filter_point_cloud_to_polygon_2d_triangle_and_3d_pointcloud() -> None:
     """
     Test points that fall within a triangle symbol centered at
     the origin. The shape resembles:
@@ -168,7 +168,7 @@ def test_filter_point_cloud_to_polygon_2d_triangle_and_3d_pointcloud():
     assert np.allclose(point_cloud_2d[interior_gt_bool], interior_pts)
 
 
-def test_filter_point_cloud_to_polygon_2d_triangle_all_outside():
+def test_filter_point_cloud_to_polygon_2d_triangle_all_outside() -> None:
     """
     Test points that fall within a triangle symbol centered at
     the origin. The shape resembles:
@@ -200,7 +200,7 @@ def test_filter_point_cloud_to_polygon_2d_triangle_all_outside():
     assert interior_pts is None
 
 
-def test_filter_point_cloud_to_polygon_2d_redcross():
+def test_filter_point_cloud_to_polygon_2d_redcross() -> None:
     """
     Test points that fall within a red cross symbol centered at
     the origin.
@@ -225,7 +225,9 @@ def test_filter_point_cloud_to_polygon_2d_redcross():
     assert np.allclose(point_cloud_2d[interior_gt_bool], interior_pts)
 
 
-def point_inside_polygon_interior_sanity_check(n_vertices, poly_x_pts, poly_y_pts, test_x, test_y):
+def point_inside_polygon_interior_sanity_check(
+    n_vertices: int, poly_x_pts: np.ndarray, poly_y_pts: np.ndarray, test_x: float, test_y: float
+) -> bool:
     """
     We use this function to verify shapely.geometry's correctness. This fn only works correctly
     on the interior of an object (not on the boundary).
@@ -274,7 +276,7 @@ def point_inside_polygon_interior_sanity_check(n_vertices, poly_x_pts, poly_y_pt
     return (count % 2) == 1
 
 
-def test_point_in_polygon_shapely_vs_our_implementation():
+def test_point_in_polygon_shapely_vs_our_implementation() -> None:
     """
     Using 20 points originally sampled in unit square (uniform random),
     ensure that our implementation of point-in-polygon matches
@@ -346,7 +348,7 @@ def test_point_in_polygon_shapely_vs_our_implementation():
         assert inside == point_inside_polygon_interior_sanity_check(n_vertices, vert_x_pts, vert_y_pts, test_x, test_y)
 
 
-def test_point_in_polygon_square():
+def test_point_in_polygon_square() -> None:
     """
     Ensure point barely inside square boundary is "inside".
     """
