@@ -26,7 +26,7 @@ from argoverse.data_loading.object_label_record import ObjectLabelRecord, read_l
 from argoverse.utils.transform import quat_argo2scipy_vectorized
 
 matplotlib.use("Agg")  # isort:skip
-import matplotlib.pyplot as plt  # isort:skip  #noqa: E402
+import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
 
 logger = logging.getLogger(__name__)
