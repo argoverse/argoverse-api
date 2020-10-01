@@ -19,11 +19,4 @@ repos:
     hooks:
       - id: black
         args: ["-l", "120"]
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: master
-    hooks:
-      - id: mypy
-        args: ["--ignore-missing", "--strict", "--pretty"]
-        additional_dependencies:
-        - 'virtualenv'
 exclude: "docs/.*$"
