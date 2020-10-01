@@ -10,7 +10,7 @@ from argoverse.utils.cv2_plotting_utils import (
 )
 
 
-def test_draw_point_cloud_in_img_cv2_smokescreen():
+def test_draw_point_cloud_in_img_cv2_smokescreen() -> None:
     """
         We place 4 red circles in an image (with channel order BGR,
         per the OpenCV convention). We verify that pixel values change accordingly.
@@ -34,7 +34,7 @@ def test_draw_point_cloud_in_img_cv2_smokescreen():
             assert np.allclose(img_w_circ[y, x, :], color)
 
 
-def test_draw_polygon_cv2_smokescreen():
+def test_draw_polygon_cv2_smokescreen() -> None:
     """
         Test ability to fill a nonconvex polygon.
 
@@ -64,7 +64,7 @@ def test_draw_polygon_cv2_smokescreen():
         assert img_w_polygon.dtype == dtype
 
 
-def test_plot_bbox_polygon_cv2_smokescreen():
+def test_plot_bbox_polygon_cv2_smokescreen() -> None:
     """
         Test drawing a green bounding box, with a thin red border, and
         test plotted inside, representing a track ID.

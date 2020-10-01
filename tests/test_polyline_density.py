@@ -5,7 +5,7 @@ import numpy as np
 from argoverse.utils import polyline_density
 
 
-def test_polyline_length():
+def test_polyline_length() -> None:
     line = np.array([[0, 0], [0, 1], [1, 1], [1, 0], [2, 0], [2, 1]])
 
     length = polyline_density.get_polyline_length(line)

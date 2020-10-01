@@ -2,7 +2,9 @@
 """Map API unit tests"""
 
 import glob
+from typing import Set, Tuple
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -13,13 +15,24 @@ from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.mpl_plotting_utils import plot_lane_segment_patch
 
 
-def add_lane_segment_to_ax(ax, lane_centerline, lane_polygon, patch_color, xmin, xmax, ymin, ymax):
+def add_lane_segment_to_ax(
+    ax: plt.axes.Axis,
+    lane_centerline: np.ndarray,
+    lane_polygon: np.ndarray,
+    patch_color: str,
+    xmin: float,
+    xmax: float,
+    ymin: float,
+    ymax: float,
+) -> None:
     """
         """
     plot_lane_segment_patch(lane_polygon, ax, color=patch_color, alpha=0.3)
 
 
-def find_lane_segment_bounds_in_table(adm, city_name, lane_segment_id):
+def find_lane_segment_bounds_in_table(
+    avm: ArgoverseMap, city_name: str, lane_segment_id: int
+) -> Tuple[float, float, float, float]:
     """
         """
     match_found = False
@@ -35,7 +48,7 @@ def find_lane_segment_bounds_in_table(adm, city_name, lane_segment_id):
     return xmin, ymin, xmax, ymax
 
 
-def verify_halluc_lane_extent_index(enable_lane_boundaries=False):
+def verify_halluc_lane_extent_index(enable_lane_boundaries: bool = False) -> None:
     """
 
         """
@@ -47,7 +60,7 @@ def verify_halluc_lane_extent_index(enable_lane_boundaries=False):
         # get all lane segment IDs inside of this city
         lane_segment_ids = list(avm.city_lane_centerlines_dict[city_name].keys())
         for lane_segment_id in lane_segment_ids:
-            xmin, ymin, xmax, ymax = find_lane_segment_bounds_in_table(adm, city_name, lane_segment_id)
+            xmin, ymin, xmax, ymax = find_lane_segment_bounds_in_table(avm, city_name, lane_segment_id)
 
             predecessor_ids = avm.get_lane_segment_predecessor_ids(lane_segment_id, city_name)
             successor_ids = avm.get_lane_segment_successor_ids(lane_segment_id, city_name)
@@ -66,7 +79,7 @@ def verify_halluc_lane_extent_index(enable_lane_boundaries=False):
                 for predecessor_id in predecessor_ids:
                     lane_centerline = avm.get_lane_segment_centerline(predecessor_id, city_name)
                     halluc_lane_polygon = avm.get_lane_segment_polygon(predecessor_id, city_name)
-                    xmin, ymin, xmax, ymax = find_lane_segment_bounds_in_table(adm, city_name, predecessor_id)
+                    xmin, ymin, xmax, ymax = find_lane_segment_bounds_in_table(avm, city_name, predecessor_id)
                     add_lane_segment_to_ax(ax, lane_centerline, halluc_lane_polygon, "r", xmin, xmax, ymin, ymax)
 
             if successor_ids is not None:
@@ -74,21 +87,21 @@ def verify_halluc_lane_extent_index(enable_lane_boundaries=False):
                 for successor_id in successor_ids:
                     lane_centerline = avm.get_lane_segment_centerline(successor_id, city_name)
                     halluc_lane_polygon = avm.get_lane_segment_polygon(successor_id, city_name)
-                    xmin, ymin, xmax, ymax = find_lane_segment_bounds_in_table(adm, city_name, successor_id)
+                    xmin, ymin, xmax, ymax = find_lane_segment_bounds_in_table(avm, city_name, successor_id)
                     add_lane_segment_to_ax(ax, lane_centerline, halluc_lane_polygon, "b", xmin, xmax, ymin, ymax)
 
             # add left neighbor
             if l_neighbor_id is not None:
                 lane_centerline = avm.get_lane_segment_centerline(l_neighbor_id, city_name)
                 halluc_lane_polygon = avm.get_lane_segment_polygon(l_neighbor_id, city_name)
-                xmin, ymin, xmax, ymax = find_lane_segment_bounds_in_table(adm, city_name, l_neighbor_id)
+                xmin, ymin, xmax, ymax = find_lane_segment_bounds_in_table(avm, city_name, l_neighbor_id)
                 add_lane_segment_to_ax(ax, lane_centerline, halluc_lane_polygon, "g", xmin, xmax, ymin, ymax)
 
             # add right neighbor
             if r_neighbor_id is not None:
                 lane_centerline = avm.get_lane_segment_centerline(r_neighbor_id, city_name)
                 halluc_lane_polygon = avm.get_lane_segment_polygon(r_neighbor_id, city_name)
-                xmin, ymin, xmax, ymax = find_lane_segment_bounds_in_table(adm, city_name, r_neighbor_id)
+                xmin, ymin, xmax, ymax = find_lane_segment_bounds_in_table(avm, city_name, r_neighbor_id)
                 add_lane_segment_to_ax(ax, lane_centerline, halluc_lane_polygon, "m", xmin, xmax, ymin, ymax)
 
             if enable_lane_boundaries:
@@ -106,58 +119,58 @@ def verify_halluc_lane_extent_index(enable_lane_boundaries=False):
             plt.close("all")
 
 
-def verify_manhattan_search_functionality():
-    """
-        Minimal example where we
-        """
-    adm = ArgoverseMap()
-    # query_x = 254.
-    # query_y = 1778.
+# def verify_manhattan_search_functionality() -> None:
+#     """
+#         Minimal example where we
+#         """
+#     avm = ArgoverseMap()
+#     # query_x = 254.
+#     # query_y = 1778.
 
-    ref_query_x = 422.0
-    ref_query_y = 1005.0
+#     ref_query_x = 422.0
+#     ref_query_y = 1005.0
 
-    city_name = "PIT"  # 'MIA'
-    for trial_idx in range(10):
-        query_x = ref_query_x + (np.random.rand() - 0.5) * 10
-        query_y = ref_query_y + (np.random.rand() - 0.5) * 10
+#     city_name = "PIT"  # 'MIA'
+#     for trial_idx in range(10):
+#         query_x = ref_query_x + (np.random.rand() - 0.5) * 10
+#         query_y = ref_query_y + (np.random.rand() - 0.5) * 10
 
-        # query_x,query_y = (3092.49845414,1798.55426805)
-        query_x, query_y = (3112.80160113, 1817.07585338)
+#         # query_x,query_y = (3092.49845414,1798.55426805)
+#         query_x, query_y = (3112.80160113, 1817.07585338)
 
-        lane_segment_ids = avm.get_lane_ids_in_xy_bbox(query_x, query_y, city_name, 5000)
+#         lane_segment_ids = avm.get_lane_ids_in_xy_bbox(query_x, query_y, city_name, 5000)
 
-        fig = plt.figure(figsize=(22.5, 8))
-        ax = fig.add_subplot(111)
-        # ax.scatter([query_x], [query_y], 500, color='k', marker='.')
+#         fig = plt.figure(figsize=(22.5, 8))
+#         ax = fig.add_subplot(111)
+#         # ax.scatter([query_x], [query_y], 500, color='k', marker='.')
 
-        plot_lane_segment_patch(pittsburgh_bounds, ax, color="m", alpha=0.1)
+#         plot_lane_segment_patch(pittsburgh_bounds, ax, color="m", alpha=0.1)
 
-        if len(lane_segment_ids) > 0:
-            for i, lane_segment_id in enumerate(lane_segment_ids):
-                patch_color = "y"  # patch_colors[i % 4]
-                lane_centerline = avm.get_lane_segment_centerline(lane_segment_id, city_name)
+#         if len(lane_segment_ids) > 0:
+#             for i, lane_segment_id in enumerate(lane_segment_ids):
+#                 patch_color = "y"  # patch_colors[i % 4]
+#                 lane_centerline = avm.get_lane_segment_centerline(lane_segment_id, city_name)
 
-                test_x, test_y = lane_centerline.mean(axis=0)
-                inside = point_inside_polygon(
-                    n_poly_vertices, pittsburgh_bounds[:, 0], pittsburgh_bounds[:, 1], test_x, test_y
-                )
+#                 test_x, test_y = lane_centerline.mean(axis=0)
+#                 inside = point_inside_polygon(
+#                     n_poly_vertices, pittsburgh_bounds[:, 0], pittsburgh_bounds[:, 1], test_x, test_y
+#                 )
 
-                if inside:
-                    halluc_lane_polygon = avm.get_lane_segment_polygon(lane_segment_id, city_name)
-                    xmin, ymin, xmax, ymax = find_lane_segment_bounds_in_table(adm, city_name, lane_segment_id)
-                    add_lane_segment_to_ax(
-                        ax, lane_centerline, halluc_lane_polygon, patch_color, xmin, xmax, ymin, ymax
-                    )
+#                 if inside:
+#                     halluc_lane_polygon = avm.get_lane_segment_polygon(lane_segment_id, city_name)
+#                     xmin, ymin, xmax, ymax = find_lane_segment_bounds_in_table(avm, city_name, lane_segment_id)
+#                     add_lane_segment_to_ax(
+#                         ax, lane_centerline, halluc_lane_polygon, patch_color, xmin, xmax, ymin, ymax
+#                     )
 
-        ax.axis("equal")
-        plt.show()
-        datetime_str = generate_datetime_string()
-        plt.savefig(f"{trial_idx}_{datetime_str}.jpg")
-        plt.close("all")
+#         ax.axis("equal")
+#         plt.show()
+#         datetime_str = generate_datetime_string()
+#         plt.savefig(f"{trial_idx}_{datetime_str}.jpg")
+#         plt.close("all")
 
 
-def verify_point_in_polygon_for_lanes():
+def verify_point_in_polygon_for_lanes() -> None:
     """
         """
     avm = ArgoverseMap()
@@ -183,8 +196,8 @@ def verify_point_in_polygon_for_lanes():
             plot_lane_segment_patch(halluc_lane_polygon, ax, color="y", alpha=0.3)
 
         nearby_lane_ids = avm.get_lane_ids_in_xy_bbox(query_x, query_y, city_name)
-        nearby_lane_ids = set(nearby_lane_ids) - set(occupied_lane_ids)
-        for nearby_lane_id in nearby_lane_ids:
+        nearby_unoccupied_lane_ids: Set[int] = set(nearby_lane_ids) - set(occupied_lane_ids)
+        for nearby_lane_id in nearby_unoccupied_lane_ids:
             halluc_lane_polygon = avm.get_lane_segment_polygon(nearby_lane_id, city_name)
             plot_lane_segment_patch(halluc_lane_polygon, ax, color="r", alpha=0.3)
 
@@ -193,7 +206,15 @@ def verify_point_in_polygon_for_lanes():
         plt.close("all")
 
 
-def plot_nearby_halluc_lanes(ax, city_name, adm, query_x, query_y, patch_color="r", radius=20):
+def plot_nearby_halluc_lanes(
+    ax: plt.axes.Axis,
+    city_name: str,
+    avm: ArgoverseMap,
+    query_x: float,
+    query_y: float,
+    patch_color: str = "r",
+    radius: float = 20.0,
+) -> None:
     """
         """
     nearby_lane_ids = avm.get_lane_ids_in_xy_bbox(query_x, query_y, city_name, radius)
@@ -203,7 +224,7 @@ def plot_nearby_halluc_lanes(ax, city_name, adm, query_x, query_y, patch_color="
         plt.text(halluc_lane_polygon[:, 0].mean(), halluc_lane_polygon[:, 1].mean(), str(nearby_lane_id))
 
 
-def verify_lane_tangent_vector():
+def verify_lane_tangent_vector() -> None:
     """
         debug low confidence lane tangent predictions
 
@@ -215,7 +236,7 @@ def verify_lane_tangent_vector():
     # both of these are Pittsburgh logs
     log_ids = ["033669d3-3d6b-3d3d-bd93-7985d86653ea", "028d5cb1-f74d-366c-85ad-84fde69b0fd3"]
 
-    adm = ArgoverseMap()
+    avm = ArgoverseMap()
     city_name = "PIT"
     for log_id in log_ids:
         print(f"On {log_id}")
@@ -258,14 +279,14 @@ def verify_lane_tangent_vector():
                 ax.scatter([query_x], [query_y], 100, color="k", marker=".")
                 # make another plot now!
 
-                plot_nearby_halluc_lanes(ax, city_name, adm, query_x, query_y)
+                plot_nearby_halluc_lanes(ax, city_name, avm, query_x, query_y)
 
                 ax.axis("equal")
                 plt.show()
                 plt.close("all")
 
 
-def test_remove_extended_predecessors():
+def test_remove_extended_predecessors() -> None:
     """Test remove_extended_predecessors() for map_api"""
 
     lane_seqs = [[9621385, 9619110, 9619209, 9631133], [9621385, 9619110, 9619209], [9619209, 9631133]]
@@ -280,7 +301,7 @@ def test_remove_extended_predecessors():
     ), "remove_extended_predecessors() failed!"
 
 
-def test_get_candidate_centerlines_for_traj():
+def test_get_candidate_centerlines_for_traj() -> None:
     """Test get_candidate_centerlines_for_traj()
 
     -180        .  .  .  .  .                   -100
@@ -426,7 +447,7 @@ def test_get_candidate_centerlines_for_traj():
         assert np.allclose(expected_centerlines[i], candidate_centerlines[i]), "Centerline coordinates wrong!"
 
 
-def test_dfs():
+def test_dfs() -> None:
     """Test dfs for lane graph
 
     Lane Graph:

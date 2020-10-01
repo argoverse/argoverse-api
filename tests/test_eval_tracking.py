@@ -73,7 +73,7 @@ class TrackedObjRec(NamedTuple):
 class TrackedObjects:
     def __init__(self, log_id: str, is_gt: bool) -> None:
         """ """
-        self.ts_to_trackedlabels_dict: DefaultDict[int, List[Dict]] = defaultdict(list)
+        self.ts_to_trackedlabels_dict: DefaultDict[int, List[Dict[str, Any]]] = defaultdict(list)
         self.log_id = log_id
 
         tracks_type = "gt" if is_gt else "pred"
@@ -110,7 +110,9 @@ class TrackedObjects:
             save_json_dict(json_fpath, ts_trackedlabels)
 
 
-def dump_1obj_scenario_json(centers, yaw_angles, log_id: str, is_gt: bool) -> None:
+def dump_1obj_scenario_json(
+    centers: List[Tuple[int, int, int]], yaw_angles: List[float], log_id: str, is_gt: bool
+) -> None:
     """
 	Egovehicle stationary (represented by `o`).
 	Sequence of 4-nanosecond timestamps.
@@ -178,7 +180,7 @@ def run_eval(exp_name: str) -> Mapping[str, Any]:
     return result_dict
 
 
-def get_1obj_gt_scenario():
+def get_1obj_gt_scenario() -> Tuple[List[Tuple[int, int, int]], List[float]]:
     """
 	Egovehicle stationary (represented by `o`).
 	Seqeuence of 4-nanosecond timestamps.
@@ -224,7 +226,7 @@ def get_1obj_gt_scenario():
     cz = 0
     centers += [(cx, cy, cz)]
 
-    yaw_angles = [0, 0, 0, 0]
+    yaw_angles = [0.0, 0.0, 0.0, 0.0]
     return centers, yaw_angles
 
 
@@ -285,7 +287,7 @@ def test_1obj_offset_translation() -> None:
     cz = 0
     centers += [(cx, cy, cz)]
 
-    yaw_angles = [0, 0, 0, 0]
+    yaw_angles = [0.0, 0.0, 0.0, 0.0]
 
     # dump the ground truth first
     gt_centers, gt_yaw_angles = get_1obj_gt_scenario()
@@ -351,7 +353,7 @@ def test_1obj_poor_translation() -> None:
     cz = 0
     centers += [(cx, cy, cz)]
 
-    yaw_angles = [0, 0, 0, 0]
+    yaw_angles = [0.0, 0.0, 0.0, 0.0]
 
     # dump the ground truth first
     gt_centers, gt_yaw_angles = get_1obj_gt_scenario()
@@ -508,7 +510,7 @@ def test_orientation_error8() -> None:
     assert np.allclose(error_deg, 2.0, atol=1e-2)
 
 
-def get_mot16_scenario_a():
+def get_mot16_scenario_a() -> Tuple[List[Tuple[int, int, int]], List[float]]:
     """
 	https://arxiv.org/pdf/1603.00831.pdf
 	"""
@@ -549,7 +551,7 @@ def get_mot16_scenario_a():
     cz = 0
     centers += [(cx, cy, cz)]
 
-    yaw_angles = [0, 0, 0, 0, 0, 0]
+    yaw_angles = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     return centers, yaw_angles
 
 

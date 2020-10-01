@@ -350,12 +350,12 @@ def get_centerlines_most_aligned_with_trajectory(xy: np.ndarray, candidate_cl: L
     return candidate_centerlines
 
 
-def remove_overlapping_lane_seq(lane_seqs: Sequence[Sequence[int]]) -> List[Sequence[int]]:
+def remove_overlapping_lane_seq(lane_seqs: List[List[int]]) -> List[List[int]]:
     """
     Remove lane sequences which are overlapping to some extent
 
     Args:
-        lane_seqs (list of list of integers): List of sequence of lane ids (Eg. [[12345, 12346, 12347], [12345, 12348]])
+        lane_seqs (list of list of integers): List of list of lane ids (Eg. [[12345, 12346, 12347], [12345, 12348]])
 
     Returns:
         List of sequence of lane ids (e.g. ``[[12345, 12346, 12347], [12345, 12348]]``)

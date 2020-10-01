@@ -2,7 +2,7 @@
 
 import copy
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -620,7 +620,7 @@ class ArgoverseMap:
 
         return neighborhood_lane_ids
 
-    def get_lane_segment_predecessor_ids(self, lane_segment_id: int, city_name: str) -> Sequence[int]:
+    def get_lane_segment_predecessor_ids(self, lane_segment_id: int, city_name: str) -> List[int]:
         """
         Get land id for the lane predecessor of the specified lane_segment_id
 
@@ -634,7 +634,7 @@ class ArgoverseMap:
         predecessor_ids = self.city_lane_centerlines_dict[city_name][lane_segment_id].predecessors
         return predecessor_ids
 
-    def get_lane_segment_successor_ids(self, lane_segment_id: int, city_name: str) -> Optional[Sequence[int]]:
+    def get_lane_segment_successor_ids(self, lane_segment_id: int, city_name: str) -> Optional[List[int]]:
         """
         Get land id for the lane sucessor of the specified lane_segment_id
 
@@ -741,20 +741,20 @@ class ArgoverseMap:
         return self.city_lane_centerlines_dict[city_name][lane_segment_id].has_traffic_control
 
     def remove_extended_predecessors(
-        self, lane_seqs: List[Sequence[int]], xy: np.ndarray, city_name: str
-    ) -> List[Sequence[int]]:
+        self, lane_seqs: List[List[int]], xy: np.ndarray, city_name: str
+    ) -> List[List[int]]:
         """
         Remove lane_ids which are obtained by finding way too many predecessors from lane sequences.
         If any lane id is an occupied lane id for the first coordinate of the trajectory, ignore all the
         lane ids that occured before that
 
         Args:
-            lane_seqs: List of sequence of lane ids (Eg. [[12345, 12346, 12347], [12345, 12348]])
+            lane_seqs: List of list of lane ids (Eg. [[12345, 12346, 12347], [12345, 12348]])
             xy: trajectory coordinates
             city_name: either 'MIA' for Miami or 'PIT' for Pittsburgh
 
         Returns:
-            filtered_lane_seq (list of list of integers): List of sequence of lane ids obtained after filtering
+            filtered_lane_seq (list of list of integers): List of list of lane ids obtained after filtering
         """
         filtered_lane_seq = []
         occupied_lane_ids = self.get_lane_segments_containing_xy(xy[0, 0], xy[0, 1], city_name)
@@ -767,7 +767,7 @@ class ArgoverseMap:
             filtered_lane_seq.append(new_lane_seq)
         return filtered_lane_seq
 
-    def get_cl_from_lane_seq(self, lane_seqs: Iterable[Sequence[int]], city_name: str) -> List[np.ndarray]:
+    def get_cl_from_lane_seq(self, lane_seqs: Iterable[List[int]], city_name: str) -> List[np.ndarray]:
         """Get centerlines corresponding to each lane sequence in lane_sequences
 
         Args:
@@ -822,7 +822,7 @@ class ArgoverseMap:
         dfs_threshold = displacement * 2.0
 
         # DFS to get all successor and predecessor candidates
-        obs_pred_lanes: List[Sequence[int]] = []
+        obs_pred_lanes: List[List[int]] = []
         for lane in curr_lane_candidates:
             candidates_future = self.dfs(lane, city_name, 0, dfs_threshold)
             candidates_past = self.dfs(lane, city_name, 0, dfs_threshold, True)

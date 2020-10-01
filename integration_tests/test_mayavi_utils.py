@@ -16,17 +16,18 @@ except ImportError:
     MISSING_MAYAVI = True
 
 import pathlib
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-_TEST_DIR = pathlib.Path(__file__).parent.parent / "tests"
+_TEST_DIR: Path = pathlib.Path(__file__).parent.parent / "tests"
 
-skip_if_not_mayavi = pytest.mark.skipif(MISSING_MAYAVI, reason="mayavi not installed")
+skip_if_not_mayavi: pytest.mark.MarkDecorator = pytest.mark.skipif(MISSING_MAYAVI, reason="mayavi not installed")
 
 
-@skip_if_not_mayavi
-def test_mayavi_import_basic():
+@skip_if_not_mayavi  # type: ignore
+def test_mayavi_import_basic() -> None:
     """
         To test if Mayavi is installed correctly, generate lines around
         surface of a torus and render them.
@@ -43,8 +44,8 @@ def test_mayavi_import_basic():
     l = mayavi.mlab.plot3d(x, y, z, np.sin(mu), tube_radius=0.025, colormap="Spectral")
 
 
-@skip_if_not_mayavi
-def test_plot_bbox_3d_mayavi_no_text():
+@skip_if_not_mayavi  # type: ignore
+def test_plot_bbox_3d_mayavi_no_text() -> None:
     """
     To visualize the result, simply add the following line to this function:
         mayavi.mlab.show()
@@ -96,8 +97,8 @@ def test_plot_bbox_3d_mayavi_no_text():
     mayavi.mlab.close(fig)
 
 
-@skip_if_not_mayavi
-def test_plot_bbox_3d_mayavi_drawtext():
+@skip_if_not_mayavi  # type: ignore
+def test_plot_bbox_3d_mayavi_drawtext() -> None:
     """
     To visualize the result, simply add the following line to this function:
     .. code-block:: python
@@ -153,8 +154,8 @@ def test_plot_bbox_3d_mayavi_drawtext():
     mayavi.mlab.close(fig)
 
 
-@skip_if_not_mayavi
-def test_plot_points_3D_mayavi():
+@skip_if_not_mayavi  # type: ignore
+def test_plot_points_3D_mayavi() -> None:
     """Visualize 3D point cloud with Mayavi.
 
     Note
@@ -174,8 +175,8 @@ def test_plot_points_3D_mayavi():
     mayavi.mlab.close(fig)
 
 
-@skip_if_not_mayavi
-def test_plot_points_3d_argoverse():
+@skip_if_not_mayavi  # type: ignore
+def test_plot_points_3d_argoverse() -> None:
     """Render a LiDAR sweep from Argoverse, loaded from a .txt file."""
     fig = mayavi.mlab.figure(bgcolor=(1, 1, 1), size=(2000, 1000))
     point_arr = np.loadtxt(_TEST_DIR / "test_data/sample_argoverse_sweep.txt")
@@ -183,16 +184,16 @@ def test_plot_points_3d_argoverse():
     mayavi.mlab.close(fig)
 
 
-@skip_if_not_mayavi
-def test_draw_lidar_argoverse():
+@skip_if_not_mayavi  # type: ignore
+def test_draw_lidar_argoverse() -> None:
     """Test :ref:`draw_lidar_simple`."""
     pc = np.loadtxt(_TEST_DIR / "test_data/sample_argoverse_sweep.txt")
     fig = draw_lidar(pc)
     mayavi.mlab.close(fig)
 
 
-@skip_if_not_mayavi
-def test_draw_coordinate_frame_at_origin():
+@skip_if_not_mayavi  # type: ignore
+def test_draw_coordinate_frame_at_origin() -> None:
     """Test :ref:`draw_coordinate_frame_at_origin`.
     """
     fig = mayavi.mlab.figure(bgcolor=(1, 1, 1), size=(2000, 1000))
