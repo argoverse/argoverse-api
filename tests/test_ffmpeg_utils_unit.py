@@ -4,7 +4,7 @@
 from argoverse.utils.ffmpeg_utils import write_nonsequential_idx_video, write_video
 
 
-def test_ffmpeg_seq_frame_vid_smokescreen():
+def test_ffmpeg_seq_frame_vid_smokescreen() -> None:
     """
         """
     image_prefix = "imgs_%d.jpg"
@@ -12,7 +12,7 @@ def test_ffmpeg_seq_frame_vid_smokescreen():
     write_video(image_prefix, output_prefix)
 
 
-def test_ffmpeg_nonseq_frame_vid_smokescreen():
+def test_ffmpeg_nonseq_frame_vid_smokescreen() -> None:
     """
         """
     img_wildcard = "imgs_%*.jpg"

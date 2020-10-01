@@ -12,7 +12,7 @@ from argoverse.utils.centerline_utils import (
 )
 
 
-def temp_test_straight_centerline_to_polygon():
+def temp_test_straight_centerline_to_polygon() -> None:
     """
         Try converting a simple straight polyline into a polygon. Represents
         the conversion from a centerline to a lane segment polygon.
@@ -37,7 +37,7 @@ def temp_test_straight_centerline_to_polygon():
     assert np.array_equal(polygon, gt_polygon)
 
 
-def test_is_overlapping_lane_seq():
+def test_is_overlapping_lane_seq() -> None:
     """Test is_overlapping_lane_seq"""
 
     lane_seq1 = [1, 2, 3, 4]
@@ -56,7 +56,7 @@ def test_is_overlapping_lane_seq():
     assert not is_overlapping_lane_seq(lane_seq1, lane_seq2)
 
 
-def test_get_nt_distance_point():
+def test_get_nt_distance_point() -> None:
     """Compute distances in centerline frame for a point"""
     """Test Case
 
@@ -92,7 +92,7 @@ def test_get_nt_distance_point():
     assert_almost_equal(norm_dist, 1.000, 3)
 
 
-def test_get_nt_distance():
+def test_get_nt_distance() -> None:
     """Compute distances in centerline frame for a trajectory"""
     """Test Case
 
@@ -122,7 +122,7 @@ def test_get_nt_distance():
     np.array_equal(nt_dist, expected_nt_dist)
 
 
-def test_filter_candidate_centerlines():
+def test_filter_candidate_centerlines() -> None:
     """Test filter candidate centerlines"""
 
     # Test Case

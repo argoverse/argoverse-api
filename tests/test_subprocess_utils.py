@@ -5,7 +5,7 @@
 from argoverse.utils.subprocess_utils import run_command
 
 
-def test_run_command_smokescreen():
+def test_run_command_smokescreen() -> None:
     """
         Do not check output, just verify import works
         and does not crash.
@@ -14,7 +14,7 @@ def test_run_command_smokescreen():
     run_command(cmd)
 
 
-def test_run_command_cat():
+def test_run_command_cat() -> None:
     """
         Execute a command to dump a string to standard output. Returned
         output will be in byte format with a carriage return.

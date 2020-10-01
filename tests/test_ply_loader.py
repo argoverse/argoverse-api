@@ -9,7 +9,7 @@ from argoverse.utils.ply_loader import load_ply
 _TEST_DIR = pathlib.Path(__file__).parent
 
 
-def test_load_ply():
+def test_load_ply() -> None:
     ply_fpath = _TEST_DIR / "test_data/tracking/1/lidar/PC_0.ply"
     pc = load_ply(ply_fpath)
     pc_gt = np.array(
