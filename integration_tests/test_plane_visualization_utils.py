@@ -9,11 +9,12 @@ from argoverse.utils.calibration import load_calib
 
 try:
     import mayavi.mlab
+
     from argoverse.utils.frustum_clipping import generate_frustum_planes
     from argoverse.utils.plane_visualization_utils import (
-        populate_frustum_voxels,
         get_perpendicular,
         plot_frustum_planes_and_normals,
+        populate_frustum_voxels,
     )
 except ImportError:
     MAYAVI_MISSING = True

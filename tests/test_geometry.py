@@ -4,7 +4,6 @@ import numpy as np
 
 from argoverse.utils.geometry import filter_point_cloud_to_polygon, point_inside_polygon, rotate_polygon_about_pt
 
-
 """
 Unit tests for argoverse/utils/geometry.py
 """

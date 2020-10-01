@@ -9,7 +9,6 @@ from argoverse.utils.cuboid_interior import (
     filter_point_cloud_to_bbox_3D_vectorized,
 )
 
-
 """
 Run it with "pytest tracker_tools_tests.py"
 """

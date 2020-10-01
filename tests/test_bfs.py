@@ -2,10 +2,9 @@
 
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
-from typing import Mapping, MutableSequence, Sequence
+from typing import List, Mapping, MutableSequence, Sequence
 
 from argoverse.utils.bfs import bfs_enumerate_paths
-
 
 """
 Collection of unit tests to verify that Breadth-First search utility
@@ -13,9 +12,7 @@ on semantic lane graph works properly.
 """
 
 
-def compare_paths(
-    paths_lhs: MutableSequence[MutableSequence[str]], paths_rhs: MutableSequence[MutableSequence[str]]
-) -> bool:
+def compare_paths(paths_lhs: List[List[str]], paths_rhs: List[List[str]]) -> bool:
     """
     Compare two input paths for equality.
 
@@ -48,7 +45,7 @@ def get_sample_graph() -> Mapping[str, Sequence[str]]:
 def test_bfs_enumerate_paths_depth3() -> None:
     """Graph is in adjacent list representation."""
     graph = get_sample_graph()
-    paths_ref_depth3 = [
+    paths_ref_depth3: List[List[str]] = [
         ["1", "3"],
         ["1", "2", "6"],
         ["1", "4", "8"],

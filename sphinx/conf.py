@@ -3,9 +3,11 @@ import os
 import re
 import shutil
 from pathlib import Path
+from typing import Dict, List
+
+from recommonmark.transform import AutoStructify
 
 import sphinx.ext.apidoc
-from recommonmark.transform import AutoStructify
 
 _BADGE_REGEX = re.compile(r"^(?:\[!\[[^[]*\](\([^)]+\)\]\([^)]+\)))", re.M)
 _TOC_REGEX = re.compile(r"(## Table of Contents.+- \[Installation\][^\n]*\n)", re.S)
@@ -39,13 +41,13 @@ extensions = [
     "sphinx_autodoc_typehints",
     "recommonmark",
 ]
-templates_path = []
-exclude_patterns = []
-source_suffix = {".rst": "restructuredtext", ".txt": "restructuredtext", ".md": "markdown"}
+templates_path: List = []
+exclude_patterns: List = []
+source_suffix: Dict = {".rst": "restructuredtext", ".txt": "restructuredtext", ".md": "markdown"}
 
 # -- Options for HTML output -------------------------------------------------
-html_theme = "sphinx_rtd_theme"
-html_static_path = []
+html_theme: str = "sphinx_rtd_theme"
+html_static_path: List = []
 
 
 # -- Extension configuration -------------------------------------------------

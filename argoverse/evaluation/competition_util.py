@@ -11,11 +11,11 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import h5py
 import numpy as np
+import quaternion
 from scipy.spatial import ConvexHull
 from shapely.geometry import Polygon
 from sklearn.cluster.dbscan_ import DBSCAN
 
-import quaternion
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
 from argoverse.utils.se3 import SE3
