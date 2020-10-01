@@ -2,7 +2,7 @@ fail_fast: false
 
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks.git
-    rev: 0b70e28
+    rev: 5bd9e74
     hooks:
     - id: check-json
     - id: mixed-line-ending
