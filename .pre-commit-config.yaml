@@ -4,24 +4,26 @@ repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks.git
     rev: master
     hooks:
-    - id: check-json
-    - id: mixed-line-ending
-      args: ['--fix=lf']
-    - id: end-of-file-fixer
-    - id: debug-statements
+      - id: check-json
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+      - id: end-of-file-fixer
+      - id: debug-statements
 -   repo: https://github.com/PyCQA/isort.git
     rev: develop
     hooks:
-    - id: isort
-      args: ["-w", "120", "--profile", "black"]
+      - id: isort
+        args: ["-w", "120", "--profile", "black"]
 -   repo: https://github.com/python/black.git
     rev: master
     hooks:
-    - id: black
-      args: ["-l", "120"]
+      - id: black
+        args: ["-l", "120"]
 -   repo: https://github.com/pre-commit/mirrors-mypy
     rev: master
     hooks:
-    - id: mypy
-      args: ["--ignore-missing", "--strict", "--pretty"]
+      - id: mypy
+        args: ["--ignore-missing", "--strict", "--pretty"]
+        additional_dependencies:
+        - 'virtualenv'
 exclude: "docs/.*$"
