@@ -18,6 +18,7 @@ from argoverse.evaluation.detection_utils import (
     compute_affinity_matrix,
     dist_fn,
     iou_aligned_3d,
+    wrap_angle,
 )
 from argoverse.evaluation.eval_detection import DetectionEvaluator
 from argoverse.utils.transform import quat_scipy2argo_vectorized
@@ -171,6 +172,38 @@ def test_orientation_eighth_angles() -> None:
 
         assert np.isclose(dist_fn(dts, gts, DistFnType.ORIENTATION), expected_result)
         assert np.isclose(dist_fn(gts, dts, DistFnType.ORIENTATION), expected_result)
+
+
+def test_wrap_angle() -> None:
+    theta: np.ndarray = np.array([-3 * np.pi / 2])
+
+    expected_result: float = np.array([np.pi / 2])
+    assert wrap_angle(theta) == expected_result
+
+
+# TODO Stub
+def test_accumulate() -> None:
+    pass
+
+
+# TODO Stub
+def test_assign() -> None:
+    pass
+
+
+# TODO Stub
+def test_filter_instances() -> None:
+    pass
+
+
+# TODO Stub
+def test_interp() -> None:
+    pass
+
+
+# TODO Stub
+def test_plot() -> None:
+    pass
 
 
 def test_iou_aligned_3d() -> None:
