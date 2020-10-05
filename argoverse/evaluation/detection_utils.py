@@ -270,7 +270,9 @@ def rank(dts: List[ObjectLabelRecord]) -> Tuple[np.ndarray, np.ndarray]:
 
 
 def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
-    """Interpolate the precision over all recall levels.
+    """Interpolate the precision over all recall levels. See equation 2 in
+    http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.167.6629&rep=rep1&type=pdf
+    for more information.
 
     Args:
         prec: Precision at all recall levels (N,).
@@ -393,7 +395,7 @@ def wrap_angle(angles: np.ndarray, period: float = np.pi) -> np.ndarray:
         the inverse of `np.unwrap`.
 
     Returns:
-        The angles (in radians) mapped to the interval [0, π).
+        Angles (in radians) mapped to the interval [0, π).
     """
 
     # Map angles to [0, ∞].
@@ -411,7 +413,7 @@ def wrap_angle(angles: np.ndarray, period: float = np.pi) -> np.ndarray:
     return angles
 
 
-def plot(rec_interp: np.ndarray, prec_interp: np.ndarray, cls_name: str, figs_fpath: Path) -> None:
+def plot(rec_interp: np.ndarray, prec_interp: np.ndarray, cls_name: str, figs_fpath: Path) -> Path:
     """Plot and save the precision recall curve.
 
     Args:
@@ -419,10 +421,15 @@ def plot(rec_interp: np.ndarray, prec_interp: np.ndarray, cls_name: str, figs_fp
         prec_interp: Interpolated precision data of shape (N,).
         cls_name: Class name.
         figs_fpath: Path to the folder which will contain the output figures.
+    Returns:
+        dst_fpath: Plot file path.
     """
     plt.plot(rec_interp, prec_interp)
     plt.title("PR Curve")
     plt.xlabel("Recall")
     plt.ylabel("Precision")
-    plt.savefig(f"{figs_fpath}/{cls_name}.png")
+
+    dst_fpath = Path(f"{figs_fpath}/{cls_name}.png")
+    plt.savefig(dst_fpath)
     plt.close()
+    return dst_fpath

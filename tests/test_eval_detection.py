@@ -2,7 +2,7 @@
 """Detection evaluation unit tests"""
 
 import logging
-import pathlib
+from pathlib import Path
 from typing import List
 
 import numpy as np
@@ -15,15 +15,19 @@ from argoverse.evaluation.detection_utils import (
     AffFnType,
     DetectionCfg,
     DistFnType,
+    FilterMetric,
     compute_affinity_matrix,
     dist_fn,
+    filter_instances,
+    interp,
     iou_aligned_3d,
+    plot,
     wrap_angle,
 )
 from argoverse.evaluation.eval_detection import DetectionEvaluator
 from argoverse.utils.transform import quat_scipy2argo_vectorized
 
-TEST_DATA_LOC = pathlib.Path(__file__).parent.parent / "tests" / "test_data" / "detection"
+TEST_DATA_LOC = Path(__file__).parent.parent / "tests" / "test_data" / "detection"
 logging.getLogger("matplotlib.font_manager").disabled = True
 
 
@@ -191,19 +195,50 @@ def test_assign() -> None:
     pass
 
 
-# TODO Stub
 def test_filter_instances() -> None:
-    pass
+    """Generate 100 different detections and filter them based on Euclidean distance."""
+    dts: List[ObjectLabelRecord] = [
+        ObjectLabelRecord(
+            translation=[i, i, 0],
+            quaternion=np.array([0, 0, 0, 0]),
+            length=5.0,
+            width=2.0,
+            height=3.0,
+            occlusion=0,
+            label_class="VEHICLE",
+        )
+        for i in range(100)
+    ]
+
+    target_class_name: str = "VEHICLE"
+    filter_metric: FilterMetric = FilterMetric.EUCLIDEAN
+    max_detection_range: float = 100.0
+
+    expected_result: int = 71
+    assert len(filter_instances(dts, target_class_name, filter_metric, max_detection_range)) == expected_result
 
 
-# TODO Stub
 def test_interp() -> None:
-    pass
+    """Test non-decreasing `interpolation` constraint enforced on precision results.
+    See equation 2 in http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.167.6629&rep=rep1&type=pdf
+    for more information."""
+    prec: np.ndarray = np.array([1.0, 0.5, 0.33, 0.5])
+
+    expected_result: np.ndarray = np.array([1.0, 0.5, 0.5, 0.5])
+    assert (interp(prec) == expected_result).all()
 
 
-# TODO Stub
 def test_plot() -> None:
-    pass
+    """Test plotting functionality (i.e., plots are written to specified file)."""
+    prec_interp: np.ndarray = np.array([1.0, 0.5, 0.25, 0.125])
+    rec_interp: np.ndarray = np.array([0.25, 0.5, 0.75, 1.0])
+    cls_name: str = "VEHICLE"
+    figs_fpath: Path = Path("/tmp/figs")
+    if not figs_fpath.is_dir():
+        figs_fpath.mkdir(parents=True, exist_ok=True)
+
+    expected_result: Path = Path(figs_fpath / (cls_name + ".png"))
+    assert plot(rec_interp, prec_interp, cls_name, figs_fpath) == expected_result
 
 
 def test_iou_aligned_3d() -> None:
