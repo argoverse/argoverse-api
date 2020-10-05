@@ -197,9 +197,18 @@ def test_accumulate() -> None:
         cfg,
     )
     # ensure the detections match at all thresholds, have 0 TP errors, and have AP = 1
+    expected_ATE = 0.0
+    expected_ASE = 0.0
+    expected_AOE = 0.0
+    expected_AP = 1.0
     assert (
         cls_to_accum["VEHICLE"]
-        == np.array([[1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0], [1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0]])
+        == np.array(
+            [
+                [1.0, 1.0, 1.0, 1.0, expected_ATE, expected_ASE, expected_AOE, expected_AP],
+                [1.0, 1.0, 1.0, 1.0, expected_ATE, expected_ASE, expected_AOE, expected_AP],
+            ]
+        )
     ).all()
     assert cls_to_ninst["VEHICLE"] == 2  # there are 2 vehicle labels in this file
     assert sum(cls_to_ninst.values()) == 2  # and no other labels
@@ -267,9 +276,10 @@ def test_assign() -> None:
     metrics = assign(dts, gts, cfg)
     # if these assign correctly, we should get an ATE of 0.1 for the first two
     expected_result: float = 0.1
-    assert np.isclose(metrics[0, 4], expected_result)
-    assert np.isclose(metrics[1, 4], expected_result)
-    assert np.isnan(metrics[2, 5])
+    ATE_COL_IDX = 4
+    assert np.isclose(metrics[0, ATE_COL_IDX], expected_result)  # instance 0
+    assert np.isclose(metrics[1, ATE_COL_IDX], expected_result)  # instance 1
+    assert np.isnan(metrics[2, ATE_COL_IDX])  # instance 32
 
 
 def test_filter_instances() -> None:
