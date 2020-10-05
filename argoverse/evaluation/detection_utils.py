@@ -166,7 +166,6 @@ def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
     Returns:
         metrics: Matrix of true/false positive concatenated with true positive errors (N, K + S) where K is the number
             of true positive thresholds used for AP computation and S is the number of true positive errors.
-        scores: Corresponding scores for the true positives/false positives (N,).
     """
 
     # Ensure the number of boxes considered per class is at most `MAX_NUM_BOXES`.

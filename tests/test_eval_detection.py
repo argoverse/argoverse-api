@@ -16,6 +16,8 @@ from argoverse.evaluation.detection_utils import (
     DetectionCfg,
     DistFnType,
     FilterMetric,
+    accumulate,
+    assign,
     compute_affinity_matrix,
     dist_fn,
     filter_instances,
@@ -91,7 +93,7 @@ def test_affinity_center() -> None:
     """
     dts: List[ObjectLabelRecord] = [
         ObjectLabelRecord(
-            quaternion=np.array([0, 0, 0, 0]),
+            quaternion=np.array([1, 0, 0, 0]),
             translation=np.array([0, 0, 0]),
             length=5.0,
             width=5.0,
@@ -101,7 +103,7 @@ def test_affinity_center() -> None:
     ]
     gts: List[ObjectLabelRecord] = [
         ObjectLabelRecord(
-            quaternion=np.array([0, 0, 0, 0]),
+            quaternion=np.array([1, 0, 0, 0]),
             translation=np.array([3, 4, 0]),
             length=5.0,
             width=5.0,
@@ -185,14 +187,89 @@ def test_wrap_angle() -> None:
     assert wrap_angle(theta) == expected_result
 
 
-# TODO Stub
 def test_accumulate() -> None:
-    pass
+    """Verify that the accumulate function matches known output for a self-comparison."""
+    cfg = DetectionCfg()
+    # compare a set of labels to itself
+    cls_to_accum, cls_to_ninst = accumulate(
+        TEST_DATA_LOC / "detections",
+        TEST_DATA_LOC / "detections/1/per_sweep_annotations_amodal/tracked_object_labels_0.json",
+        cfg,
+    )
+    # ensure the detections match at all thresholds, have 0 TP errors, and have AP = 1
+    assert (
+        cls_to_accum["VEHICLE"]
+        == np.array([[1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0], [1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0]])
+    ).all()
+    assert cls_to_ninst["VEHICLE"] == 2  # there are 2 vehicle labels in this file
+    assert sum(cls_to_ninst.values()) == 2  # and no other labels
 
 
-# TODO Stub
 def test_assign() -> None:
-    pass
+    """Verify that the assign functions as expected by checking ATE of assigned detections against known distance."""
+    cfg = DetectionCfg()
+    dts: np.ndarray = np.array(
+        [
+            ObjectLabelRecord(
+                quaternion=np.array([1, 0, 0, 0]),
+                translation=np.array([0, 0, 0]),
+                length=5.0,
+                width=5.0,
+                height=5.0,
+                occlusion=0,
+            ),
+            ObjectLabelRecord(
+                quaternion=np.array([1, 0, 0, 0]),
+                translation=np.array([10, 10, 10]),
+                length=5.0,
+                width=5.0,
+                height=5.0,
+                occlusion=0,
+            ),
+            ObjectLabelRecord(
+                quaternion=np.array([1, 0, 0, 0]),
+                translation=np.array([20, 20, 20]),
+                length=5.0,
+                width=5.0,
+                height=5.0,
+                occlusion=0,
+            ),
+        ]
+    )
+    gts: np.ndarray = np.array(
+        [
+            ObjectLabelRecord(
+                quaternion=np.array([1, 0, 0, 0]),
+                translation=np.array([-10, -10, -10]),
+                length=5.0,
+                width=5.0,
+                height=5.0,
+                occlusion=0,
+            ),
+            ObjectLabelRecord(
+                quaternion=np.array([1, 0, 0, 0]),
+                translation=np.array([0.1, 0, 0]),  # off by 0.1
+                length=5.0,
+                width=5.0,
+                height=5.0,
+                occlusion=0,
+            ),
+            ObjectLabelRecord(
+                quaternion=np.array([1, 0, 0, 0]),
+                translation=np.array([10.1, 10, 10]),  # off by 0.1
+                length=5.0,
+                width=5.0,
+                height=5.0,
+                occlusion=0,
+            ),
+        ]
+    )
+    metrics = assign(dts, gts, cfg)
+    # if these assign correctly, we should get an ATE of 0.1 for the first two
+    expected_result: float = 0.1
+    assert np.isclose(metrics[0, 4], expected_result)
+    assert np.isclose(metrics[1, 4], expected_result)
+    assert np.isnan(metrics[2, 5])
 
 
 def test_filter_instances() -> None:
