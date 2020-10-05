@@ -68,7 +68,6 @@ from typing import DefaultDict, List, NamedTuple
 
 import numpy as np
 import pandas as pd
-from pandas.core import frame
 
 from argoverse.evaluation.detection_utils import DetectionCfg, accumulate, calc_ap, plot
 
