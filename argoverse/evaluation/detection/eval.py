@@ -69,7 +69,7 @@ from typing import DefaultDict, List, NamedTuple
 import numpy as np
 import pandas as pd
 
-from argoverse.evaluation.detection.constants import N_TP_ERRORS, SIGNIFICANT_DIGITS, STATISTIC_NAMES, np
+from argoverse.evaluation.detection.constants import N_TP_ERRORS, SIGNIFICANT_DIGITS, STATISTIC_NAMES
 from argoverse.evaluation.detection.utils import DetectionCfg, accumulate, calc_ap, plot
 
 logger = logging.getLogger(__name__)

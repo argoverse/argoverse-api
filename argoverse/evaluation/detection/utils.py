@@ -24,6 +24,7 @@ from scipy.spatial.transform import Rotation as R
 from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
 from argoverse.data_loading.object_label_record import ObjectLabelRecord, read_label
 from argoverse.evaluation.detection.constants import (
+    COMPETITION_CLASSES,
     MAX_NORMALIZED_AOE,
     MAX_NORMALIZED_ASE,
     MAX_NUM_BOXES,
@@ -80,7 +81,7 @@ class DetectionCfg(NamedTuple):
     affinity_fn_type: AffFnType = AffFnType.CENTER
     n_rec_samples: int = 101
     tp_thresh: float = 2.0  # Meters
-    dt_classes: List[str] = list(OBJ_CLASS_MAPPING_DICT.keys())
+    dt_classes: List[str] = COMPETITION_CLASSES
     dt_metric: FilterMetric = FilterMetric.EUCLIDEAN
     max_dt_range: float = 100.0  # Meters
     save_figs: bool = False
