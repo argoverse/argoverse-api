@@ -21,7 +21,6 @@ import pandas as pd
 from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation as R
 
-from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
 from argoverse.data_loading.object_label_record import ObjectLabelRecord, read_label
 from argoverse.evaluation.detection.constants import (
     COMPETITION_CLASSES,
