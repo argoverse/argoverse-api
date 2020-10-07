@@ -11,7 +11,8 @@ from pandas.core.frame import DataFrame
 from scipy.spatial.transform import Rotation as R
 
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
-from argoverse.evaluation.detection_utils import (
+from argoverse.evaluation.detection.eval import DetectionEvaluator
+from argoverse.evaluation.detection.utils import (
     AffFnType,
     DetectionCfg,
     DistFnType,
@@ -26,7 +27,6 @@ from argoverse.evaluation.detection_utils import (
     plot,
     wrap_angle,
 )
-from argoverse.evaluation.eval_detection import DetectionEvaluator
 from argoverse.utils.transform import quat_scipy2argo_vectorized
 
 TEST_DATA_LOC = Path(__file__).parent.parent / "tests" / "test_data" / "detection"

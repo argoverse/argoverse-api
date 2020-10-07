@@ -9,7 +9,7 @@ from typing import Any, DefaultDict, Dict, List, Mapping, NamedTuple, Tuple
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from argoverse.evaluation.detection_utils import wrap_angle
+from argoverse.evaluation.detection.utils import wrap_angle
 from argoverse.evaluation.eval_tracking import eval_tracks
 from argoverse.utils.json_utils import save_json_dict
 

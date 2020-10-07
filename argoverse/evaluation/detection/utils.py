@@ -23,36 +23,22 @@ from scipy.spatial.transform import Rotation as R
 
 from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
 from argoverse.data_loading.object_label_record import ObjectLabelRecord, read_label
+from argoverse.evaluation.detection.constants import (
+    MAX_NORMALIZED_AOE,
+    MAX_NORMALIZED_ASE,
+    MAX_NUM_BOXES,
+    MAX_SCALE_ERROR,
+    MAX_YAW_ERROR,
+    MIN_AP,
+    MIN_CDS,
+    N_TP_ERRORS,
+)
 from argoverse.utils.transform import quat_argo2scipy_vectorized
 
 matplotlib.use("Agg")  # isort:skip
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
-
 logger = logging.getLogger(__name__)
-
-
-TP_ERROR_NAMES: List[str] = ["ATE", "ASE", "AOE"]
-N_TP_ERRORS: int = len(TP_ERROR_NAMES)
-
-STATISTIC_NAMES: List[str] = ["AP"] + TP_ERROR_NAMES + ["CDS"]
-
-MAX_SCALE_ERROR: float = 1.0
-MAX_YAW_ERROR: float = np.pi
-
-# Higher is better.
-MIN_AP: float = 0.0
-MIN_CDS: float = 0.0
-
-# Lower is better.
-MAX_NORMALIZED_ATE: float = 1.0
-MAX_NORMALIZED_ASE: float = 1.0
-MAX_NORMALIZED_AOE: float = 1.0
-
-# Max number of boxes considered per class per scene.
-MAX_NUM_BOXES: int = 500
-
-SIGNIFICANT_DIGITS: float = 3
 
 
 class AffFnType(Enum):

@@ -12,10 +12,9 @@ import motmetrics as mm
 import numpy as np
 from shapely.geometry.polygon import Polygon
 
+from argoverse.evaluation.detection.utils import wrap_angle
 from argoverse.evaluation.eval_utils import label_to_bbox
 from argoverse.utils.json_utils import read_json_file
-
-from .detection_utils import wrap_angle
 
 mh = mm.metrics.create()
 logger = logging.getLogger(__name__)

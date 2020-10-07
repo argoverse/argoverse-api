@@ -69,17 +69,10 @@ from typing import DefaultDict, List, NamedTuple
 import numpy as np
 import pandas as pd
 
-from argoverse.evaluation.detection_utils import DetectionCfg, accumulate, calc_ap, plot
+from argoverse.evaluation.detection.constants import N_TP_ERRORS, SIGNIFICANT_DIGITS, STATISTIC_NAMES, np
+from argoverse.evaluation.detection.utils import DetectionCfg, accumulate, calc_ap, plot
 
 logger = logging.getLogger(__name__)
-
-
-TP_ERROR_NAMES: List[str] = ["ATE", "ASE", "AOE"]
-N_TP_ERRORS: int = len(TP_ERROR_NAMES)
-
-STATISTIC_NAMES: List[str] = ["AP"] + TP_ERROR_NAMES + ["CDS"]
-
-SIGNIFICANT_DIGITS: float = 3
 
 
 class DetectionEvaluator(NamedTuple):
