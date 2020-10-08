@@ -44,8 +44,8 @@ def test_draw_point_cloud_trajectory_no_error(data_loader: ArgoverseTrackingLoad
     visualization_utils.draw_point_cloud_trajectory(axes, "title!", data_loader, 0, [1, 0])
 
 
-# def test_draw_point_cloud_trajectory_no_error(data_loader: ArgoverseTrackingLoader, axes3d: plt.Axes) -> None:
-#     visualization_utils.draw_point_cloud_trajectory(axes3d, "title!", data_loader, 0)
+def test_draw_point_cloud_trajectory_no_error(data_loader: ArgoverseTrackingLoader, axes3d: plt.Axes) -> None:
+    visualization_utils.draw_point_cloud_trajectory(axes3d, "title!", data_loader, 0)
 
 
 def test_make_grid_ring_camera_no_error(data_loader: ArgoverseTrackingLoader) -> None:
