@@ -58,7 +58,12 @@ def vis_mask(image: np.ndarray, mask: np.ndarray, color: float, alpha: float = 0
     return image.astype(np.uint8)
 
 
-def vis_class(image: np.ndarray, pos: Tuple[float, float], class_str: str, font_scale: float = 50.0) -> np.ndarray:
+def vis_class(
+    image: np.ndarray,
+    pos: Tuple[float, float],
+    class_str: str,
+    font_scale: float = 50.0,
+) -> np.ndarray:
     """Visualizes a class.
 
     Args:
@@ -270,7 +275,12 @@ def vis_one_image(
 
             for contour in contours:
                 polygon = Polygon(
-                    contour.reshape((-1, 2)), fill=True, facecolor=color_mask, edgecolor="w", linewidth=1.2, alpha=0.5
+                    contour.reshape((-1, 2)),
+                    fill=True,
+                    facecolor=color_mask,
+                    edgecolor="w",
+                    linewidth=1.2,
+                    alpha=0.5,
                 )
                 ax.add_patch(polygon)
 

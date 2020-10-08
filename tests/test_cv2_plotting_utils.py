@@ -10,11 +10,11 @@ from argoverse.utils.cv2_plotting_utils import (
 )
 
 
-def test_draw_point_cloud_in_img_cv2_smokescreen():
+def test_draw_point_cloud_in_img_cv2_smokescreen() -> None:
     """
-        We place 4 red circles in an image (with channel order BGR,
-        per the OpenCV convention). We verify that pixel values change accordingly.
-        """
+    We place 4 red circles in an image (with channel order BGR,
+    per the OpenCV convention). We verify that pixel values change accordingly.
+    """
 
     # xy: Numpy array of shape (K,2)
     xy = np.array([[20, 10], [0, 0], [199, 0], [199, 99]])
@@ -34,14 +34,14 @@ def test_draw_point_cloud_in_img_cv2_smokescreen():
             assert np.allclose(img_w_circ[y, x, :], color)
 
 
-def test_draw_polygon_cv2_smokescreen():
+def test_draw_polygon_cv2_smokescreen() -> None:
     """
-        Test ability to fill a nonconvex polygon.
+    Test ability to fill a nonconvex polygon.
 
-        We don't verify the rendered values since this requires
-        scanline rendering computation to find the polygon's
-        exact boundaries on a rasterized grid.
-        """
+    We don't verify the rendered values since this requires
+    scanline rendering computation to find the polygon's
+    exact boundaries on a rasterized grid.
+    """
     UINT8_MAX = 255
     img_w = 40
     img_h = 20
@@ -64,13 +64,13 @@ def test_draw_polygon_cv2_smokescreen():
         assert img_w_polygon.dtype == dtype
 
 
-def test_plot_bbox_polygon_cv2_smokescreen():
+def test_plot_bbox_polygon_cv2_smokescreen() -> None:
     """
-        Test drawing a green bounding box, with a thin red border, and
-        test plotted inside, representing a track ID.
+    Test drawing a green bounding box, with a thin red border, and
+    test plotted inside, representing a track ID.
 
-        We don't catch out-of-bounds errors -- that is up to the user.
-        """
+    We don't catch out-of-bounds errors -- that is up to the user.
+    """
     for dtype in [np.uint8, np.float32]:
         bbox_h = 8
         bbox_w = 14

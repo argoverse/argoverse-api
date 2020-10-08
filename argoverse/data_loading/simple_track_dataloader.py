@@ -114,7 +114,7 @@ class SimpleArgoverseTrackingDataLoader:
             log_id: str, unique ID of vehicle log
         Returns:
             ply_fpaths: List of strings, representing paths to ply files in this log
-            """
+        """
         ply_fpaths = sorted(glob.glob(f"{self.data_dir}/{log_id}/lidar/PC_*.ply"))
         return ply_fpaths
 

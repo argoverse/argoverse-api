@@ -8,12 +8,12 @@ from typing import Mapping, Tuple
 import cv2
 import numpy as np
 from colour import Color
+from typing_extensions import Protocol
 
 from argoverse.utils.cv2_plotting_utils import draw_polygon_cv2, draw_polyline_cv2
 from argoverse.utils.datetime_utils import generate_datetime_string
 from argoverse.utils.mesh_grid import get_mesh_grid_as_point_cloud
 from argoverse.utils.se2 import SE2
-from typing_extensions import Protocol
 
 from .lane_segment import LaneSegment
 
@@ -196,7 +196,11 @@ def render_global_city_map_bev(
             color = blue
 
         draw_polyline_cv2(
-            centerline_2d * UPSAMPLE_FACTOR, rendered_image, color, im_h * UPSAMPLE_FACTOR, im_w * UPSAMPLE_FACTOR
+            centerline_2d * UPSAMPLE_FACTOR,
+            rendered_image,
+            color,
+            im_h * UPSAMPLE_FACTOR,
+            im_w * UPSAMPLE_FACTOR,
         )
 
     # provide colormap in corner

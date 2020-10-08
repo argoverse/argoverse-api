@@ -123,7 +123,10 @@ def convert_lane_boundaries_to_polygon(right_lane_bounds: np.ndarray, left_lane_
 
 
 def filter_candidate_centerlines(
-    xy: np.ndarray, candidate_cl: List[np.ndarray], stationary_threshold: float = 2.0, max_dist_margin: float = 2.0
+    xy: np.ndarray,
+    candidate_cl: List[np.ndarray],
+    stationary_threshold: float = 2.0,
+    max_dist_margin: float = 2.0,
 ) -> List[np.ndarray]:
     """Filter candidate centerlines based on the distance travelled along the centerline.
 
@@ -350,12 +353,12 @@ def get_centerlines_most_aligned_with_trajectory(xy: np.ndarray, candidate_cl: L
     return candidate_centerlines
 
 
-def remove_overlapping_lane_seq(lane_seqs: Sequence[Sequence[int]]) -> List[Sequence[int]]:
+def remove_overlapping_lane_seq(lane_seqs: List[List[int]]) -> List[List[int]]:
     """
     Remove lane sequences which are overlapping to some extent
 
     Args:
-        lane_seqs (list of list of integers): List of sequence of lane ids (Eg. [[12345, 12346, 12347], [12345, 12348]])
+        lane_seqs (list of list of integers): List of list of lane ids (Eg. [[12345, 12346, 12347], [12345, 12348]])
 
     Returns:
         List of sequence of lane ids (e.g. ``[[12345, 12346, 12347], [12345, 12348]]``)

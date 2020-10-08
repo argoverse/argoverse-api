@@ -3,7 +3,6 @@
 
 from argoverse.utils.subprocess_utils import run_command
 
-
 """
 Create a high-quality video using the encoder x264.
 For x264, the valid Constant Rate Factor (crf) range is 0-51.

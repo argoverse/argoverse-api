@@ -1,7 +1,7 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
 import sys
-from typing import List, Optional, Sequence
+from typing import List, Optional
 
 import numpy as np
 
@@ -16,7 +16,7 @@ from argoverse.visualization.mayavi_utils import (
 )
 
 
-def populate_frustum_voxels(planes: Sequence[np.ndarray], fig: Figure, axis_pair: str) -> Figure:
+def populate_frustum_voxels(planes: List[np.ndarray], fig: Figure, axis_pair: str) -> Figure:
     """
     Generate grid in xy plane, and then treat it as grid in xz (ground) plane
     in camera coordinate system.
@@ -52,7 +52,9 @@ def populate_frustum_voxels(planes: Sequence[np.ndarray], fig: Figure, axis_pair
 
 
 def plot_frustum_planes_and_normals(
-    planes: Sequence[np.ndarray], cuboid_verts: Optional[np.ndarray] = None, near_clip_dist: float = 0.5
+    planes: List[np.ndarray],
+    cuboid_verts: Optional[np.ndarray] = None,
+    near_clip_dist: float = 0.5,
 ) -> None:
     """
     Args:
@@ -89,7 +91,17 @@ def plot_frustum_planes_and_normals(
         plane_pts = generate_grid_on_plane(a, b, c, d, P)
         fig = plot_points_3D_mayavi(plane_pts, fig, color)
         # plot the normals at (0,0,0.5) and normal vector (u,v,w) given by (a,b,c)
-        mayavi_wrapper.mlab.quiver3d(0, 0, 0.5, a * 1000, b * 1000, c * 1000, color=color, figure=fig, line_width=8)
+        mayavi_wrapper.mlab.quiver3d(
+            0,
+            0,
+            0.5,
+            a * 1000,
+            b * 1000,
+            c * 1000,
+            color=color,
+            figure=fig,
+            line_width=8,
+        )
 
     # draw teal line at top below the camera
     pt1 = np.array([-5, 0, -5])

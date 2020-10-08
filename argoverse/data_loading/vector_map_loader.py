@@ -64,13 +64,13 @@ class Node:
 
     def __init__(self, id: int, x: float, y: float, height: Optional[float] = None):
         """
-            Args:
-                id: representing unique node ID
-                x: x-coordinate in city reference system
-                y: y-coordinate in city reference system
+        Args:
+            id: representing unique node ID
+            x: x-coordinate in city reference system
+            y: y-coordinate in city reference system
 
-            Returns:
-                None
+        Returns:
+            None
         """
         self.id = id
         self.x = x
@@ -211,7 +211,11 @@ def convert_node_id_list_to_xy(node_id_list: List[int], all_graph_nodes: Mapping
     for i, node_id in enumerate(node_id_list):
         if all_graph_nodes[node_id].height is not None:
             centerline[i] = np.array(
-                [all_graph_nodes[node_id].x, all_graph_nodes[node_id].y, all_graph_nodes[node_id].height]
+                [
+                    all_graph_nodes[node_id].x,
+                    all_graph_nodes[node_id].y,
+                    all_graph_nodes[node_id].height,
+                ]
             )
         else:
             centerline[i] = np.array([all_graph_nodes[node_id].x, all_graph_nodes[node_id].y])
@@ -236,7 +240,10 @@ def extract_node_from_ET_element(child: ET.Element) -> Node:
     node_id = int(node_fields["id"])
     if "height" in node_fields.keys():
         return Node(
-            id=node_id, x=float(node_fields["x"]), y=float(node_fields["y"]), height=float(node_fields["height"])
+            id=node_id,
+            x=float(node_fields["x"]),
+            y=float(node_fields["y"]),
+            height=float(node_fields["height"]),
         )
     return Node(id=node_id, x=float(node_fields["x"]), y=float(node_fields["y"]))
 

@@ -3,7 +3,7 @@ import numpy as np
 from argoverse.utils.mesh_grid import get_mesh_grid_as_point_cloud
 
 
-def test_get_mesh_grid_as_point_cloud_3x3square():
+def test_get_mesh_grid_as_point_cloud_3x3square() -> None:
     """
     Sample a regular grid and return the (x,y) coordinates
     of the sampled points.
@@ -35,7 +35,7 @@ def test_get_mesh_grid_as_point_cloud_3x3square():
     assert np.allclose(gt_pts, pts)
 
 
-def test_get_mesh_grid_as_point_cloud_3x2rect():
+def test_get_mesh_grid_as_point_cloud_3x2rect() -> None:
     """
     Sample a regular grid and return the (x,y) coordinates
     of the sampled points.
@@ -54,7 +54,7 @@ def test_get_mesh_grid_as_point_cloud_3x2rect():
     assert np.allclose(gt_pts, pts)
 
 
-def test_get_mesh_grid_as_point_cloud_single_pt():
+def test_get_mesh_grid_as_point_cloud_single_pt() -> None:
     """
     Sample a regular grid and return the (x,y) coordinates
     of the sampled points.
@@ -73,7 +73,7 @@ def test_get_mesh_grid_as_point_cloud_single_pt():
     assert np.allclose(gt_pts, pts)
 
 
-def test_get_mesh_grid_as_point_cloud_downsample():
+def test_get_mesh_grid_as_point_cloud_downsample() -> None:
     """
     Sample a regular grid and return the (x,y) coordinates
     of the sampled points.

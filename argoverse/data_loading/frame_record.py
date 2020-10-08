@@ -9,9 +9,9 @@ import numpy as np
 
 class FrameRecord:
     """
-        Store representation of a bounding box in some timeframe, in different coordinate systems.
-        This bounding box comes from a track that shares the same color.
-        """
+    Store representation of a bounding box in some timeframe, in different coordinate systems.
+    This bounding box comes from a track that shares the same color.
+    """
 
     def __init__(
         self,
@@ -22,14 +22,14 @@ class FrameRecord:
         track_uuid: str,
         obj_class_str: str,
     ) -> None:
-        """ Initialize FrameRecord.
-            Args:
-              bbox_city_fr: bounding box for city frame.
-              bbox_ego_frame: bounding box for ego frame.
-              occlusion_val: occlusion value.
-              color: tuple representing color. RGB values should be within [0,1] range.
-              track_uuid: track uuid
-              obj_class_str: object class string
+        """Initialize FrameRecord.
+        Args:
+          bbox_city_fr: bounding box for city frame.
+          bbox_ego_frame: bounding box for ego frame.
+          occlusion_val: occlusion value.
+          color: tuple representing color. RGB values should be within [0,1] range.
+          track_uuid: track uuid
+          obj_class_str: object class string
         """
         self.bbox_city_fr = bbox_city_fr
         self.bbox_ego_frame = bbox_ego_frame

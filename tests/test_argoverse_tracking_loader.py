@@ -10,10 +10,10 @@ import pytest
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.utils.camera_stats import CAMERA_LIST
 
-TEST_DATA_LOC = pathlib.Path(__file__).parent.parent / "tests" / "test_data" / "tracking"
+TEST_DATA_LOC = str(pathlib.Path(__file__).parent.parent / "tests" / "test_data" / "tracking")
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore
 def data_loader() -> ArgoverseTrackingLoader:
     return ArgoverseTrackingLoader(TEST_DATA_LOC)
 
@@ -131,10 +131,14 @@ def test_calibration(data_loader: ArgoverseTrackingLoader) -> None:
 def test_pose(data_loader: ArgoverseTrackingLoader) -> None:
     for idx in range(len(data_loader.lidar_list)):
         pose = data_loader.get_pose(idx)
-        assert np.array_equal(
-            pose.inverse().transform_point_cloud(np.array([[0, 0, 0]])),
-            pose.inverse_transform_point_cloud(np.array([[0, 0, 0]])),
-        )
+
+        if pose is not None:
+            assert np.array_equal(
+                pose.inverse().transform_point_cloud(np.array([[0, 0, 0]])),
+                pose.inverse_transform_point_cloud(np.array([[0, 0, 0]])),
+            )
+        else:
+            assert False
 
 
 def test_idx_from_timestamp(data_loader: ArgoverseTrackingLoader) -> None:

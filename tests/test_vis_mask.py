@@ -9,7 +9,7 @@ import numpy as np
 from argoverse.visualization.vis_mask import decode_segment_to_mask, vis_mask, vis_one_image, vis_one_image_opencv
 
 
-def test_vis_mask():
+def test_vis_mask() -> None:
     # Ordered Z first for easy reading
     img = np.array(
         [
@@ -39,7 +39,7 @@ def test_vis_mask():
     assert (expected_img == masked_image).all()
 
 
-def test_decode_segment_to_mask():
+def test_decode_segment_to_mask() -> None:
     mask = decode_segment_to_mask((2, 1, 3, 3), np.zeros((3, 3, 3)))
 
     expected_mask = np.array([[0, 0, 0], [0, 0, 1], [0, 0, 1]])
@@ -47,7 +47,7 @@ def test_decode_segment_to_mask():
     assert (mask == expected_mask).all()
 
 
-def mask_vis_unit_test():
+def mask_vis_unit_test() -> None:
     unit_test_dir = "test_data/vis_mask/0d2ee2db-4061-36b2-a330-8301bdce3fe8/00035"
     img_fpath = f"{unit_test_dir}/image_raw_ring_side_left_000000035.jpg"
     img = cv2.imread(img_fpath)

@@ -116,10 +116,18 @@ def get_displacement_errors_and_miss_rate(
         if forecasted_probabilities is not None:
             prob_n_misses.append(1.0 if curr_min_fde > miss_threshold else (1.0 - pruned_probabilities[min_idx]))
             prob_min_ade.append(
-                min(-np.log(pruned_probabilities[min_idx]), -np.log(LOW_PROB_THRESHOLD_FOR_METRICS)) + curr_min_ade
+                min(
+                    -np.log(pruned_probabilities[min_idx]),
+                    -np.log(LOW_PROB_THRESHOLD_FOR_METRICS),
+                )
+                + curr_min_ade
             )
             prob_min_fde.append(
-                min(-np.log(pruned_probabilities[min_idx]), -np.log(LOW_PROB_THRESHOLD_FOR_METRICS)) + curr_min_fde
+                min(
+                    -np.log(pruned_probabilities[min_idx]),
+                    -np.log(LOW_PROB_THRESHOLD_FOR_METRICS),
+                )
+                + curr_min_fde
             )
     metric_results["minADE"] = sum(min_ade) / len(min_ade)
     metric_results["minFDE"] = sum(min_fde) / len(min_fde)
@@ -132,7 +140,9 @@ def get_displacement_errors_and_miss_rate(
 
 
 def get_drivable_area_compliance(
-    forecasted_trajectories: Dict[int, List[np.ndarray]], city_names: Dict[int, str], max_n_guesses: int
+    forecasted_trajectories: Dict[int, List[np.ndarray]],
+    city_names: Dict[int, str],
+    max_n_guesses: int,
 ) -> float:
     """Compute drivable area compliance metric.
 
@@ -190,7 +200,12 @@ def compute_forecasting_metrics(
         metric_results: Dictionary containing values for all metrics.
     """
     metric_results = get_displacement_errors_and_miss_rate(
-        forecasted_trajectories, gt_trajectories, max_n_guesses, horizon, miss_threshold, forecasted_probabilities
+        forecasted_trajectories,
+        gt_trajectories,
+        max_n_guesses,
+        horizon,
+        miss_threshold,
+        forecasted_probabilities,
     )
     metric_results["DAC"] = get_drivable_area_compliance(forecasted_trajectories, city_names, max_n_guesses)
 

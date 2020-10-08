@@ -27,6 +27,7 @@ class ObjectLabelRecord:
         occlusion: int,
         label_class: Optional[str] = None,
         track_id: Optional[str] = None,
+        score: float = 1.0,
     ) -> None:
         """Create an ObjectLabelRecord.
 
@@ -48,6 +49,7 @@ class ObjectLabelRecord:
         self.occlusion = occlusion
         self.label_class = label_class
         self.track_id = track_id
+        self.score = score
 
     def as_2d_bbox(self) -> np.ndarray:
         """Construct a 2D bounding box from this label.
@@ -160,14 +162,28 @@ class ObjectLabelRecord:
         def draw_rect(selected_corners: np.array, color: Tuple[int, int, int]) -> None:
             prev = selected_corners[-1]
             for corner in selected_corners:
-                draw_clipped_line_segment(img, prev.copy(), corner.copy(), camera_config, linewidth, planes, color)
+                draw_clipped_line_segment(
+                    img,
+                    prev.copy(),
+                    corner.copy(),
+                    camera_config,
+                    linewidth,
+                    planes,
+                    color,
+                )
                 prev = corner
 
         # Draw the sides in green
         for i in range(4):
             # between front and back corners
             draw_clipped_line_segment(
-                img, corners[i], corners[i + 4], camera_config, linewidth, planes, colors[2][::-1]
+                img,
+                corners[i],
+                corners[i + 4],
+                camera_config,
+                linewidth,
+                planes,
+                colors[2][::-1],
             )
 
         # Draw front (first 4 corners) in blue
@@ -179,7 +195,13 @@ class ObjectLabelRecord:
         center_bottom_forward = np.mean(corners[2:4], axis=0)
         center_bottom = np.mean(corners[[2, 3, 7, 6]], axis=0)
         draw_clipped_line_segment(
-            img, center_bottom, center_bottom_forward, camera_config, linewidth, planes, colors[0][::-1]
+            img,
+            center_bottom,
+            center_bottom_forward,
+            camera_config,
+            linewidth,
+            planes,
+            colors[0][::-1],
         )
 
         return img
@@ -188,18 +210,18 @@ class ObjectLabelRecord:
 def form_obj_label_from_json(label: Dict[str, Any]) -> Tuple[np.array, str]:
     """Construct object from loaded json.
 
-    The dictionary loaded from saved json file is expected to have the
-    following fields::
+     The dictionary loaded from saved json file is expected to have the
+     following fields::
 
-        ['frame_index', 'center', 'rotation', 'length', 'width', 'height',
-        'track_label_uuid', 'occlusion', 'on_driveable_surface', 'key_frame',
-        'stationary', 'label_class']
+         ['frame_index', 'center', 'rotation', 'length', 'width', 'height',
+         'track_label_uuid', 'occlusion', 'on_driveable_surface', 'key_frame',
+         'stationary', 'label_class']
 
-   Args:
-        label: Python dictionary that was loaded from saved json file
+    Args:
+         label: Python dictionary that was loaded from saved json file
 
-    Returns:
-        Tuple of (bbox_ego_frame, color); bbox is a numpy array of shape (4,3); color is "g" or "r"
+     Returns:
+         Tuple of (bbox_ego_frame, color); bbox is a numpy array of shape (4,3); color is "g" or "r"
     """
     tr_x = label["center"]["x"]
     tr_y = label["center"]["y"]
@@ -271,7 +293,21 @@ def json_label_dict_to_obj_record(label: Dict[str, Any]) -> ObjectLabelRecord:
         track_id = label["track_label_uuid"]
     else:
         track_id = None
-    obj_rec = ObjectLabelRecord(quaternion, translation, length, width, height, occlusion, label_class, track_id)
+    if "score" in label:
+        score = label["score"]
+    else:
+        score = 1.0
+    obj_rec = ObjectLabelRecord(
+        quaternion,
+        translation,
+        length,
+        width,
+        height,
+        occlusion,
+        label_class,
+        track_id,
+        score,
+    )
     return obj_rec
 
 

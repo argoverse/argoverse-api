@@ -53,7 +53,7 @@ def test_fit_plane_to_point_cloud() -> None:
     pc = np.array([[0, 2, 1], [1, 2, 1], [0, 0, 0]])
     a, b, c, d = fit_plane_to_point_cloud(pc)
 
-    assert d == 0  # touching origin
+    assert np.isclose(d, 0)  # touching origin
     normal = np.array([a, b, c])
     normal /= np.linalg.norm(normal)
     gt_normal = np.array([0.0, -1.0, 2.0])
@@ -167,11 +167,18 @@ def test_clip_segment_v3_plane_n() -> None:
 def test_form_right_clipping_plane() -> None:
     """Test form_right_clipping_plane(). Use 4 points to fit the right clipping plane."""
     fx = 10.0
-    img_width = 30.0
+    img_width = 30
     right_plane = form_right_clipping_plane(fx, img_width)
 
     Y_OFFSET = 10  # arbitrary extent down the imager
-    right = np.array([[0, 0, 0], [img_width / 2.0, 0, fx], [0, Y_OFFSET, 0], [img_width / 2.0, Y_OFFSET, fx]])
+    right = np.array(
+        [
+            [0, 0, 0],
+            [img_width / 2.0, 0, fx],
+            [0, Y_OFFSET, 0],
+            [img_width / 2.0, Y_OFFSET, fx],
+        ]
+    )
 
     a, b, c, d = fit_plane_to_point_cloud(right)
     right_plane_gt = np.array([a, b, c, d])
@@ -187,11 +194,18 @@ def test_form_right_clipping_plane() -> None:
 def test_form_left_clipping_plane() -> None:
     """Test form_left_clipping_plane(). Use 4 points to fit the left clipping plane."""
     fx = 10.0
-    img_width = 30.0
+    img_width = 30
     left_plane = form_left_clipping_plane(fx, img_width)
 
     Y_OFFSET = 10
-    left = np.array([[0, 0, 0], [-img_width / 2.0, 0, fx], [0, Y_OFFSET, 0], [-img_width / 2.0, Y_OFFSET, fx]])
+    left = np.array(
+        [
+            [0, 0, 0],
+            [-img_width / 2.0, 0, fx],
+            [0, Y_OFFSET, 0],
+            [-img_width / 2.0, Y_OFFSET, fx],
+        ]
+    )
 
     a, b, c, d = fit_plane_to_point_cloud(left)
     left_plane_gt = -1 * np.array([a, b, c, d])
@@ -206,11 +220,17 @@ def test_form_left_clipping_plane() -> None:
 def test_form_top_clipping_plane() -> None:
     """Test form_top_clipping_plane(). Use 3 points to fit the TOP clipping plane."""
     fx = 10.0
-    img_height = 45.0
+    img_height = 45
     top_plane = form_top_clipping_plane(fx, img_height)
 
     img_width = 1000.0
-    top_pts = np.array([[0, 0, 0], [-img_width / 2, -img_height / 2, fx], [img_width / 2, -img_height / 2, fx]])
+    top_pts = np.array(
+        [
+            [0, 0, 0],
+            [-img_width / 2, -img_height / 2, fx],
+            [img_width / 2, -img_height / 2, fx],
+        ]
+    )
     a, b, c, d = fit_plane_to_point_cloud(top_pts)
     top_plane_gt = np.array([a, b, c, d])
 
@@ -226,11 +246,17 @@ def test_form_top_clipping_plane() -> None:
 def test_form_low_clipping_plane() -> None:
     """Test form_low_clipping_plane()."""
     fx = 12.0
-    img_height = 35.0
+    img_height = 35
     low_plane = form_low_clipping_plane(fx, img_height)
 
     img_width = 10000
-    low_pts = np.array([[0, 0, 0], [-img_width / 2, img_height / 2, fx], [img_width / 2, img_height / 2, fx]])
+    low_pts = np.array(
+        [
+            [0, 0, 0],
+            [-img_width / 2, img_height / 2, fx],
+            [img_width / 2, img_height / 2, fx],
+        ]
+    )
     a, b, c, d = fit_plane_to_point_cloud(low_pts)
     low_plane_gt = np.array([a, b, c, d])
 
@@ -246,8 +272,8 @@ def test_form_low_clipping_plane() -> None:
 
 def test_form_near_clipping_plane() -> None:
     """Test form_near_clipping_plane(). Use 4 points to fit the near clipping plane."""
-    img_width = 10.0
-    img_height = 15.0
+    img_width = 10
+    img_height = 15
     near_clip_dist = 30.0
     near_plane = form_near_clipping_plane(near_clip_dist)
 
@@ -289,7 +315,9 @@ def test_generate_frustum_planes_ring_cam() -> None:
     img_height = 1200
     img_width = 1920
     planes = generate_frustum_planes(K, camera_name, near_clip_dist=near_clip_dist)
-    [left_plane, right_plane, near_plane, low_plane, top_plane] = planes
+    if planes is None:
+        assert False
+    left_plane, right_plane, near_plane, low_plane, top_plane = planes
 
     fx = K[0, 0]
     left_plane_gt = np.array([fx, 0.0, img_width / 2.0, 0.0])
@@ -328,7 +356,9 @@ def test_generate_frustum_planes_stereo() -> None:
     img_height = 2056
     img_width = 2464
     planes = generate_frustum_planes(K, camera_name, near_clip_dist=near_clip_dist)
-    [left_plane, right_plane, near_plane, low_plane, top_plane] = planes
+    if planes is None:
+        assert False
+    left_plane, right_plane, near_plane, low_plane, top_plane = planes
 
     fx = K[0, 0]
     left_plane_gt = np.array([fx, 0.0, img_width / 2.0, 0.0])
@@ -351,7 +381,16 @@ def test_cuboid_to_2d_frustum_bbox_smokescreen() -> None:
     `plot_frustum_planes_and_normals(planes, corners)` can help to do the visual check.
     """
     cuboid_verts_3d = np.array(
-        [[2, 0, 10], [-2, 0, 10], [-2, 2, 10], [2, 2, 10], [2, 0, 18], [-2, 0, 18], [-2, 2, 18], [2, 2, 18]]
+        [
+            [2, 0, 10],
+            [-2, 0, 10],
+            [-2, 2, 10],
+            [2, 2, 10],
+            [2, 0, 18],
+            [-2, 0, 18],
+            [-2, 2, 18],
+            [2, 2, 18],
+        ]
     )
     K = np.eye(3)
     # Set "focal_length_x_px_"

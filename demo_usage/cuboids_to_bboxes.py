@@ -88,7 +88,13 @@ def plot_lane_centerlines_in_img(
         centerline_uv_cam = clip_point_cloud_to_visible_region(centerline_uv_cam, lidar_pts)
         for i in range(centerline_uv_cam.shape[0] - 1):
             draw_clipped_line_segment(
-                img, centerline_uv_cam[i], centerline_uv_cam[i + 1], camera_config, linewidth, planes, color
+                img,
+                centerline_uv_cam[i],
+                centerline_uv_cam[i + 1],
+                camera_config,
+                linewidth,
+                planes,
+                color,
             )
     return img
 
@@ -165,7 +171,13 @@ def dump_clipped_3d_cuboids_to_images(
                 camera_config = get_calibration_config(log_calib_data, camera_name)
                 planes = generate_frustum_planes(camera_config.intrinsic.copy(), camera_name)
                 img = plot_lane_centerlines_in_img(
-                    lidar_pts, city_to_egovehicle_se3, img, city_name, avm, camera_config, planes
+                    lidar_pts,
+                    city_to_egovehicle_se3,
+                    img,
+                    city_name,
+                    avm,
+                    camera_config,
+                    planes,
                 )
 
                 for label_idx, label in enumerate(labels):
@@ -176,7 +188,7 @@ def dump_clipped_3d_cuboids_to_images(
                     cuboid_vertices = obj_rec.as_3d_bbox()
                     points_h = point_cloud_to_homogeneous(cuboid_vertices).T
                     if motion_compensate:
-                        uv, uv_cam, valid_pts_bool, K = project_lidar_to_img_motion_compensated(
+                        (uv, uv_cam, valid_pts_bool, K,) = project_lidar_to_img_motion_compensated(
                             points_h,  # these are recorded at lidar_time
                             copy.deepcopy(log_calib_data),
                             camera_name,
@@ -188,14 +200,20 @@ def dump_clipped_3d_cuboids_to_images(
                         )
                     else:
                         # project_lidar_to_img
-                        uv, uv_cam, valid_pts_bool, camera_config = project_lidar_to_undistorted_img(
-                            points_h, copy.deepcopy(log_calib_data), camera_name
-                        )
+                        (
+                            uv,
+                            uv_cam,
+                            valid_pts_bool,
+                            camera_config,
+                        ) = project_lidar_to_undistorted_img(points_h, copy.deepcopy(log_calib_data), camera_name)
                     if valid_pts_bool.sum() == 0:
                         continue
 
                     img = obj_rec.render_clip_frustum_cv2(
-                        img, uv_cam.T[:, :3], planes.copy(), copy.deepcopy(camera_config)
+                        img,
+                        uv_cam.T[:, :3],
+                        planes.copy(),
+                        copy.deepcopy(camera_config),
                     )
 
                 cv2.imwrite(save_img_fpath, img)
@@ -227,7 +245,10 @@ def main(args: Any):
     """Run the example."""
     log_ids = [log_id.strip() for log_id in args.log_ids.split(",")]
     dump_clipped_3d_cuboids_to_images(
-        log_ids, args.max_num_images_to_render * 9, args.dataset_dir, args.experiment_prefix
+        log_ids,
+        args.max_num_images_to_render * 9,
+        args.dataset_dir,
+        args.experiment_prefix,
     )
 
 
@@ -235,7 +256,10 @@ if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--max-num-images-to-render", default=5, type=int, help="number of images within which to render 3d cuboids"
+        "--max-num-images-to-render",
+        default=5,
+        type=int,
+        help="number of images within which to render 3d cuboids",
     )
     parser.add_argument("--dataset-dir", type=str, required=True, help="path to the dataset folder")
     parser.add_argument(

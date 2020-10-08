@@ -440,7 +440,11 @@ Total bounding box: {sum(num_annotations)}
         return self._image_list_sync[log_id][camera]
 
     def get_image_at_timestamp(
-        self, timestamp: int, camera: str, log_id: Optional[str] = None, load: bool = True
+        self,
+        timestamp: int,
+        camera: str,
+        log_id: Optional[str] = None,
+        load: bool = True,
     ) -> Optional[Union[str, np.ndarray]]:
         """get image or image path at a specific timestamp
 
