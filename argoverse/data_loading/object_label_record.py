@@ -15,17 +15,18 @@ from argoverse.utils.cv2_plotting_utils import draw_clipped_line_segment, proj_c
 from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat2rotmat
 
-BKGRND_RECT_OFFS_UP = 30
-BKGRND_RECT_OFFS_DOWN = 10
+BKGRND_RECT_OFFS_UP = 30 # px
+BKGRND_RECT_OFFS_DOWN = 10 # px
 
-BKGRND_RECT_OFFS_LEFT = 70
-BKGRND_RECT_OFFS_RIGHT = 70
+BKGRND_RECT_OFFS_LEFT = 70 # px
+BKGRND_RECT_OFFS_RIGHT = 70 # px
 
 WHITE_BGR = (255,255,255)
 EMERALD_RGB = (80, 220, 100)
 BKGRND_RECT_ALPHA = 0.45
 
-TEXT_OFFS_LEFT = 70
+TEXT_OFFS_LEFT = 70 # px
+MAX_RANGE_THRESH_PLOT_CATEGORY = 50 # meters
 
 class ObjectLabelRecord:
     def __init__(
@@ -206,7 +207,8 @@ class ObjectLabelRecord:
         center_top = np.mean(corners[[0,1,4,5]], axis=0)
         uv_ct, _, _, _ = proj_cam_to_uv(center_top.reshape(1, 3), camera_config)
         uv_ct = uv_ct.squeeze()
-        if uv_ct[0] >= 0 and uv_ct[1] >= 0:
+
+        if np.linalg.norm(center_top) < MAX_RANGE_THRESH_PLOT_CATEGORY and uv_ct[0] >= 0 and uv_ct[1] >= 0:
 
             top_left = (int(uv_ct[0]) - BKGRND_RECT_OFFS_LEFT, int(uv_ct[1]) - BKGRND_RECT_OFFS_UP)
             bottom_right = (int(uv_ct[0]) + BKGRND_RECT_OFFS_LEFT, int(uv_ct[1]) + BKGRND_RECT_OFFS_DOWN)
