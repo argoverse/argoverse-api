@@ -14,7 +14,6 @@ from argoverse.utils.calibration import CameraConfig
 from argoverse.utils.cv2_plotting_utils import draw_clipped_line_segment, proj_cam_to_uv
 from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat2rotmat
-from argoverse.utils.cv2_plotting_utils import 
 
 BKGRND_RECT_OFFS_UP = 30
 BKGRND_RECT_OFFS_DOWN = 10
@@ -174,14 +173,28 @@ class ObjectLabelRecord:
         def draw_rect(selected_corners: np.array, color: Tuple[int, int, int]) -> None:
             prev = selected_corners[-1]
             for corner in selected_corners:
-                draw_clipped_line_segment(img, prev.copy(), corner.copy(), camera_config, linewidth, planes, color)
+                draw_clipped_line_segment(
+                    img,
+                    prev.copy(),
+                    corner.copy(),
+                    camera_config,
+                    linewidth,
+                    planes,
+                    color,
+                )
                 prev = corner
 
         # Draw the sides in green
         for i in range(4):
             # between front and back corners
             draw_clipped_line_segment(
-                img, corners[i], corners[i + 4], camera_config, linewidth, planes, colors[2][::-1]
+                img,
+                corners[i],
+                corners[i + 4],
+                camera_config,
+                linewidth,
+                planes,
+                colors[2][::-1],
             )
 
         # Draw front (first 4 corners) in blue
@@ -211,7 +224,13 @@ class ObjectLabelRecord:
         center_bottom_forward = np.mean(corners[2:4], axis=0)
         center_bottom = np.mean(corners[[2, 3, 7, 6]], axis=0)
         draw_clipped_line_segment(
-            img, center_bottom, center_bottom_forward, camera_config, linewidth, planes, colors[0][::-1]
+            img,
+            center_bottom,
+            center_bottom_forward,
+            camera_config,
+            linewidth,
+            planes,
+            colors[0][::-1],
         )
 
         return img
