@@ -5,7 +5,6 @@
 import copy
 import json
 import os
-import pdb
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import cv2
@@ -40,6 +39,7 @@ class ObjectLabelRecord:
         occlusion: int,
         label_class: Optional[str] = None,
         track_id: Optional[str] = None,
+        score: float = 1.0,
     ) -> None:
         """Create an ObjectLabelRecord.
 
@@ -61,6 +61,7 @@ class ObjectLabelRecord:
         self.occlusion = occlusion
         self.label_class = label_class
         self.track_id = track_id
+        self.score = score
 
     def as_2d_bbox(self) -> np.ndarray:
         """Construct a 2D bounding box from this label.
@@ -83,8 +84,8 @@ class ObjectLabelRecord:
             ]
         )
 
-        egovehicle_to_object_se3 = SE3(rotation=quat2rotmat(self.quaternion), translation=self.translation)
-        bbox_in_egovehicle_frame = egovehicle_to_object_se3.transform_point_cloud(bbox_object_frame)
+        egovehicle_SE3_object = SE3(rotation=quat2rotmat(self.quaternion), translation=self.translation)
+        bbox_in_egovehicle_frame = egovehicle_SE3_object.transform_point_cloud(bbox_object_frame)
         return bbox_in_egovehicle_frame
 
     def as_3d_bbox(self) -> np.ndarray:
@@ -119,8 +120,8 @@ class ObjectLabelRecord:
         z_corners = self.height / 2 * np.array([1, 1, -1, -1, 1, 1, -1, -1])
         corners_object_frame = np.vstack((x_corners, y_corners, z_corners)).T
 
-        egovehicle_to_object_se3 = SE3(rotation=quat2rotmat(self.quaternion), translation=self.translation)
-        corners_egovehicle_frame = egovehicle_to_object_se3.transform_point_cloud(corners_object_frame)
+        egovehicle_SE3_object = SE3(rotation=quat2rotmat(self.quaternion), translation=self.translation)
+        corners_egovehicle_frame = egovehicle_SE3_object.transform_point_cloud(corners_object_frame)
         return corners_egovehicle_frame
 
     def render_clip_frustum_cv2(
@@ -269,18 +270,18 @@ def vis_mask(img: np.ndarray, mask: np.ndarray, col: Tuple[int,int,int], alpha: 
 def form_obj_label_from_json(label: Dict[str, Any]) -> Tuple[np.array, str]:
     """Construct object from loaded json.
 
-    The dictionary loaded from saved json file is expected to have the
-    following fields::
+     The dictionary loaded from saved json file is expected to have the
+     following fields::
 
-        ['frame_index', 'center', 'rotation', 'length', 'width', 'height',
-        'track_label_uuid', 'occlusion', 'on_driveable_surface', 'key_frame',
-        'stationary', 'label_class']
+         ['frame_index', 'center', 'rotation', 'length', 'width', 'height',
+         'track_label_uuid', 'occlusion', 'on_driveable_surface', 'key_frame',
+         'stationary', 'label_class']
 
-   Args:
-        label: Python dictionary that was loaded from saved json file
+    Args:
+         label: Python dictionary that was loaded from saved json file
 
-    Returns:
-        Tuple of (bbox_ego_frame, color); bbox is a numpy array of shape (4,3); color is "g" or "r"
+     Returns:
+         Tuple of (bbox_ego_frame, color); bbox is a numpy array of shape (4,3); color is "g" or "r"
     """
     tr_x = label["center"]["x"]
     tr_y = label["center"]["y"]
@@ -352,7 +353,21 @@ def json_label_dict_to_obj_record(label: Dict[str, Any]) -> ObjectLabelRecord:
         track_id = label["track_label_uuid"]
     else:
         track_id = None
-    obj_rec = ObjectLabelRecord(quaternion, translation, length, width, height, occlusion, label_class, track_id)
+    if "score" in label:
+        score = label["score"]
+    else:
+        score = 1.0
+    obj_rec = ObjectLabelRecord(
+        quaternion,
+        translation,
+        length,
+        width,
+        height,
+        occlusion,
+        label_class,
+        track_id,
+        score,
+    )
     return obj_rec
 
 
