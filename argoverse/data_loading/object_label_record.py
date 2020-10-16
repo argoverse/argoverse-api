@@ -10,23 +10,29 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 import cv2
 import numpy as np
 
-from argoverse.utils.calibration import CameraConfig
-from argoverse.utils.cv2_plotting_utils import draw_clipped_line_segment, proj_cam_to_uv
+from argoverse.utils.calibration import CameraConfig, proj_cam_to_uv
+from argoverse.utils.cv2_plotting_utils import add_text_cv2, draw_clipped_line_segment
 from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat2rotmat
+from argoverse.visualization.vis_mask import vis_mask
 
-BKGRND_RECT_OFFS_UP = 30 # px
-BKGRND_RECT_OFFS_DOWN = 10 # px
+# If plotting a cuboid onto an image, the label category will be drawn in front
+# of an alpha-blended rectangle to increase text readability. Rectangle extends
+# to px offsets (defined below) from a fixed point. Fixed point is the centroid
+# of the vertices comprising the top face of cuboid.
+BKGRND_RECT_OFFS_UP = 30  # px
+BKGRND_RECT_OFFS_DOWN = 10  # px
 
-BKGRND_RECT_OFFS_LEFT = 70 # px
-BKGRND_RECT_OFFS_RIGHT = 70 # px
+BKGRND_RECT_OFFS_LEFT = 70  # px
+BKGRND_RECT_OFFS_RIGHT = 70  # px
 
-WHITE_BGR = (255,255,255)
+WHITE_BGR = (255, 255, 255)
 EMERALD_RGB = (80, 220, 100)
 BKGRND_RECT_ALPHA = 0.45
 
-TEXT_OFFS_LEFT = 70 # px
-MAX_RANGE_THRESH_PLOT_CATEGORY = 50 # meters
+TEXT_OFFS_LEFT = 70  # px
+MAX_RANGE_THRESH_PLOT_CATEGORY = 50  # meters
+
 
 class ObjectLabelRecord:
     def __init__(
@@ -204,22 +210,18 @@ class ObjectLabelRecord:
         draw_rect(corners[4:], colors[1][::-1])
 
         # grab the top vertices
-        center_top = np.mean(corners[[0,1,4,5]], axis=0)
+        center_top = np.mean(corners[[0, 1, 4, 5]], axis=0)
         uv_ct, _, _, _ = proj_cam_to_uv(center_top.reshape(1, 3), camera_config)
         uv_ct = uv_ct.squeeze()
 
-        if np.linalg.norm(center_top) < MAX_RANGE_THRESH_PLOT_CATEGORY and uv_ct[0] >= 0 and uv_ct[1] >= 0:
+        if label_is_closeby(center_top) and uv_coord_is_valid(uv_ct, img):
 
             top_left = (int(uv_ct[0]) - BKGRND_RECT_OFFS_LEFT, int(uv_ct[1]) - BKGRND_RECT_OFFS_UP)
             bottom_right = (int(uv_ct[0]) + BKGRND_RECT_OFFS_LEFT, int(uv_ct[1]) + BKGRND_RECT_OFFS_DOWN)
             img = draw_alpha_rectangle(img, top_left, bottom_right, EMERALD_RGB, alpha=BKGRND_RECT_ALPHA)
 
             add_text_cv2(
-                img,
-                text=str(self.label_class), 
-                x= int(uv_ct[0]) - TEXT_OFFS_LEFT,
-                y=int(uv_ct[1]),
-                color=WHITE_BGR
+                img, text=str(self.label_class), x=int(uv_ct[0]) - TEXT_OFFS_LEFT, y=int(uv_ct[1]), color=WHITE_BGR
             )
 
         # Draw blue line indicating the front half
@@ -238,54 +240,31 @@ class ObjectLabelRecord:
         return img
 
 
-def add_text_cv2(img: np.ndarray, text: str, x: int, y: int, color: Tuple[int,int,int], thickness: int = 3) -> None:
-    """Add text to image using OpenCV. Color should be RGB order"""
-    img = cv2.putText(
-        img,
-        text,
-        (x,y),
-        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-        fontScale=1,
-        thickness=thickness,
-        color=color
-    )
+def uv_coord_is_valid(uv: np.ndarray, img: np.ndarray) -> bool:
+    """Check if 2d-point lies within 3-channel color image boundaries"""
+    h, w, _ = img.shape
+    return uv[0] >= 0 and uv[1] >= 0 and uv[0] < w and uv[1] < h
+
+
+def label_is_closeby(box_point: np.ndarray) -> bool:
+    """Check if 3d cuboid pt (in egovehicle frame) is within range from
+    egovehicle to prevent plot overcrowding.
+    """
+    return np.linalg.norm(box_point) < MAX_RANGE_THRESH_PLOT_CATEGORY
 
 
 def draw_alpha_rectangle(
     img: np.ndarray,
-    top_left: Tuple[int,int],
-    bottom_right: Tuple[int,int],
-    color_rgb: Tuple[int,int,int],
-    alpha: float
+    top_left: Tuple[int, int],
+    bottom_right: Tuple[int, int],
+    color_rgb: Tuple[int, int, int],
+    alpha: float,
 ):
-    """Alpha blend colored rectangle into image. Coords given as (x,y) tuples"""
+    """Alpha blend colored rectangle into image. Corner coords given as (x,y) tuples"""
     img_h, img_w, _ = img.shape
-    mask = np.zeros((img_h,img_w),dtype=np.uint8)
-    mask[top_left[1]:bottom_right[1],top_left[0]:bottom_right[0]] = 1
+    mask = np.zeros((img_h, img_w), dtype=np.uint8)
+    mask[top_left[1] : bottom_right[1], top_left[0] : bottom_right[0]] = 1
     return vis_mask(img, mask, np.array(list(color_rgb[::-1])), alpha)
-
-
-def vis_mask(img: np.ndarray, mask: np.ndarray, col: Tuple[int,int,int], alpha: float=0.4):
-    """
-    Visualizes a single binary mask by coloring the region inside a binary mask
-    as a specific color, and then blending it with an RGB image.
-        Args:
-        -   img: Numpy array, representing RGB image with values in the [0,255] range
-        -   mask: Numpy integer array, with values in [0,1] representing mask region
-        -   col: color, tuple of integers in [0,255] representing RGB values
-        -   alpha: blending coefficient (higher alpha shows more of mask,
-                lower alpha preserves original image)
-        Returns:
-        -   image: Numpy array, representing an RGB image, representing a blended image
-                of original RGB image and specified colors in mask region.
-    """
-    img = img.astype(np.float32)
-    idx = np.nonzero(mask)
-
-    img[idx[0], idx[1], :] *= 1.0 - alpha
-    img[idx[0], idx[1], :] += alpha * col
-
-    return img.astype(np.uint8)
 
 
 def form_obj_label_from_json(label: Dict[str, Any]) -> Tuple[np.array, str]:
