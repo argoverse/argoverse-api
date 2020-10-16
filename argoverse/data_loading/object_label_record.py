@@ -22,16 +22,19 @@ from argoverse.visualization.vis_mask import vis_mask
 # of the vertices comprising the top face of cuboid.
 BKGRND_RECT_OFFS_UP = 30  # px
 BKGRND_RECT_OFFS_DOWN = 10  # px
-
 BKGRND_RECT_OFFS_LEFT = 70  # px
 BKGRND_RECT_OFFS_RIGHT = 70  # px
 
+TEXT_OFFS_LEFT = 70  # px
+# Parm to stop plotting text after N meters to prevent plot overcrowding
+MAX_RANGE_THRESH_PLOT_CATEGORY = 50  # meters
+
+BLUE_RGB = (0, 0, 255)
+RED_RGB = (255, 0, 0)
+GREEN_RGB = (0, 255, 0)
 WHITE_BGR = (255, 255, 255)
 EMERALD_RGB = (80, 220, 100)
 BKGRND_RECT_ALPHA = 0.45
-
-TEXT_OFFS_LEFT = 70  # px
-MAX_RANGE_THRESH_PLOT_CATEGORY = 50  # meters
 
 
 class ObjectLabelRecord:
@@ -137,9 +140,9 @@ class ObjectLabelRecord:
         planes: List[Tuple[np.array, np.array, np.array, np.array, np.array]],
         camera_config: CameraConfig,
         colors: Tuple[Tuple[int, int, int], Tuple[int, int, int], Tuple[int, int, int]] = (
-            (0, 0, 255),
-            (255, 0, 0),
-            (0, 255, 0),
+            BLUE_RGB,
+            RED_RGB,
+            GREEN_RGB,
         ),
         linewidth: int = 2,
     ) -> np.ndarray:
@@ -215,11 +218,9 @@ class ObjectLabelRecord:
         uv_ct = uv_ct.squeeze()
 
         if label_is_closeby(center_top) and uv_coord_is_valid(uv_ct, img):
-
             top_left = (int(uv_ct[0]) - BKGRND_RECT_OFFS_LEFT, int(uv_ct[1]) - BKGRND_RECT_OFFS_UP)
             bottom_right = (int(uv_ct[0]) + BKGRND_RECT_OFFS_LEFT, int(uv_ct[1]) + BKGRND_RECT_OFFS_DOWN)
             img = draw_alpha_rectangle(img, top_left, bottom_right, EMERALD_RGB, alpha=BKGRND_RECT_ALPHA)
-
             add_text_cv2(
                 img, text=str(self.label_class), x=int(uv_ct[0]) - TEXT_OFFS_LEFT, y=int(uv_ct[1]), color=WHITE_BGR
             )
