@@ -180,7 +180,6 @@ class DetectionEvaluator(NamedTuple):
 
             # Convert errors to scores.
             tp_scores = 1 - (tp_metrics / self.cfg.tp_normalization_terms)
-            print((tp_metrics / self.cfg.tp_normalization_terms))
 
             # Compute Composite Detection Score (CDS).
             cds = ap * tp_scores.mean()

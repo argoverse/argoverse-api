@@ -2,7 +2,7 @@ from typing import List
 
 import numpy as np
 
-COMPETITION_CLASSES: List[str] = ["VEHICLE", "PEDESTRIAN"]
+COMPETITION_CLASSES: List[str] = ["VEHICLE", "PEDESTRIAN", "BUS"]
 
 TP_ERROR_NAMES: List[str] = ["ATE", "ASE", "AOE"]
 N_TP_ERRORS: int = len(TP_ERROR_NAMES)
