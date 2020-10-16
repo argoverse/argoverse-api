@@ -35,6 +35,7 @@ GREEN_RGB = (0, 255, 0)
 WHITE_BGR = (255, 255, 255)
 EMERALD_RGB = (80, 220, 100)
 BKGRND_RECT_ALPHA = 0.45
+TOP_VERT_INDICES: List[int] = [0, 1, 4, 5]
 
 
 class ObjectLabelRecord:
@@ -213,7 +214,7 @@ class ObjectLabelRecord:
         draw_rect(corners[4:], colors[1][::-1])
 
         # grab the top vertices
-        center_top = np.mean(corners[[0, 1, 4, 5]], axis=0)
+        center_top = np.mean(corners[TOP_VERT_INDICES], axis=0)
         uv_ct, _, _, _ = proj_cam_to_uv(center_top.reshape(1, 3), camera_config)
         uv_ct = uv_ct.squeeze().astype(np.int32)  # cast to integer
 
