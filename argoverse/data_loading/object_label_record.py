@@ -215,15 +215,13 @@ class ObjectLabelRecord:
         # grab the top vertices
         center_top = np.mean(corners[[0, 1, 4, 5]], axis=0)
         uv_ct, _, _, _ = proj_cam_to_uv(center_top.reshape(1, 3), camera_config)
-        uv_ct = uv_ct.squeeze()
+        uv_ct = uv_ct.squeeze().astype(np.int32)  # cast to integer
 
         if label_is_closeby(center_top) and uv_coord_is_valid(uv_ct, img):
-            top_left = (int(uv_ct[0]) - BKGRND_RECT_OFFS_LEFT, int(uv_ct[1]) - BKGRND_RECT_OFFS_UP)
-            bottom_right = (int(uv_ct[0]) + BKGRND_RECT_OFFS_LEFT, int(uv_ct[1]) + BKGRND_RECT_OFFS_DOWN)
+            top_left = (uv_ct[0] - BKGRND_RECT_OFFS_LEFT, uv_ct[1] - BKGRND_RECT_OFFS_UP)
+            bottom_right = (uv_ct[0] + BKGRND_RECT_OFFS_LEFT, uv_ct[1] + BKGRND_RECT_OFFS_DOWN)
             img = draw_alpha_rectangle(img, top_left, bottom_right, EMERALD_RGB, alpha=BKGRND_RECT_ALPHA)
-            add_text_cv2(
-                img, text=str(self.label_class), x=int(uv_ct[0]) - TEXT_OFFS_LEFT, y=int(uv_ct[1]), color=WHITE_BGR
-            )
+            add_text_cv2(img, text=str(self.label_class), x=uv_ct[0] - TEXT_OFFS_LEFT, y=uv_ct[1], color=WHITE_BGR)
 
         # Draw blue line indicating the front half
         center_bottom_forward = np.mean(corners[2:4], axis=0)
