@@ -259,7 +259,7 @@ def draw_alpha_rectangle(
     bottom_right: Tuple[int, int],
     color_rgb: Tuple[int, int, int],
     alpha: float,
-):
+) -> np.ndarray:
     """Alpha blend colored rectangle into image. Corner coords given as (x,y) tuples"""
     img_h, img_w, _ = img.shape
     mask = np.zeros((img_h, img_w), dtype=np.uint8)
