@@ -37,17 +37,23 @@ _WHITE = (255, 255, 255)
 Segment = Tuple[float, float, float, float]
 
 
-def vis_mask(image: np.ndarray, mask: np.ndarray, color: float, alpha: float = 0.4) -> np.ndarray:
-    """Visualize a single binary mask.
+def vis_mask(
+    image: np.ndarray, mask: np.ndarray, color: Union[float, Tuple[int, int, int]], alpha: float = 0.4
+) -> np.ndarray:
+    """Visualize a single binary mask by blending a colored mask with image.
 
     Args:
-        image: The input image
-        mask: The mask to visualize
-        color: The color for the mask
-        alpha: The alpha level for the mask
+        image: The input image (either RGB or BGR) w/ values in the [0,255] range
+        mask: The mask to visualize. Integer array, with values in [0,1]
+            representing mask region
+        color: The color for the mask, either single float or tuple of integers
+            in [0,255] representing RGB or BGR values
+        alpha: The alpha level for the mask. Represents blending coefficient
+            (higher alpha shows more of mask, lower alpha preserves original image)
 
     Returns:
-        The modified image
+        The modified 3-color image. Represents a blended image
+            of original RGB image and specified colors in mask region.
     """
 
     image = image.astype(np.float32)
