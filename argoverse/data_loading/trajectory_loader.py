@@ -2,11 +2,12 @@
 
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
-import collections
+import collections.abc
 import glob
 import json
 import logging
 import sys
+from pathlib import Path
 from typing import List, NamedTuple
 
 import numpy as np
@@ -69,7 +70,7 @@ def load_json_track_labels(log_track_labels_dir: str) -> List[TrajectoryLabel]:
         with open(json_fpath, "r") as f:
             json_data = json.load(f)
 
-        track_uuid = json_fpath.split("/")[-1].split(".")[0]
+        track_uuid = Path(json_fpath).stem
         obj_cls = json_data["label_class"]
 
         # recent MLDS change
