@@ -124,7 +124,7 @@ def load_json_track_labels(log_track_labels_dir: str) -> List[TrajectoryLabel]:
             translations=np.array(translations),
             obj_class=obj_cls_idx,
             obj_class_str=obj_cls,
-            occlusions=np.array(occlusions),
+            occlusion=np.array(occlusions),
             track_uuid=track_uuid,
             log_id=json_fpath.split("/")[-3],
             max_length=max(lengths),
