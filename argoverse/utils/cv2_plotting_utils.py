@@ -10,6 +10,20 @@ from .calibration import CameraConfig, proj_cam_to_uv
 from .frustum_clipping import clip_segment_v3_plane_n
 
 
+def add_text_cv2(img: np.ndarray, text: str, x: int, y: int, color: Tuple[int, int, int], thickness: int = 3) -> None:
+    """Add text to image using OpenCV. Color should be BGR order"""
+    img = cv2.putText(
+        img,
+        text,
+        (x, y),
+        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+        fontScale=1,
+        thickness=thickness,
+        color=color,
+        lineType=cv2.LINE_AA,
+    )
+
+
 def draw_clipped_line_segment(
     img: np.array,
     vert_a: np.array,
