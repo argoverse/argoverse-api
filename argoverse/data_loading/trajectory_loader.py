@@ -41,7 +41,7 @@ class TrajectoryLabel(NamedTuple):
     translations: np.ndarray
     obj_class: int
     obj_class_str: str
-    occlusions: np.ndarray
+    occlusion: np.ndarray
     track_uuid: str
     log_id: str
     max_length: float
