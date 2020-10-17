@@ -7,7 +7,7 @@ import glob
 import json
 import logging
 import sys
-from typing import List
+from typing import List, NamedTuple
 
 import numpy as np
 
@@ -16,7 +16,7 @@ from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
 logger = logging.getLogger(__name__)
 
 
-class TrajectoryLabel:
+class TrajectoryLabel(NamedTuple):
     """Trajectory object.
 
     Args:
@@ -36,55 +36,20 @@ class TrajectoryLabel:
         heights (np.array): Array of heights for trajectory.
     """
 
-    def __init__(
-        self,
-        timestamps: np.ndarray,
-        quaternions: np.ndarray,
-        translations: np.ndarray,
-        obj_class: int,
-        obj_class_str: str,
-        occlusions: np.ndarray,
-        track_uuid: str,
-        log_id: str,
-        max_length: float,
-        max_width: float,
-        max_height: float,
-        lengths: np.ndarray,
-        widths: np.ndarray,
-        heights: np.ndarray,
-    ) -> None:
-        """Initialize TrajectoryLabel object.
-
-        Args:
-            timestamps (np.array): Array of timestamps for trajectory.
-            quaternions (np.array): Array of quaternions for trajectory.
-            translations (np.array): Array of translations of SE3 poses for trajectory.
-            obj_class (int): Object class id.
-            obj_class_str (str): Object class name.
-            occlusions (np.array): Array of occlusions for trajectory.
-            track_uuid (str): Track uuid.
-            log_id (str): Log id.
-            max_length (float): Maximum length for trajectory.
-            max_width (float): Maximum width for trajectory.
-            max_height (float): Maximum height for trajectory.
-            lengths (np.array): Array of lengths for trajectory.
-            widths (np.array): Array of widths for trajectory.
-            heights (np.array): Array of heights for trajectory.
-        """
-        self.timestamps = timestamps
-        self.quaternions = quaternions
-        self.translations = translations
-        self.obj_class = obj_class
-        self.obj_class_str = obj_class_str
-        self.occlusion = occlusions
-        self.track_uuid = track_uuid
-        self.log_id = log_id
-        self.max_length = max_length
-        self.max_width = max_width
-        self.max_height = max_height
-        self.lengths = lengths
-        self.widths = widths
-        self.heights = heights
+    timestamps: np.ndarray
+    quaternions: np.ndarray
+    translations: np.ndarray
+    obj_class: int
+    obj_class_str: str
+    occlusions: np.ndarray
+    track_uuid: str
+    log_id: str
+    max_length: float
+    max_width: float
+    max_height: float
+    lengths: np.ndarray
+    widths: np.ndarray
+    heights: np.ndarray
 
 
 def load_json_track_labels(log_track_labels_dir: str) -> List[TrajectoryLabel]:
