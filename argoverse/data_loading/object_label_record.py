@@ -243,14 +243,14 @@ class ObjectLabelRecord:
 def uv_coord_is_valid(uv: np.ndarray, img: np.ndarray) -> bool:
     """Check if 2d-point lies within 3-channel color image boundaries"""
     h, w, _ = img.shape
-    return uv[0] >= 0 and uv[1] >= 0 and uv[0] < w and uv[1] < h
+    return bool(uv[0] >= 0 and uv[1] >= 0 and uv[0] < w and uv[1] < h)
 
 
 def label_is_closeby(box_point: np.ndarray) -> bool:
     """Check if 3d cuboid pt (in egovehicle frame) is within range from
     egovehicle to prevent plot overcrowding.
     """
-    return np.linalg.norm(box_point) < MAX_RANGE_THRESH_PLOT_CATEGORY
+    return bool(np.linalg.norm(box_point) < MAX_RANGE_THRESH_PLOT_CATEGORY)
 
 
 def draw_alpha_rectangle(
