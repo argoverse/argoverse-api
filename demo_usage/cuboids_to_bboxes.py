@@ -26,7 +26,8 @@ from argoverse.utils.calibration import (
 from argoverse.utils.camera_stats import RING_CAMERA_LIST, STEREO_CAMERA_LIST
 from argoverse.utils.city_visibility_utils import clip_point_cloud_to_visible_region
 from argoverse.utils.cv2_plotting_utils import draw_clipped_line_segment
-from argoverse.utils.ffmpeg_utils import write_nonsequential_idx_video
+from argoverse.utils.cv2_video_utils import VideoWriter
+from argoverse.utils.ffmpeg_utils import write_nonsequential_idx_video, ffmpeg_compress_video
 from argoverse.utils.frustum_clipping import generate_frustum_planes
 from argoverse.utils.ply_loader import load_ply
 from argoverse.utils.se3 import SE3
@@ -43,7 +44,7 @@ LANE_COLOR_NOISE = 20
 
 def plot_lane_centerlines_in_img(
     lidar_pts: np.ndarray,
-    city_to_egovehicle_se3: SE3,
+    cityus_egovehicle: SE3,
     img: np.ndarray,
     city_name: str,
     avm: ArgoverseMap,
@@ -54,7 +55,7 @@ def plot_lane_centerlines_in_img(
 ) -> np.ndarray:
     """
     Args:
-        city_to_egovehicle_se3: SE3 transformation representing egovehicle to city transformation
+        city_SE3_egovehicle: SE(3) transformation representing egovehicle to city transformation
         img: Array of shape (M,N,3) representing updated image
         city_name: str, string representing city name, i.e. 'PIT' or 'MIA'
         avm: instance of ArgoverseMap
@@ -70,7 +71,7 @@ def plot_lane_centerlines_in_img(
     t = camera_config.extrinsic[:3, 3]
     cam_SE3_egovehicle = SE3(rotation=R, translation=t)
 
-    query_x, query_y, _ = city_to_egovehicle_se3.translation
+    query_x, query_y, _ = city_SE3_egovehicle.translation
     local_centerlines = avm.find_local_lane_centerlines(query_x, query_y, city_name)
 
     for centerline_city_fr in local_centerlines:
@@ -81,7 +82,7 @@ def plot_lane_centerlines_in_img(
         valid_idx = np.isnan(ground_heights)
         centerline_city_fr = centerline_city_fr[~valid_idx]
 
-        centerline_egovehicle_fr = city_to_egovehicle_se3.inverse().transform_point_cloud(centerline_city_fr)
+        centerline_egovehicle_fr = city_SE3_egovehicle.inverse().transform_point_cloud(centerline_city_fr)
         centerline_uv_cam = cam_SE3_egovehicle.transform_point_cloud(centerline_egovehicle_fr)
 
         # can also clip point cloud to nearest LiDAR point depth
@@ -105,6 +106,8 @@ def dump_clipped_3d_cuboids_to_images(
     data_dir: str,
     experiment_prefix: str,
     motion_compensate: bool = True,
+    omit_centerlines: bool = False,
+    generate_video_only: bool = False
 ) -> List[str]:
     """
     We bring the 3D points into each camera coordinate system, and do the clipping there in 3D.
@@ -115,14 +118,22 @@ def dump_clipped_3d_cuboids_to_images(
         data_dir: path to dataset with the latest data
         experiment_prefix: Output directory
         motion_compensate: Whether to motion compensate when projecting
+        omit_centerlines: whether to omit map vector lane geometry from rendering
+        generate_video_only: whether to generate mp4s only without dumping individual frames
 
     Returns:
         saved_img_fpaths
     """
     saved_img_fpaths = []
     dl = SimpleArgoverseTrackingDataLoader(data_dir=data_dir, labels_dir=data_dir)
-    avm = ArgoverseMap()
-
+    if not omit_centerlines:
+        avm = ArgoverseMap()
+    
+    category_subdir = "amodal_labels"
+    if not Path(f"{experiment_prefix}_{category_subdir}").exists():
+        os.makedirs(f"{experiment_prefix}_{category_subdir}")
+     video_output_dir = f'{experiment_prefix}_{category_subdir}'
+        
     for log_id in log_ids:
         save_dir = f"{experiment_prefix}_{log_id}"
         if not Path(save_dir).exists():
@@ -133,6 +144,9 @@ def dump_clipped_3d_cuboids_to_images(
 
         flag_done = False
         for cam_idx, camera_name in enumerate(RING_CAMERA_LIST + STEREO_CAMERA_LIST):
+            if generate_video_only:
+                mp4_path = f'{videooutput_dir}/{log_id}_{camera_name}_{fps}fps.mp4'
+                video_writer = VideoWriter(mp4_path)
             cam_im_fpaths = dl.get_ordered_log_cam_fpaths(log_id, camera_name)
             for i, im_fpath in enumerate(cam_im_fpaths):
                 if i % 50 == 0:
@@ -154,8 +168,8 @@ def dump_clipped_3d_cuboids_to_images(
                         break
                     continue
 
-                city_to_egovehicle_se3 = dl.get_city_to_egovehicle_se3(log_id, cam_timestamp)
-                if city_to_egovehicle_se3 is None:
+                city_SE3_egovehicle = dl.get_city_to_egovehicle_se3(log_id, cam_timestamp)
+                if city_SE3_egovehicle is None:
                     continue
 
                 lidar_timestamp = Path(ply_fpath).stem.split("_")[-1]
@@ -170,15 +184,16 @@ def dump_clipped_3d_cuboids_to_images(
                 img = imageio.imread(im_fpath)[:, :, ::-1].copy()
                 camera_config = get_calibration_config(log_calib_data, camera_name)
                 planes = generate_frustum_planes(camera_config.intrinsic.copy(), camera_name)
-                img = plot_lane_centerlines_in_img(
-                    lidar_pts,
-                    city_to_egovehicle_se3,
-                    img,
-                    city_name,
-                    avm,
-                    camera_config,
-                    planes,
-                )
+                if not omit_centerlines:
+                    img = plot_lane_centerlines_in_img(
+                        lidar_pts,
+                        city_SE3_egovehicle,
+                        img,
+                        city_name,
+                        avm,
+                        camera_config,
+                        planes,
+                    )
 
                 for label_idx, label in enumerate(labels):
                     obj_rec = json_label_dict_to_obj_record(label)
@@ -216,27 +231,30 @@ def dump_clipped_3d_cuboids_to_images(
                         copy.deepcopy(camera_config),
                     )
 
+                if generate_video_only:
+                    video_writer.add_frame(img[:,:,::-1])
                 cv2.imwrite(save_img_fpath, img)
                 saved_img_fpaths += [save_img_fpath]
-                if max_num_images_to_render != -1 and len(saved_img_fpaths) > max_num_images_to_render:
+                if not generate_video_only and max_num_images_to_render != -1 \
+                    and len(saved_img_fpaths) > max_num_images_to_render:
                     flag_done = True
                     break
+            if generate_video_only:
+                video_writer.complete()
+                ffmpeg_compress_video(mp4_path)
             if flag_done:
                 break
-        category_subdir = "amodal_labels"
 
-        if not Path(f"{experiment_prefix}_{category_subdir}").exists():
-            os.makedirs(f"{experiment_prefix}_{category_subdir}")
-
-        for cam_idx, camera_name in enumerate(RING_CAMERA_LIST + STEREO_CAMERA_LIST):
-            # Write the cuboid video -- could also write w/ fps=20,30,40
-            if "stereo" in camera_name:
-                fps = 5
-            else:
-                fps = 30
-            img_wildcard = f"{save_dir}/{camera_name}_%*.jpg"
-            output_fpath = f"{experiment_prefix}_{category_subdir}/{log_id}_{camera_name}_{fps}fps.mp4"
-            write_nonsequential_idx_video(img_wildcard, output_fpath, fps)
+        if not generate_video_only:
+            for cam_idx, camera_name in enumerate(RING_CAMERA_LIST + STEREO_CAMERA_LIST):
+                # Write the cuboid video from individual frames -- could also write w/ fps=20,30,40
+                if "stereo" in camera_name:
+                    fps = 5
+                else:
+                    fps = 30
+                img_wildcard = f"{save_dir}/{camera_name}_%*.jpg"
+                output_fpath = f"{video_output_dir}/{log_id}_{camera_name}_{fps}fps.mp4"
+                write_nonsequential_idx_video(img_wildcard, output_fpath, fps)
 
     return saved_img_fpaths
 
@@ -244,12 +262,32 @@ def dump_clipped_3d_cuboids_to_images(
 def main(args: Any):
     """Run the example."""
     log_ids = [log_id.strip() for log_id in args.log_ids.split(",")]
-    dump_clipped_3d_cuboids_to_images(
-        log_ids,
-        args.max_num_images_to_render * 9,
-        args.dataset_dir,
-        args.experiment_prefix,
-    )
+    if args.use_multiprocessing:
+        single_process_args = [
+            (
+                [log_id],
+                args.max_num_images_to_render * 9,
+                args.dataset_dir,
+                args.experiment_prefix,
+                args.motion_compensate,
+                not args.motion_compensate,
+                args.omit_centerlines,
+                args.generate_video_only
+            ) for log_id in log_ids
+        ]
+        with Pool(os.cpu_count()) as p:
+            accum = p.starmap(dump_clipped_3d_cuboids_to_images, single_process_args)
+    
+    else:
+        dump_clipped_3d_cuboids_to_images(
+            log_ids,
+            args.max_num_images_to_render * 9,
+            args.dataset_dir,
+            args.experiment_prefix,
+            not args.motion_compensate,
+            args.omit_centerlines,
+            args.generate_video_only
+        )
 
 
 if __name__ == "__main__":
@@ -262,6 +300,26 @@ if __name__ == "__main__":
         help="number of images within which to render 3d cuboids",
     )
     parser.add_argument("--dataset-dir", type=str, required=True, help="path to the dataset folder")
+    parser.add_argument(
+        "--use-multiprocessing",
+        action=store_true,
+        help="uses multiprocessing only if arg is specified on command line, otherwise single process"
+    )
+    parser.add_argument(
+        "--no-motion-compensation",
+        action=store_true,
+        help="motion compensate by default, unless arg is specified on command line to not do so"
+    )
+    parser.add_argument(
+        "--omit-centerlines",
+        action=store_true,
+        help="renders centerlines by default, will omit them if arg is specified on command line"
+    )
+    parser.add_argument(
+        "--generate-video-only",
+        action=store_true,
+        help="produces mp4 files only, without dumping any individual frames/images to JPGs"
+    )
     parser.add_argument(
         "--log-ids",
         type=str,
