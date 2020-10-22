@@ -131,7 +131,8 @@ def dump_clipped_3d_cuboids_to_images(
     if not omit_centerlines:
         avm = ArgoverseMap()
     fps_map = {
-        STEREO_FPS if "stereo" in cam_name else RING_CAM_FPS for cam_name in RING_CAMERA_LIST + STEREO_CAMERA_LIST
+        cam_name: STEREO_FPS if "stereo" in cam_name else RING_CAM_FPS
+        for cam_name in RING_CAMERA_LIST + STEREO_CAMERA_LIST
     }
     category_subdir = "amodal_labels"
     if not Path(f"{experiment_prefix}_{category_subdir}").exists():
