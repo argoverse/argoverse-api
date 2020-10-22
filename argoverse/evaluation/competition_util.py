@@ -33,14 +33,13 @@ def generate_forecasting_h5(
     Helper function to generate the result h5 file for argoverse forecasting challenge
 
     Args:
-        data: a dictionary of trajectory, with the key being the sequence ID. For each sequence, the
-              trajectory should be stored in a (9,30,2) np.ndarray
+        data: a dictionary of trajectories, with the key being the sequence ID, and value being
+              predicted trajectories for the sequence, stored in a (n,30,2) np.ndarray. 
+              n can be any number >=1, although only the first K trajectories will be evaluated
+              for any top-K metric. Each predicted trajectory should consist of 30 waypoints.
         output_path: path to the output directory to store the output h5 file
         filename: to be used as the name of the file
         probabilities (optional) : normalized probability for each trajectory
-
-    Returns:
-
     """
 
     if not os.path.exists(output_path):
@@ -99,8 +98,6 @@ def generate_tracking_zip(input_path: str, output_path: str, filename: str = "ar
         input path: path to the input directory which contain per_sweep_annotations_amodal/
         output_path: path to the output directory to store the output zip file
         filename: to be used as the name of the file
-
-    Returns:
 
     """
 
