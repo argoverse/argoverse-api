@@ -239,8 +239,9 @@ def dump_clipped_3d_cuboids_to_images(
 
                 if generate_video_only:
                     video_writer.add_frame(img[:, :, ::-1])
-                cv2.imwrite(save_img_fpath, img)
-                saved_img_fpaths += [save_img_fpath]
+                else:
+                    cv2.imwrite(save_img_fpath, img)
+                    saved_img_fpaths += [save_img_fpath]
                 if (
                     not generate_video_only
                     and max_num_images_to_render != -1
@@ -250,7 +251,7 @@ def dump_clipped_3d_cuboids_to_images(
                     break
             if generate_video_only:
                 video_writer.complete()
-                ffmpeg_compress_video(mp4_path)
+                ffmpeg_compress_video(mp4_path, fps)
             if flag_done:
                 break
 
