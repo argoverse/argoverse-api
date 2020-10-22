@@ -50,6 +50,7 @@ def write_nonsequential_idx_video(img_wildcard: str, output_fpath: str, fps: int
     print(cmd)
     run_command(cmd)
 
+    
 def ffmpeg_compress_video(uncompressed_mp4_path: str, fps: int) -> None:
     """Generate compressed version of video, and delete uncompressed version.
     Args:
@@ -66,6 +67,7 @@ def ffmpeg_compress_video(uncompressed_mp4_path: str, fps: int) -> None:
     run_command(cmd)
     os.remove(uncompressed_mp4_path)
 
+    
 def get_ffmpeg_codec_params_string() -> str:
     """Generate command line params for FFMPEG for a widely compatible codec with good compression"""
     codec_params = [
