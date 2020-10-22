@@ -35,8 +35,10 @@ def generate_forecasting_h5(
     Args:
         data: a dictionary of trajectories, with the key being the sequence ID, and value being
               predicted trajectories for the sequence, stored in a (n,30,2) np.ndarray. 
-              n can be any number >=1, although only the first K trajectories will be evaluated
-              for any top-K metric. Each predicted trajectory should consist of 30 waypoints.
+              "n" can be any number >=1. If probabilities are provided, the evaluation server
+              will use the top-K most likely forecasts for any top-K metric. If probabilities
+              are unavailable, the first-K trajectories will be evaluated instead. Each 
+              predicted trajectory should consist of 30 waypoints.
         output_path: path to the output directory to store the output h5 file
         filename: to be used as the name of the file
         probabilities (optional) : normalized probability for each trajectory
