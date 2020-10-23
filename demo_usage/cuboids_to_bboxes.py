@@ -141,7 +141,8 @@ def dump_clipped_3d_cuboids_to_images(
 
     for log_id in log_ids:
         save_dir = f"{experiment_prefix}_{log_id}"
-        if not Path(save_dir).exists():
+        if not generate_video_only and not Path(save_dir).exists():
+            # JPG images will be dumped here, if requested by arguments
             os.makedirs(save_dir)
 
         city_name = dl.get_city_name(log_id)

@@ -1,6 +1,7 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
 import os
+from pathlib import Path
 
 from argoverse.utils.subprocess_utils import run_command
 
@@ -50,7 +51,7 @@ def write_nonsequential_idx_video(img_wildcard: str, output_fpath: str, fps: int
     print(cmd)
     run_command(cmd)
 
-    
+
 def ffmpeg_compress_video(uncompressed_mp4_path: str, fps: int) -> None:
     """Generate compressed version of video, and delete uncompressed version.
     Args:
@@ -61,25 +62,25 @@ def ffmpeg_compress_video(uncompressed_mp4_path: str, fps: int) -> None:
     """
     codec_params_string = get_ffmpeg_codec_params_string()
     fname_stem = Path(uncompressed_mp4_path).stem
-    compressed_mp4_path = f'{Path(uncompressed_mp4_path).parent}/{fname_stem}_compressed.mp4'
+    compressed_mp4_path = f"{Path(uncompressed_mp4_path).parent}/{fname_stem}_compressed.mp4"
     cmd = f"ffmpeg -r {fps} -i {uncompressed_mp4_path} {codec_params_string} {compressed_mp4_path}"
     print(cmd)
     run_command(cmd)
     os.remove(uncompressed_mp4_path)
 
-    
+
 def get_ffmpeg_codec_params_string() -> str:
     """Generate command line params for FFMPEG for a widely compatible codec with good compression"""
     codec_params = [
-        '-vcodec', 'libx264',
-        '-profile:v', 'main',
-        '-level', '3.1',
-        '-preset', 'medium',
-        '-crf', '23',
-        '-x264-params', 'ref=4',
-        '-acodec', 'copy',
-        '-movflags', '+faststart',
-        '-pix_fmt', 'yuv420p', 
-        '-vf', 'scale=920:-2'
+        "-vcodec libx264",
+        "-profile:v main",
+        "-level 3.1",
+        "-preset medium",
+        "-crf 23",
+        "-x264-params ref=4",
+        "-acodec copy",
+        "-movflags +faststart",
+        "-pix_fmt yuv420p",
+        "-vf scale=920:-2",
     ]
-    return ' '.join(codec_params)
+    return " ".join(codec_params)
