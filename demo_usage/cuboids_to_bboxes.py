@@ -46,7 +46,7 @@ RING_CAM_FPS = 30
 
 def plot_lane_centerlines_in_img(
     lidar_pts: np.ndarray,
-    cityus_egovehicle: SE3,
+    city_SE3_egovehicle: SE3,
     img: np.ndarray,
     city_name: str,
     avm: ArgoverseMap,
