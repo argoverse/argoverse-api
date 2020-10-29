@@ -20,6 +20,7 @@
 - [Contributing](#contributing)
 - [Disclaimer](#disclaimer)
 - [License](#license)
+- [Open-Source Libraries Using Argoverse](#other-repos)
 
 
 ---
@@ -181,3 +182,8 @@ Argoverse APIs are created by John Lambert, Patsorn Sangkloy, Ming-Fang Chang, a
 ## License
 
 We release our API under the MIT license. We retain the Apache 2.0 license on certain files. See **[LICENSE](./LICENSE)**
+
+## Open-Source Libraries Using Argoverse
+
+- A nuScenes to Argoverse converter can be found at https://github.com/bhavya01/nuscenes_to_argoverse, contributed by Bhavya Bahl and John Lambert.
+- A Waymo Open Dataset to Argoverse converter can be found at https://github.com/johnwlambert/waymo_to_argoverse, contributed by John Lambert and Hemanth Chittanuru.
