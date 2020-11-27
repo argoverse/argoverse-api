@@ -22,15 +22,15 @@ def get_city_SE3_egovehicle_at_sensor_t(sensor_timestamp: int, dataset_dir: str,
         log_id: string representing unique log identifier
 
     Returns:
-        SE3 for translating ego-vehicle coordinates to city coordinates if found, else None.
+        SE(3) for transforming ego-vehicle coordinates to city coordinates if found, else None.
     """
     pose_fpath = f"{dataset_dir}/{log_id}/poses/city_SE3_egovehicle_{sensor_timestamp}.json"
     if not Path(pose_fpath).exists():
         logger.error(f"missing pose {sensor_timestamp}")
         return None
 
-    pose_city_to_ego = read_json_file(pose_fpath)
-    rotation = np.array(pose_city_to_ego["rotation"])
-    translation = np.array(pose_city_to_ego["translation"])
-    city_to_egovehicle_se3 = SE3(rotation=quat2rotmat(rotation), translation=translation)
-    return city_to_egovehicle_se3
+    city_SE3_ego_dict = read_json_file(pose_fpath)
+    rotation = np.array(city_SE3_ego_dict["rotation"])
+    translation = np.array(city_SE3_ego_dict["translation"])
+    city_SE3_egovehicle = SE3(rotation=quat2rotmat(rotation), translation=translation)
+    return city_SE3_egovehicle
