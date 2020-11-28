@@ -34,13 +34,14 @@ class CameraConfig(NamedTuple):
         img_width: image width
         img_height: image height
     """
+
     extrinsic: np.ndarray
     intrinsic: np.ndarray
     img_width: int
     img_height: int
     distortion_coeffs: np.ndarray
 
-        
+
 class Calibration:
     """Calibration matrices and utils.
 
