@@ -85,4 +85,3 @@ class SE3:
             chained_se3: instance of SE3 class
         """
         return self.compose(right_se3)
-    
