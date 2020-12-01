@@ -43,7 +43,7 @@ LANE_COLOR_NOISE = 20
 
 def plot_lane_centerlines_in_img(
     lidar_pts: np.ndarray,
-    city_to_egovehicle_se3: SE3,
+    city_SE3_egovehicle: SE3,
     img: np.ndarray,
     city_name: str,
     avm: ArgoverseMap,
@@ -54,7 +54,7 @@ def plot_lane_centerlines_in_img(
 ) -> np.ndarray:
     """
     Args:
-        city_to_egovehicle_se3: SE3 transformation representing egovehicle to city transformation
+        city_SE3_egovehicle: SE3 transformation representing egovehicle to city transformation
         img: Array of shape (M,N,3) representing updated image
         city_name: str, string representing city name, i.e. 'PIT' or 'MIA'
         avm: instance of ArgoverseMap
@@ -70,7 +70,7 @@ def plot_lane_centerlines_in_img(
     t = camera_config.extrinsic[:3, 3]
     cam_SE3_egovehicle = SE3(rotation=R, translation=t)
 
-    query_x, query_y, _ = city_to_egovehicle_se3.translation
+    query_x, query_y, _ = city_SE3_egovehicle.translation
     local_centerlines = avm.find_local_lane_centerlines(query_x, query_y, city_name)
 
     for centerline_city_fr in local_centerlines:
@@ -81,7 +81,7 @@ def plot_lane_centerlines_in_img(
         valid_idx = np.isnan(ground_heights)
         centerline_city_fr = centerline_city_fr[~valid_idx]
 
-        centerline_egovehicle_fr = city_to_egovehicle_se3.inverse().transform_point_cloud(centerline_city_fr)
+        centerline_egovehicle_fr = city_SE3_egovehicle.inverse().transform_point_cloud(centerline_city_fr)
         centerline_uv_cam = cam_SE3_egovehicle.transform_point_cloud(centerline_egovehicle_fr)
 
         # can also clip point cloud to nearest LiDAR point depth
@@ -154,8 +154,8 @@ def dump_clipped_3d_cuboids_to_images(
                         break
                     continue
 
-                city_to_egovehicle_se3 = dl.get_city_to_egovehicle_se3(log_id, cam_timestamp)
-                if city_to_egovehicle_se3 is None:
+                city_SE3_egovehicle = dl.get_city_SE3_egovehicle(log_id, cam_timestamp)
+                if city_SE3_egovehicle is None:
                     continue
 
                 lidar_timestamp = Path(ply_fpath).stem.split("_")[-1]
@@ -172,7 +172,7 @@ def dump_clipped_3d_cuboids_to_images(
                 planes = generate_frustum_planes(camera_config.intrinsic.copy(), camera_name)
                 img = plot_lane_centerlines_in_img(
                     lidar_pts,
-                    city_to_egovehicle_se3,
+                    city_SE3_egovehicle,
                     img,
                     city_name,
                     avm,
