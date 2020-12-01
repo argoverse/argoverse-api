@@ -7,8 +7,8 @@ from typing import Any, List, Mapping, Optional, Sequence
 
 import numpy as np
 
-from argoverse.data_loading.synchronization_database import SynchronizationDB
 from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
+from argoverse.data_loading.synchronization_database import SynchronizationDB
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat2rotmat
@@ -57,7 +57,7 @@ class SimpleArgoverseTrackingDataLoader:
         return log_calib_data
 
     def get_city_to_egovehicle_se3(self, log_id: str, timestamp: int) -> Optional[SE3]:
-        """ Deprecated version of get_city_SE3_egovehicle() below, as does not follow standard naming convention
+        """Deprecated version of get_city_SE3_egovehicle() below, as does not follow standard naming convention
         Args:
             log_id: str, unique ID of vehicle log
             timestamp: int, timestamp of sensor observation, in nanoseconds
