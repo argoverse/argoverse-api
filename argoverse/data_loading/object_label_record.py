@@ -5,7 +5,7 @@
 import copy
 import json
 import os
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, NamedTuple, Optional, Tuple
 
 import cv2
 import numpy as np
@@ -38,40 +38,29 @@ BKGRND_RECT_ALPHA = 0.45
 TOP_VERT_INDICES: List[int] = [0, 1, 4, 5]
 
 
-class ObjectLabelRecord:
-    def __init__(
-        self,
-        quaternion: np.array,
-        translation: np.array,
-        length: float,
-        width: float,
-        height: float,
-        occlusion: int,
-        label_class: Optional[str] = None,
-        track_id: Optional[str] = None,
-        score: float = 1.0,
-    ) -> None:
-        """Create an ObjectLabelRecord.
-
-        Args:
-           quaternion: Numpy vector representing quaternion, box/cuboid orientation
-           translation: Numpy vector representing translation, center of box given as x, y, z.
-           length: object length.
-           width: object width.
-           height: object height.
-           occlusion: occlusion value.
-           label_class: class label, see object_classes.py for all possible class in argoverse
-           track_id: object track id, this is unique for each track
-        """
-        self.quaternion = quaternion
-        self.translation = translation
-        self.length = length
-        self.width = width
-        self.height = height
-        self.occlusion = occlusion
-        self.label_class = label_class
-        self.track_id = track_id
-        self.score = score
+class ObjectLabelRecord(NamedTuple):
+    """Create an ObjectLabelRecord.
+    
+    Args:
+       quaternion: 4d vector representing quaternion, box/cuboid orientation, as egovehicle_R_obj
+       translation: 3d vector representing translation [x, y, z] to center of box, i.e. egovehicle_t_obj
+       length: object length.
+       width: object width.
+       height: object height.
+       occlusion: occlusion value.
+       label_class: class label, see object_classes.py for all possible class in argoverse
+       track_id: object track id, this is unique for each track
+       score: scalar-valued confidence for this cuboid, assigned as 1.0 for ground truth
+    """
+    quaternion: np.ndarray
+    translation: np.ndarray
+    length: float
+    width: float
+    height: float
+    occlusion: int
+    label_class: Optional[str] = None
+    track_id: Optional[str] = None
+    score: float = 1.0
 
     def as_2d_bbox(self) -> np.ndarray:
         """Construct a 2D bounding box from this label.
