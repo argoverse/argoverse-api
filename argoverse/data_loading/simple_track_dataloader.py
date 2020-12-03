@@ -7,6 +7,7 @@ from typing import Any, List, Mapping, Optional, Sequence
 
 import numpy as np
 
+from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
 from argoverse.data_loading.synchronization_database import SynchronizationDB
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.se3 import SE3
@@ -56,22 +57,26 @@ class SimpleArgoverseTrackingDataLoader:
         return log_calib_data
 
     def get_city_to_egovehicle_se3(self, log_id: str, timestamp: int) -> Optional[SE3]:
+        """Deprecated version of get_city_SE3_egovehicle() below, as does not follow standard naming convention
+        Args:
+            log_id: str, unique ID of vehicle log
+            timestamp: int, timestamp of sensor observation, in nanoseconds
+
+        Returns:
+            city_SE3_egovehicle: SE3 transformation to bring points in egovehicle frame into city frame.
+        """
+        return self.get_city_SE3_egovehicle(log_id, timestamp)
+
+    def get_city_SE3_egovehicle(self, log_id: str, timestamp: int) -> Optional[SE3]:
         """
         Args:
             log_id: str, unique ID of vehicle log
             timestamp: int, timestamp of sensor observation, in nanoseconds
 
         Returns:
-            city_to_egovehicle_se3: SE3 transformation to bring egovehicle frame point into city frame.
+            city_SE3_egovehicle: SE3 transformation to bring points in egovehicle frame into city frame.
         """
-        pose_fpath = f"{self.data_dir}/{log_id}/poses/city_SE3_egovehicle_{timestamp}.json"
-        if not Path(pose_fpath).exists():
-            return None
-        pose_data = read_json_file(pose_fpath)
-        rotation = np.array(pose_data["rotation"])
-        translation = np.array(pose_data["translation"])
-        city_to_egovehicle_se3 = SE3(rotation=quat2rotmat(rotation), translation=translation)
-        return city_to_egovehicle_se3
+        return get_city_SE3_egovehicle_at_sensor_t(timestamp, self.data_dir, log_id)
 
     def get_closest_im_fpath(self, log_id: str, camera_name: str, lidar_timestamp: int) -> Optional[str]:
         """

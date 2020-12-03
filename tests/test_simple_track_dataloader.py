@@ -27,11 +27,11 @@ def test_get_log_calibration_data(
     assert data_loader.get_log_calibration_data(_LOG_ID)
 
 
-def test_get_city_to_egovehicle_se3(
+def test_get_city_SE3_egovehicle(
     data_loader: SimpleArgoverseTrackingDataLoader,
 ) -> None:
-    assert data_loader.get_city_to_egovehicle_se3(_LOG_ID, 0) is not None
-    assert data_loader.get_city_to_egovehicle_se3(_LOG_ID, 100) is None
+    assert data_loader.get_city_SE3_egovehicle(_LOG_ID, 0) is not None
+    assert data_loader.get_city_SE3_egovehicle(_LOG_ID, 100) is None
 
 
 def test_get_closest_im_fpath(data_loader: SimpleArgoverseTrackingDataLoader) -> None:
