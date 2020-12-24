@@ -22,6 +22,7 @@ from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation as R
 
 from argoverse.data_loading.object_label_record import ObjectLabelRecord, read_label
+from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
 from argoverse.evaluation.detection.constants import (
     COMPETITION_CLASSES,
     MAX_NORMALIZED_AOE,
@@ -33,6 +34,8 @@ from argoverse.evaluation.detection.constants import (
     MIN_CDS,
     N_TP_ERRORS,
 )
+from argoverse.map_representation.map_api import ArgoverseMap
+from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat_argo2scipy_vectorized
 
 matplotlib.use("Agg")  # isort:skip
@@ -89,7 +92,7 @@ class DetectionCfg(NamedTuple):
 
 
 def accumulate(
-    dt_root_fpath: Path, gt_fpath: Path, cfg: DetectionCfg
+    dt_root_fpath: Path, gt_fpath: Path, cfg: DetectionCfg, avm: ArgoverseMap
 ) -> Tuple[DefaultDict[str, np.ndarray], DefaultDict[str, int]]:
     """Accumulate the true/false positives (boolean flags) and true positive errors for each class.
 
@@ -110,6 +113,13 @@ def accumulate(
     ts = gt_fpath.stem.split("_")[-1]
 
     dt_fpath = dt_root_fpath / f"{log_id}/per_sweep_annotations_amodal/" f"tracked_object_labels_{ts}.json"
+    
+    city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(ts, dt_root_fpath, log_id)
+    
+    # TODO: put this into data_loading api below
+    city_name = city_info_fpath = f"{ dt_root_fpath}/{log_id}/city_info.json"
+    city_info = read_json_file(city_info_fpath)
+    city_name = city_info["city_name"]
 
     dts = np.array(read_label(str(dt_fpath)))
     gts = np.array(read_label(str(gt_fpath)))
@@ -120,12 +130,18 @@ def accumulate(
         dt_filtered = filter_instances(
             dts,
             class_name,
+            avm,
+            city_SE3_egovehicle,
+            city_name,
             filter_metric=cfg.dt_metric,
             max_detection_range=cfg.max_dt_range,
         )
         gt_filtered = filter_instances(
             gts,
             class_name,
+            avm,
+            city_SE3_egovehicle,
+            city_name,
             filter_metric=cfg.dt_metric,
             max_detection_range=cfg.max_dt_range,
         )
@@ -210,10 +226,13 @@ def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
 def filter_instances(
     instances: List[ObjectLabelRecord],
     target_class_name: str,
+    avm: ArgoverseMap,
+    city_SE3_egovehicle: SE3,
+    city_name: str,
     filter_metric: FilterMetric,
     max_detection_range: float,
 ) -> np.ndarray:
-    """Filter the GT annotations based on a set of conditions (class name and distance from egovehicle).
+    """Filter object instances based on a set of conditions (class name and distance from egovehicle).
 
     Args:
         instances: Instances to be filtered (N,).
@@ -235,6 +254,16 @@ def filter_instances(
             filtered_annos = instances[dt_dists < max_detection_range]
     else:
         raise NotImplementedError("This filter metric is not implemented!")
+    
+    # ignore instances outside of region of interest (ROI) during evaluation
+    centers_cityframe = city_SE3_egovehicle.transform_point_cloud(centers_egoframe)
+    is_within_roi = avm.get_raster_layer_points_boolean(centers_cityframe, city_name, "roi")
+    is_valid = np.logical_and.reduce(
+        [is_within_roi,
+         dt_dists < max_detection_range
+        ]
+    filtered_annos = instances[is_valid]
+    
     return filtered_annos
 
 
