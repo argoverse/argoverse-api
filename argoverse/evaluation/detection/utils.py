@@ -23,6 +23,7 @@ from scipy.spatial.transform import Rotation as R
 
 from argoverse.data_loading.object_label_record import ObjectLabelRecord, read_label
 from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
+from argoverse.data_loading.simple_track_dataloader import read_city_name
 from argoverse.evaluation.detection.constants import (
     COMPETITION_CLASSES,
     MAX_NORMALIZED_AOE,
@@ -115,11 +116,7 @@ def accumulate(
     dt_fpath = dt_root_fpath / f"{log_id}/per_sweep_annotations_amodal/" f"tracked_object_labels_{ts}.json"
     
     city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(ts, dt_root_fpath, log_id)
-    
-    # TODO: put this into data_loading api below
-    city_name = city_info_fpath = f"{ dt_root_fpath}/{log_id}/city_info.json"
-    city_info = read_json_file(city_info_fpath)
-    city_name = city_info["city_name"]
+    city_name = read_city_name(data_dir=dt_root_fpath, log_id=log_id)
 
     dts = np.array(read_label(str(dt_fpath)))
     gts = np.array(read_label(str(gt_fpath)))
