@@ -14,6 +14,14 @@ from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat2rotmat
 
 
+def read_city_name(data_dir: str, log_id: str) -> str:
+    """Read city name from JSON file containing log city metadata."""
+    city_info_fpath = f"{data_dir}/{log_id}/city_info.json"
+    city_info = read_json_file(city_info_fpath)
+    city_name = city_info["city_name"]
+    return city_name
+
+
 class SimpleArgoverseTrackingDataLoader:
     """
     Simple abstraction for retrieving log data, given a path to the dataset.
@@ -37,9 +45,7 @@ class SimpleArgoverseTrackingDataLoader:
         Returns:
             city_name: str
         """
-        city_info_fpath = f"{self.data_dir}/{log_id}/city_info.json"
-        city_info = read_json_file(city_info_fpath)
-        city_name = city_info["city_name"]
+        city_name = read_city_name(self.data_dir, log_id)
         assert isinstance(city_name, str)
         return city_name
 
