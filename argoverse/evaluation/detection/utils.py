@@ -120,16 +120,17 @@ def accumulate(
 
     dts = np.array(read_label(str(dt_fpath)))
     gts = np.array(read_label(str(gt_fpath)))
-
+    
+    # TODO: only if config flag is set, ignore if unit test
+    dts = filter_objs_to_roi(dts, avm, city_SE3_egovehicle, city_name)
+    gts = filter_objs_to_roi(gts, avm, city_SE3_egovehicle, city_name)
+    
     cls_to_accum = defaultdict(list)
     cls_to_ninst = defaultdict(int)
     for class_name in cfg.dt_classes:
         dt_filtered = filter_instances(
             dts,
             class_name,
-            avm,
-            city_SE3_egovehicle,
-            city_name,
             filter_metric=cfg.dt_metric,
             max_detection_range=cfg.max_dt_range,
         )
@@ -220,19 +221,34 @@ def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
     return metrics
 
 
+def filter_objs_to_roi(
+    instances: List[ObjectLabelRecord],
+    avm: ArgoverseMap,
+    city_SE3_egovehicle: SE3,
+    city_name: str
+) -> np.ndarray:
+    """Filter objects to region of interest (5 meter dilation of driveable area).
+    
+    We ignore instances outside of region of interest (ROI) during evaluation
+    """
+    instances = np.array([instances])
+    centers = np.array([dt.translation for dt in instances])
+    centers_cityframe = city_SE3_egovehicle.transform_point_cloud(centers_egoframe)
+    is_within_roi = avm.get_raster_layer_points_boolean(centers_cityframe, city_name, "roi")
+    instances_roi = instances[is_within_roi]
+    return instances_roi
+
+
 def filter_instances(
     instances: List[ObjectLabelRecord],
     target_class_name: str,
-    avm: ArgoverseMap,
-    city_SE3_egovehicle: SE3,
-    city_name: str,
     filter_metric: FilterMetric,
     max_detection_range: float,
 ) -> np.ndarray:
     """Filter object instances based on a set of conditions (class name and distance from egovehicle).
 
     Args:
-        instances: Instances to be filtered (N,).
+        instances: Instances to be filtered (N,), either detections or ground truth object labels
         target_class_name: Name of the class of interest.
         filter_metric: Range metric used for filtering.
         max_detection_range: Maximum distance for range filtering.
@@ -244,24 +260,15 @@ def filter_instances(
 
     if filter_metric == FilterMetric.EUCLIDEAN:
         centers = np.array([dt.translation for dt in instances])
-        filtered_annos = np.array([])
+        filtered_instances = np.array([])
 
         if centers.shape[0] > 0:
             dt_dists = np.linalg.norm(centers, axis=1)
-            filtered_annos = instances[dt_dists < max_detection_range]
+            filtered_instances = instances[dt_dists < max_detection_range]
     else:
         raise NotImplementedError("This filter metric is not implemented!")
-    
-    # ignore instances outside of region of interest (ROI) during evaluation
-    centers_cityframe = city_SE3_egovehicle.transform_point_cloud(centers_egoframe)
-    is_within_roi = avm.get_raster_layer_points_boolean(centers_cityframe, city_name, "roi")
-    is_valid = np.logical_and.reduce(
-        [is_within_roi,
-         dt_dists < max_detection_range
-        ]
-    filtered_annos = instances[is_valid]
-    
-    return filtered_annos
+
+    return filtered_instances
 
 
 def rank(dts: List[ObjectLabelRecord]) -> Tuple[np.ndarray, np.ndarray]:
