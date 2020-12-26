@@ -36,7 +36,7 @@ logging.getLogger("matplotlib.font_manager").disabled = True
 @pytest.fixture  # type: ignore
 def evaluator_identity() -> DetectionEvaluator:
     """Define an evaluator that compares a set of results to itself."""
-    detection_cfg = DetectionCfg(dt_classes=["VEHICLE"])
+    detection_cfg = DetectionCfg(dt_classes=["VEHICLE"], eval_only_roi_instances=False)
     return DetectionEvaluator(
         TEST_DATA_LOC / "detections_identity",
         TEST_DATA_LOC,
@@ -48,7 +48,7 @@ def evaluator_identity() -> DetectionEvaluator:
 @pytest.fixture  # type: ignore
 def evaluator_assignment() -> DetectionEvaluator:
     """Define an evaluator that compares a set of results to one with an extra detection to check assignment."""
-    detection_cfg = DetectionCfg(dt_classes=["VEHICLE"])
+    detection_cfg = DetectionCfg(dt_classes=["VEHICLE"], eval_only_roi_instances=False)
     return DetectionEvaluator(
         TEST_DATA_LOC / "detections_assignment",
         TEST_DATA_LOC,
@@ -60,7 +60,7 @@ def evaluator_assignment() -> DetectionEvaluator:
 @pytest.fixture  # type: ignore
 def evaluator() -> DetectionEvaluator:
     """Definte an evaluator that compares a set of detections with known error to the ground truth."""
-    detection_cfg = DetectionCfg(dt_classes=["VEHICLE"])
+    detection_cfg = DetectionCfg(dt_classes=["VEHICLE"], eval_only_roi_instances=False)
     return DetectionEvaluator(
         TEST_DATA_LOC / "detections",
         TEST_DATA_LOC,
@@ -189,7 +189,7 @@ def test_wrap_angle() -> None:
 
 def test_accumulate() -> None:
     """Verify that the accumulate function matches known output for a self-comparison."""
-    cfg = DetectionCfg()
+    cfg = DetectionCfg(eval_only_roi_instances=False)
     # compare a set of labels to itself
     cls_to_accum, cls_to_ninst = accumulate(
         TEST_DATA_LOC / "detections",
@@ -216,7 +216,7 @@ def test_accumulate() -> None:
 
 def test_assign() -> None:
     """Verify that the assign functions as expected by checking ATE of assigned detections against known distance."""
-    cfg = DetectionCfg()
+    cfg = DetectionCfg(eval_only_roi_instances=False)
     dts: np.ndarray = np.array(
         [
             ObjectLabelRecord(
