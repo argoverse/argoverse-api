@@ -116,18 +116,18 @@ def accumulate(
     ts = gt_fpath.stem.split("_")[-1]
 
     dt_fpath = dt_root_fpath / f"{log_id}/per_sweep_annotations_amodal/" f"tracked_object_labels_{ts}.json"
-    
+
     dts = np.array(read_label(str(dt_fpath)))
     gts = np.array(read_label(str(gt_fpath)))
-    
+
     if cfg.eval_only_roi_instances:
         gt_root_fpath = Path(gt_fpath).parent.parent.parent
         city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(ts, gt_root_fpath, log_id)
         log_city_name = read_city_name(data_dir=gt_root_fpath, log_id=log_id)
-        
+
         dts = filter_objs_to_roi(dts, avm, city_SE3_egovehicle, log_city_name)
         gts = filter_objs_to_roi(gts, avm, city_SE3_egovehicle, log_city_name)
-    
+
     cls_to_accum = defaultdict(list)
     cls_to_ninst = defaultdict(int)
     for class_name in cfg.dt_classes:
@@ -222,15 +222,12 @@ def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
 
 
 def filter_objs_to_roi(
-    instances: np.ndarray,
-    avm: ArgoverseMap,
-    city_SE3_egovehicle: SE3,
-    city_name: str
+    instances: np.ndarray, avm: ArgoverseMap, city_SE3_egovehicle: SE3, city_name: str
 ) -> np.ndarray:
-    """Filter objects to region of interest (5 meter dilation of driveable area).
-    
+    """Filter objects to the region of interest (5 meter dilation of driveable area).
+
     We ignore instances outside of region of interest (ROI) during evaluation.
-    
+
     Args:
         instances: Numpy array of shape (N,) with ObjectLabelRecord entries
         avm: Argoverse map object
