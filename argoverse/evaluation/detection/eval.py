@@ -103,7 +103,8 @@ class DetectionEvaluator(NamedTuple):
         dt_fpaths = list(self.dt_root_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
         gt_fpaths = list(self.gt_root_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
         
-        avm = ArgoverseMap()
+        # map only required if using Region of Interest (ROI) information to filter objs.
+        avm = ArgoverseMap() if self.cfg.eval_only_roi_instances else None
 
         assert len(dt_fpaths) == len(gt_fpaths)
         data: DefaultDict[str, np.ndarray] = defaultdict(list)
