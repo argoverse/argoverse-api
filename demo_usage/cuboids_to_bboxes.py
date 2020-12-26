@@ -175,7 +175,7 @@ def dump_clipped_3d_cuboids_to_images(
                         break
                     continue
 
-                city_SE3_egovehicle = dl.get_city_to_egovehicle_se3(log_id, cam_timestamp)
+                city_SE3_egovehicle = dl.get_city_SE3_egovehicle(log_id, cam_timestamp)
                 if city_SE3_egovehicle is None:
                     continue
 
