@@ -90,6 +90,7 @@ class DetectionCfg(NamedTuple):
     save_figs: bool = False
     tp_normalization_terms: np.ndarray = np.array([tp_thresh, MAX_SCALE_ERROR, MAX_YAW_ERROR])
     summary_default_vals: np.ndarray = np.array([MIN_AP, tp_thresh, MAX_NORMALIZED_ASE, MAX_NORMALIZED_AOE, MIN_CDS])
+    eval_only_roi_instances: bool = True
 
 
 def accumulate(
@@ -122,9 +123,9 @@ def accumulate(
     dts = np.array(read_label(str(dt_fpath)))
     gts = np.array(read_label(str(gt_fpath)))
     
-    # TODO: only if config flag is set, ignore if unit test
-    dts = filter_objs_to_roi(dts, avm, city_SE3_egovehicle, log_city_name)
-    gts = filter_objs_to_roi(gts, avm, city_SE3_egovehicle, log_city_name)
+    if cfg.eval_only_roi_instances:
+        dts = filter_objs_to_roi(dts, avm, city_SE3_egovehicle, log_city_name)
+        gts = filter_objs_to_roi(gts, avm, city_SE3_egovehicle, log_city_name)
     
     cls_to_accum = defaultdict(list)
     cls_to_ninst = defaultdict(int)
