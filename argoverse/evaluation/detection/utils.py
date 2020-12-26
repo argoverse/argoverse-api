@@ -232,7 +232,7 @@ def filter_objs_to_roi(
     We ignore instances outside of region of interest (ROI) during evaluation
     """
     instances = np.array([instances])
-    centers = np.array([dt.translation for dt in instances])
+    centers_egoframe = np.array([dt.translation for dt in instances])
     centers_cityframe = city_SE3_egovehicle.transform_point_cloud(centers_egoframe)
     is_within_roi = avm.get_raster_layer_points_boolean(centers_cityframe, city_name, "roi")
     instances_roi = instances[is_within_roi]
