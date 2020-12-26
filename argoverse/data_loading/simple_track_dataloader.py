@@ -31,7 +31,7 @@ class SimpleArgoverseTrackingDataLoader:
         """
         Args:
             data_dir: str, representing path to raw Argoverse data
-            labels_dir: str representing path to Argoverse data labels (e.g. estimated detections or tracks)
+            labels_dir: str representing path to Argoverse data labels (e.g. labels or estimated detections/tracks)
         """
         self.data_dir = data_dir
         self.labels_dir = labels_dir
