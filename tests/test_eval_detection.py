@@ -195,6 +195,7 @@ def test_accumulate() -> None:
         TEST_DATA_LOC / "detections",
         TEST_DATA_LOC / "detections/1/per_sweep_annotations_amodal/tracked_object_labels_0.json",
         cfg,
+        avm=None # ArgoverseMap instance not required when not using ROI info in evaluation
     )
     # ensure the detections match at all thresholds, have 0 TP errors, and have AP = 1
     expected_ATE = 0.0
