@@ -116,14 +116,14 @@ def accumulate(
 
     dt_fpath = dt_root_fpath / f"{log_id}/per_sweep_annotations_amodal/" f"tracked_object_labels_{ts}.json"
     
-    gt_root_fpath = Path(gt_fpath).parent.parent.parent
-    city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(ts, gt_root_fpath, log_id)
-    log_city_name = read_city_name(data_dir=gt_root_fpath, log_id=log_id)
-
     dts = np.array(read_label(str(dt_fpath)))
     gts = np.array(read_label(str(gt_fpath)))
     
     if cfg.eval_only_roi_instances:
+        gt_root_fpath = Path(gt_fpath).parent.parent.parent
+        city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(ts, gt_root_fpath, log_id)
+        log_city_name = read_city_name(data_dir=gt_root_fpath, log_id=log_id)
+        
         dts = filter_objs_to_roi(dts, avm, city_SE3_egovehicle, log_city_name)
         gts = filter_objs_to_roi(gts, avm, city_SE3_egovehicle, log_city_name)
     
