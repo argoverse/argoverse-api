@@ -18,7 +18,7 @@ def read_city_name(data_dir: str, log_id: str) -> str:
     """Read city name from JSON file containing log city metadata."""
     city_info_fpath = f"{data_dir}/{log_id}/city_info.json"
     city_info = read_json_file(city_info_fpath)
-    city_name = city_info["city_name"]
+    city_name = str(city_info["city_name"])
     return city_name
 
 
