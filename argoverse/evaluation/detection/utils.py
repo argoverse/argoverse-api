@@ -13,7 +13,7 @@ import logging
 from collections import defaultdict
 from enum import Enum, auto
 from pathlib import Path
-from typing import DefaultDict, List, NamedTuple, Tuple
+from typing import DefaultDict, List, NamedTuple, Optional, Tuple
 
 import matplotlib
 import numpy as np
@@ -95,7 +95,7 @@ class DetectionCfg(NamedTuple):
 
 
 def accumulate(
-    dt_root_fpath: Path, gt_fpath: Path, cfg: DetectionCfg, avm: ArgoverseMap
+    dt_root_fpath: Path, gt_fpath: Path, cfg: DetectionCfg, avm: Optional[ArgoverseMap]
 ) -> Tuple[DefaultDict[str, np.ndarray], DefaultDict[str, int]]:
     """Accumulate the true/false positives (boolean flags) and true positive errors for each class.
 
