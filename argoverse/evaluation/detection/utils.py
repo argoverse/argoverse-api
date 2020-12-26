@@ -116,14 +116,14 @@ def accumulate(
     dt_fpath = dt_root_fpath / f"{log_id}/per_sweep_annotations_amodal/" f"tracked_object_labels_{ts}.json"
     
     city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(ts, dt_root_fpath, log_id)
-    city_name = read_city_name(data_dir=dt_root_fpath, log_id=log_id)
+    log_city_name = read_city_name(data_dir=dt_root_fpath, log_id=log_id)
 
     dts = np.array(read_label(str(dt_fpath)))
     gts = np.array(read_label(str(gt_fpath)))
     
     # TODO: only if config flag is set, ignore if unit test
-    dts = filter_objs_to_roi(dts, avm, city_SE3_egovehicle, city_name)
-    gts = filter_objs_to_roi(gts, avm, city_SE3_egovehicle, city_name)
+    dts = filter_objs_to_roi(dts, avm, city_SE3_egovehicle, log_city_name)
+    gts = filter_objs_to_roi(gts, avm, city_SE3_egovehicle, log_city_name)
     
     cls_to_accum = defaultdict(list)
     cls_to_ninst = defaultdict(int)
@@ -222,16 +222,21 @@ def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
 
 
 def filter_objs_to_roi(
-    instances: List[ObjectLabelRecord],
+    instances: np.ndarray,
     avm: ArgoverseMap,
     city_SE3_egovehicle: SE3,
     city_name: str
 ) -> np.ndarray:
     """Filter objects to region of interest (5 meter dilation of driveable area).
     
-    We ignore instances outside of region of interest (ROI) during evaluation
+    We ignore instances outside of region of interest (ROI) during evaluation.
+    
+    Args:
+        instances: Numpy array of shape (N,) with ObjectLabelRecord entries
+        avm: Argoverse map object
+        city_SE3_egovehicle: pose of egovehicle within city map at time of sweep
+        city_name: name of city where log was captured
     """
-    instances = np.array([instances])
     centers_egoframe = np.array([dt.translation for dt in instances])
     centers_cityframe = city_SE3_egovehicle.transform_point_cloud(centers_egoframe)
     is_within_roi = avm.get_raster_layer_points_boolean(centers_cityframe, city_name, "roi")
