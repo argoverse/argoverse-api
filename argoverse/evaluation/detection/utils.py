@@ -137,9 +137,6 @@ def accumulate(
         gt_filtered = filter_instances(
             gts,
             class_name,
-            avm,
-            city_SE3_egovehicle,
-            city_name,
             filter_metric=cfg.dt_metric,
             max_detection_range=cfg.max_dt_range,
         )
