@@ -31,7 +31,7 @@ class SimpleArgoverseTrackingDataLoader:
         """
         Args:
             data_dir: str, representing path to raw Argoverse data
-            labels_dir: strrepresenting path to Argoverse data labels
+            labels_dir: str representing path to Argoverse data labels (e.g. estimated detections or tracks)
         """
         self.data_dir = data_dir
         self.labels_dir = labels_dir
@@ -124,7 +124,7 @@ class SimpleArgoverseTrackingDataLoader:
         Args:
             log_id: str, unique ID of vehicle log
         Returns:
-            ply_fpaths: List of strings, representing paths to ply files in this log
+            ply_fpaths: List of strings, representing paths to ordered ply files in this log
         """
         ply_fpaths = sorted(glob.glob(f"{self.data_dir}/{log_id}/lidar/PC_*.ply"))
         return ply_fpaths
@@ -135,7 +135,7 @@ class SimpleArgoverseTrackingDataLoader:
             log_id: str, unique ID of vehicle log
 
         Returns
-            cam_img_fpaths: List of strings, representing paths to JPEG files in this log,
+            cam_img_fpaths: List of strings, representing paths to ordered JPEG files in this log,
                 for a specific camera
         """
         cam_img_fpaths = sorted(glob.glob(f"{self.data_dir}/{log_id}/{camera_name}/{camera_name}_*.jpg"))
