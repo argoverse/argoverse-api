@@ -115,8 +115,8 @@ def accumulate(
 
     dt_fpath = dt_root_fpath / f"{log_id}/per_sweep_annotations_amodal/" f"tracked_object_labels_{ts}.json"
     
-    city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(ts, dt_root_fpath, log_id)
-    log_city_name = read_city_name(data_dir=dt_root_fpath, log_id=log_id)
+    city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(ts, gt_root_fpath, log_id)
+    log_city_name = read_city_name(data_dir=gt_root_fpath, log_id=log_id)
 
     dts = np.array(read_label(str(dt_fpath)))
     gts = np.array(read_label(str(gt_fpath)))
