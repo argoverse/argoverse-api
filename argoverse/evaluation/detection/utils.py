@@ -78,6 +78,7 @@ class DetectionCfg(NamedTuple):
         save_figs: Flag to save figures.
         tp_normalization_terms: Normalization constants for ATE, ASE, and AOE.
         summary_default_vals: Evaluation summary default values.
+        eval_only_roi_instances: only use dets and ground truth that lie within region of interest during eval.
     """
 
     affinity_threshs: List[float] = [0.5, 1.0, 2.0, 4.0]  # Meters
