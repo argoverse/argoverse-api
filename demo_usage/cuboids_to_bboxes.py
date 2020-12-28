@@ -191,6 +191,7 @@ def dump_clipped_3d_cuboids_to_images(
                 img = imageio.imread(im_fpath)[:, :, ::-1].copy()
                 camera_config = get_calibration_config(log_calib_data, camera_name)
                 planes = generate_frustum_planes(camera_config.intrinsic.copy(), camera_name)
+
                 if not omit_centerlines:
                     img = plot_lane_centerlines_in_img(
                         lidar_pts,

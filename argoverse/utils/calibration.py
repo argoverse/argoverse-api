@@ -4,7 +4,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union, overload
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union, overload
 
 import imageio
 import numpy as np
@@ -26,29 +26,20 @@ from argoverse.utils.transform import quat2rotmat
 logger = logging.getLogger(__name__)
 
 
-class CameraConfig:
-    """Camera config for extrinsic matrix, intrinsic matrix, image width/height."""
+class CameraConfig(NamedTuple):
+    """Camera config for extrinsic matrix, intrinsic matrix, image width/height.
+    Args:
+        extrinsic: extrinsic matrix
+        intrinsic: intrinsic matrix
+        img_width: image width
+        img_height: image height
+    """
 
-    def __init__(
-        self,
-        extrinsic: np.ndarray,
-        intrinsic: np.ndarray,
-        img_width: int,
-        img_height: int,
-        distortion_coeffs: np.ndarray,
-    ):
-        """
-        Args:
-           extrinsic: extrinsic matrix
-           intrinsic: intrinsic matrix
-           img_width: image width
-           img_height: image height
-        """
-        self.extrinsic = extrinsic
-        self.intrinsic = intrinsic
-        self.img_width = img_width
-        self.img_height = img_height
-        self.distortion_coeffs = distortion_coeffs
+    extrinsic: np.ndarray
+    intrinsic: np.ndarray
+    img_width: int
+    img_height: int
+    distortion_coeffs: np.ndarray
 
 
 class Calibration:
