@@ -165,18 +165,11 @@ class DetectionEvaluator(NamedTuple):
             # AP Metric.
             ap = np.array(summary[cls_name][:num_ths]).mean()
 
-            # Select only the true positives for each instance.
-            tp_metrics_mask = ~np.isnan(cls_stats[:, num_ths : num_ths + N_TP_ERRORS]).all(axis=1)
-
-            # If there are no true positives set tp errors to their maximum values due to normalization below).
-            if ~tp_metrics_mask.any():
-                tp_metrics = self.cfg.tp_normalization_terms
-            else:
-                # Calculate TP metrics.
-                tp_metrics = np.mean(
-                    cls_stats[:, num_ths : num_ths + N_TP_ERRORS][tp_metrics_mask],
-                    axis=0,
-                )
+            # Calculate TP metrics.
+            tp_metrics = np.mean(
+                cls_stats[:, num_ths : num_ths + N_TP_ERRORS],
+                axis=0,
+            )
 
             # Convert errors to scores.
             tp_scores = 1 - (tp_metrics / self.cfg.tp_normalization_terms)

@@ -205,8 +205,26 @@ def test_accumulate() -> None:
         cls_to_accum["VEHICLE"]
         == np.array(
             [
-                [1.0, 1.0, 1.0, 1.0, expected_ATE, expected_ASE, expected_AOE, expected_AP],
-                [1.0, 1.0, 1.0, 1.0, expected_ATE, expected_ASE, expected_AOE, expected_AP],
+                [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    expected_ATE,
+                    expected_ASE,
+                    expected_AOE,
+                    expected_AP,
+                ],
+                [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    expected_ATE,
+                    expected_ASE,
+                    expected_AOE,
+                    expected_AP,
+                ],
             ]
         )
     ).all()
@@ -279,7 +297,71 @@ def test_assign() -> None:
     ATE_COL_IDX = 4
     assert np.isclose(metrics[0, ATE_COL_IDX], expected_result)  # instance 0
     assert np.isclose(metrics[1, ATE_COL_IDX], expected_result)  # instance 1
-    assert np.isnan(metrics[2, ATE_COL_IDX])  # instance 32
+
+    expected_result_2: float = cfg.tp_normalization_terms[0]
+    assert metrics[2, ATE_COL_IDX] == expected_result_2  # instance 32
+
+
+def test_no_detections() -> None:
+    """Verify that the assign function returns zero AP and maximum true positive
+    errors when there are no detections."""
+    cfg = DetectionCfg()
+    dts: np.ndarray = np.array([])
+    gts: np.ndarray = np.array(
+        [
+            ObjectLabelRecord(
+                quaternion=np.array([1, 0, 0, 0]),
+                translation=np.array([-10, -10, -10]),
+                length=5.0,
+                width=5.0,
+                height=5.0,
+                occlusion=0,
+            ),
+        ]
+    )
+    metrics = assign(dts, gts, cfg)
+
+    expected_assignments = np.array([0.0, 0.0, 0.0, 0.0])
+    expected_tp_errors = cfg.tp_normalization_terms
+    expected_results: np.ndarray = np.hstack((expected_assignments, expected_tp_errors))
+    assert (metrics == expected_results).all()
+
+
+def test_no_ground_truth() -> None:
+    """Verify that the assign function returns zero AP and maximum true positive
+    errors when there are no ground truth annotations."""
+    cfg = DetectionCfg()
+    dts: np.ndarray = np.array(
+        [
+            ObjectLabelRecord(
+                quaternion=np.array([1, 0, 0, 0]),
+                translation=np.array([-10, -10, -10]),
+                length=5.0,
+                width=5.0,
+                height=5.0,
+                occlusion=0,
+            ),
+        ]
+    )
+    gts: np.ndarray = np.array([])
+    metrics = assign(dts, gts, cfg)
+
+    expected_assignments = np.array([0.0, 0.0, 0.0, 0.0])
+    expected_tp_errors = cfg.tp_normalization_terms
+    expected_results: np.ndarray = np.hstack((expected_assignments, expected_tp_errors))
+    assert (metrics == expected_results).all()
+
+
+def test_no_detections_or_ground_truth() -> None:
+    """Verify that the assign function returns an empty array if there are no
+    detections or ground truth annotations."""
+    cfg = DetectionCfg()
+    dts: np.ndarray = np.array([])
+    gts: np.ndarray = np.array([])
+    metrics = assign(dts, gts, cfg)
+
+    expected_results: np.ndarray = np.array([])
+    assert (metrics == expected_results).all()
 
 
 def test_filter_instances() -> None:

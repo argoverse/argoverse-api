@@ -13,11 +13,12 @@ import logging
 from collections import defaultdict
 from enum import Enum, auto
 from pathlib import Path
-from typing import DefaultDict, List, NamedTuple, Tuple
+from typing import DefaultDict, List, NamedTuple, Optional, Tuple
 
 import matplotlib
 import numpy as np
 import pandas as pd
+from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation as R
 
@@ -122,6 +123,7 @@ def accumulate(
             class_name,
             filter_metric=cfg.dt_metric,
             max_detection_range=cfg.max_dt_range,
+            max_num_objs=MAX_NUM_BOXES,
         )
         gt_filtered = filter_instances(
             gts,
@@ -154,54 +156,61 @@ def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
             of true positive thresholds used for AP computation and S is the number of true positive errors.
     """
 
-    # Ensure the number of boxes considered per class is at most `MAX_NUM_BOXES`.
-    if dts.shape[0] > MAX_NUM_BOXES:
-        dts = dts[:MAX_NUM_BOXES]
+    num_dts: int = dts.shape[0]
+    num_gts: int = gts.shape[0]
+
+    # Return an empty array if there are no detections or ground truth annotations.
+    if num_dts == 0 and num_gts == 0:
+        return np.array([])
 
     n_threshs = len(cfg.affinity_threshs)
-    metrics = np.zeros((dts.shape[0], n_threshs + N_TP_ERRORS))
+    metrics = np.zeros((num_dts, n_threshs + N_TP_ERRORS))
 
-    # Set the true positive metrics to np.nan since error is undefined on false positives.
-    metrics[:, n_threshs : n_threshs + N_TP_ERRORS] = np.nan
-    if gts.shape[0] == 0:
+    # Set the true positive metrics to their maximum unnormalized values.
+    # Note: This initialization is to prevent "rewarding" zero recall.
+    # (e.g., detecting no vehicles, but incurring no true positive error)
+    metrics[:, n_threshs : n_threshs + N_TP_ERRORS] = cfg.tp_normalization_terms
+
+    # Return default values if there are only detections or ground truth annotations.
+    if num_dts == 0 or num_gts == 0:
         return metrics
 
-    affinity_matrix = compute_affinity_matrix(dts, gts, cfg.affinity_fn_type)
-
-    # Get the GT label for each max-affinity GT label, detection pair.
-    gt_matches = affinity_matrix.argmax(axis=1)[np.newaxis, :]
-
     # The affinity matrix is an N by M matrix of the detections and ground truth labels respectively.
-    # We want to take the corresponding affinity for each of the initial assignments using `gt_matches`.
-    # The following line grabs the max affinity for each detection to a ground truth label.
-    affinities = np.take_along_axis(affinity_matrix.T, gt_matches, axis=0).squeeze(0)
-
-    # Find the indices of the "first" detection assigned to each GT.
-    unique_gt_matches, unique_dt_matches = np.unique(gt_matches, return_index=True)
+    affinity_matrix = compute_affinity_matrix(dts, gts, cfg.affinity_fn_type)
     for i, thresh in enumerate(cfg.affinity_threshs):
 
-        # `tp_mask` may need to be defined differently with other affinities.
-        tp_mask = affinities[unique_dt_matches] > -thresh
-        metrics[unique_dt_matches, i] = tp_mask
+        # Calculate candidate assignment pairs.
+        # Note: `tp_mask` may need to be defined differently with other affinities.
+        candidate_assignments = (affinity_matrix > -thresh).any(axis=1)
+        candidate_affinities = affinity_matrix[candidate_assignments]
+
+        # After computing the candidate affinities (i.e., affinities which are considered true positives
+        # for a particular threshold), the true positives can be determined by solving the generalized
+        # assignment problem (rectangular affinity matrix).
+        # We solve the generalized assignment problem via the modified Kuhn–Munkres algorithm.
+        # More information can be found:
+        # https://en.wikipedia.org/wiki/Assignment_problem
+        # https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.linear_sum_assignment.html#scipy.optimize.linear_sum_assignment
+        dt_assignment_indices, gt_assignment_indices = linear_sum_assignment(candidate_affinities, maximize=True)
+
+        # Mark true positives.
+        metrics[dt_assignment_indices, i] = 1
 
         # Only compute true positive error when `thresh` is equal to the tp threshold.
         is_tp_thresh = thresh == cfg.tp_thresh
         # Ensure that there are true positives of the respective class in the frame.
-        has_true_positives = np.count_nonzero(tp_mask) > 0
+        has_true_positives = candidate_affinities.shape[0] > 0
 
         if is_tp_thresh and has_true_positives:
-            dt_tp_indices = unique_dt_matches[tp_mask]
-            gt_tp_indices = unique_gt_matches[tp_mask]
-
             # Form DataFrame of shape (N, D) where D is the number of attributes in `ObjectLabelRecord`.
-            dt_df = pd.DataFrame([dt.__dict__ for dt in dts[dt_tp_indices]])
-            gt_df = pd.DataFrame([gt.__dict__ for gt in gts[gt_tp_indices]])
+            dt_df = pd.DataFrame([dt.__dict__ for dt in dts[dt_assignment_indices]])
+            gt_df = pd.DataFrame([gt.__dict__ for gt in gts[gt_assignment_indices]])
 
             trans_error = dist_fn(dt_df, gt_df, DistFnType.TRANSLATION)
             scale_error = dist_fn(dt_df, gt_df, DistFnType.SCALE)
             orient_error = dist_fn(dt_df, gt_df, DistFnType.ORIENTATION)
 
-            metrics[dt_tp_indices, n_threshs : n_threshs + N_TP_ERRORS] = np.vstack(
+            metrics[dt_assignment_indices, n_threshs : n_threshs + N_TP_ERRORS] = np.vstack(
                 (trans_error, scale_error, orient_error)
             ).T
     return metrics
@@ -212,6 +221,7 @@ def filter_instances(
     target_class_name: str,
     filter_metric: FilterMetric,
     max_detection_range: float,
+    max_num_objs: Optional[int] = None,
 ) -> np.ndarray:
     """Filter the GT annotations based on a set of conditions (class name and distance from egovehicle).
 
@@ -235,7 +245,14 @@ def filter_instances(
             filtered_annos = instances[dt_dists < max_detection_range]
     else:
         raise NotImplementedError("This filter metric is not implemented!")
-    return filtered_annos
+
+    num_filtered_annos = filtered_annos.shape[0]
+    if max_num_objs:
+        max_num_objs_idx = np.minimum(num_filtered_annos, max_num_objs)
+    else:
+        max_num_objs_idx = num_filtered_annos
+
+    return filtered_annos[:max_num_objs_idx]
 
 
 def rank(dts: List[ObjectLabelRecord]) -> Tuple[np.ndarray, np.ndarray]:
