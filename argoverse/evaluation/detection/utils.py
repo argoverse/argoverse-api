@@ -141,6 +141,30 @@ def accumulate(
     return cls_to_accum, cls_to_ninst
 
 
+def remove_duplicates(instances: np.ndarray, metric: AffFnType) -> np.ndarray:
+    """ Remove any duplicate cuboids in ground truth.
+    
+    We first find rows in the affinity matrix with more than one zero, and
+    then for each such row, we choose only the first column index with value zero.
+    """
+    if len(instances) == 0:
+        return instances
+    assert isinstance(instances, np.ndarray)
+
+    # create affinity matrix as inverse distance to other objects
+    affinity_matrix = compute_affinity_matrix(
+        copy.deepcopy(instances), copy.deepcopy(instances), metric
+    )
+
+    row_idxs, col_idxs = np.where(affinity_matrix == 0)
+    # find unique rows
+    unique_row_idxs, unique_element_idxs = np.unique(row_idxs, return_index=True)
+    # choose the first instance in each column where repeat occurs
+    first_col_idxs = col_idxs[unique_element_idxs]
+    unique_ids = np.unique(first_col_idxs)
+    return instances[unique_ids]
+
+
 def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
     """Attempt assignment of each detection to a ground truth label.
 
