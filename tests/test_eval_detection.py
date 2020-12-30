@@ -389,7 +389,7 @@ def test_remove_duplicate_instances():
         SimpleNamespace(**{"translation": np.array([5, 5, 0])}),
     ]
     instances = np.array(instances)
-    cfg = DetectionCfg
+    cfg = DetectionCfg()
     unique_instances = remove_duplicate_instances(instances, cfg)
 
     assert len(unique_instances) == 3
