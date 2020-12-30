@@ -129,6 +129,7 @@ def accumulate(
             filter_metric=cfg.dt_metric,
             max_detection_range=cfg.max_dt_range,
         )
+        gt_filtered = remove_duplicates(gt_filtered, cfg)
 
         logger.info(f"{dt_filtered.shape[0]} detections")
         logger.info(f"{gt_filtered.shape[0]} ground truth")
@@ -141,11 +142,18 @@ def accumulate(
     return cls_to_accum, cls_to_ninst
 
 
-def remove_duplicates(instances: np.ndarray, metric: AffFnType) -> np.ndarray:
+def remove_duplicates(instances: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
     """ Remove any duplicate cuboids in ground truth.
     
     We first find rows in the affinity matrix with more than one zero, and
     then for each such row, we choose only the first column index with value zero.
+    
+    Args:
+       instances: array of length (M,), each entry is an ObjectLabelRecord
+       cfg: Detection configuration.
+    
+    Returns:
+       array of length (N,) where N <= M, each entry is a unique ObjectLabelRecord
     """
     if len(instances) == 0:
         return instances
@@ -153,7 +161,7 @@ def remove_duplicates(instances: np.ndarray, metric: AffFnType) -> np.ndarray:
 
     # create affinity matrix as inverse distance to other objects
     affinity_matrix = compute_affinity_matrix(
-        copy.deepcopy(instances), copy.deepcopy(instances), metric
+        copy.deepcopy(instances), copy.deepcopy(instances), cfg.affinity_fn_type
     )
 
     row_idxs, col_idxs = np.where(affinity_matrix == 0)
