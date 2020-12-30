@@ -9,6 +9,7 @@ from a bird's-eye view. We prefer these metrics instead of IoU due to the
 increased interpretability of the error modes in a set of detections.
 """
 
+import copy
 import logging
 from collections import defaultdict
 from enum import Enum, auto
