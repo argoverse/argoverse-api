@@ -3,6 +3,7 @@
 
 import logging
 from pathlib import Path
+from types import SimpleNamespace
 from typing import List
 
 import numpy as np
@@ -25,6 +26,7 @@ from argoverse.evaluation.detection.utils import (
     interp,
     iou_aligned_3d,
     plot,
+    remove_duplicates,
     wrap_angle,
 )
 from argoverse.utils.transform import quat_scipy2argo_vectorized
@@ -377,3 +379,22 @@ def test_orientation_error(metrics_identity: DataFrame, metrics: DataFrame) -> N
     expected_result_det: float = 0.524  # pi / 6, since one of six dets is off by pi
     assert metrics_identity.AOE.loc["Average Metrics"] == expected_result_identity
     assert metrics.AOE.loc["Average Metrics"] == expected_result_det
+
+def test_remove_duplicates():
+    """ Ensure a duplicate ground truth cuboid can be filtered out correctly. """
+    instances = [
+        SimpleNamespace(**{"translation": np.array([1, 1, 0])}),
+        SimpleNamespace(**{"translation": np.array([5, 5, 0])}),
+        SimpleNamespace(**{"translation": np.array([2, 2, 0])}),
+        SimpleNamespace(**{"translation": np.array([5, 5, 0])}),
+    ]
+    instances = np.array(instances)
+    unique_instances = remove_duplicates(instances)
+
+    assert len(unique_instances) == 3
+    assert np.allclose(unique_instances[0].translation, np.array([1, 1, 0]))
+    assert np.allclose(unique_instances[1].translation, np.array([5, 5, 0]))
+    assert np.allclose(unique_instances[2].translation, np.array([2, 2, 0]))
+
+    
+    
