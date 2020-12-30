@@ -124,7 +124,9 @@ class SimpleArgoverseTrackingDataLoader:
         Args:
             log_id: str, unique ID of vehicle log
         Returns:
-            ply_fpaths: List of strings, representing paths to ordered ply files in this log
+            ply_fpaths: List of strings, representing paths to chronologically ordered ply files in this log
+                File paths are strings are of the same length ending with a nanosecond timestamp, thus 
+                sorted() will place them in numerical order.
         """
         ply_fpaths = sorted(glob.glob(f"{self.data_dir}/{log_id}/lidar/PC_*.ply"))
         return ply_fpaths
