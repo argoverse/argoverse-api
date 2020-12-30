@@ -130,7 +130,7 @@ def accumulate(
             filter_metric=cfg.dt_metric,
             max_detection_range=cfg.max_dt_range,
         )
-        gt_filtered = remove_duplicates(gt_filtered, cfg)
+        gt_filtered = remove_duplicate_instances(gt_filtered, cfg)
 
         logger.info(f"{dt_filtered.shape[0]} detections")
         logger.info(f"{gt_filtered.shape[0]} ground truth")
@@ -143,8 +143,11 @@ def accumulate(
     return cls_to_accum, cls_to_ninst
 
 
-def remove_duplicates(instances: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
+def remove_duplicate_instances(instances: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
     """ Remove any duplicate cuboids in ground truth.
+    
+    Any ground truth cuboid of the same object class that shares the same centroid
+    with another is considered a duplicate instance.
     
     We first find rows in the affinity matrix with more than one zero, and
     then for each such row, we choose only the first column index with value zero.
