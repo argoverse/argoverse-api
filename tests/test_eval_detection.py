@@ -26,7 +26,7 @@ from argoverse.evaluation.detection.utils import (
     interp,
     iou_aligned_3d,
     plot,
-    remove_duplicates,
+    remove_duplicate_instances,
     wrap_angle,
 )
 from argoverse.utils.transform import quat_scipy2argo_vectorized
@@ -380,7 +380,7 @@ def test_orientation_error(metrics_identity: DataFrame, metrics: DataFrame) -> N
     assert metrics_identity.AOE.loc["Average Metrics"] == expected_result_identity
     assert metrics.AOE.loc["Average Metrics"] == expected_result_det
 
-def test_remove_duplicates():
+def test_remove_duplicate_instances():
     """ Ensure a duplicate ground truth cuboid can be filtered out correctly. """
     instances = [
         SimpleNamespace(**{"translation": np.array([1, 1, 0])}),
@@ -389,7 +389,7 @@ def test_remove_duplicates():
         SimpleNamespace(**{"translation": np.array([5, 5, 0])}),
     ]
     instances = np.array(instances)
-    unique_instances = remove_duplicates(instances)
+    unique_instances = remove_duplicate_instances(instances)
 
     assert len(unique_instances) == 3
     assert np.allclose(unique_instances[0].translation, np.array([1, 1, 0]))
