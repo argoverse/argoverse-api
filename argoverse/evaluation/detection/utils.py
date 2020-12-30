@@ -233,6 +233,9 @@ def filter_objs_to_roi(
         avm: Argoverse map object
         city_SE3_egovehicle: pose of egovehicle within city map at time of sweep
         city_name: name of city where log was captured
+
+    Returns:
+        instances_roi: objects with centroid located within ROI
     """
     centers_egoframe = np.array([dt.translation for dt in instances])
     centers_cityframe = city_SE3_egovehicle.transform_point_cloud(centers_egoframe)
