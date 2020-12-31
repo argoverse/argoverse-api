@@ -235,11 +235,12 @@ def filter_objs_to_roi(
         city_name: name of city where log was captured
 
     Returns:
-        instances_roi: objects with centroid located within ROI
+        instances_roi: objects with any of 4 cuboid corners located within ROI
     """
-    centers_egoframe = np.array([dt.translation for dt in instances])
-    centers_cityframe = city_SE3_egovehicle.transform_point_cloud(centers_egoframe)
-    is_within_roi = avm.get_raster_layer_points_boolean(centers_cityframe, city_name, "roi")
+    corners_egoframe = np.vstack([dt.as_2d_bbox() for dt in instances])
+    corners_cityframe = city_SE3_egovehicle.transform_point_cloud(corners_egoframe)
+    corner_within_roi = avm.get_raster_layer_points_boolean(corners_cityframe, city_name, "roi")
+    is_within_roi = corner_within_roi.reshape(-1,4).sum(axis=1) > 0
     instances_roi = instances[is_within_roi]
     return instances_roi
 
