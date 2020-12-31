@@ -144,18 +144,19 @@ def accumulate(
 
 
 def remove_duplicate_instances(instances: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
-    """ Remove any duplicate cuboids in ground truth.
-    
+    """Remove any duplicate cuboids in ground truth.
+
     Any ground truth cuboid of the same object class that shares the same centroid
     with another is considered a duplicate instance.
-    
-    We first find rows in the affinity matrix with more than one zero, and
+
+    We first form an (N,N) affinity matrix with entries equal to negative distance.
+    We then find rows in the affinity matrix with more than one zero, and
     then for each such row, we choose only the first column index with value zero.
-    
+
     Args:
        instances: array of length (M,), each entry is an ObjectLabelRecord
        cfg: Detection configuration.
-    
+
     Returns:
        array of length (N,) where N <= M, each entry is a unique ObjectLabelRecord
     """
@@ -164,15 +165,14 @@ def remove_duplicate_instances(instances: np.ndarray, cfg: DetectionCfg) -> np.n
     assert isinstance(instances, np.ndarray)
 
     # create affinity matrix as inverse distance to other objects
-    affinity_matrix = compute_affinity_matrix(
-        copy.deepcopy(instances), copy.deepcopy(instances), cfg.affinity_fn_type
-    )
+    affinity_matrix = compute_affinity_matrix(copy.deepcopy(instances), copy.deepcopy(instances), cfg.affinity_fn_type)
 
     row_idxs, col_idxs = np.where(affinity_matrix == 0)
-    # find unique rows
+    # find the indices where each row index appears for the first time
     unique_row_idxs, unique_element_idxs = np.unique(row_idxs, return_index=True)
     # choose the first instance in each column where repeat occurs
     first_col_idxs = col_idxs[unique_element_idxs]
+    # eliminate redundant column indices
     unique_ids = np.unique(first_col_idxs)
     return instances[unique_ids]
 
