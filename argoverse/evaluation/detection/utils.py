@@ -237,9 +237,11 @@ def filter_objs_to_roi(
     Returns:
         instances_roi: objects with any of 4 cuboid corners located within ROI
     """
+    # for each cuboid, get its 4 corners in the egovehicle frame
     corners_egoframe = np.vstack([dt.as_2d_bbox() for dt in instances])
     corners_cityframe = city_SE3_egovehicle.transform_point_cloud(corners_egoframe)
     corner_within_roi = avm.get_raster_layer_points_boolean(corners_cityframe, city_name, "roi")
+    # check for each cuboid if any of its 4 corners lies within the ROI
     is_within_roi = corner_within_roi.reshape(-1,4).sum(axis=1) > 0
     instances_roi = instances[is_within_roi]
     return instances_roi
