@@ -381,7 +381,7 @@ def test_orientation_error(metrics_identity: DataFrame, metrics: DataFrame) -> N
     assert metrics.AOE.loc["Average Metrics"] == expected_result_det
 
 def test_remove_duplicate_instances():
-    """ Ensure a duplicate ground truth cuboid can be filtered out correctly. """
+    """Ensure a duplicate ground truth cuboid can be filtered out correctly."""
     instances = [
         SimpleNamespace(**{"translation": np.array([1, 1, 0])}),
         SimpleNamespace(**{"translation": np.array([5, 5, 0])}),
@@ -397,5 +397,12 @@ def test_remove_duplicate_instances():
     assert np.allclose(unique_instances[1].translation, np.array([5, 5, 0]))
     assert np.allclose(unique_instances[2].translation, np.array([2, 2, 0]))
 
-    
-    
+def test_remove_duplicate_instances_ground_truth():
+    """Ensure that if an extra duplicate cuboid is present in ground truth, it would be ignored."""
+    dt_fpath = TEST_DATA_LOC / "remove_duplicates_detections",
+    gt_fpath = TEST_DATA_LOC / "remove_duplicates_ground_truth",
+    fig_fpath = TEST_DATA_LOC / "test_figures",
+    evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath)
+    metrics = evaluator.evaluate()
+    assert metrics.AP.loc["VEHICLE"] = 1.0
+    assert metrics.AP.loc["PEDESTRIAN"] = 1.0
