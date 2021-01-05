@@ -222,7 +222,7 @@ class ArgoverseMap:
             city_name: either 'MIA' for Miami or 'PIT' for Pittsburgh
 
         Returns:
-            da_matrix: Numpy array of shape (M,N) representing binary values for driveable area
+            da_mat: Numpy array of shape (M,N) representing binary values for driveable area
             city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.
                     p_city = city_Transformation_pklimage * p_pklimage
         """
@@ -234,13 +234,13 @@ class ArgoverseMap:
 
     def get_rasterized_roi(self, city_name: str) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Get the driveable area.
+        Get the region of interest (5 meter dilation of driveable area).
 
         Args:
             city_name: string, either 'MIA' for Miami or 'PIT' for Pittsburgh
 
         Returns:
-            da_matrix: Numpy array of shape (M,N) representing binary values for driveable area
+            roi_mat: Numpy array of shape (M,N) representing binary values for the region of interest.
             city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.
                     p_city = city_Transformation_pklimage * p_pklimage
         """
