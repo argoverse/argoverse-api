@@ -28,14 +28,14 @@ def load_ply(ply_fpath: _PathLike) -> np.ndarray:
     return np.concatenate((x, y, z), axis=1)
 
 
-def load_ply_xyzir(ply_fpath: _PathLike) -> np.ndarray:
+def load_ply_xyzil(ply_fpath: _PathLike) -> np.ndarray:
     """Load a point cloud file from a filepath.
     
     Args:
         ply_fpath: Path to a PLY file
 
     Returns:
-        arr: Array of shape (N, 5)
+        arr: Array of shape (N, 5), i.e. x,y,z,intensity,laser_number
     """
 
     data = pyntcloud.PyntCloud.from_file(os.fspath(ply_fpath))
@@ -43,6 +43,6 @@ def load_ply_xyzir(ply_fpath: _PathLike) -> np.ndarray:
     y = np.array(data.points.y)[:, np.newaxis]
     z = np.array(data.points.z)[:, np.newaxis]
     i = np.array(data.points.intensity)[:, np.newaxis]
-    ring_index = np.array(data.points.laser_number)[:, np.newaxis]
+    laser_number = np.array(data.points.laser_number)[:, np.newaxis]
 
-    return np.concatenate((x, y, z, i, ring_index), axis=1)
+    return np.concatenate((x, y, z, i, laser_number), axis=1)
