@@ -9,6 +9,7 @@ from a bird's-eye view. We prefer these metrics instead of IoU due to the
 increased interpretability of the error modes in a set of detections.
 """
 
+import copy
 import logging
 from collections import defaultdict
 from enum import Enum, auto
@@ -131,6 +132,7 @@ def accumulate(
             filter_metric=cfg.dt_metric,
             max_detection_range=cfg.max_dt_range,
         )
+        gt_filtered = remove_duplicate_instances(gt_filtered, cfg)
 
         logger.info(f"{dt_filtered.shape[0]} detections")
         logger.info(f"{gt_filtered.shape[0]} ground truth")
@@ -141,6 +143,40 @@ def accumulate(
 
         cls_to_ninst[class_name] = gt_filtered.shape[0]
     return cls_to_accum, cls_to_ninst
+
+
+def remove_duplicate_instances(instances: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
+    """Remove any duplicate cuboids in ground truth.
+
+    Any ground truth cuboid of the same object class that shares the same centroid
+    with another is considered a duplicate instance.
+
+    We first form an (N,N) affinity matrix with entries equal to negative distance.
+    We then find rows in the affinity matrix with more than one zero, and
+    then for each such row, we choose only the first column index with value zero.
+
+    Args:
+       instances: array of length (M,), each entry is an ObjectLabelRecord
+       cfg: Detection configuration.
+
+    Returns:
+       array of length (N,) where N <= M, each entry is a unique ObjectLabelRecord
+    """
+    if len(instances) == 0:
+        return instances
+    assert isinstance(instances, np.ndarray)
+
+    # create affinity matrix as inverse distance to other objects
+    affinity_matrix = compute_affinity_matrix(copy.deepcopy(instances), copy.deepcopy(instances), cfg.affinity_fn_type)
+
+    row_idxs, col_idxs = np.where(affinity_matrix == 0)
+    # find the indices where each row index appears for the first time
+    unique_row_idxs, unique_element_idxs = np.unique(row_idxs, return_index=True)
+    # choose the first instance in each column where repeat occurs
+    first_col_idxs = col_idxs[unique_element_idxs]
+    # eliminate redundant column indices
+    unique_ids = np.unique(first_col_idxs)
+    return instances[unique_ids]
 
 
 def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
