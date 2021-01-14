@@ -70,7 +70,7 @@ Note that you need to download HD map data (and extract them into project root f
         pip install -e /path_to_root_directory_of_the_repo/
 * if you receive any error about `No matching distribution found for pyntcloud`, upgrade your pip using `pip install --upgrade pip` or pip install with `--process-dependency-links`
 
-Make sure that you can run `import argoverse` in python, and you are good to go!
+Make sure that you can run `python -c "import argoverse"` in python, and you are good to go!
 
 ### (optional) Install mayavi
 * Some visualizations may require `mayavi`. See instructions on how to install Mayavi [here](https://docs.enthought.com/mayavi/mayavi/installation.html).
