@@ -1,7 +1,7 @@
 name: Python CI
 
 # Run this workflow every time a new commit is pushed to repository
-on: [pull request]
+on: [pull_request]
 
 jobs:
   run-unit-tests:
