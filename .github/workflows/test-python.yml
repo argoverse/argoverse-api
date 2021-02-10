@@ -1,0 +1,28 @@
+name: Python CI
+
+# Run this workflow every time a new commit is pushed to repository
+on: [pull request]
+
+jobs:
+  run-unit-tests:
+    
+    name: Run all unit tests in codebase
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+
+    - name: Install dependencies
+      run: |
+        pip install tox==3.12.1 pre-commit==1.17.0
+
+    - name: Test with tox
+      run: |
+        tox
+        pip install pytest-cov
+        pre-commit run
+        
