@@ -388,7 +388,7 @@ def lane_waypt_to_query_dist(
     Returns:
        per_lane_dists: array with distance to closest waypoint for each centerline
        min_dist_nn_indices: array with ranked indices of centerlines, closest first
-       dense_centerlines: list of arrays, each representing (N,2) centerline 
+       dense_centerlines: list of arrays, each representing (N,2) centerline
     """
     per_lane_dists: List[float] = []
     dense_centerlines: List[np.ndarray] = []
