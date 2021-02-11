@@ -107,7 +107,7 @@ class Calibration:
         pts_3d_hom = np.hstack((pts_3d, np.ones((n, 1))))
         return pts_3d_hom
 
-    def project_ego_to_image(self, pts_3d_ego: np.array) -> np.ndarray:
+    def project_ego_to_image(self, pts_3d_ego: np.ndarray) -> np.ndarray:
         """Project egovehicle coordinate to image.
 
         Args:
@@ -120,7 +120,7 @@ class Calibration:
         uv_cam = self.project_ego_to_cam(pts_3d_ego)
         return self.project_cam_to_image(uv_cam)
 
-    def project_ego_to_cam(self, pts_3d_ego: np.array) -> np.ndarray:
+    def project_ego_to_cam(self, pts_3d_ego: np.ndarray) -> np.ndarray:
         """Project egovehicle point onto camera frame.
 
         Args:
@@ -134,18 +134,18 @@ class Calibration:
 
         return uv_cam.transpose()[:, 0:3]
 
-    def project_cam_to_ego(self, pts_3d_rect: np.array) -> np.ndarray:
+    def project_cam_to_ego(self, pts_3d_rect: np.ndarray) -> np.ndarray:
         """Project point in camera frame to egovehicle frame.
 
         Args:
-            pts_3d_rect (np.array): nx3 points in cam coord.
+            pts_3d_rect: nx3 points in cam coord.
 
         Returns:
-            np.array: nx3 points in ego coord.
+            nx3 points in ego coord.
         """
         return np.linalg.inv((self.extrinsic)).dot(self.cart2hom(pts_3d_rect).transpose()).transpose()[:, 0:3]
 
-    def project_image_to_ego(self, uv_depth: np.array) -> np.ndarray:
+    def project_image_to_ego(self, uv_depth: np.ndarray) -> np.ndarray:
         """Project 2D image with depth to egovehicle coordinate.
 
         Args:
@@ -158,7 +158,7 @@ class Calibration:
         uv_cam = self.project_image_to_cam(uv_depth)
         return self.project_cam_to_ego(uv_cam)
 
-    def project_image_to_cam(self, uv_depth: np.array) -> np.ndarray:
+    def project_image_to_cam(self, uv_depth: np.ndarray) -> np.ndarray:
         """Project 2D image with depth to camera coordinate.
 
         Args:
@@ -180,7 +180,7 @@ class Calibration:
         pts_3d_cam[:, 2] = uv_depth[:, 2]
         return pts_3d_cam
 
-    def project_cam_to_image(self, pts_3d_rect: np.array) -> np.ndarray:
+    def project_cam_to_image(self, pts_3d_rect: np.ndarray) -> np.ndarray:
         """Project camera coordinate to image.
 
         Args:
