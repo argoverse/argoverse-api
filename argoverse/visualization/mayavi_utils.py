@@ -278,7 +278,9 @@ def draw_lidar(
        Updated or created Mayavi figure
     """
     if fig is None:
-        fig = mayavi_wrapper.mlab.figure(figure=None, bgcolor=bgcolor, fgcolor=None, engine=None, size=(1600, 1000))  # type: ignore
+        fig = mayavi_wrapper.mlab.figure(  # type: ignore
+            figure=None, bgcolor=bgcolor, fgcolor=None, engine=None, size=(1600, 1000)
+        )
 
     z_thresh = np.percentile(point_cloud[:, 2], 90)
     thresholded_heights = point_cloud[:, 2].copy()
