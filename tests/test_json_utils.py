@@ -1,6 +1,7 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 """Unit tests for JSON utility functions."""
 import json
+import os
 import pathlib
 
 from argoverse.utils.json_utils import read_json_file, save_json_dict
