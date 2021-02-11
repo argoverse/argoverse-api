@@ -10,8 +10,6 @@ This module aims to be importable, but you'll get a `NoMayaviAvailableError` if 
 anything on `mayavi_wrapper.mlab` unless you have installed `mayavi` properly.
 """
 
-# type: ignore
-
 from typing import TYPE_CHECKING
 
 
