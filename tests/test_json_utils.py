@@ -31,6 +31,8 @@ def test_save_json_dict() -> None:
     with open(json_fpath, "rb") as f:
         loaded_dict = json.load(f)
 
+    # remove the temporary file now
+    os.remove(json_fpath)
     assert intended_dict == loaded_dict
 
     # make sure key sets are identical
