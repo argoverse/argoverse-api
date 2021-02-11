@@ -23,6 +23,5 @@ jobs:
     - name: Test with tox
       run: |
         tox
-        pip install pytest-cov
-        pre-commit run
+        pre-commit run --all-files
         
