@@ -26,7 +26,7 @@ def compute_lane_width(left_even_pts: np.ndarray, right_even_pts: np.ndarray) ->
     return lane_width
 
 
-def compute_mid_pivot_arc(single_pt: np.ndarray, arc_pts: np.ndarray) -> np.ndarray:
+def compute_mid_pivot_arc(single_pt: np.ndarray, arc_pts: np.ndarray) -> Tuple[np.ndarray, float]:
     """
     Given a line of points on one boundary, and a single point on the other side,
     produce the middle arc we get by pivoting around the single point.
@@ -51,7 +51,7 @@ def compute_midpoint_line(
     left_ln_bnds: np.ndarray,
     right_ln_bnds: np.ndarray,
     num_interp_pts: int = NUM_CENTERLINE_INTERP_PTS,
-) -> np.ndarray:
+) -> Tuple[np.ndarray, float]:
     """
     Compute the lane segment centerline by interpolating n points along each
     boundary, and then averaging left and right waypoints.
