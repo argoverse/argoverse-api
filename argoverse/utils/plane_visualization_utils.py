@@ -67,7 +67,7 @@ def plot_frustum_planes_and_normals(
     Returns:
         None
     """
-    fig = mayavi_wrapper.mlab.figure(bgcolor=(1, 1, 1), size=(2000, 1000))
+    fig = mayavi_wrapper.mlab.figure(bgcolor=(1, 1, 1), size=(2000, 1000))  # type: ignore
 
     if cuboid_verts is not None:
         # fig = plot_bbox_3d_mayavi(fig, cuboid_verts)
@@ -91,7 +91,7 @@ def plot_frustum_planes_and_normals(
         plane_pts = generate_grid_on_plane(a, b, c, d, P)
         fig = plot_points_3D_mayavi(plane_pts, fig, color)
         # plot the normals at (0,0,0.5) and normal vector (u,v,w) given by (a,b,c)
-        mayavi_wrapper.mlab.quiver3d(
+        mayavi_wrapper.mlab.quiver3d(  # type: ignore
             0,
             0,
             0.5,
@@ -125,8 +125,8 @@ def plot_frustum_planes_and_normals(
     fig = populate_frustum_voxels(planes, fig, "xz")
     fig = populate_frustum_voxels(planes, fig, "yz")
 
-    mayavi_wrapper.mlab.view(distance=200)
-    mayavi_wrapper.mlab.show()
+    mayavi_wrapper.mlab.view(distance=200)  # type: ignore
+    mayavi_wrapper.mlab.show()  # type: ignore
 
 
 def get_perpendicular(n: np.ndarray) -> np.ndarray:
