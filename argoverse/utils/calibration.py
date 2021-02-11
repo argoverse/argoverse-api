@@ -94,7 +94,7 @@ class Calibration:
 
         self.camera = calib["key"][10:]
 
-    def cart2hom(self, pts_3d: np.array) -> np.ndarray:
+    def cart2hom(self, pts_3d: np.ndarray) -> np.ndarray:
         """Convert Cartesian coordinates to Homogeneous.
 
         Args:
