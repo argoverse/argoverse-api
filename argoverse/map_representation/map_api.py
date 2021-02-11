@@ -103,7 +103,7 @@ class ArgoverseMap:
 
         return lane_polygons
 
-    def get_vector_map_driveable_areas(self, city_name: str) -> List[np.hstack]:
+    def get_vector_map_driveable_areas(self, city_name: str) -> List[np.ndarray]:
         """
         Get driveable area for a specified city
 
@@ -118,7 +118,7 @@ class ArgoverseMap:
         """
         return self.get_da_contours(city_name)
 
-    def get_da_contours(self, city_name: str) -> List[np.hstack]:
+    def get_da_contours(self, city_name: str) -> List[np.ndarray]:
         """
         We threshold the binary driveable area or ROI image and obtain contour lines. These
         contour lines represent the boundary.

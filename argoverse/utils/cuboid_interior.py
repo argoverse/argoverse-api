@@ -209,7 +209,7 @@ def filter_point_cloud_to_bbox_3D_single_pt(bbox: np.ndarray, x: np.ndarray) -> 
     return valid
 
 
-def filter_point_cloud_to_bbox_3D_vectorized(bbox: np.ndarray, pc_raw: np.ndarray) -> np.ndarray:
+def filter_point_cloud_to_bbox_3D_vectorized(bbox: np.ndarray, pc_raw: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     r"""
 
     Args:

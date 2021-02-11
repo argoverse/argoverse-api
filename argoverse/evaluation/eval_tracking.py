@@ -55,7 +55,7 @@ def iou_polygon(poly1: Polygon, poly2: Polygon) -> float:
     return float(1 - inter / union)
 
 
-def get_distance_iou_3d(x1: np.ndarray, x2: np.ndarray, name: str = "bbox") -> float:
+def get_distance_iou_3d(x1: Dict[str, np.ndarray], x2: Dict[str, np.ndarray], name: str = "bbox") -> float:
     """
     Note this is not traditional 2d or 3d iou, but rather we align two cuboids
     along their x-axes, and compare 3d volume differences.
