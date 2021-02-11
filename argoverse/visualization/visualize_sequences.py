@@ -6,7 +6,7 @@ import os
 import shutil
 import sys
 from collections import defaultdict
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import matplotlib.animation as anim
 import matplotlib.lines as mlines
@@ -36,7 +36,7 @@ def interpolate_polyline(polyline: np.ndarray, num_points: int) -> np.ndarray:
 
 def viz_sequence(
     df: pd.DataFrame,
-    lane_centerlines: Optional[np.ndarray] = None,
+    lane_centerlines: Optional[List[np.ndarray]] = None,
     show: bool = True,
     smoothen: bool = False,
 ) -> None:
