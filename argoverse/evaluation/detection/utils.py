@@ -124,7 +124,7 @@ def accumulate(
     if cfg.eval_only_roi_instances and avm is not None:
         # go up 3 levels, because hierarchy is as follows:
         # {gt_root_fpath}/{log_id}/per_sweep_annotations_amodal/{gt_root_fname}
-        gt_root_fpath = Path(gt_fpath).parent.parent.parent
+        gt_root_fpath = Path(gt_fpath).parents[2]
         city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(ts, str(gt_root_fpath), log_id)
         if city_SE3_egovehicle is not None:
             log_city_name = read_city_name(os.path.join(gt_root_fpath, log_id, "city_info.json"))
