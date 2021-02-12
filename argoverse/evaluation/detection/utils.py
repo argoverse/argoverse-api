@@ -11,6 +11,7 @@ increased interpretability of the error modes in a set of detections.
 
 import copy
 import logging
+import os
 from collections import defaultdict
 from enum import Enum, auto
 from pathlib import Path
@@ -23,8 +24,7 @@ from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation as R
 
 from argoverse.data_loading.object_label_record import ObjectLabelRecord, read_label
-from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
-from argoverse.data_loading.simple_track_dataloader import read_city_name
+from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t, read_city_name
 from argoverse.evaluation.detection.constants import (
     COMPETITION_CLASSES,
     MAX_NORMALIZED_AOE,
@@ -124,7 +124,7 @@ def accumulate(
     if cfg.eval_only_roi_instances:
         gt_root_fpath = Path(gt_fpath).parent.parent.parent
         city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(ts, gt_root_fpath, log_id)
-        log_city_name = read_city_name(data_dir=gt_root_fpath, log_id=log_id)
+        log_city_name = read_city_name(os.path.join(gt_root_fpath, log_id, "city_info.json"))
 
         dts = filter_objs_to_roi(dts, avm, city_SE3_egovehicle, log_city_name)
         gts = filter_objs_to_roi(gts, avm, city_SE3_egovehicle, log_city_name)

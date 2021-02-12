@@ -395,7 +395,7 @@ def test_remove_duplicate_instances():
         SimpleNamespace(**{"translation": np.array([5, 5, 0])}),
     ]
     instances = np.array(instances)
-    cfg = DetectionCfg()
+    cfg = DetectionCfg(eval_only_roi_instances=False)
     unique_instances = remove_duplicate_instances(instances, cfg)
 
     assert len(unique_instances) == 3
@@ -409,7 +409,9 @@ def test_remove_duplicate_instances_ground_truth():
     dt_fpath = TEST_DATA_LOC / "remove_duplicates_detections"
     gt_fpath = TEST_DATA_LOC / "remove_duplicates_ground_truth"
     fig_fpath = TEST_DATA_LOC / "test_figures"
-    evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath)
+
+    cfg = DetectionCfg(eval_only_roi_instances=False)
+    evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath, cfg)
     metrics = evaluator.evaluate()
     assert metrics.AP.loc["Vehicle"] == 1.0
     assert metrics.AP.loc["Pedestrian"] == 1.0
