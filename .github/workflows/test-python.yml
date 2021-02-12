@@ -19,6 +19,11 @@ jobs:
     - name: Install dependencies
       run: |
         pip install tox==3.12.1 pre-commit==1.17.0
+        
+    - name: Download Argoverse HD map files
+      run: |
+        wget https://s3.amazonaws.com/argoai-argoverse/hd_maps.tar.gz
+        tar -xvzf hd_maps.tar.gz
 
     - name: Test with tox
       run: |
