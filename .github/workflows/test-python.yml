@@ -22,6 +22,10 @@ jobs:
 
     - name: Test with tox
       run: |
+        wget https://s3.amazonaws.com/argoai-argoverse/hd_maps.tar.gz
+        unzip hd_maps.tar.gz
+        ls -l
+        ls -l map_files
         tox
         pre-commit run --all-files
         
