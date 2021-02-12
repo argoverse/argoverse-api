@@ -7,19 +7,11 @@ from typing import Any, List, Mapping, Optional
 
 import numpy as np
 
-from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
+from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t, read_city_name
 from argoverse.data_loading.synchronization_database import SynchronizationDB
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat2rotmat
-
-
-def read_city_name(data_dir: str, log_id: str) -> str:
-    """Read city name from JSON file containing log city metadata."""
-    city_info_fpath = f"{data_dir}/{log_id}/city_info.json"
-    city_info = read_json_file(city_info_fpath)
-    city_name = str(city_info["city_name"])
-    return city_name
 
 
 class SimpleArgoverseTrackingDataLoader:
@@ -45,7 +37,8 @@ class SimpleArgoverseTrackingDataLoader:
         Returns:
             city_name: str
         """
-        city_name = read_city_name(self.data_dir, log_id)
+        city_info_fpath = f"{self.data_dir}/{log_id}/city_info.json"
+        city_name = read_city_name(city_info_fpath)
         assert isinstance(city_name, str)
         return city_name
 

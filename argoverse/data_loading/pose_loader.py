@@ -1,6 +1,8 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
+import json
 import logging
+from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
@@ -34,3 +36,17 @@ def get_city_SE3_egovehicle_at_sensor_t(sensor_timestamp: int, dataset_dir: str,
     translation = np.array(city_SE3_ego_dict["translation"])
     city_SE3_egovehicle = SE3(rotation=quat2rotmat(rotation), translation=translation)
     return city_SE3_egovehicle
+
+
+@lru_cache()
+def read_city_name(path: str) -> str:
+    """Read city name from JSON file containing log metadata in the log folder.
+    Args:
+        path: path to the json city_name in the log folder
+    Returns:
+        city_name: city name of the current log, either 'PIT' or 'MIA'
+    """
+    with open(path, "r") as f:
+        city_name = json.load(f)["city_name"]
+        assert isinstance(city_name, str)
+        return city_name
