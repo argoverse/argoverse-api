@@ -16,6 +16,7 @@ from pandas.core.frame import DataFrame
 from scipy.spatial.transform import Rotation as R
 
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
+from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
 from argoverse.evaluation.detection.eval import DetectionEvaluator
 from argoverse.evaluation.detection.utils import (
     AffFnType,
@@ -33,6 +34,7 @@ from argoverse.evaluation.detection.utils import (
     remove_duplicate_instances,
     wrap_angle,
 )
+from argoverse.map_representation.map_api import ArgoverseMap
 from argoverse.utils.transform import quat_scipy2argo_vectorized
 
 TEST_DATA_LOC = Path(__file__).parent.parent / "tests" / "test_data" / "detection"
@@ -415,3 +417,11 @@ def test_remove_duplicate_instances_ground_truth():
     metrics = evaluator.evaluate()
     assert metrics.AP.loc["Vehicle"] == 1.0
     assert metrics.AP.loc["Pedestrian"] == 1.0
+
+
+def test_filter_objs_to_roi():
+    """ Use the map to filter out an object that lies outside the ROI in a parking lot """
+    avm = ArgoverseMap()
+    log_city_name = ""
+    city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t()
+    dts_filtered = filter_objs_to_roi(dts, avm, city_SE3_egovehicle, log_city_name)
