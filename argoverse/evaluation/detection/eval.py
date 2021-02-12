@@ -71,6 +71,7 @@ import pandas as pd
 
 from argoverse.evaluation.detection.constants import N_TP_ERRORS, SIGNIFICANT_DIGITS, STATISTIC_NAMES
 from argoverse.evaluation.detection.utils import DetectionCfg, accumulate, calc_ap, plot
+from argoverse.map_representation.map_api import ArgoverseMap
 
 logger = logging.getLogger(__name__)
 
@@ -102,11 +103,14 @@ class DetectionEvaluator(NamedTuple):
         dt_fpaths = list(self.dt_root_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
         gt_fpaths = list(self.gt_root_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
 
+        # map is only required if using Region of Interest (ROI) information to filter objects
+        avm = ArgoverseMap() if self.cfg.eval_only_roi_instances else None
+
         assert len(dt_fpaths) == len(gt_fpaths)
         data: DefaultDict[str, np.ndarray] = defaultdict(list)
         cls_to_ninst: DefaultDict[str, int] = defaultdict(int)
 
-        args = [(self.dt_root_fpath, gt_fpath, self.cfg) for gt_fpath in gt_fpaths]
+        args = [(self.dt_root_fpath, gt_fpath, self.cfg, avm) for gt_fpath in gt_fpaths]
         with Pool(os.cpu_count()) as p:
             accum = p.starmap(accumulate, args)
 

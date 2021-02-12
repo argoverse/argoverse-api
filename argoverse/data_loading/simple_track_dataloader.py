@@ -3,11 +3,11 @@
 import glob
 import sys
 from pathlib import Path
-from typing import Any, List, Mapping, Optional, Sequence
+from typing import Any, List, Mapping, Optional
 
 import numpy as np
 
-from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
+from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t, read_city_name
 from argoverse.data_loading.synchronization_database import SynchronizationDB
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.se3 import SE3
@@ -23,7 +23,7 @@ class SimpleArgoverseTrackingDataLoader:
         """
         Args:
             data_dir: str, representing path to raw Argoverse data
-            labels_dir: strrepresenting path to Argoverse data labels
+            labels_dir: str representing path to Argoverse data labels (e.g. labels or estimated detections/tracks)
         """
         self.data_dir = data_dir
         self.labels_dir = labels_dir
@@ -38,8 +38,7 @@ class SimpleArgoverseTrackingDataLoader:
             city_name: str
         """
         city_info_fpath = f"{self.data_dir}/{log_id}/city_info.json"
-        city_info = read_json_file(city_info_fpath)
-        city_name = city_info["city_name"]
+        city_name = read_city_name(city_info_fpath)
         assert isinstance(city_name, str)
         return city_name
 
@@ -118,7 +117,9 @@ class SimpleArgoverseTrackingDataLoader:
         Args:
             log_id: str, unique ID of vehicle log
         Returns:
-            ply_fpaths: List of strings, representing paths to ply files in this log
+            ply_fpaths: List of strings, representing paths to chronologically ordered ply files in this log
+                File paths are strings are of the same length ending with a nanosecond timestamp, thus
+                sorted() will place them in numerical order.
         """
         ply_fpaths = sorted(glob.glob(f"{self.data_dir}/{log_id}/lidar/PC_*.ply"))
         return ply_fpaths
@@ -129,7 +130,7 @@ class SimpleArgoverseTrackingDataLoader:
             log_id: str, unique ID of vehicle log
 
         Returns
-            cam_img_fpaths: List of strings, representing paths to JPEG files in this log,
+            cam_img_fpaths: List of strings, representing paths to ordered JPEG files in this log,
                 for a specific camera
         """
         cam_img_fpaths = sorted(glob.glob(f"{self.data_dir}/{log_id}/{camera_name}/{camera_name}_*.jpg"))
