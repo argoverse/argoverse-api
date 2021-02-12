@@ -114,20 +114,22 @@ def accumulate(
     """
     log_id = gt_fpath.parents[1].stem
     logger.info(f"log_id = {log_id}")
-    ts = gt_fpath.stem.split("_")[-1]
+    ts = int(gt_fpath.stem.split("_")[-1])
 
     dt_fpath = dt_root_fpath / f"{log_id}/per_sweep_annotations_amodal/" f"tracked_object_labels_{ts}.json"
 
     dts = np.array(read_label(str(dt_fpath)))
     gts = np.array(read_label(str(gt_fpath)))
 
-    if cfg.eval_only_roi_instances:
+    if cfg.eval_only_roi_instances and avm is not None:
+        # go up 3 levels, because hierarchy is as follows:
+        # {gt_root_fpath}/{log_id}/per_sweep_annotations_amodal/{gt_root_fname}
         gt_root_fpath = Path(gt_fpath).parent.parent.parent
-        city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(ts, gt_root_fpath, log_id)
-        log_city_name = read_city_name(os.path.join(gt_root_fpath, log_id, "city_info.json"))
-
-        dts = filter_objs_to_roi(dts, avm, city_SE3_egovehicle, log_city_name)
-        gts = filter_objs_to_roi(gts, avm, city_SE3_egovehicle, log_city_name)
+        city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(ts, str(gt_root_fpath), log_id)
+        if city_SE3_egovehicle is not None:
+            log_city_name = read_city_name(os.path.join(gt_root_fpath, log_id, "city_info.json"))
+            dts = filter_objs_to_roi(dts, avm, city_SE3_egovehicle, log_city_name)
+            gts = filter_objs_to_roi(gts, avm, city_SE3_egovehicle, log_city_name)
 
     cls_to_accum = defaultdict(list)
     cls_to_ninst = defaultdict(int)
