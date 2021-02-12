@@ -25,12 +25,12 @@ def add_text_cv2(img: np.ndarray, text: str, x: int, y: int, color: Tuple[int, i
 
 
 def draw_clipped_line_segment(
-    img: np.array,
-    vert_a: np.array,
-    vert_b: np.array,
+    img: np.ndarray,
+    vert_a: np.ndarray,
+    vert_b: np.ndarray,
     camera_config: CameraConfig,
     linewidth: int,
-    planes: List[Tuple[np.array, np.array, np.array, np.array, np.array]],
+    planes: List[Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]],
     color: Tuple[int, int, int],
 ) -> None:
     """Plot the portion of a line segment that lives within a parameterized 3D camera frustum.

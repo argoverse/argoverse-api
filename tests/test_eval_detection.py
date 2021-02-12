@@ -7,6 +7,7 @@ that have their centroid located outside of the ROI).
 
 import logging
 from pathlib import Path
+from types import SimpleNamespace
 from typing import List
 
 import numpy as np
@@ -29,6 +30,7 @@ from argoverse.evaluation.detection.utils import (
     interp,
     iou_aligned_3d,
     plot,
+    remove_duplicate_instances,
     wrap_angle,
 )
 from argoverse.utils.transform import quat_scipy2argo_vectorized
@@ -382,3 +384,32 @@ def test_orientation_error(metrics_identity: DataFrame, metrics: DataFrame) -> N
     expected_result_det: float = 0.524  # pi / 6, since one of six dets is off by pi
     assert metrics_identity.AOE.loc["Average Metrics"] == expected_result_identity
     assert metrics.AOE.loc["Average Metrics"] == expected_result_det
+
+
+def test_remove_duplicate_instances():
+    """Ensure a duplicate ground truth cuboid can be filtered out correctly."""
+    instances = [
+        SimpleNamespace(**{"translation": np.array([1, 1, 0])}),
+        SimpleNamespace(**{"translation": np.array([5, 5, 0])}),
+        SimpleNamespace(**{"translation": np.array([2, 2, 0])}),
+        SimpleNamespace(**{"translation": np.array([5, 5, 0])}),
+    ]
+    instances = np.array(instances)
+    cfg = DetectionCfg()
+    unique_instances = remove_duplicate_instances(instances, cfg)
+
+    assert len(unique_instances) == 3
+    assert np.allclose(unique_instances[0].translation, np.array([1, 1, 0]))
+    assert np.allclose(unique_instances[1].translation, np.array([5, 5, 0]))
+    assert np.allclose(unique_instances[2].translation, np.array([2, 2, 0]))
+
+
+def test_remove_duplicate_instances_ground_truth():
+    """Ensure that if an extra duplicate cuboid is present in ground truth, it would be ignored."""
+    dt_fpath = TEST_DATA_LOC / "remove_duplicates_detections"
+    gt_fpath = TEST_DATA_LOC / "remove_duplicates_ground_truth"
+    fig_fpath = TEST_DATA_LOC / "test_figures"
+    evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath)
+    metrics = evaluator.evaluate()
+    assert metrics.AP.loc["Vehicle"] == 1.0
+    assert metrics.AP.loc["Pedestrian"] == 1.0

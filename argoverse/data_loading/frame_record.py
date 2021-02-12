@@ -15,8 +15,8 @@ class FrameRecord:
 
     def __init__(
         self,
-        bbox_city_fr: np.array,
-        bbox_ego_frame: np.array,
+        bbox_city_fr: np.ndarray,
+        bbox_ego_frame: np.ndarray,
         occlusion_val: int,
         color: Tuple[float, float, float],
         track_uuid: str,
