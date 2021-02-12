@@ -1,8 +1,8 @@
 # <Copyright 2020, Argo AI, LLC. Released under the MIT license.>
 """Detection evaluation unit tests.
 
-All unit tests here do not use map ROI information (no filtering of objects
-that have their centroid located outside of the ROI).
+Only the last two unit tests here use map ROI information.
+The rest apply no filtering to objects that have their corners located outside of the ROI).
 """
 
 import logging
