@@ -423,5 +423,8 @@ def test_filter_objs_to_roi():
     """ Use the map to filter out an object that lies outside the ROI in a parking lot """
     avm = ArgoverseMap()
     log_city_name = ""
-    city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t()
+    lidar_ts = ""
+    dataset_dir = ""
+    log_id = ""
+    city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(lidar_ts, dataset_dir, log_id)
     dts_filtered = filter_objs_to_roi(dts, avm, city_SE3_egovehicle, log_city_name)
