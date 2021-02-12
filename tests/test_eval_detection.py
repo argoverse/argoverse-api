@@ -15,7 +15,7 @@ import pytest
 from pandas.core.frame import DataFrame
 from scipy.spatial.transform import Rotation as R
 
-from argoverse.data_loading.object_label_record import ObjectLabelRecord
+from argoverse.data_loading.object_label_record import ObjectLabelRecord, json_label_dict_to_obj_record
 from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
 from argoverse.evaluation.detection.eval import DetectionEvaluator
 from argoverse.evaluation.detection.utils import (
@@ -28,6 +28,7 @@ from argoverse.evaluation.detection.utils import (
     compute_affinity_matrix,
     dist_fn,
     filter_instances,
+    filter_objs_to_roi,
     interp,
     iou_aligned_3d,
     plot,
@@ -422,7 +423,7 @@ def test_remove_duplicate_instances_ground_truth():
 def test_filter_objs_to_roi():
     """ Use the map to filter out an object that lies outside the ROI in a parking lot """
     avm = ArgoverseMap()
-    
+
     # should be outside of ROI
     outside_obj = {
         "center": {"x": -14.102872067388489, "y": 19.466695178746022, "z": 0.11740010190455852},
@@ -432,9 +433,9 @@ def test_filter_objs_to_roi():
         "height": 1.5820081349372281,
         "track_label_uuid": "03a321bf955a4d7781682913884abf06",
         "timestamp": 315970611820366000,
-        "label_class": "VEHICLE"
+        "label_class": "VEHICLE",
     }
-    
+
     # should be inside the ROI
     inside_obj = {
         "center": {"x": -20.727430239506702, "y": 3.4488006757501353, "z": 0.4036619561689685},
@@ -444,12 +445,32 @@ def test_filter_objs_to_roi():
         "height": 1.629934978730058,
         "track_label_uuid": "bb0f40e4f68043e285d64a839f2f092c",
         "timestamp": 315970611820366000,
-        "label_class": "VEHICLE"
+        "label_class": "VEHICLE",
     }
-    
+
     log_city_name = "PIT"
     lidar_ts = 315970611820366000
-    dataset_dir = ""
+    dataset_dir = TEST_DATA_LOC / "roi_based_test"
     log_id = "21e37598-52d4-345c-8ef9-03ae19615d3d"
     city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(lidar_ts, dataset_dir, log_id)
+
+    dts = np.array([json_label_dict_to_obj_record(item) for item in [outside_obj, inside_obj]])
     dts_filtered = filter_objs_to_roi(dts, avm, city_SE3_egovehicle, log_city_name)
+
+    assert dts_filtered.size == 1
+    assert dts_filtered.dtype == "O"  # array of objects
+    assert isinstance(dts_filtered, np.ndarray)
+    assert dts_filtered[0].track_id == "bb0f40e4f68043e285d64a839f2f092c"
+
+
+def test_AP_on_filtered_instances() -> None:
+    """ """
+    dt_fpath = TEST_DATA_LOC / "remove_nonroi_detections"
+    gt_fpath = TEST_DATA_LOC / "remove_nonroi_ground_truth"
+    fig_fpath = TEST_DATA_LOC / "test_figures"
+
+    cfg = DetectionCfg(eval_only_roi_instances=True)
+    evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath, cfg)
+    metrics = evaluator.evaluate()
+
+    assert metrics.AP.loc["Vehicle"] == 1.0
