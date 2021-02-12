@@ -422,9 +422,34 @@ def test_remove_duplicate_instances_ground_truth():
 def test_filter_objs_to_roi():
     """ Use the map to filter out an object that lies outside the ROI in a parking lot """
     avm = ArgoverseMap()
-    log_city_name = ""
-    lidar_ts = ""
+    
+    # should be outside of ROI
+    outside_obj = {
+        "center": {"x": -14.102872067388489, "y": 19.466695178746022, "z": 0.11740010190455852},
+        "rotation": {"x": 0.0, "y": 0.0, "z": -0.038991328555453404, "w": 0.9992395490058831},
+        "length": 4.56126567460171,
+        "width": 1.9370055686754908,
+        "height": 1.5820081349372281,
+        "track_label_uuid": "03a321bf955a4d7781682913884abf06",
+        "timestamp": 315970611820366000,
+        "label_class": "VEHICLE"
+    }
+    
+    # should be inside the ROI
+    inside_obj = {
+        "center": {"x": -20.727430239506702, "y": 3.4488006757501353, "z": 0.4036619561689685},
+        "rotation": {"x": 0.0, "y": 0.0, "z": 0.0013102003738908123, "w": 0.9999991416871218},
+        "length": 4.507580779458834,
+        "width": 1.9243189627993598,
+        "height": 1.629934978730058,
+        "track_label_uuid": "bb0f40e4f68043e285d64a839f2f092c",
+        "timestamp": 315970611820366000,
+        "label_class": "VEHICLE"
+    }
+    
+    log_city_name = "PIT"
+    lidar_ts = 315970611820366000
     dataset_dir = ""
-    log_id = ""
+    log_id = "21e37598-52d4-345c-8ef9-03ae19615d3d"
     city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(lidar_ts, dataset_dir, log_id)
     dts_filtered = filter_objs_to_roi(dts, avm, city_SE3_egovehicle, log_city_name)
