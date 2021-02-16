@@ -91,10 +91,14 @@ class DetectionEvaluator(NamedTuple):
     figs_fpath: Path
     cfg: DetectionCfg = DetectionCfg()
 
-    def evaluate(self) -> pd.DataFrame:
+    def evaluate(self, num_processes: int = 1) -> pd.DataFrame:
         """Evaluate detection output and return metrics. The multiprocessing
-        library is used for parallel assignment between detections and ground truth
-        annotations.
+        library is used for parallel processing of sweeps -- each sweep is
+        processed independently, computing assignment between detections and
+        ground truth annotations.
+
+        Args:
+            num_processes: number of workers among which work will be subdivided
 
         Returns:
             Evaluation metrics of shape (C + 1, K) where C + 1 is the number of classes.
@@ -111,7 +115,7 @@ class DetectionEvaluator(NamedTuple):
         cls_to_ninst: DefaultDict[str, int] = defaultdict(int)
 
         args = [(self.dt_root_fpath, gt_fpath, self.cfg, avm) for gt_fpath in gt_fpaths]
-        with Pool(os.cpu_count()) as p:
+        with Pool(num_processes) as p:
             accum = p.starmap(accumulate, args)
 
         for frame_stats, frame_cls_to_inst in accum:
@@ -204,6 +208,14 @@ def main() -> None:
         help="Ground truth root folder path.",
         required=True,
     )
+    parser.add_argument(
+        "-p",
+        "--num_processes",
+        type=int,
+        help="Number of processes among which to subdivide work.",
+        required=True,
+    )
+
     parser.add_argument("-f", "--fig_fpath", type=str, help="Figures root folder path.", default="figs")
     args = parser.parse_args()
     logger.info(f"args == {args}")
@@ -213,7 +225,7 @@ def main() -> None:
     fig_fpath = Path(args.fig_fpath)
 
     evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath)
-    metrics = evaluator.evaluate()
+    metrics = evaluator.evaluate(args.num_processes)
     print(metrics)
 
 
