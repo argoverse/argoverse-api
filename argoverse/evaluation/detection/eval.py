@@ -232,7 +232,7 @@ def main() -> None:
     gt_fpath = Path(args.gt_fpath)
     fig_fpath = Path(args.fig_fpath)
 
-    evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath, args.num_processes)
+    evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath, num_procs=args.num_processes)
     metrics = evaluator.evaluate()
     print(metrics)
 
