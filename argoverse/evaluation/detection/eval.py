@@ -212,12 +212,16 @@ def main() -> None:
         "-p",
         "--num_processes",
         type=int,
-        help="Number of processes among which to subdivide work.",
+        help="Number of processes among which to subdivide work. Specifying -1 will use one process per available core",
         required=True,
     )
 
     parser.add_argument("-f", "--fig_fpath", type=str, help="Figures root folder path.", default="figs")
     args = parser.parse_args()
+
+    if args.num_processes == -1:
+        args.num_processes = os.cpu_count()
+
     logger.info(f"args == {args}")
 
     dt_fpath = Path(args.dt_fpath)
