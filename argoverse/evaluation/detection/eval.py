@@ -123,7 +123,7 @@ class DetectionEvaluator:
         cls_to_ninst: DefaultDict[str, int] = defaultdict(int)
 
         args = [(self.dt_root_fpath, gt_fpath, self.cfg, avm) for gt_fpath in gt_fpaths]
-        with Pool(num_processes) as p:
+        with Pool(self.num_procs) as p:
             accum = p.starmap(accumulate, args)
 
         for frame_stats, frame_cls_to_inst in accum:
