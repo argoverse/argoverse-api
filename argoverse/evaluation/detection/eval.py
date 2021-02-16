@@ -64,7 +64,7 @@ import os
 from collections import defaultdict
 from multiprocessing import Pool
 from pathlib import Path
-from typing import DefaultDict, List, NamedTuple
+from typing import DefaultDict, List
 
 import numpy as np
 import pandas as pd
@@ -76,29 +76,37 @@ from argoverse.map_representation.map_api import ArgoverseMap
 logger = logging.getLogger(__name__)
 
 
-class DetectionEvaluator(NamedTuple):
-    """Instantiates a DetectionEvaluator object for evaluation.
+class DetectionEvaluator:
+    """Instantiates a DetectionEvaluator object for evaluation."""
 
-    Args:
-        dt_fpath_root: Path to the folder which contains the detections.
-        gt_fpath_root: Path to the folder which contains the split of logs.
-        figs_fpath: Path to the folder which will contain the output figures.
-        cfg: Detection configuration settings.
-    """
+    def __init__(
+        self,
+        dt_root_fpath: Path,
+        gt_root_fpath: Path,
+        figs_fpath: Path,
+        cfg: DetectionCfg = DetectionCfg(),
+        num_procs: int = -1,
+    ) -> None:
+        """
+        Args:
+            dt_fpath_root: Path to the folder which contains the detections.
+            gt_fpath_root: Path to the folder which contains the split of logs.
+            figs_fpath: Path to the folder which will contain the output figures.
+            cfg: Detection configuration settings.
+            num_procs: Number of processes among which to subdivide work.
+                Specifying -1 will use one process per available core
+        """
+        self.dt_root_fpath = dt_root_fpath
+        self.gt_root_fpath = gt_root_fpath
+        self.figs_fpath = figs_fpath
+        self.cfg = cfg
+        self.num_procs = os.cpu_count() if num_procs == -1 else num_procs
 
-    dt_root_fpath: Path
-    gt_root_fpath: Path
-    figs_fpath: Path
-    cfg: DetectionCfg = DetectionCfg()
-
-    def evaluate(self, num_processes: int = 1) -> pd.DataFrame:
+    def evaluate(self) -> pd.DataFrame:
         """Evaluate detection output and return metrics. The multiprocessing
         library is used for parallel processing of sweeps -- each sweep is
         processed independently, computing assignment between detections and
         ground truth annotations.
-
-        Args:
-            num_processes: number of workers among which work will be subdivided
 
         Returns:
             Evaluation metrics of shape (C + 1, K) where C + 1 is the number of classes.
@@ -218,18 +226,14 @@ def main() -> None:
 
     parser.add_argument("-f", "--fig_fpath", type=str, help="Figures root folder path.", default="figs")
     args = parser.parse_args()
-
-    if args.num_processes == -1:
-        args.num_processes = os.cpu_count()
-
     logger.info(f"args == {args}")
 
     dt_fpath = Path(args.dt_fpath)
     gt_fpath = Path(args.gt_fpath)
     fig_fpath = Path(args.fig_fpath)
 
-    evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath)
-    metrics = evaluator.evaluate(args.num_processes)
+    evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath, args.num_processes)
+    metrics = evaluator.evaluate()
     print(metrics)
 
 
