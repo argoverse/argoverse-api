@@ -213,7 +213,7 @@ def main() -> None:
         "--num_processes",
         type=int,
         help="Number of processes among which to subdivide work. Specifying -1 will use one process per available core",
-        required=True,
+        default=-1,
     )
 
     parser.add_argument("-f", "--fig_fpath", type=str, help="Figures root folder path.", default="figs")
