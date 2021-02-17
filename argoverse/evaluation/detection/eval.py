@@ -122,9 +122,12 @@ class DetectionEvaluator:
         data: DefaultDict[str, np.ndarray] = defaultdict(list)
         cls_to_ninst: DefaultDict[str, int] = defaultdict(int)
 
-        args = [(self.dt_root_fpath, gt_fpath, self.cfg, avm) for gt_fpath in gt_fpaths]
-        with Pool(self.num_procs) as p:
-            accum = p.starmap(accumulate, args)
+        if self.num_procs == 1:
+            accum = [accumulate(self.dt_root_fpath, gt_fpath, self.cfg, avm) for gt_fpath in gt_fpaths]
+        else:
+            args = [(self.dt_root_fpath, gt_fpath, self.cfg, avm) for gt_fpath in gt_fpaths]
+            with Pool(self.num_procs) as p:
+                accum = p.starmap(accumulate, args)
 
         for frame_stats, frame_cls_to_inst in accum:
             for cls_name, cls_stats in frame_stats.items():
