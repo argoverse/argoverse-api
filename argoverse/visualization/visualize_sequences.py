@@ -6,7 +6,7 @@ import os
 import shutil
 import sys
 from collections import defaultdict
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import matplotlib.animation as anim
 import matplotlib.lines as mlines
@@ -35,7 +35,10 @@ def interpolate_polyline(polyline: np.ndarray, num_points: int) -> np.ndarray:
 
 
 def viz_sequence(
-    df: pd.DataFrame, lane_centerlines: Optional[np.ndarray] = None, show: bool = True, smoothen: bool = False
+    df: pd.DataFrame,
+    lane_centerlines: Optional[List[np.ndarray]] = None,
+    show: bool = True,
+    smoothen: bool = False,
 ) -> None:
 
     # Seq data
@@ -75,7 +78,15 @@ def viz_sequence(
                 lane_centerlines.append(lane_cl)
 
     for lane_cl in lane_centerlines:
-        plt.plot(lane_cl[:, 0], lane_cl[:, 1], "--", color="grey", alpha=1, linewidth=1, zorder=0)
+        plt.plot(
+            lane_cl[:, 0],
+            lane_cl[:, 1],
+            "--",
+            color="grey",
+            alpha=1,
+            linewidth=1,
+            zorder=0,
+        )
     frames = df.groupby("TRACK_ID")
 
     plt.xlabel("Map X")
@@ -136,7 +147,15 @@ def viz_sequence(
         object_type_tracker[object_type] += 1
 
     red_star = mlines.Line2D([], [], color="red", marker="*", linestyle="None", markersize=7, label="Agent")
-    green_circle = mlines.Line2D([], [], color="green", marker="o", linestyle="None", markersize=7, label="Others")
+    green_circle = mlines.Line2D(
+        [],
+        [],
+        color="green",
+        marker="o",
+        linestyle="None",
+        markersize=7,
+        label="Others",
+    )
     black_triangle = mlines.Line2D([], [], color="black", marker="^", linestyle="None", markersize=7, label="AV")
 
     plt.axis("off")

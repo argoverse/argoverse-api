@@ -11,9 +11,6 @@ from pathlib import Path
 from typing import Any
 
 import imageio
-# all mayavi imports MUST come before matplotlib, else Tkinter exceptions
-# will be thrown, e.g. "unrecognized selector sent to instance"
-import mayavi
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -23,13 +20,12 @@ from argoverse.map_representation.map_api import ArgoverseMap
 from argoverse.utils.camera_stats import RING_CAMERA_LIST, STEREO_CAMERA_LIST
 from argoverse.utils.cuboid_interior import filter_point_cloud_to_bbox_2D_vectorized
 from argoverse.utils.ffmpeg_utils import write_nonsequential_idx_video, write_video
-from argoverse.utils.geometry import filter_point_cloud_to_polygon, rotate_polygon_about_pt
+from argoverse.utils.geometry import rotate_polygon_about_pt
 from argoverse.utils.mpl_plotting_utils import draw_lane_polygons, plot_bbox_2D
 from argoverse.utils.pkl_utils import load_pkl_dictionary
 from argoverse.utils.ply_loader import load_ply
 from argoverse.utils.se3 import SE3
 from argoverse.visualization.ground_visualization import draw_ground_pts_in_image
-from argoverse.visualization.mayavi_utils import draw_lidar
 from argoverse.visualization.mpl_point_cloud_vis import draw_point_cloud_bev
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -45,11 +41,15 @@ Code to plot track label trajectories on a map, for the tracking benchmark.
 
 class DatasetOnMapVisualizer:
     def __init__(
-        self, dataset_dir: str, experiment_prefix: str, use_existing_files: bool = True, log_id: str = None
+        self,
+        dataset_dir: str,
+        experiment_prefix: str,
+        use_existing_files: bool = True,
+        log_id: str = None,
     ) -> None:
         """We will cache the accumulated trajectories per city, per log, and per frame
         for the tracking benchmark.
-            """
+        """
         self.plot_lane_tangent_arrows = True
         self.plot_lidar_bev = True
         self.plot_lidar_in_img = False
@@ -139,7 +139,10 @@ class DatasetOnMapVisualizer:
                     ycenter = pose_city_to_ego["translation"][1]
                     ego_center_xyz = np.array(pose_city_to_ego["translation"])
 
-                    city_to_egovehicle_se3 = SE3(rotation=pose_city_to_ego["rotation"], translation=ego_center_xyz)
+                    city_to_egovehicle_se3 = SE3(
+                        rotation=pose_city_to_ego["rotation"],
+                        translation=ego_center_xyz,
+                    )
 
                     if self.plot_lidar_bev:
                         xmin = xcenter - 80  # 150
@@ -285,11 +288,20 @@ class DatasetOnMapVisualizer:
                         if self.plot_lane_tangent_arrows:
                             bbox_center = np.mean(bbox_city_fr, axis=0)
                             tangent_xy, conf = avm.get_lane_direction(
-                                query_xy_city_coords=bbox_center[:2], city_name=city_name
+                                query_xy_city_coords=bbox_center[:2],
+                                city_name=city_name,
                             )
                             dx = tangent_xy[0] * LANE_TANGENT_VECTOR_SCALING
                             dy = tangent_xy[1] * LANE_TANGENT_VECTOR_SCALING
-                            ax.arrow(bbox_center[0], bbox_center[1], dx, dy, color="r", width=0.5, zorder=2)
+                            ax.arrow(
+                                bbox_center[0],
+                                bbox_center[1],
+                                dx,
+                                dy,
+                                color="r",
+                                width=0.5,
+                                zorder=2,
+                            )
                     else:
                         plot_bbox_2D(ax, bbox_ego_frame, color)
                         cuboid_lidar_pts, _ = filter_point_cloud_to_bbox_2D_vectorized(
@@ -315,10 +327,12 @@ class DatasetOnMapVisualizer:
 
 
 def visualize_30hz_benchmark_data_on_map(args: Any) -> None:
-    """
-    """
+    """"""
     domv = DatasetOnMapVisualizer(
-        args.dataset_dir, args.experiment_prefix, log_id=args.log_id, use_existing_files=args.use_existing_files
+        args.dataset_dir,
+        args.experiment_prefix,
+        log_id=args.log_id,
+        use_existing_files=args.use_existing_files,
     )
     # Plotting does not work on AWS! The figure cannot be refreshed properly
     # Thus, plotting must be performed locally.
@@ -336,7 +350,10 @@ if __name__ == "__main__":
         help="results will be saved in a folder with this prefix for its name",
     )
     parser.add_argument(
-        "--log_id", default=None, type=str, help="log ids, this is the folder name in argoverse-tracking/*/[log_id]"
+        "--log_id",
+        default=None,
+        type=str,
+        help="log ids, this is the folder name in argoverse-tracking/*/[log_id]",
     )
     parser.add_argument(
         "--use_existing_files",

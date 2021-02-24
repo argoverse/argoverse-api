@@ -6,12 +6,12 @@ from typing import Any, Dict, List, Tuple
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.interpolate as interpolate
-
-import argoverse
 import open3d as o3d
+import scipy.interpolate as interpolate
 import torch
 import torch.nn.functional as F
+
+import argoverse
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.pkl_utils import save_pkl_dictionary
@@ -50,7 +50,7 @@ def save_bev_img(
     pc: np.ndarray,
 ) -> None:
     """
-    Plot results on bev images and save 
+    Plot results on bev images and save
     """
     image_size = 2000
     image_scale = 10
@@ -69,7 +69,12 @@ def save_bev_img(
 
     for bbox, difficulty_att in zip(list_bboxes, list_difficulty_att):
 
-        qw, qx, qy, qz = bbox["rotation"]["w"], bbox["rotation"]["x"], bbox["rotation"]["y"], bbox["rotation"]["z"]
+        qw, qx, qy, qz = (
+            bbox["rotation"]["w"],
+            bbox["rotation"]["x"],
+            bbox["rotation"]["y"],
+            bbox["rotation"]["z"],
+        )
         theta_local = np.arctan2(2 * (qw * qz + qx * qy), 1 - 2 * (qy * qy + qz * qz))
         pose_local = np.array([bbox["center"]["x"], bbox["center"]["y"], bbox["center"]["z"]])
 
@@ -83,9 +88,20 @@ def save_bev_img(
         color = (color_0, color_1, color_2)
 
         w, l, h = bbox["width"], bbox["length"], bbox["height"]
-        bbox_2d = np.array([[-l / 2, -w / 2, 0], [l / 2, -w / 2, 0], [-l / 2, w / 2, 0], [l / 2, w / 2, 0]])
+        bbox_2d = np.array(
+            [
+                [-l / 2, -w / 2, 0],
+                [l / 2, -w / 2, 0],
+                [-l / 2, w / 2, 0],
+                [l / 2, w / 2, 0],
+            ]
+        )
         R = np.array(
-            [[np.cos(theta_local), -np.sin(theta_local), 0], [np.sin(theta_local), np.cos(theta_local), 0], [0, 0, 1]]
+            [
+                [np.cos(theta_local), -np.sin(theta_local), 0],
+                [np.sin(theta_local), np.cos(theta_local), 0],
+                [0, 0, 1],
+            ]
         )
         bbox_2d = np.matmul(R, bbox_2d.transpose()).transpose() + pose_local[0:3]
         edge_2d = np.array([[0, 1], [0, 2], [2, 3], [1, 3]])
@@ -115,22 +131,33 @@ def save_bev_img(
 
     offset = 0
     for key in dict_color.keys():
-        cv2.putText(img, key, (100 + offset, image_size - 50), font, fontScale, dict_color[key], lineType)
+        cv2.putText(
+            img,
+            key,
+            (100 + offset, image_size - 50),
+            font,
+            fontScale,
+            dict_color[key],
+            lineType,
+        )
         offset += 150
 
     print("Saving img: ", path_imgs)
-    cv2.imwrite(os.path.join(path_imgs, "%s_%s_%d.jpg" % (dataset_name, log_id, lidar_timestamp)), img * 255)
+    cv2.imwrite(
+        os.path.join(path_imgs, "%s_%s_%d.jpg" % (dataset_name, log_id, lidar_timestamp)),
+        img * 255,
+    )
 
 
-def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3) -> np.array:
-    """ Perform B-Spline smoothing of trajectories for temporal noise reduction
-    
+def bspline_1d(x: np.ndarray, y: np.ndarray, s: float = 20.0, k: int = 3) -> np.ndarray:
+    """Perform B-Spline smoothing of trajectories for temporal noise reduction
+
     Args:
         x: N-length np array
         y: N-length np array
         s: smoothing condition
         k: degree of the spline fit
-        
+
     Returns:
         smoothed trajectory
     """
@@ -143,29 +170,35 @@ def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3) -> np.arra
     return interpolate.splev(np.arange(y.shape[0]), tck)
 
 
-def derivative(x: np.array) -> np.array:
-    """ Compute time derivatives for velocity and acceleration
-    
+def derivative(x: np.ndarray) -> np.ndarray:
+    """Compute time derivatives for velocity and acceleration
+
     Args:
         x: N-length Numpy array, with indices at consecutive timestamps
-    
+
     Returns:
         dx/dt: N-length Numpy array, with derivative of x w.r.t. timestep
     """
     x_tensor = torch.Tensor(x).unsqueeze(0).unsqueeze(0)
-    x_padded = torch.cat((x_tensor, (x_tensor[:, :, -1] - x_tensor[:, :, -2] + x_tensor[:, :, -1]).unsqueeze(0)), dim=2)
+    x_padded = torch.cat(
+        (
+            x_tensor,
+            (x_tensor[:, :, -1] - x_tensor[:, :, -2] + x_tensor[:, :, -1]).unsqueeze(0),
+        ),
+        dim=2,
+    )
     filters = torch.Tensor([-1, 1]).unsqueeze(0).unsqueeze(0)
 
     return F.conv1d(x_padded, filters)[0, 0].numpy()
 
 
-def compute_v_a(traj: np.array) -> Tuple[np.array, np.array]:
+def compute_v_a(traj: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     """
     Compute velocity and acceleration
-    
+
     Args:
         traj: Numpy array of shape Nx3 representing 3-d trajectory
-    
+
     Returns:
         velocity: Numpy array representing (d traj)/dt
         acceleration: Numpy array representing (d velocity)/dt
@@ -305,9 +338,10 @@ def make_att_files(root_dir: str) -> None:
                 ), "zero-length track"
                 dict_tracks[id_track]["length_track"] = length_track
 
-                dict_tracks[id_track]["list_vel"], dict_tracks[id_track]["list_acc"] = compute_v_a(
-                    dict_tracks[id_track]["list_center_w"]
-                )
+                (
+                    dict_tracks[id_track]["list_vel"],
+                    dict_tracks[id_track]["list_acc"],
+                ) = compute_v_a(dict_tracks[id_track]["list_center_w"])
                 dict_tracks[id_track]["num_missing"] = (
                     dict_tracks[id_track]["length_track"] - dict_tracks[id_track]["exists"].sum()
                 )

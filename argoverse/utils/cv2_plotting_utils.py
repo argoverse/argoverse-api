@@ -10,13 +10,27 @@ from .calibration import CameraConfig, proj_cam_to_uv
 from .frustum_clipping import clip_segment_v3_plane_n
 
 
+def add_text_cv2(img: np.ndarray, text: str, x: int, y: int, color: Tuple[int, int, int], thickness: int = 3) -> None:
+    """Add text to image using OpenCV. Color should be BGR order"""
+    img = cv2.putText(
+        img,
+        text,
+        (x, y),
+        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+        fontScale=1,
+        thickness=thickness,
+        color=color,
+        lineType=cv2.LINE_AA,
+    )
+
+
 def draw_clipped_line_segment(
-    img: np.array,
-    vert_a: np.array,
-    vert_b: np.array,
+    img: np.ndarray,
+    vert_a: np.ndarray,
+    vert_b: np.ndarray,
     camera_config: CameraConfig,
     linewidth: int,
-    planes: List[Tuple[np.array, np.array, np.array, np.array, np.array]],
+    planes: List[Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]],
     color: Tuple[int, int, int],
 ) -> None:
     """Plot the portion of a line segment that lives within a parameterized 3D camera frustum.
@@ -39,7 +53,13 @@ def draw_clipped_line_segment(
 
     uv_a = uv_a.squeeze()
     uv_b = uv_b.squeeze()
-    cv2.line(img, (int(uv_a[0]), int(uv_a[1])), (int(uv_b[0]), int(uv_b[1])), color, linewidth)
+    cv2.line(
+        img,
+        (int(uv_a[0]), int(uv_a[1])),
+        (int(uv_b[0]), int(uv_b[1])),
+        color,
+        linewidth,
+    )
 
 
 def draw_point_cloud_in_img_cv2(img: np.ndarray, xy: np.ndarray, colors: np.ndarray, radius: int = 5) -> np.ndarray:
@@ -64,7 +84,11 @@ def draw_point_cloud_in_img_cv2(img: np.ndarray, xy: np.ndarray, colors: np.ndar
 
 
 def draw_polyline_cv2(
-    line_segments_arr: np.ndarray, image: np.ndarray, color: Tuple[int, int, int], im_h: int, im_w: int
+    line_segments_arr: np.ndarray,
+    image: np.ndarray,
+    color: Tuple[int, int, int],
+    im_h: int,
+    im_w: int,
 ) -> None:
     """Draw a polyline onto an image using given line segments.
 
@@ -137,7 +161,13 @@ def plot_bbox_polygon_cv2(img: np.ndarray, track_id: str, color: np.ndarray, bbo
     plot_x = xmin + 10
     plot_y = ymin + 25
     img = cv2.putText(
-        img, str(track_id), (plot_x, plot_y), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=5, color=white
+        img,
+        str(track_id),
+        (plot_x, plot_y),
+        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+        fontScale=1,
+        thickness=5,
+        color=white,
     )
 
     red = (255, 0, 0)

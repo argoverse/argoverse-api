@@ -1,15 +1,16 @@
-#!/usr/bin/python3
+# <Copyright 2020, Argo AI, LLC. Released under the MIT license.>
 
 import os
 import shutil
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 from pathlib import Path
-from typing import Any, Mapping, NamedTuple, Tuple
+from typing import Any, DefaultDict, Dict, List, Mapping, NamedTuple, Tuple
 
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from argoverse.evaluation.eval_tracking import eval_tracks, get_orientation_error_deg
+from argoverse.evaluation.detection.utils import wrap_angle
+from argoverse.evaluation.eval_tracking import eval_tracks
 from argoverse.utils.json_utils import save_json_dict
 
 _ROOT = Path(__file__).resolve().parent
@@ -45,11 +46,11 @@ def check_mkdir(dirpath: str) -> None:
 
 def yaw_to_quaternion3d(yaw: float) -> Tuple[float, float, float, float]:
     """
-		Args:
-		-   yaw: rotation about the z-axis, in radians
-		Returns:
-		-   qx,qy,qz,qw: quaternion coefficients
-	"""
+    Args:
+    -   yaw: rotation about the z-axis, in radians
+    Returns:
+    -   qx,qy,qz,qw: quaternion coefficients
+    """
     qx, qy, qz, qw = Rotation.from_euler("z", yaw).as_quat()
     return qx, qy, qz, qw
 
@@ -72,7 +73,7 @@ class TrackedObjRec(NamedTuple):
 class TrackedObjects:
     def __init__(self, log_id: str, is_gt: bool) -> None:
         """ """
-        self.ts_to_trackedlabels_dict = defaultdict(list)
+        self.ts_to_trackedlabels_dict: DefaultDict[int, List[Dict[str, Any]]] = defaultdict(list)
         self.log_id = log_id
 
         tracks_type = "gt" if is_gt else "pred"
@@ -81,9 +82,9 @@ class TrackedObjects:
 
     def add_obj(self, o: TrackedObjRec, ts_ns: int) -> None:
         """
-			Args:
-			-	ts_ns: timestamp in nanoseconds
-		"""
+        Args:
+            - ts_ns: timestamp in nanoseconds
+        """
         self.ts_to_trackedlabels_dict[ts_ns] += [
             {
                 "center": {"x": o.cx, "y": o.cy, "z": o.cz},
@@ -99,9 +100,9 @@ class TrackedObjects:
 
     def save_to_disk(self) -> None:
         """
-		Labels and predictions should be saved in JSON e.g.
-			`tracked_object_labels_315969629019741000.json`
-		"""
+        Labels and predictions should be saved in JSON e.g.
+                `tracked_object_labels_315969629019741000.json`
+        """
         for ts_ns, ts_trackedlabels in self.ts_to_trackedlabels_dict.items():
             json_fpath = f"{self.log_dir}/per_sweep_annotations_amodal/"
             check_mkdir(json_fpath)
@@ -109,11 +110,16 @@ class TrackedObjects:
             save_json_dict(json_fpath, ts_trackedlabels)
 
 
-def dump_1obj_scenario_json(centers, yaw_angles, log_id: str, is_gt: bool) -> None:
+def dump_1obj_scenario_json(
+    centers: List[Tuple[int, int, int]],
+    yaw_angles: List[float],
+    log_id: str,
+    is_gt: bool,
+) -> None:
     """
-	Egovehicle stationary (represented by `o`).
-	Sequence of 4-nanosecond timestamps.
-	"""
+    Egovehicle stationary (represented by `o`).
+    Sequence of 4-nanosecond timestamps.
+    """
     t_objs = TrackedObjects(log_id=log_id, is_gt=is_gt)
 
     l = 2
@@ -177,27 +183,27 @@ def run_eval(exp_name: str) -> Mapping[str, Any]:
     return result_dict
 
 
-def get_1obj_gt_scenario():
+def get_1obj_gt_scenario() -> Tuple[List[Tuple[int, int, int]], List[float]]:
     """
-	Egovehicle stationary (represented by `o`).
-	Seqeuence of 4-nanosecond timestamps.
+    Egovehicle stationary (represented by `o`).
+    Seqeuence of 4-nanosecond timestamps.
 
-	|-|
-	| |
-	|-|
+    |-|
+    | |
+    |-|
 
-	|-|
-	| |
-	|-|
-			o (x,y,z) = (0,0,0)
-	|-|
-	| |
-	|-|
+    |-|
+    | |
+    |-|
+                    o (x,y,z) = (0,0,0)
+    |-|
+    | |
+    |-|
 
-	|-|
-	| | (x,y,z)=(-3,2,0)
-	|-|
-	"""
+    |-|
+    | | (x,y,z)=(-3,2,0)
+    |-|
+    """
     centers = []
     # timestamp 0
     cx = -3
@@ -223,7 +229,7 @@ def get_1obj_gt_scenario():
     cz = 0
     centers += [(cx, cy, cz)]
 
-    yaw_angles = [0, 0, 0, 0]
+    yaw_angles = [0.0, 0.0, 0.0, 0.0]
     return centers, yaw_angles
 
 
@@ -284,7 +290,7 @@ def test_1obj_offset_translation() -> None:
     cz = 0
     centers += [(cx, cy, cz)]
 
-    yaw_angles = [0, 0, 0, 0]
+    yaw_angles = [0.0, 0.0, 0.0, 0.0]
 
     # dump the ground truth first
     gt_centers, gt_yaw_angles = get_1obj_gt_scenario()
@@ -311,17 +317,17 @@ def test_1obj_offset_translation() -> None:
 
 def test_1obj_poor_translation() -> None:
     """
-	Miss in 1st frame, TP in 2nd frame,
-	lost in 3rd frame, retrack as TP in 4th frame
+    Miss in 1st frame, TP in 2nd frame,
+    lost in 3rd frame, retrack as TP in 4th frame
 
-	Yields 1 fragmentation. Prec=0.5, recall=0.5, F1=0.5
+    Yields 1 fragmentation. Prec=0.5, recall=0.5, F1=0.5
 
-	mostly tracked if it is successfully tracked
-	for at least 80% of its life span
+    mostly tracked if it is successfully tracked
+    for at least 80% of its life span
 
-	If a track is only recovered for less than 20% of its
-	total length, it is said to be mostly lost (ML)
-	"""
+    If a track is only recovered for less than 20% of its
+    total length, it is said to be mostly lost (ML)
+    """
     log_id = "1obj_poor_translation"
 
     centers = []
@@ -350,7 +356,7 @@ def test_1obj_poor_translation() -> None:
     cz = 0
     centers += [(cx, cy, cz)]
 
-    yaw_angles = [0, 0, 0, 0]
+    yaw_angles = [0.0, 0.0, 0.0, 0.0]
 
     # dump the ground truth first
     gt_centers, gt_yaw_angles = get_1obj_gt_scenario()
@@ -436,81 +442,81 @@ def test_1obj_poor_orientation() -> None:
 
 def test_orientation_error1() -> None:
     """ """
-    yaw1 = np.deg2rad(179)
-    yaw2 = np.deg2rad(-179)
+    yaw1 = np.deg2rad([179])
+    yaw2 = np.deg2rad([-179])
 
-    error_deg = get_orientation_error_deg(yaw1, yaw2)
+    error_deg = np.rad2deg(wrap_angle(yaw1 - yaw2))
     assert np.allclose(error_deg, 2.0, atol=1e-2)
 
 
 def test_orientation_error2() -> None:
     """ """
-    yaw1 = np.deg2rad(-179)
-    yaw2 = np.deg2rad(179)
+    yaw1 = np.deg2rad([-179])
+    yaw2 = np.deg2rad([179])
 
-    error_deg = get_orientation_error_deg(yaw1, yaw2)
+    error_deg = np.rad2deg(wrap_angle(yaw1 - yaw2))
     print(error_deg)
     assert np.allclose(error_deg, 2.0, atol=1e-2)
 
 
 def test_orientation_error3() -> None:
     """ """
-    yaw1 = np.deg2rad(179)
-    yaw2 = np.deg2rad(178)
+    yaw1 = np.deg2rad([179])
+    yaw2 = np.deg2rad([178])
 
-    error_deg = get_orientation_error_deg(yaw1, yaw2)
+    error_deg = np.rad2deg(wrap_angle(yaw1 - yaw2))
     assert np.allclose(error_deg, 1.0, atol=1e-2)
 
 
 def test_orientation_error4() -> None:
     """ """
-    yaw1 = np.deg2rad(178)
-    yaw2 = np.deg2rad(179)
+    yaw1 = np.deg2rad([178])
+    yaw2 = np.deg2rad([179])
 
-    error_deg = get_orientation_error_deg(yaw1, yaw2)
+    error_deg = np.rad2deg(wrap_angle(yaw1 - yaw2))
     assert np.allclose(error_deg, 1.0, atol=1e-2)
 
 
 def test_orientation_error5() -> None:
     """ """
-    yaw1 = np.deg2rad(3)
-    yaw2 = np.deg2rad(-3)
+    yaw1 = np.deg2rad([3])
+    yaw2 = np.deg2rad([-3])
 
-    error_deg = get_orientation_error_deg(yaw1, yaw2)
+    error_deg = np.rad2deg(wrap_angle(yaw1 - yaw2))
     assert np.allclose(error_deg, 6.0, atol=1e-2)
 
 
 def test_orientation_error6() -> None:
     """ """
-    yaw1 = np.deg2rad(-3)
-    yaw2 = np.deg2rad(3)
+    yaw1 = np.deg2rad([-3])
+    yaw2 = np.deg2rad([3])
 
-    error_deg = get_orientation_error_deg(yaw1, yaw2)
+    error_deg = np.rad2deg(wrap_angle(yaw1 - yaw2))
     assert np.allclose(error_deg, 6.0, atol=1e-2)
 
 
 def test_orientation_error7() -> None:
     """ """
-    yaw1 = np.deg2rad(-177)
-    yaw2 = np.deg2rad(-179)
+    yaw1 = np.deg2rad([-177])
+    yaw2 = np.deg2rad([-179])
 
-    error_deg = get_orientation_error_deg(yaw1, yaw2)
+    error_deg = np.rad2deg(wrap_angle(yaw1 - yaw2))
     assert np.allclose(error_deg, 2.0, atol=1e-2)
 
 
 def test_orientation_error8() -> None:
     """ """
-    yaw1 = np.deg2rad(-179)
-    yaw2 = np.deg2rad(-177)
+    yaw1 = np.deg2rad([-179])
+    yaw2 = np.deg2rad([-177])
 
-    error_deg = get_orientation_error_deg(yaw1, yaw2)
+    error_deg = np.rad2deg(wrap_angle(yaw1 - yaw2))
     assert np.allclose(error_deg, 2.0, atol=1e-2)
 
 
-def get_mot16_scenario_a():
+def get_mot16_scenario_a() -> Tuple[List[Tuple[int, int, int]], List[float]]:
     """
-	https://arxiv.org/pdf/1603.00831.pdf
-	"""
+    https://arxiv.org/pdf/1603.00831.pdf
+    """
     centers = []
     # timestamp 0
     cx = 0
@@ -548,14 +554,14 @@ def get_mot16_scenario_a():
     cz = 0
     centers += [(cx, cy, cz)]
 
-    yaw_angles = [0, 0, 0, 0, 0, 0]
+    yaw_angles = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     return centers, yaw_angles
 
 
 def test_mot16_scenario_a() -> None:
     """
-	See page 8 of MOT16 paper: https://arxiv.org/pdf/1603.00831.pdf
-	"""
+    See page 8 of MOT16 paper: https://arxiv.org/pdf/1603.00831.pdf
+    """
     log_id = "mot16_scenario_a"
     gt_centers, gt_yaw_angles = get_mot16_scenario_a()
     dump_1obj_scenario_json(gt_centers, gt_yaw_angles, log_id, is_gt=True)
@@ -635,9 +641,9 @@ def test_mot16_scenario_a() -> None:
 
 def test_mot16_scenario_b() -> None:
     """
-	See page 8 of MOT16 paper: https://arxiv.org/pdf/1603.00831.pdf
-	Scenario `a` and Scenario `b` share the same ground truth.
-	"""
+    See page 8 of MOT16 paper: https://arxiv.org/pdf/1603.00831.pdf
+    Scenario `a` and Scenario `b` share the same ground truth.
+    """
     log_id = "mot16_scenario_b"
     gt_centers, gt_yaw_angles = get_mot16_scenario_a()
     dump_1obj_scenario_json(gt_centers, gt_yaw_angles, log_id, is_gt=True)

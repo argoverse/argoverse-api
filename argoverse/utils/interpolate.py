@@ -26,7 +26,7 @@ def compute_lane_width(left_even_pts: np.ndarray, right_even_pts: np.ndarray) ->
     return lane_width
 
 
-def compute_mid_pivot_arc(single_pt: np.ndarray, arc_pts: np.ndarray) -> np.ndarray:
+def compute_mid_pivot_arc(single_pt: np.ndarray, arc_pts: np.ndarray) -> Tuple[np.ndarray, float]:
     """
     Given a line of points on one boundary, and a single point on the other side,
     produce the middle arc we get by pivoting around the single point.
@@ -48,8 +48,10 @@ def compute_mid_pivot_arc(single_pt: np.ndarray, arc_pts: np.ndarray) -> np.ndar
 
 
 def compute_midpoint_line(
-    left_ln_bnds: np.ndarray, right_ln_bnds: np.ndarray, num_interp_pts: int = NUM_CENTERLINE_INTERP_PTS
-) -> np.ndarray:
+    left_ln_bnds: np.ndarray,
+    right_ln_bnds: np.ndarray,
+    num_interp_pts: int = NUM_CENTERLINE_INTERP_PTS,
+) -> Tuple[np.ndarray, float]:
     """
     Compute the lane segment centerline by interpolating n points along each
     boundary, and then averaging left and right waypoints.
@@ -155,7 +157,7 @@ def eliminate_duplicates_2d(px: np.ndarray, py: np.ndarray) -> Tuple[np.ndarray,
 
 
 def interp_arc(t: int, px: np.ndarray, py: np.ndarray) -> np.ndarray:
-    """ Linearly interpolate equally-spaced points along a polyline.
+    """Linearly interpolate equally-spaced points along a polyline.
 
     We use a chordal parameterization so that interpolated arc-lengths
     will approximate original polyline chord lengths.

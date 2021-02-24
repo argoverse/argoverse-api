@@ -55,17 +55,33 @@ class SE3:
         """
         return SE3(rotation=self.rotation.T, translation=self.rotation.T.dot(-self.translation))
 
-    def right_multiply_with_se3(self, right_se3: "SE3") -> "SE3":
-        """Right multiply the transformation matrix with another SE3 instance.
+    def compose(self, right_se3: "SE3") -> "SE3":
+        """Compose (right multiply) this class' transformation matrix T with another SE3 instance.
 
         Algebraic representation: chained_se3 = T * right_se3
 
         Args:
-            right_se3: instance of SE3 class
+            right_se3: another instance of SE3 class
 
         Returns:
-            chained_se3: instance of SE3 class
+            chained_se3: new instance of SE3 class
         """
-        chained_transform_matrix = self.transform_matrix.dot(right_se3.transform_matrix)
-        chained_se3 = SE3(rotation=chained_transform_matrix[:3, :3], translation=chained_transform_matrix[:3, 3])
+        chained_transform_matrix = self.transform_matrix @ right_se3.transform_matrix
+        chained_se3 = SE3(
+            rotation=chained_transform_matrix[:3, :3],
+            translation=chained_transform_matrix[:3, 3],
+        )
         return chained_se3
+
+    def right_multiply_with_se3(self, right_se3: "SE3") -> "SE3":
+        """Compose (right multiply) this class' transformation matrix T with another SE3 instance.
+
+        Algebraic representation: chained_se3 = T * right_se3
+
+        Args:
+            right_se3: another instance of SE3 class
+
+        Returns:
+            chained_se3: new instance of SE3 class
+        """
+        return self.compose(right_se3)

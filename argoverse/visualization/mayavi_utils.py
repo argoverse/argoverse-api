@@ -86,8 +86,14 @@ def plot_bbox_3d_mayavi(
             prev = corner
 
     if draw_text:
-        mayavi_wrapper.mlab.text3d(
-            corners[0, 0], corners[0, 1], corners[0, 2], draw_text, scale=text_scale, color=colors[0], figure=fig
+        mayavi_wrapper.mlab.text3d(  # type: ignore
+            corners[0, 0],
+            corners[0, 1],
+            corners[0, 2],
+            draw_text,
+            scale=text_scale,
+            color=colors[0],
+            figure=fig,
         )
 
     # Draw the sides in green
@@ -136,7 +142,7 @@ def plot_points_3D_mayavi(
         # Height data used for shading
         per_pt_color_strengths = points[:, 2]
 
-    mayavi_wrapper.mlab.points3d(
+    mayavi_wrapper.mlab.points3d(  # type: ignore
         points[:, 0],  # x
         points[:, 1],  # y
         points[:, 2],  # z
@@ -214,26 +220,44 @@ def draw_coordinate_frame_at_origin(fig: Figure) -> Figure:
 
     """
     # draw origin
-    mayavi_wrapper.mlab.points3d(0, 0, 0, color=(1, 1, 1), mode="sphere", scale_factor=0.2)
+    mayavi_wrapper.mlab.points3d(0, 0, 0, color=(1, 1, 1), mode="sphere", scale_factor=0.2)  # type: ignore
     # Form standard basis vectors e_1, e_2, e_3
     axes = np.array([[2.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]], dtype=np.float64)
     # e_1 in red
-    mayavi_wrapper.mlab.plot3d(
-        [0, axes[0, 0]], [0, axes[0, 1]], [0, axes[0, 2]], color=(1, 0, 0), tube_radius=None, figure=fig
+    mayavi_wrapper.mlab.plot3d(  # type: ignore
+        [0, axes[0, 0]],
+        [0, axes[0, 1]],
+        [0, axes[0, 2]],
+        color=(1, 0, 0),
+        tube_radius=None,
+        figure=fig,
     )
     # e_2 in green
-    mayavi_wrapper.mlab.plot3d(
-        [0, axes[1, 0]], [0, axes[1, 1]], [0, axes[1, 2]], color=(0, 1, 0), tube_radius=None, figure=fig
+    mayavi_wrapper.mlab.plot3d(  # type: ignore
+        [0, axes[1, 0]],
+        [0, axes[1, 1]],
+        [0, axes[1, 2]],
+        color=(0, 1, 0),
+        tube_radius=None,
+        figure=fig,
     )
     # e_3 in blue
-    mayavi_wrapper.mlab.plot3d(
-        [0, axes[2, 0]], [0, axes[2, 1]], [0, axes[2, 2]], color=(0, 0, 1), tube_radius=None, figure=fig
+    mayavi_wrapper.mlab.plot3d(  # type: ignore
+        [0, axes[2, 0]],
+        [0, axes[2, 1]],
+        [0, axes[2, 2]],
+        color=(0, 0, 1),
+        tube_radius=None,
+        figure=fig,
     )
     return fig
 
 
 def draw_lidar(
-    point_cloud: np.ndarray, colormap: str = "spectral", fig: Optional[Figure] = None, bgcolor: Color = (0, 0, 0)
+    point_cloud: np.ndarray,
+    colormap: str = "spectral",
+    fig: Optional[Figure] = None,
+    bgcolor: Color = (0, 0, 0),
 ) -> Figure:
     """Render a :ref:`PointCloud` with a 45 degree viewing frustum from ego-vehicle.
 
@@ -254,7 +278,9 @@ def draw_lidar(
        Updated or created Mayavi figure
     """
     if fig is None:
-        fig = mayavi_wrapper.mlab.figure(figure=None, bgcolor=bgcolor, fgcolor=None, engine=None, size=(1600, 1000))
+        fig = mayavi_wrapper.mlab.figure(  # type: ignore
+            figure=None, bgcolor=bgcolor, fgcolor=None, engine=None, size=(1600, 1000)
+        )
 
     z_thresh = np.percentile(point_cloud[:, 2], 90)
     thresholded_heights = point_cloud[:, 2].copy()
@@ -263,11 +289,19 @@ def draw_lidar(
 
     # draw points
     fig = plot_points_3D_mayavi(
-        points=point_cloud, fig=fig, per_pt_color_strengths=thresholded_heights, fixed_color=None, colormap=colormap
+        points=point_cloud,
+        fig=fig,
+        per_pt_color_strengths=thresholded_heights,
+        fixed_color=None,
+        colormap=colormap,
     )
     fig = draw_coordinate_frame_at_origin(fig)
-    mayavi_wrapper.mlab.view(
-        azimuth=180, elevation=70, focalpoint=[12.0909996, -1.04700089, -2.03249991], distance=62.0, figure=fig
+    mayavi_wrapper.mlab.view(  # type: ignore
+        azimuth=180,
+        elevation=70,
+        focalpoint=[12.0909996, -1.04700089, -2.03249991],
+        distance=62.0,
+        figure=fig,
     )
     return fig
 
@@ -280,7 +314,7 @@ def mayavi_compare_point_clouds(point_cloud_list: Iterable[np.ndarray]) -> None:
     Args:
        point_cloud_list: A list of :ref:`PointCloud`s to render
     """
-    fig = mayavi_wrapper.mlab.figure(bgcolor=(0, 0, 0), size=(2000, 1000))
+    fig = mayavi_wrapper.mlab.figure(bgcolor=(0, 0, 0), size=(2000, 1000))  # type: ignore
     colors: List[Color] = [(0.0, 0.0, 1.0), (1.0, 1.0, 0.0), (1.0, 0.0, 0.0)]
     for i, point_cloud in enumerate(point_cloud_list):
         if i < 3:
@@ -291,8 +325,8 @@ def mayavi_compare_point_clouds(point_cloud_list: Iterable[np.ndarray]) -> None:
 
         plot_points_3D_mayavi(fig, point_cloud, color)
 
-    mayavi_wrapper.mlab.view(azimuth=180)
-    mayavi_wrapper.mlab.show()
+    mayavi_wrapper.mlab.view(azimuth=180)  # type: ignore
+    mayavi_wrapper.mlab.show()  # type: ignore
 
 
 def draw_mayavi_line_segment(
@@ -314,7 +348,7 @@ def draw_mayavi_line_segment(
     Returns:
        Mayavi figure
     """
-    mayavi_wrapper.mlab.plot3d(
+    mayavi_wrapper.mlab.plot3d(  # type: ignore
         [point[0] for point in points],
         [point[1] for point in points],
         [point[2] for point in points],

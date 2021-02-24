@@ -192,7 +192,7 @@
     <span class="s1">&#39;Mapping&#39;</span><span class="p">,</span>
     <span class="s1">&#39;MappingView&#39;</span><span class="p">,</span>
     <span class="s1">&#39;MutableMapping&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;MutableSequence&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;List&#39;</span><span class="p">,</span>
     <span class="s1">&#39;MutableSet&#39;</span><span class="p">,</span>
     <span class="s1">&#39;Sequence&#39;</span><span class="p">,</span>
     <span class="s1">&#39;Sized&#39;</span><span class="p">,</span>
@@ -2015,7 +2015,7 @@
         <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
 
-<span class="k">class</span> <span class="nc">MutableSequence</span><span class="p">(</span><span class="n">Sequence</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">extra</span><span class="o">=</span><span class="n">collections_abc</span><span class="o">.</span><span class="n">MutableSequence</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">List</span><span class="p">(</span><span class="n">Sequence</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">extra</span><span class="o">=</span><span class="n">collections_abc</span><span class="o">.</span><span class="n">List</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
 
@@ -2023,7 +2023,7 @@
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
 
-<span class="k">class</span> <span class="nc">List</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">MutableSequence</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">extra</span><span class="o">=</span><span class="nb">list</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">List</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">extra</span><span class="o">=</span><span class="nb">list</span><span class="p">):</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
@@ -2034,7 +2034,7 @@
         <span class="k">return</span> <span class="n">_generic_new</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">Deque</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">,</span> <span class="n">MutableSequence</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">extra</span><span class="o">=</span><span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Deque</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">extra</span><span class="o">=</span><span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">):</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 

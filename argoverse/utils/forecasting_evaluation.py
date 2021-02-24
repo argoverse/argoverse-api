@@ -16,14 +16,16 @@ def compute_summed_distance_point_cloud2D(points_a: np.ndarray, points_b: np.nda
 
 
 def evaluate_prediction(
-    pred_traj: np.ndarray, ground_truth_traj: np.ndarray, eval_method: str = "EVAL_DESTINATION_ONLY"
+    pred_traj: np.ndarray,
+    ground_truth_traj: np.ndarray,
+    eval_method: str = "EVAL_DESTINATION_ONLY",
 ) -> np.ndarray:
-    """ Compute the error as L2 norm in trajectories
+    """Compute the error as L2 norm in trajectories
 
-        Args:
-            pred_traj: numpy n-d array with dims (N x 2)
-            ground_truth_traj: numpy n-d array with dims (N x 2)
-            eval_method:
+    Args:
+        pred_traj: numpy n-d array with dims (N x 2)
+        ground_truth_traj: numpy n-d array with dims (N x 2)
+        eval_method:
     """
     if eval_method == "EVAL_DESTINATION_ONLY":
         return np.linalg.norm(pred_traj[-1] - ground_truth_traj[-1])

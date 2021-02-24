@@ -2,7 +2,7 @@
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Mapping, Optional, Sequence, Union
+from typing import Any, List, Sequence, Union
 
 import numpy as np
 import pandas as pd
@@ -39,13 +39,13 @@ class ArgoverseForecastingLoader:
         self.current_seq: Path = self.seq_list[self.counter]
 
     @property
-    def track_id_list(self) -> Sequence[int]:
+    def track_id_list(self) -> List[int]:
         """Get the track ids in the current sequence.
 
         Returns:
             list of track ids in the current sequence
         """
-        _track_id_list: Sequence[int] = np.unique(self.seq_df["TRACK_ID"].values).tolist()
+        _track_id_list: List[int] = np.unique(self.seq_df["TRACK_ID"].values).tolist()
         return _track_id_list
 
     @property

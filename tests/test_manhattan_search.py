@@ -14,7 +14,7 @@ from argoverse.utils.manhattan_search import (
 )
 
 
-def assert_np_obj_arrs_eq(pruned_polygons: np.ndarray, gt_pruned_polygons: np.ndarray):
+def assert_np_obj_arrs_eq(pruned_polygons: np.ndarray, gt_pruned_polygons: np.ndarray) -> None:
     """Test for equivalency of two pology representations."""
     assert pruned_polygons.shape == gt_pruned_polygons.shape
     assert pruned_polygons.dtype == gt_pruned_polygons.dtype == object
@@ -27,17 +27,26 @@ def assert_np_obj_arrs_eq(pruned_polygons: np.ndarray, gt_pruned_polygons: np.nd
 @pytest.mark.parametrize(
     "point_cloud, gt_bbox",
     [
-        (np.array([[-0.3, 0.5], [0.2, 0.1], [-0.5, 1.9]]), np.array([-0.5, 0.1, 0.2, 1.9])),
-        (np.array([[-0.3, 0.5], [-0.3, 0.5], [-0.3, 0.5]]), np.array([-0.3, 0.5, -0.3, 0.5])),
-        (np.array([[-0.3, 0.5, 50.1], [0.2, 0.1, -100.3], [-0.5, 1.9, -0.01]]), np.array([-0.5, 0.1, 0.2, 1.9])),
+        (
+            np.array([[-0.3, 0.5], [0.2, 0.1], [-0.5, 1.9]]),
+            np.array([-0.5, 0.1, 0.2, 1.9]),
+        ),
+        (
+            np.array([[-0.3, 0.5], [-0.3, 0.5], [-0.3, 0.5]]),
+            np.array([-0.3, 0.5, -0.3, 0.5]),
+        ),
+        (
+            np.array([[-0.3, 0.5, 50.1], [0.2, 0.1, -100.3], [-0.5, 1.9, -0.01]]),
+            np.array([-0.5, 0.1, 0.2, 1.9]),
+        ),
     ],
-)
-def test_compute_point_cloud_bbox_2d(point_cloud: np.ndarray, gt_bbox: np.ndarray):
+)  # type: ignore
+def test_compute_point_cloud_bbox_2d(point_cloud: np.ndarray, gt_bbox: np.ndarray) -> None:
     """Test for bounding box from pointcloud functionality."""
     assert np.allclose(compute_point_cloud_bbox(point_cloud), gt_bbox)
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore
 def polygons_and_gt_bboxes() -> Tuple[List[np.ndarray], List[np.ndarray]]:
     """Return a list of polygons and the corresponding polygon bounding boxes."""
     poly_1 = np.array([[-1.5, -0.5], [0.5, -0.5], [-0.5, 1.5]])
@@ -52,12 +61,20 @@ def polygons_and_gt_bboxes() -> Tuple[List[np.ndarray], List[np.ndarray]]:
     gt_poly_3_bbox = np.array([0.5, 2.5, 1.5, 3.5])
     gt_poly_4_bbox = np.array([-2.5, -1.5, 1.5, 1.75])
     gt_poly_5_bbox = np.array([1.5, 0.5, 1.5, 1.1])
-    gt_poly_bboxes = [gt_poly_1_bbox, gt_poly_2_bbox, gt_poly_3_bbox, gt_poly_4_bbox, gt_poly_5_bbox]
+    gt_poly_bboxes = [
+        gt_poly_1_bbox,
+        gt_poly_2_bbox,
+        gt_poly_3_bbox,
+        gt_poly_4_bbox,
+        gt_poly_5_bbox,
+    ]
 
     return polygons, gt_poly_bboxes
 
 
-def test_find_all_polygon_bboxes_overlapping_query_bbox(polygons_and_gt_bboxes):
+def test_find_all_polygon_bboxes_overlapping_query_bbox(
+    polygons_and_gt_bboxes: Tuple[List[np.ndarray], List[np.ndarray]]
+) -> None:
     """Test for correctness of """
     poly_bboxes = np.array([compute_point_cloud_bbox(poly) for poly in polygons_and_gt_bboxes[0]])
 
@@ -68,30 +85,37 @@ def test_find_all_polygon_bboxes_overlapping_query_bbox(polygons_and_gt_bboxes):
     assert np.allclose(overlap_indxs, gt_overlap_indxs)
 
 
-def test_compute_polygon_bboxes(polygons_and_gt_bboxes):
+def test_compute_polygon_bboxes(polygons_and_gt_bboxes: Tuple[List[np.ndarray], List[np.ndarray]]) -> None:
     """Test for correctness of compute_polygon_bboxes."""
-    polygon_bboxes = compute_polygon_bboxes(np.array(polygons_and_gt_bboxes[0]))
+    polygon_bboxes = compute_polygon_bboxes(np.array(polygons_and_gt_bboxes[0], dtype=object))
     gt_polygon_bboxes = np.array(polygons_and_gt_bboxes[1])
     assert np.allclose(polygon_bboxes, gt_polygon_bboxes)
 
 
 @pytest.mark.parametrize(
     "query_pt, query_search_range_manhattan, gt_indices",
-    [(np.array([-0.5, 1.5]), 0.5, [0, 1, 3]), (np.array([-0.5, 1.5]), 0.499, [0, 3]), (np.array([0, 2]), 0.24, [])],
-)
+    [
+        (np.array([-0.5, 1.5]), 0.5, [0, 1, 3]),
+        (np.array([-0.5, 1.5]), 0.499, [0, 3]),
+        (np.array([0, 2]), 0.24, []),
+    ],
+)  # type: ignore
 def test_prune_polygons_manhattan_dist_find_nearby(
-    query_pt: np.ndarray, query_search_range_manhattan: float, gt_indices: Sequence[int], polygons_and_gt_bboxes
-):
+    query_pt: np.ndarray,
+    query_search_range_manhattan: float,
+    gt_indices: Sequence[int],
+    polygons_and_gt_bboxes: Tuple[List[np.ndarray], List[np.ndarray]],
+) -> None:
     """Test for correctness of prune_polygons_manhattan_dist."""
-    polygons = np.array(polygons_and_gt_bboxes[0])
+    polygons = np.array(polygons_and_gt_bboxes[0], dtype=object)
     pruned_polygons = prune_polygons_manhattan_dist(query_pt, polygons.copy(), query_search_range_manhattan)
     gt_pruned_polygons = np.array([polygons[i] for i in gt_indices], dtype="O")
     assert_np_obj_arrs_eq(gt_pruned_polygons, pruned_polygons)
 
 
-def test_find_local_polygons(polygons_and_gt_bboxes):
+def test_find_local_polygons(polygons_and_gt_bboxes: Tuple[List[np.ndarray], List[np.ndarray]]) -> None:
     """Test for correctness of find_local_polygons."""
-    polygons = np.array(polygons_and_gt_bboxes[0])
+    polygons = np.array(polygons_and_gt_bboxes[0], dtype=object)
     poly_bboxes = np.array(polygons_and_gt_bboxes[1])
     query_bbox = np.array([-1.5, 0.5, 1.5, 1.5])
 

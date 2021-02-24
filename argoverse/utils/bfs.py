@@ -2,10 +2,10 @@
 
 """Breadth-First-Search of Graphs."""
 
-from typing import Any, Collection, List, Mapping, MutableMapping, MutableSequence, Sequence
+from typing import Any, Collection, List, Mapping, MutableMapping, Sequence
 
 
-def bfs_enumerate_paths(graph: Mapping[str, Sequence[str]], start: str, max_depth: int = 4) -> Sequence[Sequence[str]]:
+def bfs_enumerate_paths(graph: Mapping[str, Sequence[str]], start: str, max_depth: int = 4) -> List[List[str]]:
     """Run Breadth-First-Search. Cycles are allowed and are accounted for.
 
     Find (u,v) edges in E of graph (V,E)
@@ -27,14 +27,14 @@ def bfs_enumerate_paths(graph: Mapping[str, Sequence[str]], start: str, max_dept
             dists[v] = float("inf")
 
     dists[start] = 0
-    paths: MutableSequence[MutableSequence[str]] = []
+    paths: List[List[str]] = []
     # maintain a queue of paths
-    queue: MutableSequence[MutableSequence[str]] = []
+    queue: List[List[str]] = []
     # push the first path into the queue
     queue.append([start])
     while queue:  # len(q) > 0:
         # get the first path from the queue
-        path: MutableSequence[str] = queue.pop(0)
+        path: List[str] = queue.pop(0)
         # get the last node from the path
         u: str = path[-1]
         # max depth already exceeded, terminate
@@ -43,7 +43,7 @@ def bfs_enumerate_paths(graph: Mapping[str, Sequence[str]], start: str, max_dept
         # enumerate all adjacent nodes, construct a new path and push it into the queue
         for v in graph.get(u, []):
             if dists[v] == float("inf"):
-                new_path: MutableSequence[str] = list(path)
+                new_path: List[str] = list(path)
                 new_path.append(v)
                 queue.append(new_path)
                 dists[v] = dists[u] + 1
@@ -52,7 +52,7 @@ def bfs_enumerate_paths(graph: Mapping[str, Sequence[str]], start: str, max_dept
     return remove_duplicate_paths(paths)
 
 
-def remove_duplicate_paths(paths: Sequence[Sequence[Any]]) -> Sequence[Sequence[str]]:
+def remove_duplicate_paths(paths: List[List[Any]]) -> List[List[str]]:
     """Remove duplicate subpaths from a set of paths.
 
     For example, if ``['1', '2', '6']`` and ``['1', '2']`` are

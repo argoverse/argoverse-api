@@ -4,10 +4,11 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union, overload
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union, overload
 
 import imageio
 import numpy as np
+from typing_extensions import Literal
 
 from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
 from argoverse.utils.camera_stats import (
@@ -21,34 +22,24 @@ from argoverse.utils.camera_stats import (
 )
 from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat2rotmat
-from typing_extensions import Literal
 
 logger = logging.getLogger(__name__)
 
 
-class CameraConfig:
-    """Camera config for extrinsic matrix, intrinsic matrix, image width/height."""
+class CameraConfig(NamedTuple):
+    """Camera config for extrinsic matrix, intrinsic matrix, image width/height.
+    Args:
+        extrinsic: extrinsic matrix
+        intrinsic: intrinsic matrix
+        img_width: image width
+        img_height: image height
+    """
 
-    def __init__(
-        self,
-        extrinsic: np.ndarray,
-        intrinsic: np.ndarray,
-        img_width: int,
-        img_height: int,
-        distortion_coeffs: np.ndarray,
-    ):
-        """
-        Args:
-           extrinsic: extrinsic matrix
-           intrinsic: intrinsic matrix
-           img_width: image width
-           img_height: image height
-        """
-        self.extrinsic = extrinsic
-        self.intrinsic = intrinsic
-        self.img_width = img_width
-        self.img_height = img_height
-        self.distortion_coeffs = distortion_coeffs
+    extrinsic: np.ndarray
+    intrinsic: np.ndarray
+    img_width: int
+    img_height: int
+    distortion_coeffs: np.ndarray
 
 
 class Calibration:
@@ -103,7 +94,7 @@ class Calibration:
 
         self.camera = calib["key"][10:]
 
-    def cart2hom(self, pts_3d: np.array) -> np.ndarray:
+    def cart2hom(self, pts_3d: np.ndarray) -> np.ndarray:
         """Convert Cartesian coordinates to Homogeneous.
 
         Args:
@@ -116,7 +107,7 @@ class Calibration:
         pts_3d_hom = np.hstack((pts_3d, np.ones((n, 1))))
         return pts_3d_hom
 
-    def project_ego_to_image(self, pts_3d_ego: np.array) -> np.ndarray:
+    def project_ego_to_image(self, pts_3d_ego: np.ndarray) -> np.ndarray:
         """Project egovehicle coordinate to image.
 
         Args:
@@ -129,7 +120,7 @@ class Calibration:
         uv_cam = self.project_ego_to_cam(pts_3d_ego)
         return self.project_cam_to_image(uv_cam)
 
-    def project_ego_to_cam(self, pts_3d_ego: np.array) -> np.ndarray:
+    def project_ego_to_cam(self, pts_3d_ego: np.ndarray) -> np.ndarray:
         """Project egovehicle point onto camera frame.
 
         Args:
@@ -143,19 +134,19 @@ class Calibration:
 
         return uv_cam.transpose()[:, 0:3]
 
-    def project_cam_to_ego(self, pts_3d_rect: np.array) -> np.ndarray:
+    def project_cam_to_ego(self, pts_3d_rect: np.ndarray) -> np.ndarray:
         """Project point in camera frame to egovehicle frame.
 
         Args:
-            pts_3d_rect (np.array): nx3 points in cam coord.
+            pts_3d_rect: nx3 points in cam coord.
 
         Returns:
-            np.array: nx3 points in ego coord.
+            nx3 points in ego coord.
         """
         return np.linalg.inv((self.extrinsic)).dot(self.cart2hom(pts_3d_rect).transpose()).transpose()[:, 0:3]
 
-    def project_image_to_ego(self, uv_depth: np.array) -> np.ndarray:
-        """ Project 2D image with depth to egovehicle coordinate.
+    def project_image_to_ego(self, uv_depth: np.ndarray) -> np.ndarray:
+        """Project 2D image with depth to egovehicle coordinate.
 
         Args:
             uv_depth: nx3 first two channels are uv, 3rd channel
@@ -167,8 +158,8 @@ class Calibration:
         uv_cam = self.project_image_to_cam(uv_depth)
         return self.project_cam_to_ego(uv_cam)
 
-    def project_image_to_cam(self, uv_depth: np.array) -> np.ndarray:
-        """ Project 2D image with depth to camera coordinate.
+    def project_image_to_cam(self, uv_depth: np.ndarray) -> np.ndarray:
+        """Project 2D image with depth to camera coordinate.
 
         Args:
             uv_depth: nx3 first two channels are uv, 3rd channel
@@ -189,7 +180,7 @@ class Calibration:
         pts_3d_cam[:, 2] = uv_depth[:, 2]
         return pts_3d_cam
 
-    def project_cam_to_image(self, pts_3d_rect: np.array) -> np.ndarray:
+    def project_cam_to_image(self, pts_3d_rect: np.ndarray) -> np.ndarray:
         """Project camera coordinate to image.
 
         Args:
@@ -217,7 +208,7 @@ def load_image(img_filename: Union[str, Path]) -> np.ndarray:
 
 
 def load_calib(calib_filepath: Union[str, Path]) -> Dict[Any, Calibration]:
-    """ Load Calibration object for all camera from calibration filepath
+    """Load Calibration object for all camera from calibration filepath
 
     Args:
         calib_filepath (str): path to the calibration file
@@ -231,7 +222,10 @@ def load_calib(calib_filepath: Union[str, Path]) -> Dict[Any, Calibration]:
     calib_list = {}
     for camera in CAMERA_LIST:
         cam_config = get_calibration_config(calib, camera)
-        calib_cam = next((c for c in calib["camera_data_"] if c["key"] == f"image_raw_{camera}"), None)
+        calib_cam = next(
+            (c for c in calib["camera_data_"] if c["key"] == f"image_raw_{camera}"),
+            None,
+        )
 
         if calib_cam is None:
             continue
@@ -520,7 +514,10 @@ def distort_single(radius_undist: float, distort_coeffs: List[float]) -> float:
 
 
 def project_lidar_to_undistorted_img(
-    lidar_points_h: np.ndarray, calib_data: Dict[str, Any], camera_name: str, remove_nan: bool = False
+    lidar_points_h: np.ndarray,
+    calib_data: Dict[str, Any],
+    camera_name: str,
+    remove_nan: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, CameraConfig]:
     camera_config = get_calibration_config(calib_data, camera_name)
 
@@ -543,7 +540,12 @@ def project_lidar_to_undistorted_img(
 # uv_cam: Numpy array of shape (N,3) with dtype np.float32
 # valid_pts_bool: Numpy array of shape (N,) with dtype bool
 # camera configuration : (only if you asked for it).
-_ReturnWithOptConfig = Tuple[Optional[np.ndarray], Optional[np.ndarray], Optional[np.ndarray], Optional[CameraConfig]]
+_ReturnWithOptConfig = Tuple[
+    Optional[np.ndarray],
+    Optional[np.ndarray],
+    Optional[np.ndarray],
+    Optional[CameraConfig],
+]
 _ReturnWithoutOptConfig = Tuple[Optional[np.ndarray], Optional[np.ndarray], Optional[np.ndarray]]
 
 

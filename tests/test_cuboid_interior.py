@@ -1,5 +1,7 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
+from typing import Tuple
+
 import numpy as np
 
 from argoverse.utils.cuboid_interior import (
@@ -9,13 +11,12 @@ from argoverse.utils.cuboid_interior import (
     filter_point_cloud_to_bbox_3D_vectorized,
 )
 
-
 """
 Run it with "pytest tracker_tools_tests.py"
 """
 
 
-def get_scenario_1():
+def get_scenario_1() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Form an arbitrary 3d cuboid, and call it "Custom Cuboid 1".
 
@@ -79,9 +80,8 @@ def get_scenario_1():
     return pc_raw, bbox_3d, gt_segment, gt_is_valid
 
 
-def test_extract_pc_in_box3d_hull():
-    """
-    """
+def test_extract_pc_in_box3d_hull() -> None:
+    """"""
     pc_raw, bbox_3d, gt_segment, gt_is_valid = get_scenario_1()
     segment, is_valid = extract_pc_in_box3d_hull(pc_raw, bbox_3d)
 
@@ -89,7 +89,7 @@ def test_extract_pc_in_box3d_hull():
     assert np.array_equal(is_valid, gt_is_valid)
 
 
-def test_3d_cuboid_interior_test1():
+def test_3d_cuboid_interior_test1() -> None:
     """
         Generate 6 points just outside the volume of a 3d cuboid, and
         6 points just inside the volume. Verify that we can isolate the
@@ -116,14 +116,12 @@ def test_3d_cuboid_interior_test1():
     assert np.array_equal(gt_is_valid, is_valid)
 
 
-def test_2d_cuboid_interior_test1():
+def test_2d_cuboid_interior_test1() -> None:
     """Test 2d version of the 3d projection above.  This is a similar
     test except it slices away the z dimension.
 
     """
-    pc_raw, bbox_3d, gt_segment, gt_is_valid = get_scenario_1()
-
-    to_2d = lambda array: array[:, :2]
+    pc_raw, bbox_3d, gt_segment, _ = get_scenario_1()
 
     pc_raw_2d = np.unique(to_2d(pc_raw), axis=0)
     bbox_2d = to_2d(bbox_3d)[(0, 1, 4, 5), :]
@@ -136,3 +134,7 @@ def test_2d_cuboid_interior_test1():
     filtered_points = filter_point_cloud_to_bbox(bbox_2d, pc_raw_2d)
 
     assert np.array_equal(filtered_points, gt_segment_2d)
+
+
+def to_2d(coords: np.ndarray) -> np.ndarray:
+    return coords[:, :2]

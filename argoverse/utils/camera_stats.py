@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_image_dims_for_camera(camera_name: str) -> Tuple[Optional[int], Optional[int]]:
-    """ Get image dimensions for camera.
+    """Get image dimensions for camera.
     Args:
         camera_name: Camera name.
 
