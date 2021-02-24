@@ -51,7 +51,7 @@ def test_load_ply_by_attrib_invalid_attributes():
 def test_load_ply_by_attrib_real_sweep():
     """ Load an actual LiDAR sweep, with valid attribute specification """
     ply_fpath = os.path.join(_TEST_DIR, "test_data", "d60558d2-d1aa-34ee-a902-e061e346e02a__PC_315971347819783000.ply")
-    pc = load_ply_by_attrib(ply_fpath, attrib_str="xyzil")
+    pc = load_ply_by_attrib(ply_fpath, attrib_spec="xyzil")
     assert pc.shape == (91083, 5)
     # intensities should be bounded between [0,255]
     assert np.all(np.logical_and(pc[:, 3] >= 0, pc[:, 3] <= 255))
