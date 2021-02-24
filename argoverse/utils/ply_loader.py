@@ -50,13 +50,14 @@ def load_ply_by_attrib(ply_fpath: _PathLike, attrib_spec: str = "xyzil") -> Opti
     data = pyntcloud.PyntCloud.from_file(os.fspath(ply_fpath))
 
     attrib_dict = {
-        "x": np.array(data.points.x)[:, np.newaxis],
-        "y": np.array(data.points.y)[:, np.newaxis],
-        "z": np.array(data.points.z)[:, np.newaxis],
-        "i": np.array(data.points.intensity)[:, np.newaxis],
-        "l": np.array(data.points.laser_number)[:, np.newaxis],
+        "x": np.array(data.points.x),
+        "y": np.array(data.points.y),
+        "z": np.array(data.points.z),
+        "i": np.array(data.points.intensity),
+        "l": np.array(data.points.laser_number),
     }
 
     # return only the requested point attributes
     attrib_arrs = [attrib_dict[a] for a in attrib_spec]
-    return np.concatenate(attrib_arrs, axis=1)
+    # join arrays of the same shape along new dimension
+    return np.stack(attrib_arrs, axis=1)
