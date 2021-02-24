@@ -2,7 +2,7 @@
 """Point cloud loading utility functions."""
 
 import os
-from typing import Union
+from typing import Optional, Union
 
 import numpy as np
 import pyntcloud
@@ -28,21 +28,35 @@ def load_ply(ply_fpath: _PathLike) -> np.ndarray:
     return np.concatenate((x, y, z), axis=1)
 
 
-def load_ply_xyzil(ply_fpath: _PathLike) -> np.ndarray:
+def load_ply_by_attrib(ply_fpath: _PathLike, attrib_spec: str) -> Optional[np.ndarray]:
     """Load a point cloud file from a filepath.
-    
+
     Args:
         ply_fpath: Path to a PLY file
+        attrib_spec: string of C characters, each char representing a desired point attribute
+            x -> point x-coord
+            y -> point y-coord
+            z -> point z-coord
+            i -> point intensity/reflectance
+            l -> laser number of laser from which point was returned
 
     Returns:
-        arr: Array of shape (N, 5), i.e. x,y,z,intensity,laser_number
+        arr: Array of shape (N, C). If attrib_str is invalid, `None` will be returned
     """
+    possible_attributes = ["x", "y", "z", "i", "l"]
+    if not all([a in possible_attributes for a in attrib_spec]):
+        return None
 
     data = pyntcloud.PyntCloud.from_file(os.fspath(ply_fpath))
-    x = np.array(data.points.x)[:, np.newaxis]
-    y = np.array(data.points.y)[:, np.newaxis]
-    z = np.array(data.points.z)[:, np.newaxis]
-    i = np.array(data.points.intensity)[:, np.newaxis]
-    laser_number = np.array(data.points.laser_number)[:, np.newaxis]
 
-    return np.concatenate((x, y, z, i, laser_number), axis=1)
+    attrib_dict = {
+        "x": np.array(data.points.x)[:, np.newaxis],
+        "y": np.array(data.points.y)[:, np.newaxis],
+        "z": np.array(data.points.z)[:, np.newaxis],
+        "i": np.array(data.points.intensity)[:, np.newaxis],
+        "l": np.array(data.points.laser_number)[:, np.newaxis],
+    }
+
+    # return only the requested point attributes
+    attrib_arrs = [attrib_dict[a] for a in attrib_spec]
+    return np.concatenate(attrib_arrs, axis=1)
