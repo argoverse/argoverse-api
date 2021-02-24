@@ -28,7 +28,7 @@ def load_ply(ply_fpath: _PathLike) -> np.ndarray:
     return np.concatenate((x, y, z), axis=1)
 
 
-def load_ply_by_attrib(ply_fpath: _PathLike, attrib_spec: str) -> Optional[np.ndarray]:
+def load_ply_by_attrib(ply_fpath: _PathLike, attrib_spec: str = "xyzil") -> Optional[np.ndarray]:
     """Load a point cloud file from a filepath.
 
     Args:
