@@ -75,8 +75,8 @@ class ArgoverseMap:
         self.city_to_da_bboxes_dict: Mapping[str, np.ndarray] = {}
 
         for city_name in self.city_name_to_city_id_dict.keys():
-            lane_polygons = np.array(self.get_vector_map_lane_polygons(city_name))
-            driveable_areas = np.array(self.get_vector_map_driveable_areas(city_name))
+            lane_polygons = np.array(self.get_vector_map_lane_polygons(city_name), dtype=object)
+            driveable_areas = np.array(self.get_vector_map_driveable_areas(city_name), dtype=object)
             lane_bboxes = compute_polygon_bboxes(lane_polygons)
             da_bboxes = compute_polygon_bboxes(driveable_areas)
 
