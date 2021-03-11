@@ -54,7 +54,7 @@ setup(
         "imageio",
         "matplotlib",
         "motmetrics==1.1.3",
-        "numpy",
+        "numpy==1.19",
         "opencv-python>=4.1.0.25",
         "pandas>=0.23.1",
         "pillow",

@@ -149,7 +149,7 @@ def save_bev_img(
     )
 
 
-def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3) -> np.array:
+def bspline_1d(x: np.ndarray, y: np.ndarray, s: float = 20.0, k: int = 3) -> np.ndarray:
     """Perform B-Spline smoothing of trajectories for temporal noise reduction
 
     Args:
@@ -170,7 +170,7 @@ def bspline_1d(x: np.array, y: np.array, s: float = 20.0, k: int = 3) -> np.arra
     return interpolate.splev(np.arange(y.shape[0]), tck)
 
 
-def derivative(x: np.array) -> np.array:
+def derivative(x: np.ndarray) -> np.ndarray:
     """Compute time derivatives for velocity and acceleration
 
     Args:
@@ -192,7 +192,7 @@ def derivative(x: np.array) -> np.array:
     return F.conv1d(x_padded, filters)[0, 0].numpy()
 
 
-def compute_v_a(traj: np.array) -> Tuple[np.array, np.array]:
+def compute_v_a(traj: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     """
     Compute velocity and acceleration
 
