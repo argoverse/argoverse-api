@@ -74,7 +74,7 @@ class Sim2:
         sRt = -Rt @ (self.s_ * self.t_)
         return Sim2(Rt, sRt, 1.0 / self.s_)
 
-    def transformFrom(self, point_cloud: np.ndarray) -> np.ndarray:
+    def transform_from(self, point_cloud: np.ndarray) -> np.ndarray:
         """Transform point cloud such that if they are in frame A,
         and our Sim(3) transform is defines as bSa, then we get points
         back in frame B:

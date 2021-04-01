@@ -22,10 +22,24 @@ def test_is_eq() -> None:
     assert bSa == bSa_
 
 
-def test_not_eq() -> None:
-    """ Ensure object equality works properly (not equal). """
+def test_not_eq_translation() -> None:
+    """ Ensure object equality works properly (not equal translation). """
     bSa = Sim2(R=np.eye(2), t=np.array([2, 1]), s=3.0)
     bSa_ = Sim2(R=np.eye(2), t=np.array([1.0, 2.0]), s=3)
+    assert bSa != bSa_
+
+
+def test_not_eq_rotation() -> None:
+    """ Ensure object equality works properly (not equal rotation). """
+    bSa = Sim2(R=np.eye(2), t=np.array([2, 1]), s=3.0)
+    bSa_ = Sim2(R=-1 * np.eye(2), t=np.array([2.0, 1.0]), s=3)
+    assert bSa != bSa_
+
+
+def test_not_eq_scale() -> None:
+    """ Ensure object equality works properly (not equal scale). """
+    bSa = Sim2(R=np.eye(2), t=np.array([2, 1]), s=3.0)
+    bSa_ = Sim2(R=np.eye(2), t=np.array([2.0, 1.0]), s=1.0)
     assert bSa != bSa_
 
 
@@ -112,7 +126,7 @@ def test_matrix_homogenous_transform() -> None:
     assert np.allclose(expected_img_pts, img_pts)
 
 
-def test_transformFrom_forwards() -> None:
+def test_transform_from_forwards() -> None:
     """ """
     expected_img_pts = np.array([[6, 4], [4, 6], [0, 0], [1, 7]])
 
@@ -120,11 +134,11 @@ def test_transformFrom_forwards() -> None:
     scale = 2.0
     imgSw = Sim2(R=np.eye(2), t=np.array([1.0, 3.0]), s=scale)
 
-    img_pts = imgSw.transformFrom(world_pts)
+    img_pts = imgSw.transform_from(world_pts)
     assert np.allclose(expected_img_pts, img_pts)
 
 
-def test_transformFrom_backwards() -> None:
+def test_transform_from_backwards() -> None:
     """ """
     img_pts = np.array([[6, 4], [4, 6], [0, 0], [1, 7]])
 
@@ -132,5 +146,5 @@ def test_transformFrom_backwards() -> None:
     scale = 0.5
     wSimg = Sim2(R=np.eye(2), t=np.array([-2.0, -6.0]), s=scale)
 
-    world_pts = wSimg.transformFrom(img_pts)
+    world_pts = wSimg.transform_from(img_pts)
     assert np.allclose(expected_world_pts, world_pts)
