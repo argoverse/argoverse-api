@@ -20,8 +20,8 @@ def test_draw_polygon_mpl_smokescreen_nolinewidth() -> None:
     ax = plt.axes([1, 1, 1, 1])
     # polygon: Numpy array of shape (N,2) or (N,3)
     polygon = np.array([[0, 0], [1, 1], [1, 0], [0, 0]])
-    # color is tuple or Numpy array of shape (3,) representing RGB values
-    color = np.array([255, 0, 0])
+    # color is tuple or Numpy array of shape (3,) in range [0,1] representing RGB values
+    color = np.array([1.0, 0.0, 0.0])
     draw_polygon_mpl(ax, polygon, color)
     plt.close("all")
 
@@ -31,8 +31,8 @@ def test_draw_polygon_mpl_smokescreen_with_linewidth() -> None:
     ax = plt.axes([1, 1, 1, 1])
     # polygon: Numpy array of shape (N,2) or (N,3)
     polygon = np.array([[0, 0], [1, 1], [1, 0], [0, 0]])
-    # color is tuple or Numpy array of shape (3,) representing RGB values
-    color = np.array([255, 0, 0])
+    # color is tuple or Numpy array of shape (3,) in range [0,1] representing RGB values
+    color = np.array([1.0, 0.0, 0.0])
     linewidth = 100
     draw_polygon_mpl(ax, polygon, color, linewidth=linewidth)
     plt.close("all")
