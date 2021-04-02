@@ -33,6 +33,9 @@ class Sim2:
 
     def __eq__(self, other: object) -> bool:
         """Check for equality with other Sim(2) object"""
+        if not isinstance(other, Sim2):
+            return False
+
         if not np.isclose(self.scale(), other.scale()):
             return False
 
