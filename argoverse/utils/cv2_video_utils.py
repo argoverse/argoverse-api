@@ -12,40 +12,41 @@ See OpenCV documentation for more details:
 https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html
 """
 
+
 class VideoWriter:
-	""" 
-	Lazy init, so that the user doesn't have to know width/height a priori.
-	Our default codec is "mp4v", though you may prefer "x264", if available
-	on your system
-	"""
-	def __init__(self, output_fpath: str, fps: int = 30) -> None:
-		""" """
-		self.output_fpath = output_fpath
-		self.fps = fps
-		self.writer = None
-		self.codec = "mp4v"
+    """
+    Lazy init, so that the user doesn't have to know width/height a priori.
+    Our default codec is "mp4v", though you may prefer "x264", if available
+    on your system
+    """
 
-	def init_outf(self, height: int, width: int) -> None:
-		""" """
-		self.writer = cv2.VideoWriter(
-			filename=self.output_fpath,
-			# some installation of opencv may not support x264 (due to its license),
-			# you can try other format (e.g. MPEG)
-			fourcc=cv2.VideoWriter_fourcc(*self.codec),
-			fps=float(self.fps),
-			frameSize=(width, height),
-			isColor=True,
-		)
+    def __init__(self, output_fpath: str, fps: int = 30) -> None:
+        """ """
+        self.output_fpath = output_fpath
+        self.fps = fps
+        self.writer = None
+        self.codec = "mp4v"
 
-	def add_frame(self, rgb_frame: np.ndarray) -> None:
-		"""
-		"""
-		h, w, _ = rgb_frame.shape
-		if self.writer is None:
-			self.init_outf(height=h, width=w)
-		bgr_frame = rgb_frame[:,:,::-1]
-		self.writer.write(bgr_frame)
+    def init_outf(self, height: int, width: int) -> None:
+        """ """
+        self.writer = cv2.VideoWriter(
+            filename=self.output_fpath,
+            # some installation of opencv may not support x264 (due to its license),
+            # you can try other format (e.g. MPEG)
+            fourcc=cv2.VideoWriter_fourcc(*self.codec),
+            fps=float(self.fps),
+            frameSize=(width, height),
+            isColor=True,
+        )
 
-	def complete(self) -> None:
-		""" """
-		self.writer.release()
+    def add_frame(self, rgb_frame: np.ndarray) -> None:
+        """"""
+        h, w, _ = rgb_frame.shape
+        if self.writer is None:
+            self.init_outf(height=h, width=w)
+        bgr_frame = rgb_frame[:, :, ::-1]
+        self.writer.write(bgr_frame)
+
+    def complete(self) -> None:
+        """ """
+        self.writer.release()

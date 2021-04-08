@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Any, Iterable, List, Mapping, Sequence, Tuple, Union
 
 import cv2
-import imageio
 import numpy as np
 
 from argoverse.data_loading.object_label_record import json_label_dict_to_obj_record
@@ -186,9 +185,7 @@ def dump_clipped_3d_cuboids_to_images(
                     logging.info("\tLabels missing at t=%s", lidar_timestamp)
                     continue
 
-                # Swap channel order as OpenCV expects it -- BGR not RGB
-                # must make a copy to make memory contiguous
-                img = imageio.imread(im_fpath)[:, :, ::-1].copy()
+                img = cv2.imread(im_fpath)
                 camera_config = get_calibration_config(log_calib_data, camera_name)
                 planes = generate_frustum_planes(camera_config.intrinsic.copy(), camera_name)
 

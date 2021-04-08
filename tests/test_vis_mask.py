@@ -20,11 +20,9 @@ def test_vis_mask() -> None:
     )
 
     img = img.swapaxes(0, 2)
+    top_left, bottom_right = (1, 1), (3, 3)
 
-    mask = np.array([[0, 0, 0], [0, 1, 1], [0, 1, 1]])
-
-    masked_image = vis_mask(img, mask, color=10.0, alpha=0.2)
-
+    masked_image = vis_mask(img, top_left, bottom_right, color=10.0, alpha=0.2)
     masked_image = masked_image.swapaxes(0, 2)
 
     # Ordered Z first for easy reading

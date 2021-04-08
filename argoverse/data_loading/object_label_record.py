@@ -219,10 +219,22 @@ class ObjectLabelRecord:
         uv_ct = uv_ct.squeeze().astype(np.int32)  # cast to integer
 
         if label_is_closeby(center_top) and uv_coord_is_valid(uv_ct, img):
-            top_left = (uv_ct[0] - BKGRND_RECT_OFFS_LEFT, uv_ct[1] - BKGRND_RECT_OFFS_UP)
-            bottom_right = (uv_ct[0] + BKGRND_RECT_OFFS_LEFT, uv_ct[1] + BKGRND_RECT_OFFS_DOWN)
+            top_left = (
+                uv_ct[0] - BKGRND_RECT_OFFS_LEFT,
+                uv_ct[1] - BKGRND_RECT_OFFS_UP,
+            )
+            bottom_right = (
+                uv_ct[0] + BKGRND_RECT_OFFS_LEFT,
+                uv_ct[1] + BKGRND_RECT_OFFS_DOWN,
+            )
             img = draw_alpha_rectangle(img, top_left, bottom_right, EMERALD_RGB, alpha=BKGRND_RECT_ALPHA)
-            add_text_cv2(img, text=str(self.label_class), x=uv_ct[0] - TEXT_OFFS_LEFT, y=uv_ct[1], color=WHITE_BGR)
+            add_text_cv2(
+                img,
+                text=str(self.label_class),
+                x=uv_ct[0] - TEXT_OFFS_LEFT,
+                y=uv_ct[1],
+                color=WHITE_BGR,
+            )
 
         # Draw blue line indicating the front half
         center_bottom_forward = np.mean(corners[2:4], axis=0)
@@ -261,10 +273,8 @@ def draw_alpha_rectangle(
     alpha: float,
 ) -> np.ndarray:
     """Alpha blend colored rectangle into image. Corner coords given as (x,y) tuples"""
-    img_h, img_w, _ = img.shape
-    mask = np.zeros((img_h, img_w), dtype=np.uint8)
-    mask[top_left[1] : bottom_right[1], top_left[0] : bottom_right[0]] = 1
-    return vis_mask(img, mask, np.array(list(color_rgb[::-1])), alpha)
+    color_rgb = np.array(list(color_rgb[::-1]))
+    return vis_mask(img, top_left, bottom_right, color_rgb, alpha)
 
 
 def form_obj_label_from_json(label: Dict[str, Any]) -> Tuple[np.ndarray, str]:
