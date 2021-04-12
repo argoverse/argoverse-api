@@ -94,7 +94,7 @@ class DetectionCfg(NamedTuple):
     tp_normalization_terms: np.ndarray = np.array([tp_thresh, MAX_SCALE_ERROR, MAX_YAW_ERROR])
     summary_default_vals: np.ndarray = np.array([MIN_AP, tp_thresh, MAX_NORMALIZED_ASE, MAX_NORMALIZED_AOE, MIN_CDS])
     eval_only_roi_instances: bool = True
-    map_root: Union[str, Path] = Path(__file__).parents[1]
+    map_root: Union[str, Path] = Path(__file__).parents[3] / "map_files"
 
 
 def accumulate(
