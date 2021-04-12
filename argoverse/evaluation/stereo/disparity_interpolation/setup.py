@@ -11,7 +11,7 @@ ext_modules = [
             "disparity_interpolation/source/disparity_interpolation.pyx",
             "disparity_interpolation/source/nn_interpolation.cpp",
         ],
-        include_dirs=["/usr/local/include/opencv4/", numpy.get_include()],
+        include_dirs=["/opt/opencv/include", numpy.get_include()],
         libraries=["opencv_core", "opencv_imgproc"],
         language="c++",
         extra_compile_args=["-w", "-O3"],
