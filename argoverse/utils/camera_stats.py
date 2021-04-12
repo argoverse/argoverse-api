@@ -25,7 +25,12 @@ RING_CAMERA_LIST = [
     "ring_side_right",
 ]
 
-STEREO_CAMERA_LIST = ["stereo_front_left", "stereo_front_right"]
+STEREO_CAMERA_LIST = [
+    "stereo_front_left",
+    "stereo_front_right",
+    "stereo_front_left_rect",
+    "stereo_front_right_rect",
+]
 
 CAMERA_LIST = RING_CAMERA_LIST + STEREO_CAMERA_LIST
 
