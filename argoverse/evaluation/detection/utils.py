@@ -15,7 +15,7 @@ import os
 from collections import defaultdict
 from enum import Enum, auto
 from pathlib import Path
-from typing import DefaultDict, List, NamedTuple, Optional, Tuple
+from typing import DefaultDict, List, NamedTuple, Optional, Tuple, Union
 
 import matplotlib
 import numpy as np
@@ -79,7 +79,8 @@ class DetectionCfg(NamedTuple):
         save_figs: Flag to save figures.
         tp_normalization_terms: Normalization constants for ATE, ASE, and AOE.
         summary_default_vals: Evaluation summary default values.
-        eval_only_roi_instances: only use dets and ground truth that lie within region of interest during eval.
+        eval_only_roi_instances: Only use dets and ground truth that lie within region of interest during eval.
+        map_root: Root directory for map files.
     """
 
     affinity_threshs: List[float] = [0.5, 1.0, 2.0, 4.0]  # Meters
@@ -93,6 +94,7 @@ class DetectionCfg(NamedTuple):
     tp_normalization_terms: np.ndarray = np.array([tp_thresh, MAX_SCALE_ERROR, MAX_YAW_ERROR])
     summary_default_vals: np.ndarray = np.array([MIN_AP, tp_thresh, MAX_NORMALIZED_ASE, MAX_NORMALIZED_AOE, MIN_CDS])
     eval_only_roi_instances: bool = True
+    map_root: Union[str, Path] = Path(__file__).parents[1]
 
 
 def accumulate(
