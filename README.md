@@ -1,7 +1,7 @@
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![Build Status](https://travis-ci.org/argoai/argoverse-api.svg?branch=master)](https://travis-ci.org/argoai/argoverse-api)
+![Linux CI](https://github.com/argoai/argoverse-api/workflows/Python%20CI/badge.svg)
 
 # Argoverse API
 
@@ -55,7 +55,7 @@ argodataset
 
 We provide both the full dataset and the sample version of the dataset for testing purposes. Head to [our website](https://www.argoverse.org/data.html#download-link) to see the download option.
 
-* **Argoverse-Tracking** provides track annotations and *undistorted*, raw data from camera (@30hz) and lidar sensors (@10hz) as well as two stereo cameras (@5hz). We've released a total 113 scenes/logs, separated into 65 logs for training, 24 logs for validating, and 24 logs for testing. We've separated training data into smaller files to make it easier to download, but you should extract them all into one folder.
+* **Argoverse-Tracking** provides track annotations, egovehicle poses, and *undistorted*, raw data from camera (@30hz) and lidar sensors (@10hz) as well as two stereo cameras (@5hz). We've released a total 113 scenes/logs, separated into 65 logs for training, 24 logs for validating, and 24 logs for testing. We've separated training data into smaller files to make it easier to download, but you should extract them all into one folder.
     We also provide sample data (1 log) in `tracking_sample.tar.gz`.
 
 * **Argoverse-Forecasting** contains 327790 sequences of interesting scenarios. Each sequence follows the trajectory of the main agent for 5 seconds, while keeping track of all other actors (e.g car, pedestrian). We've separated them into 208272 training sequences, 40127 validation sequences, and 79391 test sequences.
@@ -70,7 +70,7 @@ Note that you need to download HD map data (and extract them into project root f
         pip install -e /path_to_root_directory_of_the_repo/
 * if you receive any error about `No matching distribution found for pyntcloud`, upgrade your pip using `pip install --upgrade pip` or pip install with `--process-dependency-links`
 
-Make sure that you can run `import argoverse` in python, and you are good to go!
+Make sure that you can run `python -c "import argoverse"` in python, and you are good to go!
 
 ### (optional) Install mayavi
 * Some visualizations may require `mayavi`. See instructions on how to install Mayavi [here](https://docs.enthought.com/mayavi/mayavi/installation.html).

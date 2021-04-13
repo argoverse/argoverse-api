@@ -80,20 +80,12 @@ def main(arguments: List[str]) -> int:
 
             df_cur = df.loc[df["TIMESTAMP"] <= time]
 
-            if time == time_list[-1]:
-                viz_sequence(
-                    df_cur,
-                    lane_centerlines=lane_centerlines,
-                    show=False,
-                    smoothen=False,
-                )
-            else:
-                viz_sequence(
-                    df_cur,
-                    lane_centerlines=lane_centerlines,
-                    show=False,
-                    smoothen=False,
-                )
+            viz_sequence(
+                df_cur,
+                lane_centerlines=lane_centerlines,
+                show=False,
+                smoothen=False,
+            )
 
             os.makedirs(seq_out_dir, exist_ok=True)
 

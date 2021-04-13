@@ -75,8 +75,8 @@ class ArgoverseMap:
         self.city_to_da_bboxes_dict: Mapping[str, np.ndarray] = {}
 
         for city_name in self.city_name_to_city_id_dict.keys():
-            lane_polygons = np.array(self.get_vector_map_lane_polygons(city_name))
-            driveable_areas = np.array(self.get_vector_map_driveable_areas(city_name))
+            lane_polygons = np.array(self.get_vector_map_lane_polygons(city_name), dtype=object)
+            driveable_areas = np.array(self.get_vector_map_driveable_areas(city_name), dtype=object)
             lane_bboxes = compute_polygon_bboxes(lane_polygons)
             da_bboxes = compute_polygon_bboxes(driveable_areas)
 
@@ -103,7 +103,7 @@ class ArgoverseMap:
 
         return lane_polygons
 
-    def get_vector_map_driveable_areas(self, city_name: str) -> List[np.hstack]:
+    def get_vector_map_driveable_areas(self, city_name: str) -> List[np.ndarray]:
         """
         Get driveable area for a specified city
 
@@ -118,7 +118,7 @@ class ArgoverseMap:
         """
         return self.get_da_contours(city_name)
 
-    def get_da_contours(self, city_name: str) -> List[np.hstack]:
+    def get_da_contours(self, city_name: str) -> List[np.ndarray]:
         """
         We threshold the binary driveable area or ROI image and obtain contour lines. These
         contour lines represent the boundary.
@@ -222,7 +222,7 @@ class ArgoverseMap:
             city_name: either 'MIA' for Miami or 'PIT' for Pittsburgh
 
         Returns:
-            da_matrix: Numpy array of shape (M,N) representing binary values for driveable area
+            da_mat: Numpy array of shape (M,N) representing binary values for driveable area
             city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.
                     p_city = city_Transformation_pklimage * p_pklimage
         """
@@ -234,13 +234,13 @@ class ArgoverseMap:
 
     def get_rasterized_roi(self, city_name: str) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Get the driveable area.
+        Get the region of interest (5 meter dilation of driveable area).
 
         Args:
             city_name: string, either 'MIA' for Miami or 'PIT' for Pittsburgh
 
         Returns:
-            da_matrix: Numpy array of shape (M,N) representing binary values for driveable area
+            roi_mat: Numpy array of shape (M,N) representing binary values for the region of interest.
             city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.
                     p_city = city_Transformation_pklimage * p_pklimage
         """

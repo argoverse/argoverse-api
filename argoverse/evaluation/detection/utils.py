@@ -9,11 +9,13 @@ from a bird's-eye view. We prefer these metrics instead of IoU due to the
 increased interpretability of the error modes in a set of detections.
 """
 
+import copy
 import logging
+import os
 from collections import defaultdict
 from enum import Enum, auto
 from pathlib import Path
-from typing import DefaultDict, List, NamedTuple, Tuple
+from typing import DefaultDict, List, NamedTuple, Optional, Tuple
 
 import matplotlib
 import numpy as np
@@ -22,6 +24,7 @@ from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation as R
 
 from argoverse.data_loading.object_label_record import ObjectLabelRecord, read_label
+from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t, read_city_name
 from argoverse.evaluation.detection.constants import (
     COMPETITION_CLASSES,
     MAX_NORMALIZED_AOE,
@@ -33,6 +36,8 @@ from argoverse.evaluation.detection.constants import (
     MIN_CDS,
     N_TP_ERRORS,
 )
+from argoverse.map_representation.map_api import ArgoverseMap
+from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat_argo2scipy_vectorized
 
 matplotlib.use("Agg")  # isort:skip
@@ -74,6 +79,7 @@ class DetectionCfg(NamedTuple):
         save_figs: Flag to save figures.
         tp_normalization_terms: Normalization constants for ATE, ASE, and AOE.
         summary_default_vals: Evaluation summary default values.
+        eval_only_roi_instances: only use dets and ground truth that lie within region of interest during eval.
     """
 
     affinity_threshs: List[float] = [0.5, 1.0, 2.0, 4.0]  # Meters
@@ -86,10 +92,11 @@ class DetectionCfg(NamedTuple):
     save_figs: bool = False
     tp_normalization_terms: np.ndarray = np.array([tp_thresh, MAX_SCALE_ERROR, MAX_YAW_ERROR])
     summary_default_vals: np.ndarray = np.array([MIN_AP, tp_thresh, MAX_NORMALIZED_ASE, MAX_NORMALIZED_AOE, MIN_CDS])
+    eval_only_roi_instances: bool = True
 
 
 def accumulate(
-    dt_root_fpath: Path, gt_fpath: Path, cfg: DetectionCfg
+    dt_root_fpath: Path, gt_fpath: Path, cfg: DetectionCfg, avm: Optional[ArgoverseMap]
 ) -> Tuple[DefaultDict[str, np.ndarray], DefaultDict[str, int]]:
     """Accumulate the true/false positives (boolean flags) and true positive errors for each class.
 
@@ -107,12 +114,22 @@ def accumulate(
     """
     log_id = gt_fpath.parents[1].stem
     logger.info(f"log_id = {log_id}")
-    ts = gt_fpath.stem.split("_")[-1]
+    ts = int(gt_fpath.stem.split("_")[-1])
 
     dt_fpath = dt_root_fpath / f"{log_id}/per_sweep_annotations_amodal/" f"tracked_object_labels_{ts}.json"
 
     dts = np.array(read_label(str(dt_fpath)))
     gts = np.array(read_label(str(gt_fpath)))
+
+    if cfg.eval_only_roi_instances and avm is not None:
+        # go up 3 levels, because hierarchy is as follows:
+        # {gt_root_fpath}/{log_id}/per_sweep_annotations_amodal/{gt_root_fname}
+        gt_root_fpath = Path(gt_fpath).parents[2]
+        city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(ts, str(gt_root_fpath), log_id)
+        if city_SE3_egovehicle is not None:
+            log_city_name = read_city_name(os.path.join(gt_root_fpath, log_id, "city_info.json"))
+            dts = filter_objs_to_roi(dts, avm, city_SE3_egovehicle, log_city_name)
+            gts = filter_objs_to_roi(gts, avm, city_SE3_egovehicle, log_city_name)
 
     cls_to_accum = defaultdict(list)
     cls_to_ninst = defaultdict(int)
@@ -129,6 +146,7 @@ def accumulate(
             filter_metric=cfg.dt_metric,
             max_detection_range=cfg.max_dt_range,
         )
+        gt_filtered = remove_duplicate_instances(gt_filtered, cfg)
 
         logger.info(f"{dt_filtered.shape[0]} detections")
         logger.info(f"{gt_filtered.shape[0]} ground truth")
@@ -139,6 +157,40 @@ def accumulate(
 
         cls_to_ninst[class_name] = gt_filtered.shape[0]
     return cls_to_accum, cls_to_ninst
+
+
+def remove_duplicate_instances(instances: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
+    """Remove any duplicate cuboids in ground truth.
+
+    Any ground truth cuboid of the same object class that shares the same centroid
+    with another is considered a duplicate instance.
+
+    We first form an (N,N) affinity matrix with entries equal to negative distance.
+    We then find rows in the affinity matrix with more than one zero, and
+    then for each such row, we choose only the first column index with value zero.
+
+    Args:
+       instances: array of length (M,), each entry is an ObjectLabelRecord
+       cfg: Detection configuration.
+
+    Returns:
+       array of length (N,) where N <= M, each entry is a unique ObjectLabelRecord
+    """
+    if len(instances) == 0:
+        return instances
+    assert isinstance(instances, np.ndarray)
+
+    # create affinity matrix as inverse distance to other objects
+    affinity_matrix = compute_affinity_matrix(copy.deepcopy(instances), copy.deepcopy(instances), cfg.affinity_fn_type)
+
+    row_idxs, col_idxs = np.where(affinity_matrix == 0)
+    # find the indices where each row index appears for the first time
+    unique_row_idxs, unique_element_idxs = np.unique(row_idxs, return_index=True)
+    # choose the first instance in each column where repeat occurs
+    first_col_idxs = col_idxs[unique_element_idxs]
+    # eliminate redundant column indices
+    unique_ids = np.unique(first_col_idxs)
+    return instances[unique_ids]
 
 
 def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
@@ -207,16 +259,42 @@ def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
     return metrics
 
 
+def filter_objs_to_roi(
+    instances: np.ndarray, avm: ArgoverseMap, city_SE3_egovehicle: SE3, city_name: str
+) -> np.ndarray:
+    """Filter objects to the region of interest (5 meter dilation of driveable area).
+
+    We ignore instances outside of region of interest (ROI) during evaluation.
+
+    Args:
+        instances: Numpy array of shape (N,) with ObjectLabelRecord entries
+        avm: Argoverse map object
+        city_SE3_egovehicle: pose of egovehicle within city map at time of sweep
+        city_name: name of city where log was captured
+
+    Returns:
+        instances_roi: objects with any of 4 cuboid corners located within ROI
+    """
+    # for each cuboid, get its 4 corners in the egovehicle frame
+    corners_egoframe = np.vstack([dt.as_2d_bbox() for dt in instances])
+    corners_cityframe = city_SE3_egovehicle.transform_point_cloud(corners_egoframe)
+    corner_within_roi = avm.get_raster_layer_points_boolean(corners_cityframe, city_name, "roi")
+    # check for each cuboid if any of its 4 corners lies within the ROI
+    is_within_roi = corner_within_roi.reshape(-1, 4).any(axis=1)
+    instances_roi = instances[is_within_roi]
+    return instances_roi
+
+
 def filter_instances(
     instances: List[ObjectLabelRecord],
     target_class_name: str,
     filter_metric: FilterMetric,
     max_detection_range: float,
 ) -> np.ndarray:
-    """Filter the GT annotations based on a set of conditions (class name and distance from egovehicle).
+    """Filter object instances based on a set of conditions (class name and distance from egovehicle).
 
     Args:
-        instances: Instances to be filtered (N,).
+        instances: Instances to be filtered (N,), either detections or ground truth object labels
         target_class_name: Name of the class of interest.
         filter_metric: Range metric used for filtering.
         max_detection_range: Maximum distance for range filtering.
@@ -228,14 +306,15 @@ def filter_instances(
 
     if filter_metric == FilterMetric.EUCLIDEAN:
         centers = np.array([dt.translation for dt in instances])
-        filtered_annos = np.array([])
+        filtered_instances = np.array([])
 
         if centers.shape[0] > 0:
             dt_dists = np.linalg.norm(centers, axis=1)
-            filtered_annos = instances[dt_dists < max_detection_range]
+            filtered_instances = instances[dt_dists < max_detection_range]
     else:
         raise NotImplementedError("This filter metric is not implemented!")
-    return filtered_annos
+
+    return filtered_instances
 
 
 def rank(dts: List[ObjectLabelRecord]) -> Tuple[np.ndarray, np.ndarray]:

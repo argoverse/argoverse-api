@@ -377,7 +377,7 @@ def remove_overlapping_lane_seq(lane_seqs: List[List[int]]) -> List[List[int]]:
 
 def lane_waypt_to_query_dist(
     query_xy_city_coords: np.ndarray, nearby_lane_objs: List[LaneSegment]
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray, List[np.ndarray]]:
     """
     Compute the distance from a query to the closest waypoint in nearby lanes.
 
@@ -386,7 +386,9 @@ def lane_waypt_to_query_dist(
        nearby_lane_objs: list of LaneSegment objects
 
     Returns:
-       Tuple of (per_lane_dists, min_dist_nn_indices, dense_centerlines); all numpy arrays
+       per_lane_dists: array with distance to closest waypoint for each centerline
+       min_dist_nn_indices: array with ranked indices of centerlines, closest first
+       dense_centerlines: list of arrays, each representing (N,2) centerline
     """
     per_lane_dists: List[float] = []
     dense_centerlines: List[np.ndarray] = []

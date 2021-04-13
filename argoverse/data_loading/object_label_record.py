@@ -41,8 +41,8 @@ TOP_VERT_INDICES: List[int] = [0, 1, 4, 5]
 class ObjectLabelRecord:
     def __init__(
         self,
-        quaternion: np.array,
-        translation: np.array,
+        quaternion: np.ndarray,
+        translation: np.ndarray,
         length: float,
         width: float,
         height: float,
@@ -136,9 +136,9 @@ class ObjectLabelRecord:
 
     def render_clip_frustum_cv2(
         self,
-        img: np.array,
-        corners: np.array,
-        planes: List[Tuple[np.array, np.array, np.array, np.array, np.array]],
+        img: np.ndarray,
+        corners: np.ndarray,
+        planes: List[Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]],
         camera_config: CameraConfig,
         colors: Tuple[Tuple[int, int, int], Tuple[int, int, int], Tuple[int, int, int]] = (
             BLUE_RGB,
@@ -181,7 +181,7 @@ class ObjectLabelRecord:
             img: Numpy array of shape (M,N,3), representing updated image
         """
 
-        def draw_rect(selected_corners: np.array, color: Tuple[int, int, int]) -> None:
+        def draw_rect(selected_corners: np.ndarray, color: Tuple[int, int, int]) -> None:
             prev = selected_corners[-1]
             for corner in selected_corners:
                 draw_clipped_line_segment(
@@ -267,7 +267,7 @@ def draw_alpha_rectangle(
     return vis_mask(img, mask, np.array(list(color_rgb[::-1])), alpha)
 
 
-def form_obj_label_from_json(label: Dict[str, Any]) -> Tuple[np.array, str]:
+def form_obj_label_from_json(label: Dict[str, Any]) -> Tuple[np.ndarray, str]:
     """Construct object from loaded json.
 
      The dictionary loaded from saved json file is expected to have the

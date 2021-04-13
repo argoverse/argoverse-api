@@ -64,36 +64,49 @@ import os
 from collections import defaultdict
 from multiprocessing import Pool
 from pathlib import Path
-from typing import DefaultDict, List, NamedTuple
+from typing import DefaultDict, List
 
 import numpy as np
 import pandas as pd
 
 from argoverse.evaluation.detection.constants import N_TP_ERRORS, SIGNIFICANT_DIGITS, STATISTIC_NAMES
 from argoverse.evaluation.detection.utils import DetectionCfg, accumulate, calc_ap, plot
+from argoverse.map_representation.map_api import ArgoverseMap
 
 logger = logging.getLogger(__name__)
 
 
-class DetectionEvaluator(NamedTuple):
-    """Instantiates a DetectionEvaluator object for evaluation.
+class DetectionEvaluator:
+    """Instantiates a DetectionEvaluator object for evaluation."""
 
-    Args:
-        dt_fpath_root: Path to the folder which contains the detections.
-        gt_fpath_root: Path to the folder which contains the split of logs.
-        figs_fpath: Path to the folder which will contain the output figures.
-        cfg: Detection configuration settings.
-    """
-
-    dt_root_fpath: Path
-    gt_root_fpath: Path
-    figs_fpath: Path
-    cfg: DetectionCfg = DetectionCfg()
+    def __init__(
+        self,
+        dt_root_fpath: Path,
+        gt_root_fpath: Path,
+        figs_fpath: Path,
+        cfg: DetectionCfg = DetectionCfg(),
+        num_procs: int = -1,
+    ) -> None:
+        """
+        Args:
+            dt_fpath_root: Path to the folder which contains the detections.
+            gt_fpath_root: Path to the folder which contains the split of logs.
+            figs_fpath: Path to the folder which will contain the output figures.
+            cfg: Detection configuration settings.
+            num_procs: Number of processes among which to subdivide work.
+                Specifying -1 will use one process per available core
+        """
+        self.dt_root_fpath = dt_root_fpath
+        self.gt_root_fpath = gt_root_fpath
+        self.figs_fpath = figs_fpath
+        self.cfg = cfg
+        self.num_procs = os.cpu_count() if num_procs == -1 else num_procs
 
     def evaluate(self) -> pd.DataFrame:
         """Evaluate detection output and return metrics. The multiprocessing
-        library is used for parallel assignment between detections and ground truth
-        annotations.
+        library is used for parallel processing of sweeps -- each sweep is
+        processed independently, computing assignment between detections and
+        ground truth annotations.
 
         Returns:
             Evaluation metrics of shape (C + 1, K) where C + 1 is the number of classes.
@@ -102,13 +115,19 @@ class DetectionEvaluator(NamedTuple):
         dt_fpaths = list(self.dt_root_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
         gt_fpaths = list(self.gt_root_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
 
+        # map is only required if using Region of Interest (ROI) information to filter objects
+        avm = ArgoverseMap() if self.cfg.eval_only_roi_instances else None
+
         assert len(dt_fpaths) == len(gt_fpaths)
         data: DefaultDict[str, np.ndarray] = defaultdict(list)
         cls_to_ninst: DefaultDict[str, int] = defaultdict(int)
 
-        args = [(self.dt_root_fpath, gt_fpath, self.cfg) for gt_fpath in gt_fpaths]
-        with Pool(os.cpu_count()) as p:
-            accum = p.starmap(accumulate, args)
+        if self.num_procs == 1:
+            accum = [accumulate(self.dt_root_fpath, gt_fpath, self.cfg, avm) for gt_fpath in gt_fpaths]
+        else:
+            args = [(self.dt_root_fpath, gt_fpath, self.cfg, avm) for gt_fpath in gt_fpaths]
+            with Pool(self.num_procs) as p:
+                accum = p.starmap(accumulate, args)
 
         for frame_stats, frame_cls_to_inst in accum:
             for cls_name, cls_stats in frame_stats.items():
@@ -200,6 +219,14 @@ def main() -> None:
         help="Ground truth root folder path.",
         required=True,
     )
+    parser.add_argument(
+        "-p",
+        "--num_processes",
+        type=int,
+        help="Number of processes among which to subdivide work. Specifying -1 will use one process per available core",
+        default=-1,
+    )
+
     parser.add_argument("-f", "--fig_fpath", type=str, help="Figures root folder path.", default="figs")
     args = parser.parse_args()
     logger.info(f"args == {args}")
@@ -208,7 +235,7 @@ def main() -> None:
     gt_fpath = Path(args.gt_fpath)
     fig_fpath = Path(args.fig_fpath)
 
-    evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath)
+    evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath, num_procs=args.num_processes)
     metrics = evaluator.evaluate()
     print(metrics)
 
