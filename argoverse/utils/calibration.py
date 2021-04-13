@@ -13,6 +13,7 @@ from typing_extensions import Literal
 from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
 from argoverse.utils.camera_stats import (
     CAMERA_LIST,
+    RECTIFIED_STEREO_CAMERA_LIST,
     RING_CAMERA_LIST,
     RING_IMG_HEIGHT,
     RING_IMG_WIDTH,
@@ -235,6 +236,34 @@ def load_calib(calib_filepath: Union[str, Path]) -> Dict[Any, Calibration]:
     return calib_list
 
 
+def load_stereo_calib(calib_filepath: Union[str, Path]) -> Dict[Any, Calibration]:
+    """Load stereo calibration object for all camera from calibration filepath
+
+    Args:
+        calib_filepath (str): path to the stereo calibration file
+
+    Returns:
+        list of stereo Calibration object for the rectified stereo cameras
+    """
+    with open(calib_filepath, "r") as f:
+        calib = json.load(f)
+
+    calib_list = {}
+    for camera in RECTIFIED_STEREO_CAMERA_LIST:
+        cam_config = get_calibration_config(calib, camera)
+        calib_cam = next(
+            (c for c in calib["camera_data_"] if c["key"] == f"image_raw_{camera}"),
+            None,
+        )
+
+        if calib_cam is None:
+            continue
+
+        calib_ = Calibration(cam_config, calib_cam)
+        calib_list[camera] = calib_
+    return calib_list
+
+
 def get_camera_extrinsic_matrix(config: Dict[str, Any]) -> np.ndarray:
     """Load camera calibration rotation and translation.
 
@@ -300,7 +329,7 @@ def get_calibration_config(calibration: Dict[str, Any], camera_name: str) -> Cam
     camera_extrinsic_matrix = get_camera_extrinsic_matrix(camera_calibration)
     camera_intrinsic_matrix = get_camera_intrinsic_matrix(camera_calibration)
 
-    if camera_name in STEREO_CAMERA_LIST:
+    if camera_name in STEREO_CAMERA_LIST or camera_name in RECTIFIED_STEREO_CAMERA_LIST:
         img_width = STEREO_IMG_WIDTH
         img_height = STEREO_IMG_HEIGHT
     elif camera_name in RING_CAMERA_LIST:

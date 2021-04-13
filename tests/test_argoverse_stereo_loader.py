@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 from argoverse.data_loading.argoverse_stereo_loader import ArgoverseStereoLoader
-from argoverse.utils.camera_stats import STEREO_CAMERA_LIST
+from argoverse.utils.camera_stats import RECTIFIED_STEREO_CAMERA_LIST
 
 TEST_DATA_LOC = str(pathlib.Path(__file__).parent.parent / "tests" / "test_data" / "stereo")
 
@@ -25,7 +25,7 @@ def test_log_list(data_loader: ArgoverseStereoLoader) -> None:
 
 
 def test_image_list(data_loader: ArgoverseStereoLoader) -> None:
-    assert set(data_loader.image_list.keys()) == set(STEREO_CAMERA_LIST)
+    assert set(data_loader.image_list.keys()) == set(RECTIFIED_STEREO_CAMERA_LIST)
 
 
 def test_disparity_list(data_loader: ArgoverseStereoLoader) -> None:
@@ -33,14 +33,14 @@ def test_disparity_list(data_loader: ArgoverseStereoLoader) -> None:
 
 
 def test_image_timestamp_list(data_loader: ArgoverseStereoLoader) -> None:
-    assert set(data_loader.image_timestamp_list.keys()) == set(STEREO_CAMERA_LIST)
-    for camera in STEREO_CAMERA_LIST[2:]:
+    assert set(data_loader.image_timestamp_list.keys()) == set(RECTIFIED_STEREO_CAMERA_LIST)
+    for camera in RECTIFIED_STEREO_CAMERA_LIST:
         assert 1 in data_loader.image_timestamp_list[camera]
 
 
 def test_timestamp_image_dict(data_loader: ArgoverseStereoLoader) -> None:
-    assert set(data_loader.timestamp_image_dict.keys()) == set(STEREO_CAMERA_LIST)
-    for camera in STEREO_CAMERA_LIST[2:]:
+    assert set(data_loader.timestamp_image_dict.keys()) == set(RECTIFIED_STEREO_CAMERA_LIST)
+    for camera in RECTIFIED_STEREO_CAMERA_LIST:
         assert len(data_loader.timestamp_image_dict[camera]) == 1
 
 
@@ -51,13 +51,13 @@ def test_data_loader_get(data_loader: ArgoverseStereoLoader) -> None:
 
 
 def test_calibration(data_loader: ArgoverseStereoLoader) -> None:
-    for camera in STEREO_CAMERA_LIST:
+    for camera in RECTIFIED_STEREO_CAMERA_LIST:
         calib = data_loader.get_calibration(camera, "1")
         assert calib.camera == camera
 
 
 def test_loading_image_disparity(data_loader: ArgoverseStereoLoader) -> None:
-    camera = STEREO_CAMERA_LIST[2]
+    camera = RECTIFIED_STEREO_CAMERA_LIST[0]
     disparity = STEREO_DISPARITY_LIST[0]
     disparity_objects = STEREO_DISPARITY_LIST[1]
     log = "1"

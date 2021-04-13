@@ -65,16 +65,12 @@ def test_labale_list(data_loader: ArgoverseTrackingLoader) -> None:
 def test_image_timestamp_list(data_loader: ArgoverseTrackingLoader) -> None:
     assert set(data_loader.image_timestamp_list.keys()) == set(CAMERA_LIST)
     for camera in CAMERA_LIST:
-        if "_rect" in camera:
-            continue
         assert 3 in data_loader.image_timestamp_list[camera]
 
 
 def test_timestamp_image_dict(data_loader: ArgoverseTrackingLoader) -> None:
     assert set(data_loader.timestamp_image_dict.keys()) == set(CAMERA_LIST)
     for camera in CAMERA_LIST:
-        if "_rect" in camera:
-            continue
         assert len(data_loader.timestamp_image_dict[camera]) == 4
 
 

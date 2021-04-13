@@ -9,19 +9,19 @@ from typing import Dict, Iterator, List, Optional, Union
 import cv2
 import numpy as np
 
-from argoverse.utils.calibration import Calibration, load_calib
-from argoverse.utils.camera_stats import STEREO_CAMERA_LIST
+from argoverse.utils.calibration import Calibration, load_stereo_calib
+from argoverse.utils.camera_stats import RECTIFIED_STEREO_CAMERA_LIST
 
 logger = logging.getLogger(__name__)
 
-STEREO_FRONT_LEFT_RECT = STEREO_CAMERA_LIST[2]
-STEREO_FRONT_RIGHT_RECT = STEREO_CAMERA_LIST[3]
+STEREO_FRONT_LEFT_RECT = RECTIFIED_STEREO_CAMERA_LIST[0]
+STEREO_FRONT_RIGHT_RECT = RECTIFIED_STEREO_CAMERA_LIST[1]
 
 
 class ArgoverseStereoLoader:
     def __init__(self, root_dir: str, split_name: str) -> None:
         # initialize class member
-        self.STEREO_CAMERA_LIST = STEREO_CAMERA_LIST
+        self.RECTIFIED_STEREO_CAMERA_LIST = RECTIFIED_STEREO_CAMERA_LIST
         self._log_list: Optional[List[str]] = None
         self._image_list: Optional[Dict[str, Dict[str, List[str]]]] = None
         self._disparity_list: Optional[Dict[str, Dict[str, List[str]]]] = None
@@ -60,11 +60,11 @@ class ArgoverseStereoLoader:
         Returns:
             calib: Calibration object for the current log
         """
-        self._ensure_calib_is_populated()
+        self.__ensure_calib_is_populated()
         assert self._calib is not None
         return self._calib[self.current_log]
 
-    def _ensure_calib_is_populated(self) -> None:
+    def __ensure_calib_is_populated(self) -> None:
         """load up calibration object for all logs
 
         Returns:
@@ -80,7 +80,7 @@ class ArgoverseStereoLoader:
                     log,
                     "vehicle_calibration_stereo_info.json",
                 )
-                self._calib[log] = load_calib(calib_filename)
+                self._calib[log] = load_stereo_calib(calib_filename)
 
     @property
     def log_list(self) -> List[str]:
@@ -121,7 +121,7 @@ class ArgoverseStereoLoader:
             self._image_list = {}
             for log in self.log_list:
                 self._image_list[log] = {}
-                for camera in STEREO_CAMERA_LIST:
+                for camera in RECTIFIED_STEREO_CAMERA_LIST:
                     self._image_list[log][camera] = sorted(
                         glob.glob(
                             (
@@ -173,7 +173,7 @@ class ArgoverseStereoLoader:
             self._image_timestamp_list = {}
             for log in self.log_list:
                 self._image_timestamp_list[log] = {}
-                for camera in STEREO_CAMERA_LIST:
+                for camera in RECTIFIED_STEREO_CAMERA_LIST:
                     self._image_timestamp_list[log][camera] = [
                         int(Path(x).stem.split("_")[-1]) for x in self._image_list[log][camera]
                     ]
@@ -197,7 +197,7 @@ class ArgoverseStereoLoader:
 
             for log in self.log_list:
                 self._timestamp_image_dict[log] = {}
-                for camera in STEREO_CAMERA_LIST:
+                for camera in RECTIFIED_STEREO_CAMERA_LIST:
                     self._timestamp_image_dict[log][camera] = {
                         self._image_timestamp_list[log][camera][i]: self._image_list[log][camera][i]
                         for i in range(len(self._image_timestamp_list[log][camera]))
@@ -226,7 +226,7 @@ class ArgoverseStereoLoader:
     def __str__(self) -> str:
         frame_image_stereo = self.num_stereo_camera_frame
 
-        num_images = [len(self.image_list[cam]) for cam in STEREO_CAMERA_LIST]
+        num_images = [len(self.image_list[cam]) for cam in RECTIFIED_STEREO_CAMERA_LIST]
 
         start_time = self.image_timestamp_list[STEREO_FRONT_LEFT_RECT][0]
         end_time = self.image_timestamp_list[STEREO_FRONT_LEFT_RECT][-1]
@@ -293,7 +293,7 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
             load: whether to return image array (True) or image path (False)
 
         Returns:
-            List[str]: list of disparity image paths (str),
+            List[str]: list of disparity image path (str or List[str]),
         """
         assert self.disparity_list is not None
         assert self._disparity_list is not None
@@ -424,7 +424,7 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
         Returns:
             Calibration info for a particular index
         """
-        self._ensure_calib_is_populated()
+        self.__ensure_calib_is_populated()
         assert self._calib is not None
 
         if log_id is None:
