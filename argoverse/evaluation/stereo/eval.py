@@ -3,9 +3,15 @@
 
 Evaluation:
 
-    We consider the disparity of a pixel to be correctly estimated if the absolute disparity error is less than a threshold and its relative error is less than 10% of its true value, similar to the KITTI Stereo 2015 benchmark [1]. We define three disparity error thresholds: 3, 5, and 10 pixels.
+    We consider the disparity of a pixel to be correctly estimated if the absolute disparity error is less than a
+    threshold and its relative error is less than 10% of its true value, similar to the KITTI Stereo 2015 benchmark [1].
+    We define three disparity error thresholds: 3, 5, and 10 pixels.
 
-    Some stereo matching methods such as Semi-Global Matching (SGM) might provide sparse disparity maps, meaning that some pixels will not have valid disparity values. In those cases, we interpolate the predicted disparity map using a simple nearest neighbor interpolation as in the KITTI Stereo 2015 benchmark [1] to assure we can compare it to our semi-dense ground-truth disparity map. Current deep stereo matching methods normally predict disparity maps with 100% density. Thus, an interpolation step is not needed for the evaluation.
+    Some stereo matching methods such as Semi-Global Matching (SGM) might provide sparse disparity maps, meaning that
+    some pixels will not have valid disparity values. In those cases, we interpolate the predicted disparity map using
+    a simple nearest neighbor interpolation as in the KITTI Stereo 2015 benchmark [1] to assure we can compare it to
+    our semi-dense ground-truth disparity map. Current deep stereo matching methods normally predict disparity maps
+    with 100% density. Thus, an interpolation step is not needed for the evaluation.
 
     The disparity errors metrics are the following:
 
@@ -14,13 +20,15 @@ Evaluation:
     2. bg: Percentage of stereo disparity errors averaged only over background regions.
     3. fg: Percentage of stereo disparity errors averaged only over foreground regions.
 
-    The * (asterisk) means that the evaluation is performed using only the algorithm predicted disparities. Even though the disparities might be sparse, they are not interpolated.
+    The * (asterisk) means that the evaluation is performed using only the algorithm predicted disparities.
+    Even though the disparities might be sparse, they are not interpolated.
 
     [1] http://www.cvlibs.net/datasets/kitti/eval_scene_flow.php?benchmark=stereo.
 
 Results:
 
-    We evaluate all metrics using three error thresholds: 3, 5, or 10 pixels. The summary results are represented as a table containing the following fields:
+    We evaluate all metrics using three error thresholds: 3, 5, or 10 pixels.
+    The summary results are represented as a table containing the following fields:
 
         all:10,
         fg:10,
@@ -59,17 +67,21 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
+# The disparity error image uses a custom log-color scale depicting correct estimates in blue and wrong estimates in
+# red color tones, as in the KITTI Stereo 2015 Benchmark [1].
+# log_colormap = [disparity error range, RGB color], where the disparity error range is defined as:
+# y = 2^x for x = [-Inf, -4, -3, -2, -1, 0, 1, 2, 3, 4, Inf].
 log_colormap = [
-    [np.array([0, 0.0625]), np.array([49, 54, 149], dtype=np.uint8)],
-    [np.array([0.0625, 0.125]), np.array([69, 117, 180], dtype=np.uint8)],
-    [np.array([0.125, 0.25]), np.array([116, 173, 209], dtype=np.uint8)],
-    [np.array([0.25, 0.5]), np.array([171, 217, 233], dtype=np.uint8)],
-    [np.array([0.5, 1]), np.array([224, 243, 248], dtype=np.uint8)],
-    [np.array([1, 2]), np.array([254, 224, 144], dtype=np.uint8)],
-    [np.array([2, 4]), np.array([253, 174, 97], dtype=np.uint8)],
-    [np.array([4, 8]), np.array([244, 109, 67], dtype=np.uint8)],
-    [np.array([8, 16]), np.array([215, 48, 39], dtype=np.uint8)],
-    [np.array([16, np.Inf]), np.array([165, 0, 38], dtype=np.uint8)],
+    [np.array([0, 2 ** -4]), np.array([49, 54, 149], dtype=np.uint8)],
+    [np.array([2 ** -4, 2 ** -3]), np.array([69, 117, 180], dtype=np.uint8)],
+    [np.array([2 ** -3, 2 ** -2]), np.array([116, 173, 209], dtype=np.uint8)],
+    [np.array([2 ** -2, 2 ** -1]), np.array([171, 217, 233], dtype=np.uint8)],
+    [np.array([2 ** -1, 2 ** 0]), np.array([224, 243, 248], dtype=np.uint8)],
+    [np.array([2 ** 0, 2 ** 1]), np.array([254, 224, 144], dtype=np.uint8)],
+    [np.array([2 ** 1, 2 ** 2]), np.array([253, 174, 97], dtype=np.uint8)],
+    [np.array([2 ** 2, 2 ** 3]), np.array([244, 109, 67], dtype=np.uint8)],
+    [np.array([2 ** 3, 2 ** 4]), np.array([215, 48, 39], dtype=np.uint8)],
+    [np.array([2 ** 4, np.Inf]), np.array([165, 0, 38], dtype=np.uint8)],
 ]
 
 
@@ -306,7 +318,9 @@ def accumulator(abs_error_thresholds: List) -> pd.DataFrame:
 
 
 def interpolate_disparity(disp: np.array) -> np.array:
-    """Intepolate disparity image to inpaint holes."""
+    """Intepolate disparity image to inpaint holes.
+    The expected run time for the Argoverse stereo image with 2056 × 2464 pixels is ~50 ms.
+    """
     disp[disp == 0] = -1
     disp_interp = disparity_interpolation.disparity_interpolator(disp)
 

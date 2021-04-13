@@ -34,13 +34,13 @@ def test_disparity_list(data_loader: ArgoverseStereoLoader) -> None:
 
 def test_image_timestamp_list(data_loader: ArgoverseStereoLoader) -> None:
     assert set(data_loader.image_timestamp_list.keys()) == set(STEREO_CAMERA_LIST)
-    for camera in STEREO_CAMERA_LIST[3:]:
+    for camera in STEREO_CAMERA_LIST[2:]:
         assert 1 in data_loader.image_timestamp_list[camera]
 
 
 def test_timestamp_image_dict(data_loader: ArgoverseStereoLoader) -> None:
     assert set(data_loader.timestamp_image_dict.keys()) == set(STEREO_CAMERA_LIST)
-    for camera in STEREO_CAMERA_LIST[3:]:
+    for camera in STEREO_CAMERA_LIST[2:]:
         assert len(data_loader.timestamp_image_dict[camera]) == 1
 
 
