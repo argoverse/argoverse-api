@@ -67,6 +67,13 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
+# absolute error thresholds in pixels, also used for KITTI stereo eval
+DEFAULT_ABS_ERROR_THRESHOLDS = [10, 5, 3]
+
+# relative error thresholds in pixels, also used for KITTI stereo eval
+DEFAULT_REL_ERROR_THRESHOLDS = [0.1, 0.1, 0.1]
+
+
 # The disparity error image uses a custom log-color scale depicting correct estimates in blue and wrong estimates in
 # red color tones, as in the KITTI Stereo 2015 Benchmark [1].
 # log_colormap = [disparity error range, RGB color], where the disparity error range is defined as:
@@ -116,7 +123,7 @@ class StereoEvaluator:
 
     def evaluate(self) -> pd.DataFrame:
         """Evaluate stereo output and return metrics. The multiprocessing
-        library is used for parallel processing of disparities.
+        library is used for parallel processing of disparity evaluation.
 
         Returns:
             Evaluation metrics.
@@ -165,26 +172,24 @@ class StereoEvaluator:
         data_sum = data.sum()
         summary: dict() = dict()
 
-        for abs_error_threshold in self.abs_error_thresholds:
-            d1_all = (
-                data_sum[f"num_errors_bg:{str(abs_error_threshold)}"]
-                + data_sum[f"num_errors_fg:{str(abs_error_threshold)}"]
-            ) / (data_sum["num_pixels_bg"] + data_sum["num_pixels_fg"])
-            d1_fg = data_sum[f"num_errors_fg:{str(abs_error_threshold)}"] / data_sum["num_pixels_fg"]
-            d1_bg = data_sum[f"num_errors_bg:{str(abs_error_threshold)}"] / data_sum["num_pixels_bg"]
+        for abs_error_thresh in self.abs_error_thresholds:
+            d1_all = (data_sum[f"num_errors_bg:{abs_error_thresh}"] + data_sum[f"num_errors_fg:{abs_error_thresh}"]) / (
+                data_sum["num_pixels_bg"] + data_sum["num_pixels_fg"]
+            )
+            d1_fg = data_sum[f"num_errors_fg:{abs_error_thresh}"] / data_sum["num_pixels_fg"]
+            d1_bg = data_sum[f"num_errors_bg:{abs_error_thresh}"] / data_sum["num_pixels_bg"]
             d1_all_est = (
-                data_sum[f"num_errors_bg_est:{str(abs_error_threshold)}"]
-                + data_sum[f"num_errors_fg_est:{str(abs_error_threshold)}"]
+                data_sum[f"num_errors_bg_est:{abs_error_thresh}"] + data_sum[f"num_errors_fg_est:{abs_error_thresh}"]
             ) / (data_sum["num_pixels_bg_est"] + data_sum["num_pixels_fg_est"])
-            d1_fg_est = data_sum[f"num_errors_fg_est:{str(abs_error_threshold)}"] / data_sum["num_pixels_fg_est"]
-            d1_bg_est = data_sum[f"num_errors_bg_est:{str(abs_error_threshold)}"] / data_sum["num_pixels_bg_est"]
+            d1_fg_est = data_sum[f"num_errors_fg_est:{abs_error_thresh}"] / data_sum["num_pixels_fg_est"]
+            d1_bg_est = data_sum[f"num_errors_bg_est:{abs_error_thresh}"] / data_sum["num_pixels_bg_est"]
 
-            summary[f"all:{str(abs_error_threshold)}"] = d1_all * 100
-            summary[f"fg:{str(abs_error_threshold)}"] = d1_fg * 100
-            summary[f"bg:{str(abs_error_threshold)}"] = d1_bg * 100
-            summary[f"all*:{str(abs_error_threshold)}"] = d1_all_est * 100
-            summary[f"fg*:{str(abs_error_threshold)}"] = d1_fg_est * 100
-            summary[f"bg*:{str(abs_error_threshold)}"] = d1_bg_est * 100
+            summary[f"all:{abs_error_thresh}"] = d1_all * 100
+            summary[f"fg:{abs_error_thresh}"] = d1_fg * 100
+            summary[f"bg:{abs_error_thresh}"] = d1_bg * 100
+            summary[f"all*:{abs_error_thresh}"] = d1_all_est * 100
+            summary[f"fg*:{abs_error_thresh}"] = d1_fg_est * 100
+            summary[f"bg*:{abs_error_thresh}"] = d1_bg_est * 100
 
         return summary
 
@@ -193,11 +198,11 @@ def compute_disparity_error(
     pred_fpath: Path,
     gt_fpath: Path,
     gt_obj_fpath: Path,
-    abs_error_thresholds: List = [10, 5, 3],
-    rel_error_thresholds: List = [0.1, 0.1, 0.1],
+    abs_error_thresholds: List = DEFAULT_ABS_ERROR_THRESHOLDS,
+    rel_error_thresholds: List = DEFAULT_REL_ERROR_THRESHOLDS,
     figs_fpath: Path = None,
     save_disparity_error_image: bool = False,
-):
+) -> pd.DataFrame:
     """Compute the disparity error metrics."""
     pred_disparity = cv2.imread(str(pred_fpath), cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
     gt_disparity = cv2.imread(str(gt_fpath), cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
@@ -207,7 +212,7 @@ def compute_disparity_error(
     gt_disparity = np.float32(gt_disparity) / 256.0
     gt_obj_disparity = np.float32(gt_obj_disparity) / 256.0
 
-    errors = accumulator(abs_error_thresholds)
+    errors = accumulate_stereo_metrics(abs_error_thresholds)
 
     # Compute masks
     pred_mask = pred_disparity > 0
@@ -233,13 +238,13 @@ def compute_disparity_error(
     errors["num_pixels_bg_est"] = np.sum(bg_mask & pred_mask)
     errors["num_pixels_fg_est"] = np.sum(fg_mask & pred_mask)
 
-    for abs_error_threshold, rel_error_threshold in zip(abs_error_thresholds, rel_error_thresholds):
-        bad_pixels = (abs_err > abs_error_threshold) & (rel_err > rel_error_threshold)
+    for abs_error_thresh, rel_error_thresh in zip(abs_error_thresholds, rel_error_thresholds):
+        bad_pixels = (abs_err > abs_error_thresh) & (rel_err > rel_error_thresh)
 
-        errors[f"num_errors_bg:{str(abs_error_threshold)}"] = np.sum(bg_mask & bad_pixels)
-        errors[f"num_errors_fg:{str(abs_error_threshold)}"] = np.sum(fg_mask & bad_pixels)
-        errors[f"num_errors_bg_est:{str(abs_error_threshold)}"] = np.sum(bg_mask & pred_mask & bad_pixels)
-        errors[f"num_errors_fg_est:{str(abs_error_threshold)}"] = np.sum(fg_mask & pred_mask & bad_pixels)
+        errors[f"num_errors_bg:{abs_error_thresh}"] = np.sum(bg_mask & bad_pixels)
+        errors[f"num_errors_fg:{abs_error_thresh}"] = np.sum(fg_mask & bad_pixels)
+        errors[f"num_errors_bg_est:{abs_error_thresh}"] = np.sum(bg_mask & pred_mask & bad_pixels)
+        errors[f"num_errors_fg_est:{abs_error_thresh}"] = np.sum(fg_mask & pred_mask & bad_pixels)
 
     if save_disparity_error_image:
         err = np.minimum(abs_err / abs_error_thresholds[0], rel_err / rel_error_thresholds[0])
@@ -295,7 +300,7 @@ def compute_disparity_error(
     return errors
 
 
-def accumulator(abs_error_thresholds: List) -> pd.DataFrame:
+def accumulate_stereo_metrics(abs_error_thresholds: List) -> pd.DataFrame:
     """Metrics accumulator."""
     num_fields = 4 + 4 * len(abs_error_thresholds)
 
@@ -306,12 +311,12 @@ def accumulator(abs_error_thresholds: List) -> pd.DataFrame:
         "num_pixels_fg_est",
     ]
 
-    for abs_error_threshold in abs_error_thresholds:
+    for abs_error_thresh in abs_error_thresholds:
         columns += [
-            f"num_errors_bg:{str(abs_error_threshold)}",
-            f"num_errors_fg:{str(abs_error_threshold)}",
-            f"num_errors_bg_est:{str(abs_error_threshold)}",
-            f"num_errors_fg_est:{str(abs_error_threshold)}",
+            f"num_errors_bg:{abs_error_thresh}",
+            f"num_errors_fg:{abs_error_thresh}",
+            f"num_errors_bg_est:{abs_error_thresh}",
+            f"num_errors_fg_est:{abs_error_thresh}",
         ]
 
     return pd.DataFrame([[0] * num_fields], columns=columns)

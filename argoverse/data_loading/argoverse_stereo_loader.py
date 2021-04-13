@@ -3,6 +3,7 @@
 import glob
 import logging
 import os
+from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Union
 
 import cv2
@@ -26,7 +27,7 @@ class ArgoverseStereoLoader:
         self._disparity_list: Optional[Dict[str, Dict[str, List[str]]]] = None
         self._image_timestamp_list: Optional[Dict[str, Dict[str, List[int]]]] = None
         self._timestamp_image_dict: Optional[Dict[str, Dict[str, Dict[int, str]]]] = None
-        self._calib: Optional[Dict[str, Dict[str, Calibration]]] = None  # { log_name: { camera_name: Calibration } }
+        self._calib: Optional[Dict[str, Dict[str, Calibration]]] = None
         self.counter: int = 0
 
         self.image_count: int = 0
@@ -135,7 +136,7 @@ class ArgoverseStereoLoader:
 
     @property
     def disparity_list(self) -> Dict[str, List[str]]:
-        """return list of all image path (str) for all cameras for the current log
+        """return list of all image paths (str) for all cameras for the current log
 
         Returns:
             image_list: dictionary of list of image, with camera name as key
@@ -174,7 +175,7 @@ class ArgoverseStereoLoader:
                 self._image_timestamp_list[log] = {}
                 for camera in STEREO_CAMERA_LIST:
                     self._image_timestamp_list[log][camera] = [
-                        int(x.split("/")[-1][:-4].split("_")[-1]) for x in self._image_list[log][camera]
+                        int(Path(x).stem.split("_")[-1]) for x in self._image_list[log][camera]
                     ]
 
         return self._image_timestamp_list[self.current_log]
@@ -267,7 +268,7 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
             load: whether to return image array (True) or image path (False)
 
         Returns:
-            np.array: list of image path (str or np.array)),
+            List[str]: list of image paths (str).
         """
         assert self.image_list is not None
         assert self._image_list is not None
@@ -292,7 +293,7 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
             load: whether to return image array (True) or image path (False)
 
         Returns:
-            np.array: list of disparity image path (str or np.array)),
+            List[str]: list of disparity image paths (str),
         """
         assert self.disparity_list is not None
         assert self._disparity_list is not None
