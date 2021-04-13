@@ -1,6 +1,8 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
 import copy
+import os
+from os import PathLike
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
@@ -42,6 +44,7 @@ PITTSBURGH_ID = 10314
 
 # Any numeric type
 Number = Union[int, float]
+_PathLike = Union[str, "os.PathLike[str]"]
 
 
 class ArgoverseMap:
@@ -50,9 +53,10 @@ class ArgoverseMap:
     are not provided, but can be hallucinated if one considers an average lane width.
     """
 
-    ROOT = Path(__file__).resolve().parents[2] / "map_files"
+    # argoverse-api/map_files
+    ROOT = Path(__file__).resolve().parent.parent.parent / "map_files"
 
-    def __init__(self, root: Union[str, Path] = ROOT) -> None:
+    def __init__(self, root: _PathLike = ROOT) -> None:
         """ Initialize the Argoverse Map. """
         self.root = root
 

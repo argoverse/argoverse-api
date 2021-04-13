@@ -45,6 +45,8 @@ import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
+_PathLike = Union[str, "os.PathLike[str]"]
+
 
 class AffFnType(Enum):
     CENTER = auto()
@@ -94,7 +96,7 @@ class DetectionCfg(NamedTuple):
     tp_normalization_terms: np.ndarray = np.array([tp_thresh, MAX_SCALE_ERROR, MAX_YAW_ERROR])
     summary_default_vals: np.ndarray = np.array([MIN_AP, tp_thresh, MAX_NORMALIZED_ASE, MAX_NORMALIZED_AOE, MIN_CDS])
     eval_only_roi_instances: bool = True
-    map_root: Union[str, Path] = Path(__file__).parents[3] / "map_files"
+    map_root: _PathLike = Path(__file__).parent.parent.parent.parent / "map_files"  # argoverse-api/map_files
 
 
 def accumulate(
