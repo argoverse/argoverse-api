@@ -76,9 +76,9 @@ DEFAULT_REL_ERROR_THRESHOLDS = [0.1, 0.1, 0.1]
 
 # The disparity error image uses a custom log-color scale depicting correct estimates in blue and wrong estimates in
 # red color tones, as in the KITTI Stereo 2015 Benchmark [1].
-# log_colormap = [disparity error range, RGB color], where the disparity error range is defined as:
+# LOG_COLORMAP = [disparity error range, RGB color], where the disparity error range is defined as:
 # y = 2^x for x = [-Inf, -4, -3, -2, -1, 0, 1, 2, 3, 4, Inf].
-log_colormap = [
+LOG_COLORMAP = [
     [np.array([0, 2 ** -4]), np.array([49, 54, 149], dtype=np.uint8)],
     [np.array([2 ** -4, 2 ** -3]), np.array([69, 117, 180], dtype=np.uint8)],
     [np.array([2 ** -3, 2 ** -2]), np.array([116, 173, 209], dtype=np.uint8)],
@@ -250,7 +250,7 @@ def compute_disparity_error(
         err = np.minimum(abs_err / abs_error_thresholds[0], rel_err / rel_error_thresholds[0])
         disparity_error_image = np.zeros((*pred_disparity.shape, 3), dtype=np.uint8)
 
-        for threshold, color in log_colormap:
+        for threshold, color in LOG_COLORMAP:
             disparity_error_image[np.logical_and(err >= threshold[0], err < threshold[1])] = color
 
         disparity_error_image[gt_disparity == 0] *= 0
@@ -265,9 +265,9 @@ def compute_disparity_error(
         x = np.linspace(1, 11, 10)
         y = np.linspace(0, 0, 10)
         sizes = np.logspace(8, 12, num=10, base=2.0)
-        scalars = np.array(log_colormap, dtype=object)[:, 0] * abs_error_thresholds[0]
+        scalars = np.array(LOG_COLORMAP, dtype=object)[:, 0] * abs_error_thresholds[0]
         scalars = [f"[{scalar[0]:.2f}, {scalar[1]:.2f}]" for scalar in scalars]
-        colors = np.array(log_colormap, dtype=object)[:, 1]
+        colors = np.array(LOG_COLORMAP, dtype=object)[:, 1]
         colors = [color / 255.0 for color in colors]
         plt.scatter(x, y, c=colors, s=3000)
         plt.xlabel("Disparity range errors in pixels", fontsize=24)
