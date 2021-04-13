@@ -90,7 +90,7 @@ class ArgoverseMap:
             self.city_to_da_bboxes_dict[city_name] = da_bboxes
 
     @property
-    def map_files_root(self):
+    def map_files_root(self) -> Path:
         if self.root is None:
             raise ValueError("Root cannot be None!")
         return Path(self.root).resolve()
