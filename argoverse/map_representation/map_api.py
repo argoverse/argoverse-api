@@ -38,6 +38,9 @@ MAX_LABEL_DIST_TO_LANE = 20  # meters
 OUT_OF_RANGE_LANE_DIST_THRESHOLD = 5.0  # 5 meters
 ROI_ISOCONTOUR = 5.0
 
+# argoverse-api/map_files
+ROOT = Path(__file__).resolve().parent.parent.parent / "map_files"
+
 # known City IDs from newest to oldest
 MIAMI_ID = 10316
 PITTSBURGH_ID = 10314
@@ -52,9 +55,6 @@ class ArgoverseMap:
     This class provides the interface to our vector maps and rasterized maps. Exact lane boundaries
     are not provided, but can be hallucinated if one considers an average lane width.
     """
-
-    # argoverse-api/map_files
-    ROOT = Path(__file__).resolve().parent.parent.parent / "map_files"
 
     def __init__(self, root: _PathLike = ROOT) -> None:
         """ Initialize the Argoverse Map. """
@@ -92,7 +92,7 @@ class ArgoverseMap:
     @property
     def map_files_root(self) -> Path:
         if self.root is None:
-            raise ValueError("Root cannot be None!")
+            raise ValueError("Map root cannot be None!")
         return Path(self.root).resolve()
 
     def get_vector_map_lane_polygons(self, city_name: str) -> List[np.ndarray]:
