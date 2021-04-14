@@ -326,7 +326,7 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
             load: whether to return image array (True) or image path (False)
 
         Returns:
-            np.array: list of image path (str or np.array)),
+            np.ndarray: list of image path (str or np.ndarray)),
         """
         assert self.timestamp_image_dict is not None
         assert self._timestamp_image_dict is not None
@@ -356,7 +356,7 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
             load: whether to return image array (True) or image path (False)
 
         Returns:
-            np.array: list of image path (str or np.array)),
+            np.ndarray: list of image path (str or np.ndarray)),
         """
         assert self.image_timestamp_list is not None
         assert self._image_timestamp_list is not None
@@ -376,7 +376,7 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
     def get_disparity_map(
         self, idx: int, name: str, log_id: Optional[str] = None, load: bool = True
     ) -> Union[str, np.ndarray]:
-        """get disparity image or disparity image path at a specific index (in image index)
+        """Get disparity image or disparity image path at a specific index (in image index)
 
         Args:
             idx: image based 0-index
@@ -389,7 +389,7 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
             load: whether to return image array (True) or image path (False)
 
         Returns:
-            np.array: list of image path (str or np.array)),
+            np.ndarray: list of image path (str or np.ndarray)),
         """
         assert self.image_timestamp_list is not None
         assert self._image_timestamp_list is not None
