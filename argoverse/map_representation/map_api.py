@@ -92,7 +92,7 @@ class ArgoverseMap:
     @property
     def map_files_root(self) -> Path:
         if self.root is None:
-            raise ValueError("Map root cannot be None!")
+            raise ValueError("Map root directory cannot be None!")
         return Path(self.root).resolve()
 
     def get_vector_map_lane_polygons(self, city_name: str) -> List[np.ndarray]:
