@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 STEREO_FRONT_LEFT_RECT = RECTIFIED_STEREO_CAMERA_LIST[0]
 STEREO_FRONT_RIGHT_RECT = RECTIFIED_STEREO_CAMERA_LIST[1]
 
+DISPARITY_NORM = 2.0 ** 8  # 256.0
+
 
 class ArgoverseStereoLoader:
     def __init__(self, root_dir: str, split_name: str) -> None:
@@ -403,7 +405,7 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
         disparity_path = self._disparity_list[log_id][name][idx]
 
         if load:
-            return np.float32(cv2.imread(disparity_path, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)) / 256.0
+            return np.float32(cv2.imread(disparity_path, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)) / DISPARITY_NORM
         return disparity_path
 
     def get_calibration(self, camera: str, log_id: Optional[str] = None) -> Calibration:

@@ -1,4 +1,8 @@
 # <Copyright 2021, Argo AI, LLC. Released under the MIT license.>
+"""Stereo evaluation unit tests.
+
+Run the stereo evaluation on the sample data and compare the results to the known metrics computed beforehand.
+"""
 
 import math
 from pathlib import Path

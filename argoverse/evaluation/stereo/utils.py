@@ -151,7 +151,7 @@ def accumulate_stereo_metrics(abs_error_thresholds: List[int]) -> pd.DataFrame:
 
 
 def interpolate_disparity(disp: np.ndarray) -> np.ndarray:
-    """Intepolate disparity image to inpaint holes.
+    """Interpolate disparity image to inpaint holes.
     The expected run time for the Argoverse stereo image with 2056 × 2464 pixels is ~50 ms.
     """
     disp[disp == 0] = -1
