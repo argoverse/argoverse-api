@@ -1,7 +1,5 @@
 # <Copyright 2021, Argo AI, LLC. Released under the MIT license.>
 """Stereo Loader unit tests"""
-
-import glob
 import pathlib
 
 import numpy as np

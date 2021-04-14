@@ -89,24 +89,25 @@ class ArgoverseStereoLoader:
         Returns:
             log_list: list of string representing log id
         """
-        if self._log_list is None:
+        if self._log_list is not None:
+            return self._log_list
 
-            def valid_log(log: str) -> bool:
-                return os.path.exists(
-                    os.path.join(
-                        self.root_dir,
-                        "rectified_stereo_images_v1.1",
-                        self.split_name,
-                        log,
-                        "vehicle_calibration_stereo_info.json",
-                    )
+        def valid_log(log: str) -> bool:
+            return os.path.exists(
+                os.path.join(
+                    self.root_dir,
+                    "rectified_stereo_images_v1.1",
+                    self.split_name,
+                    log,
+                    "vehicle_calibration_stereo_info.json",
                 )
+            )
 
-            self._log_list = [
-                x
-                for x in os.listdir(os.path.join(self.root_dir, "rectified_stereo_images_v1.1", self.split_name))
-                if valid_log(x)
-            ]
+        self._log_list = [
+            x
+            for x in os.listdir(os.path.join(self.root_dir, "rectified_stereo_images_v1.1", self.split_name))
+            if valid_log(x)
+        ]
 
         return self._log_list
 
@@ -169,14 +170,16 @@ class ArgoverseStereoLoader:
         assert self.image_list is not None
         assert self._image_list is not None
 
-        if self._image_timestamp_list is None:
-            self._image_timestamp_list = {}
-            for log in self.log_list:
-                self._image_timestamp_list[log] = {}
-                for camera in RECTIFIED_STEREO_CAMERA_LIST:
-                    self._image_timestamp_list[log][camera] = [
-                        int(Path(x).stem.split("_")[-1]) for x in self._image_list[log][camera]
-                    ]
+        if self._image_timestamp_list is not None:
+            return self._image_timestamp_list[self.current_log]
+
+        self._image_timestamp_list = {}
+        for log in self.log_list:
+            self._image_timestamp_list[log] = {}
+            for camera in RECTIFIED_STEREO_CAMERA_LIST:
+                self._image_timestamp_list[log][camera] = [
+                    int(Path(x).stem.split("_")[-1]) for x in self._image_list[log][camera]
+                ]
 
         return self._image_timestamp_list[self.current_log]
 
@@ -187,21 +190,23 @@ class ArgoverseStereoLoader:
         Returns:
             timestamp_image_dict: dictionary of list of image path for all cameras, with timestamp as key
         """
-        if self._timestamp_image_dict is None:
-            assert self.image_timestamp_list is not None
-            assert self._image_timestamp_list is not None
-            assert self.image_list is not None
-            assert self._image_list is not None
+        if self._timestamp_image_dict is not None:
+            return self._timestamp_image_dict[self.current_log]
 
-            self._timestamp_image_dict = {}
+        assert self.image_timestamp_list is not None
+        assert self._image_timestamp_list is not None
+        assert self.image_list is not None
+        assert self._image_list is not None
 
-            for log in self.log_list:
-                self._timestamp_image_dict[log] = {}
-                for camera in RECTIFIED_STEREO_CAMERA_LIST:
-                    self._timestamp_image_dict[log][camera] = {
-                        self._image_timestamp_list[log][camera][i]: self._image_list[log][camera][i]
-                        for i in range(len(self._image_timestamp_list[log][camera]))
-                    }
+        self._timestamp_image_dict = {}
+
+        for log in self.log_list:
+            self._timestamp_image_dict[log] = {}
+            for camera in RECTIFIED_STEREO_CAMERA_LIST:
+                self._timestamp_image_dict[log][camera] = {
+                    self._image_timestamp_list[log][camera][i]: self._image_list[log][camera][i]
+                    for i in range(len(self._image_timestamp_list[log][camera]))
+                }
 
         return self._timestamp_image_dict[self.current_log]
 
@@ -268,7 +273,7 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
             load: whether to return image array (True) or image path (False)
 
         Returns:
-            List[str]: list of image paths (str).
+            List[str]: list of disparity image path (str or List[str]),
         """
         assert self.image_list is not None
         assert self._image_list is not None
@@ -312,7 +317,7 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
         log_id: Optional[str] = None,
         load: bool = True,
     ) -> Optional[Union[str, np.ndarray]]:
-        """get image or image path at a specific timestamp
+        """Get image or image path at a specific timestamp
 
         Args:
             timestamp: timestamp
@@ -342,7 +347,7 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
     def get_image(
         self, idx: int, camera: str, log_id: Optional[str] = None, load: bool = True
     ) -> Union[str, np.ndarray]:
-        """get image or image path at a specific index (in image index)
+        """Get image or image path at a specific index (in image index)
 
         Args:
             idx: image based 0-index
