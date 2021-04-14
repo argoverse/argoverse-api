@@ -21,9 +21,9 @@ def compute_disparity_error(
     pred_fpath: Path,
     gt_fpath: Path,
     gt_obj_fpath: Path,
-    abs_error_thresholds: List = DEFAULT_ABS_ERROR_THRESHOLDS,
-    rel_error_thresholds: List = DEFAULT_REL_ERROR_THRESHOLDS,
-    figs_fpath: Path = None,
+    figs_fpath: Path,
+    abs_error_thresholds: List[int] = DEFAULT_ABS_ERROR_THRESHOLDS,
+    rel_error_thresholds: List[float] = DEFAULT_REL_ERROR_THRESHOLDS,
     save_disparity_error_image: bool = False,
 ) -> pd.DataFrame:
     """Compute the disparity error metrics."""
@@ -128,7 +128,7 @@ def compute_disparity_error(
     return errors
 
 
-def accumulate_stereo_metrics(abs_error_thresholds: List) -> pd.DataFrame:
+def accumulate_stereo_metrics(abs_error_thresholds: List[int]) -> pd.DataFrame:
     """Metrics accumulator."""
     num_fields = 4 + 4 * len(abs_error_thresholds)
 

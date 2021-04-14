@@ -61,6 +61,7 @@ from typing import List
 
 import pandas as pd
 
+from argoverse.evaluation.stereo.constants import DEFAULT_ABS_ERROR_THRESHOLDS, DEFAULT_REL_ERROR_THRESHOLDS
 from argoverse.evaluation.stereo.utils import compute_disparity_error
 
 logger = logging.getLogger(__name__)
@@ -74,8 +75,8 @@ class StereoEvaluator:
         pred_root_fpath: Path,
         gt_root_fpath: Path,
         figs_fpath: Path,
-        abs_error_thresholds: List = [10, 5, 3],
-        rel_error_thresholds: List = [0.1, 0.1, 0.1],
+        abs_error_thresholds: List[int] = DEFAULT_ABS_ERROR_THRESHOLDS,
+        rel_error_thresholds: List[float] = DEFAULT_REL_ERROR_THRESHOLDS,
         save_disparity_error_image: bool = False,
         num_procs: int = -1,
     ) -> None:
@@ -120,9 +121,9 @@ class StereoEvaluator:
                     pred_fpath,
                     gt_fpath,
                     gt_obj_fpath,
+                    self.figs_fpath,
                     self.abs_error_thresholds,
                     self.rel_error_thresholds,
-                    self.figs_fpath,
                     save_disparity_error_image=self.save_disparity_error_image,
                 )
                 errors.append(error)
@@ -132,9 +133,9 @@ class StereoEvaluator:
                     pred_fpath,
                     gt_fpath,
                     gt_obj_fpath,
+                    self.figs_fpath,
                     self.abs_error_thresholds,
                     self.rel_error_thresholds,
-                    self.figs_fpath,
                     self.save_disparity_error_image,
                 )
                 for (pred_fpath, gt_fpath, gt_obj_fpath) in zip(pred_fpaths, gt_fpaths, gt_obj_fpaths)
@@ -144,7 +145,7 @@ class StereoEvaluator:
 
         data = pd.concat(errors)
         data_sum = data.sum()
-        summary: dict() = dict()
+        summary = dict()
 
         for abs_error_thresh in self.abs_error_thresholds:
             d1_all = (data_sum[f"num_errors_bg:{abs_error_thresh}"] + data_sum[f"num_errors_fg:{abs_error_thresh}"]) / (
