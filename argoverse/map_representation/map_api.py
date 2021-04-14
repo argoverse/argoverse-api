@@ -1,6 +1,8 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
 import copy
+import os
+from os import PathLike
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
@@ -26,7 +28,6 @@ from argoverse.utils.manhattan_search import (
     find_local_polygons,
 )
 from argoverse.utils.mpl_plotting_utils import plot_lane_segment_patch, visualize_centerline
-from argoverse.utils.pkl_utils import load_pkl_dictionary
 from argoverse.utils.se2 import SE2
 
 from .lane_segment import LaneSegment
@@ -37,15 +38,16 @@ MAX_LABEL_DIST_TO_LANE = 20  # meters
 OUT_OF_RANGE_LANE_DIST_THRESHOLD = 5.0  # 5 meters
 ROI_ISOCONTOUR = 5.0
 
+# argoverse-api/map_files
+ROOT = Path(__file__).resolve().parent.parent.parent / "map_files"
+
 # known City IDs from newest to oldest
 MIAMI_ID = 10316
 PITTSBURGH_ID = 10314
 
-ROOT = Path(__file__).resolve().parent.parent.parent  # ../../..
-MAP_FILES_ROOT = ROOT / "map_files"
-
 # Any numeric type
 Number = Union[int, float]
+_PathLike = Union[str, "os.PathLike[str]"]
 
 
 class ArgoverseMap:
@@ -54,8 +56,10 @@ class ArgoverseMap:
     are not provided, but can be hallucinated if one considers an average lane width.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, root: _PathLike = ROOT) -> None:
         """ Initialize the Argoverse Map. """
+        self.root = root
+
         self.city_name_to_city_id_dict = {"PIT": PITTSBURGH_ID, "MIA": MIAMI_ID}
         self.render_window_radius = 150
         self.im_scale_factor = 50
@@ -84,6 +88,12 @@ class ArgoverseMap:
             self.city_to_driveable_areas_dict[city_name] = driveable_areas
             self.city_to_lane_bboxes_dict[city_name] = lane_bboxes
             self.city_to_da_bboxes_dict[city_name] = da_bboxes
+
+    @property
+    def map_files_root(self) -> Path:
+        if self.root is None:
+            raise ValueError("Map root directory cannot be None!")
+        return Path(self.root).resolve()
 
     def get_vector_map_lane_polygons(self, city_name: str) -> List[np.ndarray]:
         """
@@ -159,7 +169,7 @@ class ArgoverseMap:
         """
         city_lane_centerlines_dict = {}
         for city_name, city_id in self.city_name_to_city_id_dict.items():
-            xml_fpath = MAP_FILES_ROOT / f"pruned_argoverse_{city_name}_{city_id}_vector_map.xml"
+            xml_fpath = self.map_files_root / f"pruned_argoverse_{city_name}_{city_id}_vector_map.xml"
             city_lane_centerlines_dict[city_name] = load_lane_segments_from_xml(xml_fpath)
 
         return city_lane_centerlines_dict
@@ -181,10 +191,10 @@ class ArgoverseMap:
         for city_name, city_id in self.city_name_to_city_id_dict.items():
             city_id = self.city_name_to_city_id_dict[city_name]
             city_rasterized_da_roi_dict[city_name] = {}
-            npy_fpath = MAP_FILES_ROOT / f"{city_name}_{city_id}_driveable_area_mat_2019_05_28.npy"
+            npy_fpath = self.map_files_root / f"{city_name}_{city_id}_driveable_area_mat_2019_05_28.npy"
             city_rasterized_da_roi_dict[city_name]["da_mat"] = np.load(npy_fpath)
 
-            se2_npy_fpath = MAP_FILES_ROOT / f"{city_name}_{city_id}_npyimage_to_city_se2_2019_05_28.npy"
+            se2_npy_fpath = self.map_files_root / f"{city_name}_{city_id}_npyimage_to_city_se2_2019_05_28.npy"
             city_rasterized_da_roi_dict[city_name]["npyimage_to_city_se2"] = np.load(se2_npy_fpath)
             da_mat = copy.deepcopy(city_rasterized_da_roi_dict[city_name]["da_mat"])
             city_rasterized_da_roi_dict[city_name]["roi_mat"] = dilate_by_l2(da_mat, dilation_thresh=ROI_ISOCONTOUR)
@@ -204,12 +214,12 @@ class ArgoverseMap:
         city_rasterized_ground_height_dict: Dict[str, Dict[str, np.ndarray]] = {}
         for city_name, city_id in self.city_name_to_city_id_dict.items():
             city_rasterized_ground_height_dict[city_name] = {}
-            npy_fpath = MAP_FILES_ROOT / f"{city_name}_{city_id}_ground_height_mat_2019_05_28.npy"
+            npy_fpath = self.map_files_root / f"{city_name}_{city_id}_ground_height_mat_2019_05_28.npy"
 
             # load the file with rasterized values
             city_rasterized_ground_height_dict[city_name]["ground_height"] = np.load(npy_fpath)
 
-            se2_npy_fpath = MAP_FILES_ROOT / f"{city_name}_{city_id}_npyimage_to_city_se2_2019_05_28.npy"
+            se2_npy_fpath = self.map_files_root / f"{city_name}_{city_id}_npyimage_to_city_se2_2019_05_28.npy"
             city_rasterized_ground_height_dict[city_name]["npyimage_to_city_se2"] = np.load(se2_npy_fpath)
 
         return city_rasterized_ground_height_dict
@@ -266,10 +276,10 @@ class ArgoverseMap:
         city_halluc_tableidx_to_laneid_map = {}
 
         for city_name, city_id in self.city_name_to_city_id_dict.items():
-            json_fpath = MAP_FILES_ROOT / f"{city_name}_{city_id}_tableidx_to_laneid_map.json"
+            json_fpath = self.map_files_root / f"{city_name}_{city_id}_tableidx_to_laneid_map.json"
             city_halluc_tableidx_to_laneid_map[city_name] = read_json_file(json_fpath)
 
-            npy_fpath = MAP_FILES_ROOT / f"{city_name}_{city_id}_halluc_bbox_table.npy"
+            npy_fpath = self.map_files_root / f"{city_name}_{city_id}_halluc_bbox_table.npy"
             city_halluc_bbox_table[city_name] = np.load(npy_fpath)
 
         return city_halluc_bbox_table, city_halluc_tableidx_to_laneid_map
