@@ -36,29 +36,33 @@ class Sim2:
         if not isinstance(other, Sim2):
             return False
 
-        if not np.isclose(self.scale(), other.scale()):
+        if not np.isclose(self.scale, other.scale):
             return False
 
-        if not np.allclose(self.rotation(), other.rotation()):
+        if not np.allclose(self.rotation, other.rotation):
             return False
 
-        if not np.allclose(self.translation(), other.translation()):
+        if not np.allclose(self.translation, other.translation):
             return False
 
         return True
 
+    @property
     def rotation(self) -> np.ndarray:
         """Return the 2x2 rotation matrix"""
         return self.R_
 
+    @property
     def translation(self) -> np.ndarray:
         """Return the (2,) translation vector"""
         return self.t_
 
+    @property
     def scale(self) -> float:
         """Return the scale."""
         return self.s_
 
+    @property
     def matrix(self) -> np.ndarray:
         """Calculate 3*3 matrix group equivalent"""
         T = np.zeros((3, 3))
