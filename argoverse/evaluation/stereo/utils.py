@@ -13,7 +13,10 @@ import pandas as pd
 from argoverse.evaluation.stereo.constants import (
     DEFAULT_ABS_ERROR_THRESHOLDS,
     DEFAULT_REL_ERROR_THRESHOLDS,
+    DISPARITY_NORMALIZATION,
     LOG_COLORMAP,
+    NUM_EVAL_ERROR_REGIONS,
+    NUM_EVAL_PIXEL_REGIONS,
 )
 
 
@@ -31,9 +34,9 @@ def compute_disparity_error(
     gt_disparity = cv2.imread(str(gt_fpath), cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
     gt_obj_disparity = cv2.imread(str(gt_obj_fpath), cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
 
-    pred_disparity = np.float32(pred_disparity) / 256.0
-    gt_disparity = np.float32(gt_disparity) / 256.0
-    gt_obj_disparity = np.float32(gt_obj_disparity) / 256.0
+    pred_disparity = np.float32(pred_disparity) / DISPARITY_NORMALIZATION
+    gt_disparity = np.float32(gt_disparity) / DISPARITY_NORMALIZATION
+    gt_obj_disparity = np.float32(gt_obj_disparity) / DISPARITY_NORMALIZATION
 
     errors = accumulate_stereo_metrics(abs_error_thresholds)
 
@@ -70,67 +73,23 @@ def compute_disparity_error(
         errors[f"num_errors_fg_est:{abs_error_thresh}"] = np.sum(fg_mask & pred_mask & bad_pixels)
 
     if save_disparity_error_image:
-        err = np.minimum(abs_err / abs_error_thresholds[0], rel_err / rel_error_thresholds[0])
-        disparity_error_image = np.zeros((*pred_disparity.shape, 3), dtype=np.uint8)
-
-        for threshold, color in LOG_COLORMAP:
-            disparity_error_image[np.logical_and(err >= threshold[0], err < threshold[1])] = color
-
-        disparity_error_image[gt_disparity == 0] *= 0
-
-        disparity_error_image = np.uint8(
-            cv2.dilate(disparity_error_image, kernel=np.ones((2, 2), np.uint8), iterations=3)
+        compute_disparity_error_image(
+            pred_disparity,
+            gt_disparity,
+            gt_fpath,
+            figs_fpath,
+            abs_error_thresholds=DEFAULT_ABS_ERROR_THRESHOLDS,
+            rel_error_thresholds=DEFAULT_REL_ERROR_THRESHOLDS,
         )
-
-        # Plot the custom log-colormap and blend it with the disparity error image.
-        fig = plt.figure(figsize=(24, 2))
-        ax = fig.add_subplot(111)
-        x = np.linspace(1, 11, 10)
-        y = np.linspace(0, 0, 10)
-        scalars = np.array(LOG_COLORMAP, dtype=object)[:, 0] * abs_error_thresholds[0]
-        scalars = [f"[{scalar[0]:.2f}, {scalar[1]:.2f}]" for scalar in scalars]
-        colors = np.array(LOG_COLORMAP, dtype=object)[:, 1]
-        colors = [color / 255.0 for color in colors]
-
-        # Plot the custom log-colormap as colored circles with the disparity error ranges as labels.
-        plt.scatter(x, y, c=colors, s=3000)
-        plt.xlabel("Disparity range errors in pixels", fontsize=24)
-        plt.xticks(x, scalars, fontsize=20)
-        plt.yticks([])
-
-        # Remove the plot frame to make the log-colormap more clear.
-        ax.spines["top"].set_visible(False)
-        ax.spines["bottom"].set_visible(False)
-        ax.spines["right"].set_visible(False)
-        ax.spines["left"].set_visible(False)
-        plt.tight_layout()
-
-        # Recover the log-colormap drawing as a np.array image.
-        fig.canvas.draw()
-        colormap_image = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-        colormap_image = colormap_image.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-        plt.close()
-
-        # Blend the log-colormap image to the top of the disparity error image.
-        c_img = colormap_image[:, :, ::-1]
-        d_img = disparity_error_image[:, :, ::-1]
-        x_offset = 30
-        y_offset = 30
-        d_img[y_offset : y_offset + c_img.shape[0], x_offset : x_offset + c_img.shape[1]] = c_img
-
-        # Save the blended disparity error image to a PNG file.
-        log_id = str(gt_fpath).split("/")[-3]
-        timestamp = str(gt_fpath).split("_")[-1][:-4]
-        save_dir = f"{figs_fpath}/{log_id}/"
-        Path(save_dir).mkdir(parents=True, exist_ok=True)
-        cv2.imwrite(f"{save_dir}/disparity_error_{timestamp}.png", d_img)
 
     return errors
 
 
 def accumulate_stereo_metrics(abs_error_thresholds: List[int]) -> pd.DataFrame:
-    """Metrics accumulator."""
-    num_fields = 4 + 4 * len(abs_error_thresholds)
+    """Stereo metrics accumulator.
+    Initializes the stereo metrics accumulator with zeroes in all fields.
+    """
+    num_fields = NUM_EVAL_PIXEL_REGIONS + NUM_EVAL_ERROR_REGIONS * len(abs_error_thresholds)
 
     columns = [
         "num_pixels_bg",
@@ -152,9 +111,96 @@ def accumulate_stereo_metrics(abs_error_thresholds: List[int]) -> pd.DataFrame:
 
 def interpolate_disparity(disp: np.ndarray) -> np.ndarray:
     """Interpolate disparity image to inpaint holes.
+
     The expected run time for the Argoverse stereo image with 2056 × 2464 pixels is ~50 ms.
+
+    Args:
+        disp: Array of shape (M, N) representing a float32 single-channel disparity map.
+
+    Returns:
+        disp_interp: Array of shape (M, N) representing a float32 single-channel interpolated disparity map.
     """
     disp[disp == 0] = -1
     disp_interp = disparity_interpolation.disparity_interpolator(disp)
 
     return disp_interp
+
+
+def compute_disparity_error_image(
+    pred_disparity: np.ndarray,
+    gt_disparity: np.ndarray,
+    gt_fpath: Path,
+    figs_fpath: Path,
+    abs_error_thresholds: List[int] = DEFAULT_ABS_ERROR_THRESHOLDS,
+    rel_error_thresholds: List[float] = DEFAULT_REL_ERROR_THRESHOLDS,
+) -> None:
+    """
+    Compute the disparity error image as in the KITTI Stereo 2015 benchmark and save it in the PNG format.
+    The disparity error map uses a log colormap depicting correct estimates in blue and wrong estimates in red color
+    tones. We define correct disparity estimates when the absolute disparity error is less than 10 pixels and the
+    relative error is less than 10% of its true value.
+
+    Args:
+        pred_disparity: Predicted disparity map.
+        gt_disparity: Ground-truth disparity map.
+        gt_fpath: Path to the folder which contains the stereo ground truth.
+        figs_fpath: Path to the folder which will contain the output figure.
+        abs_error_thresholds: Absolute disparity error thresholds, in pixels.
+        rel_error_thresholds: Relative disparity error thresholds, in pixels.
+    """
+    # Compute errors
+    abs_err = np.abs(pred_disparity - gt_disparity)
+    rel_err = abs_err / np.maximum(gt_disparity, 1)
+
+    err = np.minimum(abs_err / abs_error_thresholds[0], rel_err / rel_error_thresholds[0])
+    disparity_error_image = np.zeros((*pred_disparity.shape, 3), dtype=np.uint8)
+
+    for threshold, color in LOG_COLORMAP:
+        disparity_error_image[np.logical_and(err >= threshold[0], err < threshold[1])] = color
+
+    disparity_error_image[gt_disparity == 0] *= 0
+
+    disparity_error_image = np.uint8(cv2.dilate(disparity_error_image, kernel=np.ones((2, 2), np.uint8), iterations=3))
+
+    # Plot the custom log-colormap and blend it with the disparity error image.
+    fig = plt.figure(figsize=(24, 2))
+    ax = fig.add_subplot(111)
+    x = np.linspace(1, 11, 10)
+    y = np.linspace(0, 0, 10)
+    scalars = np.array(LOG_COLORMAP, dtype=object)[:, 0] * abs_error_thresholds[0]
+    scalars = [f"[{scalar[0]:.2f}, {scalar[1]:.2f}]" for scalar in scalars]
+    colors = np.array(LOG_COLORMAP, dtype=object)[:, 1]
+    colors = [color / 255.0 for color in colors]
+
+    # Plot the custom log-colormap as colored circles with the disparity error ranges as labels.
+    plt.scatter(x, y, c=colors, s=3000)
+    plt.xlabel("Disparity range errors in pixels", fontsize=24)
+    plt.xticks(x, scalars, fontsize=20)
+    plt.yticks([])
+
+    # Remove the plot frame to make the log-colormap more clear.
+    ax.spines["top"].set_visible(False)
+    ax.spines["bottom"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_visible(False)
+    plt.tight_layout()
+
+    # Recover the log-colormap drawing as a np.array image.
+    fig.canvas.draw()
+    colormap_image = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
+    colormap_image = colormap_image.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+    plt.close()
+
+    # Blend the log-colormap image to the top of the disparity error image.
+    c_img = colormap_image[:, :, ::-1]
+    d_img = disparity_error_image[:, :, ::-1]
+    x_offset = 30
+    y_offset = 30
+    d_img[y_offset : y_offset + c_img.shape[0], x_offset : x_offset + c_img.shape[1]] = c_img
+
+    # Save the blended disparity error image to a PNG file.
+    log_id = Path(gt_fpath).parts[-3]
+    timestamp = Path(gt_fpath).stem.split("_")[-1]
+    save_dir = f"{figs_fpath}/{log_id}/"
+    Path(save_dir).mkdir(parents=True, exist_ok=True)
+    cv2.imwrite(f"{save_dir}/disparity_error_{timestamp}.png", d_img)

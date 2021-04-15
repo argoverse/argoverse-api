@@ -6,12 +6,30 @@ import numpy as np
 # threshold and its relative error is less than 10% of its true value.
 # We define three disparity error thresholds: 3, 5, and 10 pixels.
 # Similar to the KITTI Stereo 2015 evaluation, we empirically found that the combination of absolute and relative
-# disparity errors ensures an evaluation which is faithful with respect to the annotation errors in the ground truth.
+# disparity errors ensures an evaluation which is faithful with respect to the errors in the ground truth.
 # Absolute error thresholds in pixels, also used for KITTI stereo eval
 DEFAULT_ABS_ERROR_THRESHOLDS: List[int] = [10, 5, 3]
 
 # Relative error thresholds in pixels, also used for KITTI stereo eval
 DEFAULT_REL_ERROR_THRESHOLDS: List[float] = [0.1, 0.1, 0.1]
+
+# The disparity maps are saved as uint16 PNG images. The true disparity for a pixel can be recovered by first
+# converting the uint16 value to float and then dividing it by DISPARITY_NORMALIZATION = 256.
+DISPARITY_NORMALIZATION: float = 2.0 ** 8  # 256.0
+
+# Number of regions where the pixels will be accumulated to compute the stereo metrics.
+# The regions are: "num_pixels_bg", "num_pixels_fg", "num_pixels_bg_est", and "num_pixels_fg_est",
+# where "bg" means that the pixel accumulation happens in the background region of the disparity image, "fg" means the
+# pixel accumulation happens in the foreground regions, and the "est" suffix means that the accumulation is performed
+# using only the estimated disparities (i.e. do not consider interpolation).
+NUM_EVAL_PIXEL_REGIONS: int = 4
+
+# Number of regions where the disparity errors will be accumulated to compute the stereo metrics.
+# The regions are: "num_errors_bg", "num_errors_fg", "num_errors_bg_est", and "num_errors_fg_est",
+# where "bg" means that the error accumulation happens in the background region of the disparity image, "fg" means the
+# error accumulation happens in the foreground regions, and the "est" suffix means that the accumulation is performed
+# using only the estimated disparities (i.e. do not consider interpolation).
+NUM_EVAL_ERROR_REGIONS: int = 4
 
 # The disparity error image uses a custom log-color scale depicting correct estimates in blue and wrong estimates in
 # red color tones, as in the KITTI Stereo 2015 Benchmark [1].

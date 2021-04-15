@@ -85,8 +85,8 @@ class StereoEvaluator:
             pred_fpath_root: Path to the folder which contains the stereo predictions.
             gt_fpath_root: Path to the folder which contains the stereo ground truth.
             figs_fpath: Path to the folder which will contain the output figures.
-            abs_error_thresholds: List with the absolute disparity error thresholds.
-            rel_error_thresholds: List with the relative disparity error thresholds.
+            abs_error_thresholds: Absolute disparity error thresholds, in pixels.
+            rel_error_thresholds: Relative disparity error thresholds, in pixels.
             save_disparity_error_image: Saves the disparity image error using the PNG format in the figs_fpath.
             num_procs: Number of processes among which to subdivide work.
                 Specifying -1 will use one process per available core
@@ -147,7 +147,8 @@ class StereoEvaluator:
                 errors = p.starmap(compute_disparity_error, args)
 
         data = pd.concat(errors)
-        data_sum = data.sum()
+        # Summs over the instances along the rows.
+        data_sum = data.sum(axis=0)
         summary: Dict[str, float] = {}
 
         for abs_error_thresh in self.abs_error_thresholds:

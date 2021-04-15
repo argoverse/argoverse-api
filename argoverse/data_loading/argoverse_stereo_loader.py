@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 STEREO_FRONT_LEFT_RECT = RECTIFIED_STEREO_CAMERA_LIST[0]
 STEREO_FRONT_RIGHT_RECT = RECTIFIED_STEREO_CAMERA_LIST[1]
 
-DISPARITY_NORM = 2.0 ** 8  # 256.0
+DISPARITY_NORMALIZATION: float = 2.0 ** 8  # 256.0
 
 
 class ArgoverseStereoLoader:
@@ -73,16 +73,18 @@ class ArgoverseStereoLoader:
             None
         """
         if self._calib is None:
-            self._calib = {}
-            for log in self.log_list:
-                calib_filename = os.path.join(
-                    self.root_dir,
-                    "rectified_stereo_images_v1.1",
-                    self.split_name,
-                    log,
-                    "vehicle_calibration_stereo_info.json",
-                )
-                self._calib[log] = load_stereo_calib(calib_filename)
+            pass
+
+        self._calib = {}
+        for log in self.log_list:
+            calib_filename = os.path.join(
+                self.root_dir,
+                "rectified_stereo_images_v1.1",
+                self.split_name,
+                log,
+                "vehicle_calibration_stereo_info.json",
+            )
+            self._calib[log] = load_stereo_calib(calib_filename)
 
     @property
     def log_list(self) -> List[str]:
@@ -120,21 +122,24 @@ class ArgoverseStereoLoader:
         Returns:
             image_list: dictionary of list of image, with camera name as key
         """
-        if self._image_list is None:
-            self._image_list = {}
-            for log in self.log_list:
-                self._image_list[log] = {}
-                for camera in RECTIFIED_STEREO_CAMERA_LIST:
-                    self._image_list[log][camera] = sorted(
-                        glob.glob(
-                            (
-                                os.path.join(
-                                    self.root_dir, "rectified_stereo_images_v1.1", self.split_name, log, camera, "*.jpg"
-                                )
+        if self._image_list is not None:
+            return self._image_list[self.current_log]
+
+        self._image_list = {}
+        for log in self.log_list:
+            self._image_list[log] = {}
+            for camera in RECTIFIED_STEREO_CAMERA_LIST:
+                self._image_list[log][camera] = sorted(
+                    glob.glob(
+                        (
+                            os.path.join(
+                                self.root_dir, "rectified_stereo_images_v1.1", self.split_name, log, camera, "*.jpg"
                             )
                         )
                     )
-                    self.image_count += len(self._image_list[log][camera])
+                )
+                self.image_count += len(self._image_list[log][camera])
+
         return self._image_list[self.current_log]
 
     @property
@@ -144,27 +149,26 @@ class ArgoverseStereoLoader:
         Returns:
             image_list: dictionary of list of image, with camera name as key
         """
-        if self._disparity_list is None:
-            self._disparity_list = {}
-            for log in self.log_list:
-                self._disparity_list[log] = {}
-                STEREO_DISPARITY_LIST = ["stereo_front_left_rect_disparity", "stereo_front_left_rect_objects_disparity"]
-                for disparity in STEREO_DISPARITY_LIST:
-                    self._disparity_list[log][disparity] = sorted(
-                        glob.glob(
-                            (
-                                os.path.join(
-                                    self.root_dir, "disparity_maps_v1.1", self.split_name, log, disparity, "*.png"
-                                )
-                            )
-                        )
+        if self._disparity_list is not None:
+            return self._disparity_list[self.current_log]
+
+        self._disparity_list = {}
+        for log in self.log_list:
+            self._disparity_list[log] = {}
+            STEREO_DISPARITY_LIST = ["stereo_front_left_rect_disparity", "stereo_front_left_rect_objects_disparity"]
+            for disparity in STEREO_DISPARITY_LIST:
+                self._disparity_list[log][disparity] = sorted(
+                    glob.glob(
+                        (os.path.join(self.root_dir, "disparity_maps_v1.1", self.split_name, log, disparity, "*.png"))
                     )
-                    self.image_count += len(self._disparity_list[log][disparity])
+                )
+                self.image_count += len(self._disparity_list[log][disparity])
+
         return self._disparity_list[self.current_log]
 
     @property
     def image_timestamp_list(self) -> Dict[str, List[int]]:
-        """return dict of list of image timestamp (str) for the current log.
+        """Return dict of list of image timestamp (str) for the current log.
 
         Returns:
             image_timestamp_list: dictionary of list of image timestamp for all cameras
@@ -232,8 +236,6 @@ class ArgoverseStereoLoader:
 
     def __str__(self) -> str:
         frame_image_stereo = self.num_stereo_camera_frame
-
-        num_images = [len(self.image_list[cam]) for cam in RECTIFIED_STEREO_CAMERA_LIST]
 
         start_time = self.image_timestamp_list[STEREO_FRONT_LEFT_RECT][0]
         end_time = self.image_timestamp_list[STEREO_FRONT_LEFT_RECT][-1]
@@ -380,6 +382,10 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
     ) -> Union[str, np.ndarray]:
         """Get disparity image or disparity image path at a specific index (in image index)
 
+        The disparity maps are saved as uint16 PNG images. A zero-value ("0") indicates that no ground truth exists
+        for that pixel. The true disparity for a pixel can be recovered by first converting the uint16 value to float
+        and then dividing it by 256.
+
         Args:
             idx: image based 0-index
             name: disparity map name, one of:
@@ -405,7 +411,8 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
         disparity_path = self._disparity_list[log_id][name][idx]
 
         if load:
-            return np.float32(cv2.imread(disparity_path, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)) / DISPARITY_NORM
+            disparity_map = cv2.imread(disparity_path, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
+            return np.float32(disparity_map) / DISPARITY_NORMALIZATION
         return disparity_path
 
     def get_calibration(self, camera: str, log_id: Optional[str] = None) -> Calibration:

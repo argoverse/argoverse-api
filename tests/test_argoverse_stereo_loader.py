@@ -15,6 +15,7 @@ STEREO_DISPARITY_LIST = ["stereo_front_left_rect_disparity", "stereo_front_left_
 
 @pytest.fixture  # type: ignore
 def data_loader() -> ArgoverseStereoLoader:
+    """Load the test data using the Argoverse stereo loader class."""
     return ArgoverseStereoLoader(TEST_DATA_LOC, split_name="test")
 
 
@@ -60,9 +61,9 @@ def test_loading_image_disparity(data_loader: ArgoverseStereoLoader) -> None:
     disparity_objects = STEREO_DISPARITY_LIST[1]
     log = "1"
     image_1_at_timestamp = data_loader.get_image_at_timestamp(1, camera, log)
-    image_1 = data_loader.get_image(0, camera, log)
-    disparity_1 = data_loader.get_disparity_map(0, disparity, log)
-    disparity_objects_1 = data_loader.get_disparity_map(0, disparity_objects, log)
+    image_1 = data_loader.get_image(idx=0, camera=camera, log_id=log)
+    disparity_1 = data_loader.get_disparity_map(idx=0, name=disparity, log_id=log)
+    disparity_objects_1 = data_loader.get_disparity_map(idx=0, name=disparity_objects, log_id=log)
 
     assert np.array_equal(image_1_at_timestamp, image_1)
     assert disparity_1.shape == disparity_objects_1.shape
