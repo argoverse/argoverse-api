@@ -57,7 +57,7 @@ class ArgoverseStereoLoader:
 
     @property
     def calib(self) -> Dict[str, Calibration]:
-        """get calibration dict for current log
+        """Get calibration dict for current log
 
         Returns:
             calib: Calibration object for the current log
@@ -67,7 +67,7 @@ class ArgoverseStereoLoader:
         return self._calib[self.current_log]
 
     def __ensure_calib_is_populated(self) -> None:
-        """load up calibration object for all logs
+        """Load up calibration object for all logs
 
         Returns:
             None
@@ -86,7 +86,7 @@ class ArgoverseStereoLoader:
 
     @property
     def log_list(self) -> List[str]:
-        """return list of log (str) in the current dataset directory
+        """Return list of log (str) in the current dataset directory
 
         Returns:
             log_list: list of string representing log id
@@ -115,7 +115,7 @@ class ArgoverseStereoLoader:
 
     @property
     def image_list(self) -> Dict[str, List[str]]:
-        """return list of all image path (str) for the current log
+        """Return list of all image path (str) for the current log
 
         Returns:
             image_list: dictionary of list of image, with camera name as key
@@ -139,7 +139,7 @@ class ArgoverseStereoLoader:
 
     @property
     def disparity_list(self) -> Dict[str, List[str]]:
-        """return list of all image paths (str) for all cameras for the current log
+        """Return list of all image paths (str) for all cameras for the current log
 
         Returns:
             image_list: dictionary of list of image, with camera name as key
@@ -187,7 +187,7 @@ class ArgoverseStereoLoader:
 
     @property
     def timestamp_image_dict(self) -> Dict[str, Dict[int, str]]:
-        """return dict of list of image path (str) for the current log, index by timestamp.
+        """Return dict of list of image path (str) for the current log, index by timestamp.
 
         Returns:
             timestamp_image_dict: dictionary of list of image path for all cameras, with timestamp as key
@@ -255,7 +255,7 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
         return self
 
     def get(self, log_id: str) -> "ArgoverseStereoLoader":
-        """get ArgoverseStereoLoader object with current_log set to specified log_id
+        """Get ArgoverseStereoLoader object with current_log set to specified log_id
 
         Args:
             log_id: log id

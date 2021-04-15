@@ -57,7 +57,7 @@ import logging
 import os
 from multiprocessing import Pool
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 
 import pandas as pd
 
@@ -85,6 +85,9 @@ class StereoEvaluator:
             pred_fpath_root: Path to the folder which contains the stereo predictions.
             gt_fpath_root: Path to the folder which contains the stereo ground truth.
             figs_fpath: Path to the folder which will contain the output figures.
+            abs_error_thresholds: List with the absolute disparity error thresholds.
+            rel_error_thresholds: List with the relative disparity error thresholds.
+            save_disparity_error_image: Saves the disparity image error using the PNG format in the figs_fpath.
             num_procs: Number of processes among which to subdivide work.
                 Specifying -1 will use one process per available core
         """
@@ -145,7 +148,7 @@ class StereoEvaluator:
 
         data = pd.concat(errors)
         data_sum = data.sum()
-        summary = dict()
+        summary: Dict[str, float] = {}
 
         for abs_error_thresh in self.abs_error_thresholds:
             d1_all = (data_sum[f"num_errors_bg:{abs_error_thresh}"] + data_sum[f"num_errors_fg:{abs_error_thresh}"]) / (
