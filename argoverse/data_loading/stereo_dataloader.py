@@ -35,7 +35,10 @@ class ArgoverseStereoDataLoader:
         Returns:
             log_calib_data: calibration dictionary
         """
-        calib_fpath = f"{self.data_dir}/rectified_stereo_images_v1.1/{self.split_name}/{log_id}/vehicle_calibration_stereo_info.json"
+        calib_fpath = (
+            f"{self.data_dir}/rectified_stereo_images_v1.1/{self.split_name}/{log_id}/"
+            f"vehicle_calibration_stereo_info.json"
+        )
 
         log_calib_data = read_json_file(calib_fpath)
         assert isinstance(log_calib_data, dict)
