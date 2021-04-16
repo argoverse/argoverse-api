@@ -147,7 +147,7 @@ class StereoEvaluator:
                 errors = p.starmap(compute_disparity_error, args)
 
         data = pd.concat(errors)
-        # Sums over the instances along the rows containing the disparity error metrics.
+        # Sums over all frames (row dimension) for each disparity error metric
         data_sum = data.sum(axis=0)
         summary: Dict[str, float] = {}
 

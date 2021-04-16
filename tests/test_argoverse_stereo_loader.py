@@ -1,69 +1,78 @@
 # <Copyright 2021, Argo AI, LLC. Released under the MIT license.>
-"""Stereo Loader unit tests"""
+
 import pathlib
 
 import numpy as np
 import pytest
 
-from argoverse.data_loading.argoverse_stereo_loader import ArgoverseStereoLoader
+from argoverse.data_loading.stereo_dataloader import ArgoverseStereoDataLoader
 from argoverse.utils.camera_stats import RECTIFIED_STEREO_CAMERA_LIST
 
 TEST_DATA_LOC = str(pathlib.Path(__file__).parent.parent / "tests" / "test_data" / "stereo")
+_LOG_ID = "1"
 
-STEREO_DISPARITY_LIST = ["stereo_front_left_rect_disparity", "stereo_front_left_rect_objects_disparity"]
+STEREO_FRONT_LEFT_RECT = RECTIFIED_STEREO_CAMERA_LIST[0]
+STEREO_FRONT_RIGHT_RECT = RECTIFIED_STEREO_CAMERA_LIST[1]
 
 
 @pytest.fixture  # type: ignore
-def data_loader() -> ArgoverseStereoLoader:
+def data_loader() -> ArgoverseStereoDataLoader:
     """Load the test data using the Argoverse stereo loader class."""
-    return ArgoverseStereoLoader(TEST_DATA_LOC, split_name="test")
+    return ArgoverseStereoDataLoader(TEST_DATA_LOC, split_name="test")
 
 
-def test_log_list(data_loader: ArgoverseStereoLoader) -> None:
-    assert data_loader.log_list[0] == "1"
+def test_get_log_calibration_data(data_loader: ArgoverseStereoDataLoader) -> None:
+    # Just check that it doesn't raise.
+    assert data_loader.get_log_calibration_data(log_id=_LOG_ID)
 
 
-def test_image_list(data_loader: ArgoverseStereoLoader) -> None:
-    assert set(data_loader.image_list.keys()) == set(RECTIFIED_STEREO_CAMERA_LIST)
+def test_get_ordered_log_stereo_image_fpaths(data_loader: ArgoverseStereoDataLoader) -> None:
+    left_stereo_img_fpaths = data_loader.get_ordered_log_stereo_image_fpaths(
+        log_id=_LOG_ID,
+        camera_name=STEREO_FRONT_LEFT_RECT,
+    )
+
+    right_stereo_img_fpaths = data_loader.get_ordered_log_stereo_image_fpaths(
+        log_id=_LOG_ID,
+        camera_name=STEREO_FRONT_RIGHT_RECT,
+    )
+
+    assert len(left_stereo_img_fpaths) == 1
+    assert len(right_stereo_img_fpaths) == 1
 
 
-def test_disparity_list(data_loader: ArgoverseStereoLoader) -> None:
-    assert set(data_loader.disparity_list.keys()) == set(STEREO_DISPARITY_LIST)
+def test_ordered_log_disparity_map_fpaths(data_loader: ArgoverseStereoDataLoader) -> None:
+    disparity_map_fpaths = data_loader.get_ordered_log_disparity_map_fpaths(
+        log_id=_LOG_ID,
+        disparity_name="stereo_front_left_rect_disparity",
+    )
+
+    disparity_obj_map_fpaths = data_loader.get_ordered_log_disparity_map_fpaths(
+        log_id=_LOG_ID,
+        disparity_name="stereo_front_left_rect_objects_disparity",
+    )
+
+    assert len(disparity_map_fpaths) == 1
+    assert len(disparity_obj_map_fpaths) == 1
 
 
-def test_image_timestamp_list(data_loader: ArgoverseStereoLoader) -> None:
-    assert set(data_loader.image_timestamp_list.keys()) == set(RECTIFIED_STEREO_CAMERA_LIST)
-    for camera in RECTIFIED_STEREO_CAMERA_LIST:
-        assert 1 in data_loader.image_timestamp_list[camera]
+def test_get_rectified_stereo_image(data_loader: ArgoverseStereoDataLoader) -> None:
+    left_stereo_img_fpaths = data_loader.get_ordered_log_stereo_image_fpaths(
+        log_id=_LOG_ID,
+        camera_name=STEREO_FRONT_LEFT_RECT,
+    )
+
+    rectified_stereo_image = data_loader.get_rectified_stereo_image(left_stereo_img_fpaths[0])
+
+    assert rectified_stereo_image.shape == (2056, 2464, 3)
 
 
-def test_timestamp_image_dict(data_loader: ArgoverseStereoLoader) -> None:
-    assert set(data_loader.timestamp_image_dict.keys()) == set(RECTIFIED_STEREO_CAMERA_LIST)
-    for camera in RECTIFIED_STEREO_CAMERA_LIST:
-        assert len(data_loader.timestamp_image_dict[camera]) == 1
+def test_get_disparity_map(data_loader: ArgoverseStereoDataLoader) -> None:
+    disparity_img_fpaths = data_loader.get_ordered_log_disparity_map_fpaths(
+        log_id=_LOG_ID,
+        disparity_name="stereo_front_left_rect_disparity",
+    )
 
+    disparity_map = data_loader.get_disparity_map(disparity_img_fpaths[0])
 
-def test_data_loader_get(data_loader: ArgoverseStereoLoader) -> None:
-    data_0 = data_loader[0].current_log
-    data_1 = data_loader.get("1").current_log
-    assert data_0 == data_1
-
-
-def test_calibration(data_loader: ArgoverseStereoLoader) -> None:
-    for camera in RECTIFIED_STEREO_CAMERA_LIST:
-        calib = data_loader.get_calibration(camera, "1")
-        assert calib.camera == camera
-
-
-def test_loading_image_disparity(data_loader: ArgoverseStereoLoader) -> None:
-    camera = RECTIFIED_STEREO_CAMERA_LIST[0]
-    disparity = STEREO_DISPARITY_LIST[0]
-    disparity_objects = STEREO_DISPARITY_LIST[1]
-    log = "1"
-    image_1_at_timestamp = data_loader.get_image_at_timestamp(1, camera, log)
-    image_1 = data_loader.get_image(idx=0, camera=camera, log_id=log)
-    disparity_1 = data_loader.get_disparity_map(idx=0, name=disparity, log_id=log)
-    disparity_objects_1 = data_loader.get_disparity_map(idx=0, name=disparity_objects, log_id=log)
-
-    assert np.array_equal(image_1_at_timestamp, image_1)
-    assert disparity_1.shape == disparity_objects_1.shape
+    assert disparity_map.shape == (2056, 2464)
