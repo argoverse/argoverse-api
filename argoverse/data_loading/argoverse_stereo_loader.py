@@ -307,7 +307,7 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
 
         return self._disparity_list[log_id][name]
 
-    def get_log_stereo_img_paths(self, camera: str, log_id: Optional[str] = None) -> Dict[str, List[str]]:
+    def get_log_stereo_img_paths(self, camera: str, log_id: Optional[str] = None) -> List[str]:
         """Get list of stereo image paths for specific log
 
         Args:

@@ -88,9 +88,9 @@ def compute_disparity_error(
         errors[f"num_errors_fg_est:{abs_error_thresh}"] = np.sum(fg_mask & pred_mask & bad_pixels)
 
     if save_disparity_error_image:
-        timestamp = Path(gt_fpath).stem.split("_")[-1]
+        timestamp = int(Path(gt_fpath).stem.split("_")[-1])
         log_id = Path(gt_fpath).parts[-3]
-        write_dir_path = f"{figs_fpath}/{log_id}/"
+        write_dir_path = Path(f"{figs_fpath}/{log_id}")
 
         write_disparity_error_image(
             pred_disparity,
