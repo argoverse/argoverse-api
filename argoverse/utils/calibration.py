@@ -237,7 +237,7 @@ def load_calib(calib_filepath: Union[str, Path]) -> Dict[Any, Calibration]:
 
 
 def load_stereo_calib(calib_filepath: Union[str, Path]) -> Dict[Any, Calibration]:
-    """Load stereo calibration object for all camera from calibration filepath
+    """Load Calibration object for the rectified stereo cameras from the calibration filepath
 
     Args:
         calib_filepath (str): path to the stereo calibration file

@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 STEREO_FRONT_LEFT_RECT = RECTIFIED_STEREO_CAMERA_LIST[0]
 STEREO_FRONT_RIGHT_RECT = RECTIFIED_STEREO_CAMERA_LIST[1]
 
+STEREO_DISPARITY_LIST = ["stereo_front_left_rect_disparity", "stereo_front_left_rect_objects_disparity"]
+
 DISPARITY_NORMALIZATION: float = 2.0 ** 8  # 256.0
 
 
@@ -72,8 +74,8 @@ class ArgoverseStereoLoader:
         Returns:
             None
         """
-        if self._calib is None:
-            pass
+        if self._calib is not None:
+            return
 
         self._calib = {}
         for log in self.log_list:
@@ -129,15 +131,7 @@ class ArgoverseStereoLoader:
         for log in self.log_list:
             self._image_list[log] = {}
             for camera in RECTIFIED_STEREO_CAMERA_LIST:
-                self._image_list[log][camera] = sorted(
-                    glob.glob(
-                        (
-                            os.path.join(
-                                self.root_dir, "rectified_stereo_images_v1.1", self.split_name, log, camera, "*.jpg"
-                            )
-                        )
-                    )
-                )
+                self._image_list[log][camera] = self.get_log_stereo_img_paths(camera, log)
                 self.image_count += len(self._image_list[log][camera])
 
         return self._image_list[self.current_log]
@@ -155,7 +149,6 @@ class ArgoverseStereoLoader:
         self._disparity_list = {}
         for log in self.log_list:
             self._disparity_list[log] = {}
-            STEREO_DISPARITY_LIST = ["stereo_front_left_rect_disparity", "stereo_front_left_rect_objects_disparity"]
             for disparity in STEREO_DISPARITY_LIST:
                 self._disparity_list[log][disparity] = sorted(
                     glob.glob(
@@ -272,7 +265,7 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
         """Get list of image/or image path
 
         Args:
-            camera: camera based on camera_stats.STEREO_CAMERA_LIST
+            camera: camera based on camera_stats.RECTIFIED_STEREO_CAMERA_LIST
             log_id: log_id, if not specified will use self.current_log
             load: whether to return image array (True) or image path (False)
 
@@ -314,6 +307,25 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
 
         return self._disparity_list[log_id][name]
 
+    def get_log_stereo_img_paths(self, camera: str, log_id: Optional[str] = None) -> Dict[str, List[str]]:
+        """Get list of stereo image paths for specific log
+
+        Args:
+            log_id: log_id, if not specified will use self.current_log
+            camera: camera based on camera_stats.RECTIFIED_STEREO_CAMERA_LIST
+
+        Returns:
+            List[str]: list of stereo image paths for the log (str or List[str]),
+        """
+        if log_id is None:
+            log_id = self.current_log
+
+        return sorted(
+            glob.glob(
+                os.path.join(self.root_dir, "rectified_stereo_images_v1.1", self.split_name, log_id, camera, "*.jpg")
+            )
+        )
+
     def get_image_at_timestamp(
         self,
         timestamp: int,
@@ -325,7 +337,7 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
 
         Args:
             timestamp: timestamp
-            camera: camera based on camera_stats.STEREO_CAMERA_LIST
+            camera: camera based on camera_stats.RECTIFIED_STEREO_CAMERA_LIST
             log_id: log_id, if not specified will use self.current_log
             load: whether to return image array (True) or image path (False)
 
@@ -355,7 +367,7 @@ Number of stereo pair frames (@5 Hz): {frame_image_stereo}
 
         Args:
             idx: image based 0-index
-            camera: camera based on camera_stats.STEREO_CAMERA_LIST
+            camera: camera based on camera_stats.RECTIFIED_STEREO_CAMERA_LIST
             log_id: log_id, if not specified will use self.current_log
             load: whether to return image array (True) or image path (False)
 

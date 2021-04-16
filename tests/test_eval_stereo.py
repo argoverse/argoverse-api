@@ -1,8 +1,5 @@
 # <Copyright 2021, Argo AI, LLC. Released under the MIT license.>
-"""Stereo evaluation unit tests.
-
-Run the stereo evaluation on the sample data and compare the results to the known metrics computed beforehand.
-"""
+"""Stereo evaluation unit tests."""
 
 import math
 from pathlib import Path
@@ -71,7 +68,6 @@ def test_compute_disparity_error_dummy_1() -> None:
     pred is the predicted disparity map, gt is the ground-truth disparity map, and gt_obj is the ground-truth disparity
     map for foreground objects.
     """
-
     gt_fpath = Path(f"{_ROOT}/test_data/stereo/eval_test_cases/dummy_case_1/disparity_gt/disparity_1.png")
     gt_obj_fpath = Path(f"{_ROOT}/test_data/stereo/eval_test_cases/dummy_case_1/disparity_gt/disparity_objects_1.png")
     pred_fpath = Path(f"{_ROOT}/test_data/stereo/eval_test_cases/dummy_case_1/disparity_pred/disparity_1.png")
@@ -210,3 +206,6 @@ def test_compute_disparity_error_dummy_3() -> None:
 if __name__ == "__main__":
     """ """
     test_stereo_evaluation()
+    test_compute_disparity_error_dummy_1()
+    test_compute_disparity_error_dummy_2()
+    test_compute_disparity_error_dummy_3()

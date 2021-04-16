@@ -29,7 +29,22 @@ def compute_disparity_error(
     rel_error_thresholds: List[float] = DEFAULT_REL_ERROR_THRESHOLDS,
     save_disparity_error_image: bool = False,
 ) -> pd.DataFrame:
-    """Compute the disparity error metrics."""
+    """
+    Compute the disparity errors.
+
+    Args:
+        pred_fpath: Path to the folder which contains the stereo predictions.
+        gt_fpath: Path to the folder which contains the stereo ground truth.
+        gt_obj_fpath: Path to the folder which contains the stereo ground truth for foreground objects.
+        figs_fpath: Path to the folder which will contain the output figures.
+        abs_error_thresholds: Absolute disparity error thresholds, in pixels.
+        rel_error_thresholds: Relative disparity error thresholds, in pixels.
+        save_disparity_error_image: Saves the disparity image error using the PNG format in the figs_fpath.
+
+    Returns:
+        errors: Pandas DataFrame containing disparity error information.
+
+    """
     pred_disparity = cv2.imread(str(pred_fpath), cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
     gt_disparity = cv2.imread(str(gt_fpath), cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
     gt_obj_disparity = cv2.imread(str(gt_obj_fpath), cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
@@ -73,13 +88,17 @@ def compute_disparity_error(
         errors[f"num_errors_fg_est:{abs_error_thresh}"] = np.sum(fg_mask & pred_mask & bad_pixels)
 
     if save_disparity_error_image:
-        compute_disparity_error_image(
+        timestamp = Path(gt_fpath).stem.split("_")[-1]
+        log_id = Path(gt_fpath).parts[-3]
+        write_dir_path = f"{figs_fpath}/{log_id}/"
+
+        write_disparity_error_image(
             pred_disparity,
             gt_disparity,
-            gt_fpath,
-            figs_fpath,
-            abs_error_thresholds=DEFAULT_ABS_ERROR_THRESHOLDS,
-            rel_error_thresholds=DEFAULT_REL_ERROR_THRESHOLDS,
+            timestamp,
+            write_dir_path,
+            abs_error_thresholds,
+            rel_error_thresholds,
         )
 
     return errors
@@ -126,16 +145,46 @@ def interpolate_disparity(disp: np.ndarray) -> np.ndarray:
     return disp_interp
 
 
-def compute_disparity_error_image(
+def write_disparity_error_image(
     pred_disparity: np.ndarray,
     gt_disparity: np.ndarray,
-    gt_fpath: Path,
-    figs_fpath: Path,
+    timestamp: int,
+    write_dir_path: Path,
     abs_error_thresholds: List[int] = DEFAULT_ABS_ERROR_THRESHOLDS,
     rel_error_thresholds: List[float] = DEFAULT_REL_ERROR_THRESHOLDS,
 ) -> None:
     """
-    Compute the disparity error image as in the KITTI Stereo 2015 benchmark and save it in the PNG format.
+    Write the disparity error image to disk in the PNG format.
+
+    Args:
+        pred_disparity: Predicted disparity map.
+        gt_disparity: Ground-truth disparity map.
+        timestamp: timestamp of the disparity image.
+        write_dir_path: Path to the directory for writing the disparity error image.
+        abs_error_thresholds: Absolute disparity error thresholds, in pixels.
+        rel_error_thresholds: Relative disparity error thresholds, in pixels.
+    """
+    disparity_error_image = compute_disparity_error_image(
+        pred_disparity,
+        gt_disparity,
+        abs_error_thresholds=abs_error_thresholds,
+        rel_error_thresholds=rel_error_thresholds,
+    )
+
+    # Save the disparity error image to a PNG file.
+    Path(write_dir_path).mkdir(parents=True, exist_ok=True)
+    # Write the disparity error image. First, switch RGB -> BGR for writing with OpenCV.
+    cv2.imwrite(f"{write_dir_path}/disparity_error_{timestamp}.png", disparity_error_image[:, :, ::-1])
+
+
+def compute_disparity_error_image(
+    pred_disparity: np.ndarray,
+    gt_disparity: np.ndarray,
+    abs_error_thresholds: List[int] = DEFAULT_ABS_ERROR_THRESHOLDS,
+    rel_error_thresholds: List[float] = DEFAULT_REL_ERROR_THRESHOLDS,
+) -> np.ndarray:
+    """
+    Compute the disparity error image as in the KITTI Stereo 2015 benchmark.
     The disparity error map uses a log colormap depicting correct estimates in blue and wrong estimates in red color
     tones. We define correct disparity estimates when the absolute disparity error is less than 10 pixels and the
     relative error is less than 10% of its true value.
@@ -143,22 +192,25 @@ def compute_disparity_error_image(
     Args:
         pred_disparity: Predicted disparity map.
         gt_disparity: Ground-truth disparity map.
-        gt_fpath: Path to the folder which contains the stereo ground truth.
-        figs_fpath: Path to the folder which will contain the output figure.
         abs_error_thresholds: Absolute disparity error thresholds, in pixels.
         rel_error_thresholds: Relative disparity error thresholds, in pixels.
+
+    Returns:
+        disparity_error_image: Disparity error image.
     """
     # Compute errors
     abs_err = np.abs(pred_disparity - gt_disparity)
     rel_err = abs_err / np.maximum(gt_disparity, 1)
 
+    # Compute the errors using the 0th threshold (i.e. 10 pixels) which is the principal threshold used to sort the
+    # stereo evaluation leaderboard.
     err = np.minimum(abs_err / abs_error_thresholds[0], rel_err / rel_error_thresholds[0])
     disparity_error_image = np.zeros((*pred_disparity.shape, 3), dtype=np.uint8)
 
     for threshold, color in LOG_COLORMAP:
         disparity_error_image[np.logical_and(err >= threshold[0], err < threshold[1])] = color
 
-    disparity_error_image[gt_disparity == 0] *= 0
+    disparity_error_image[gt_disparity == 0] = 0
 
     disparity_error_image = np.uint8(cv2.dilate(disparity_error_image, kernel=np.ones((2, 2), np.uint8), iterations=3))
 
@@ -191,16 +243,10 @@ def compute_disparity_error_image(
     colormap_image = colormap_image.reshape(fig.canvas.get_width_height()[::-1] + (3,))
     plt.close()
 
-    # Blend the log-colormap image to the top of the disparity error image.
-    c_img = colormap_image[:, :, ::-1]
-    d_img = disparity_error_image[:, :, ::-1]
+    # Copy the log-colormap image to the top of the disparity error image using the x and y offsets, in pixels.
     x_offset = 30
     y_offset = 30
-    d_img[y_offset : y_offset + c_img.shape[0], x_offset : x_offset + c_img.shape[1]] = c_img
+    h, w, _ = colormap_image.shape
+    disparity_error_image[y_offset : y_offset + h, x_offset : x_offset + w] = colormap_image
 
-    # Save the blended disparity error image to a PNG file.
-    log_id = Path(gt_fpath).parts[-3]
-    timestamp = Path(gt_fpath).stem.split("_")[-1]
-    save_dir = f"{figs_fpath}/{log_id}/"
-    Path(save_dir).mkdir(parents=True, exist_ok=True)
-    cv2.imwrite(f"{save_dir}/disparity_error_{timestamp}.png", d_img)
+    return disparity_error_image
