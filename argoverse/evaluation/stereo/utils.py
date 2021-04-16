@@ -29,13 +29,12 @@ def compute_disparity_error(
     rel_error_thresholds: List[float] = DEFAULT_REL_ERROR_THRESHOLDS,
     save_disparity_error_image: bool = False,
 ) -> pd.DataFrame:
-    """
-    Compute the disparity errors.
+    """Compute the disparity errors.
 
     Args:
-        pred_fpath: Path to the folder which contains the stereo predictions.
-        gt_fpath: Path to the folder which contains the stereo ground truth.
-        gt_obj_fpath: Path to the folder which contains the stereo ground truth for foreground objects.
+        pred_fpath: Path to predicted disparity map.
+        gt_fpath: Path to ground-truth disparity map.
+        gt_obj_fpath: Path to ground-truth disparity map for foreground objects.
         figs_fpath: Path to the folder which will contain the output figures.
         abs_error_thresholds: Absolute disparity error thresholds, in pixels.
         rel_error_thresholds: Relative disparity error thresholds, in pixels.
@@ -65,7 +64,7 @@ def compute_disparity_error(
     # If the density of the predicted disparity is less than 100%, then interpolate to fill up the holes.
     num_pixels_all = pred_disparity.size
     num_pixels_all_est = np.sum(pred_mask)
-    density = num_pixels_all_est / max(num_pixels_all, 1.0)
+    density = num_pixels_all_est / num_pixels_all
 
     if density < 1.0:
         pred_disparity = interpolate_disparity(pred_disparity)
@@ -106,6 +105,7 @@ def compute_disparity_error(
 
 def accumulate_stereo_metrics(abs_error_thresholds: List[int]) -> pd.DataFrame:
     """Stereo metrics accumulator.
+
     Initializes the stereo metrics accumulator with zeroes in all fields.
     """
     num_fields = NUM_EVAL_PIXEL_REGIONS + NUM_EVAL_ERROR_REGIONS * len(abs_error_thresholds)
@@ -131,6 +131,12 @@ def accumulate_stereo_metrics(abs_error_thresholds: List[int]) -> pd.DataFrame:
 def interpolate_disparity(disp: np.ndarray) -> np.ndarray:
     """Interpolate disparity image to inpaint holes.
 
+    The predicted disparity map might contain holes which need to be interpolated for a dense result.
+    Interpolation is performed by simply propagating valid disparities through neighboring invalid disparity areas.
+
+    Please refer to the paper "Stereo Processing by Semi-Global Matching and Mutual Information" available at
+    https://core.ac.uk/download/pdf/11134866.pdf for more information about the algorithm to interpolate disparity maps.
+
     The expected run time for the Argoverse stereo image with 2056 × 2464 pixels is ~50 ms.
 
     Args:
@@ -153,8 +159,7 @@ def write_disparity_error_image(
     abs_error_thresholds: List[int] = DEFAULT_ABS_ERROR_THRESHOLDS,
     rel_error_thresholds: List[float] = DEFAULT_REL_ERROR_THRESHOLDS,
 ) -> None:
-    """
-    Write the disparity error image to disk in the PNG format.
+    """Write the disparity error image to disk in the PNG format.
 
     Args:
         pred_disparity: Predicted disparity map.
@@ -183,8 +188,7 @@ def compute_disparity_error_image(
     abs_error_thresholds: List[int] = DEFAULT_ABS_ERROR_THRESHOLDS,
     rel_error_thresholds: List[float] = DEFAULT_REL_ERROR_THRESHOLDS,
 ) -> np.ndarray:
-    """
-    Compute the disparity error image as in the KITTI Stereo 2015 benchmark.
+    """Compute the disparity error image as in the KITTI Stereo 2015 benchmark.
     The disparity error map uses a log colormap depicting correct estimates in blue and wrong estimates in red color
     tones. We define correct disparity estimates when the absolute disparity error is less than 10 pixels and the
     relative error is less than 10% of its true value.

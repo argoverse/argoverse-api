@@ -19,6 +19,8 @@ Evaluation:
             (left stereo image).
     2. bg: Percentage of stereo disparity errors averaged only over background regions.
     3. fg: Percentage of stereo disparity errors averaged only over foreground regions.
+           The foreground region boundary (or mask) is given by the ground-truth disparity map containing only
+           foreground objects, extracted using ground-truth cuboid tracks.
 
     The * (asterisk) means that the evaluation is performed using only the algorithm predicted disparities.
     Even though the disparities might be sparse, they are not interpolated.
@@ -89,7 +91,7 @@ class StereoEvaluator:
             rel_error_thresholds: Relative disparity error thresholds, in pixels.
             save_disparity_error_image: Saves the disparity image error using the PNG format in the figs_fpath.
             num_procs: Number of processes among which to subdivide work.
-                Specifying -1 will use one process per available core
+                Specifying -1 will use one process per available core.
         """
         self.pred_root_fpath = pred_root_fpath
         self.gt_root_fpath = gt_root_fpath
@@ -100,8 +102,8 @@ class StereoEvaluator:
         self.num_procs = os.cpu_count() if num_procs == -1 else num_procs
 
     def evaluate(self) -> pd.DataFrame:
-        """Evaluate stereo output and return metrics. The multiprocessing
-        library is used for parallel processing of disparity evaluation.
+        """Evaluate stereo output and return metrics. The multiprocessing library is used for parallel processing
+        of disparity evaluation.
 
         Returns:
             Evaluation metrics.
@@ -152,23 +154,23 @@ class StereoEvaluator:
         summary: Dict[str, float] = {}
 
         for abs_error_thresh in self.abs_error_thresholds:
-            d1_all = (data_sum[f"num_errors_bg:{abs_error_thresh}"] + data_sum[f"num_errors_fg:{abs_error_thresh}"]) / (
+            all = (data_sum[f"num_errors_bg:{abs_error_thresh}"] + data_sum[f"num_errors_fg:{abs_error_thresh}"]) / (
                 data_sum["num_pixels_bg"] + data_sum["num_pixels_fg"]
             )
-            d1_fg = data_sum[f"num_errors_fg:{abs_error_thresh}"] / data_sum["num_pixels_fg"]
-            d1_bg = data_sum[f"num_errors_bg:{abs_error_thresh}"] / data_sum["num_pixels_bg"]
-            d1_all_est = (
+            fg = data_sum[f"num_errors_fg:{abs_error_thresh}"] / data_sum["num_pixels_fg"]
+            bg = data_sum[f"num_errors_bg:{abs_error_thresh}"] / data_sum["num_pixels_bg"]
+            all_est = (
                 data_sum[f"num_errors_bg_est:{abs_error_thresh}"] + data_sum[f"num_errors_fg_est:{abs_error_thresh}"]
             ) / (data_sum["num_pixels_bg_est"] + data_sum["num_pixels_fg_est"])
-            d1_fg_est = data_sum[f"num_errors_fg_est:{abs_error_thresh}"] / data_sum["num_pixels_fg_est"]
-            d1_bg_est = data_sum[f"num_errors_bg_est:{abs_error_thresh}"] / data_sum["num_pixels_bg_est"]
+            fg_est = data_sum[f"num_errors_fg_est:{abs_error_thresh}"] / data_sum["num_pixels_fg_est"]
+            bg_est = data_sum[f"num_errors_bg_est:{abs_error_thresh}"] / data_sum["num_pixels_bg_est"]
 
-            summary[f"all:{abs_error_thresh}"] = d1_all * 100
-            summary[f"fg:{abs_error_thresh}"] = d1_fg * 100
-            summary[f"bg:{abs_error_thresh}"] = d1_bg * 100
-            summary[f"all*:{abs_error_thresh}"] = d1_all_est * 100
-            summary[f"fg*:{abs_error_thresh}"] = d1_fg_est * 100
-            summary[f"bg*:{abs_error_thresh}"] = d1_bg_est * 100
+            summary[f"all:{abs_error_thresh}"] = all * 100
+            summary[f"fg:{abs_error_thresh}"] = fg * 100
+            summary[f"bg:{abs_error_thresh}"] = bg * 100
+            summary[f"all*:{abs_error_thresh}"] = all_est * 100
+            summary[f"fg*:{abs_error_thresh}"] = fg_est * 100
+            summary[f"bg*:{abs_error_thresh}"] = bg_est * 100
 
         return summary
 

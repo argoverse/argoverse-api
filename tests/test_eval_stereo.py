@@ -52,6 +52,24 @@ def test_stereo_evaluation() -> None:
 def test_compute_disparity_error_dummy_1() -> None:
     """Test the computation of the disparity errors using an exact disparity prediction for background regions only.
 
+    The computed values are the following:
+
+        num_pixels_bg: Number of pixels in the background region.
+        num_pixels_fg: Number of pixels in the foreground region.
+        num_pixels_bg_est: Number of pixels in the background region.
+            Counts only the estimated disparities (no interpolation).
+        num_pixels_fg_est: Number of pixels in the foreground region.
+            Counts only the estimated disparities (no interpolation).
+        num_errors_bg:THD: Counts the number of disparity errors (bad pixels) in the background regions using:
+            bad_pixels = (abs_err > abs_error_thresh) & (rel_err > rel_error_thresh),
+            where abs_err = np.abs(pred_disparity - gt_disparity), rel_err = abs_err / gt_disparity,
+            abs_error_thresh (THD) is one of 10, 5, or 3 pixels, and rel_error_thresh is 0.1 (10%).
+        num_errors_fg:THD: Counts the number of disparity errors (bad pixels) in the foreground regions.
+        num_errors_bg_est:THD: Counts the number of disparity errors (bad pixels) in the foreground regions.
+            Counts only the estimated pixels (no interpolation).
+        num_errors_fg_est:THD: Counts the number of disparity errors (bad pixels) in the foreground regions.
+            Counts only the estimated pixels (no interpolation).
+
     Dummy test images (3 x 3):
         pred = np.array([[  1.0,   5.0,  10.0],
                          [ 50.0,  70.0,  90.0],
@@ -67,6 +85,17 @@ def test_compute_disparity_error_dummy_1() -> None:
 
     pred is the predicted disparity map, gt is the ground-truth disparity map, and gt_obj is the ground-truth disparity
     map for foreground objects.
+
+    The dummy data should produce the following results:
+        num_pixels_bg: 9 pixels because the dummy gt disparity map is 3 x 3 and all pixels have valid disparities.
+        num_pixels_fg: 0 pixels because the dummy gt_obj has no foreground objects.
+        num_pixels_bg_est: 9 pixels because the dummy pred disparity map is 3 x 3 and all pixels have valid disparities.
+        num_pixels_fg_est: 0 pixels because the dummy gt_obj has no foreground objects.
+
+        num_errors_bg:THD: 0 errors in all thresholds because the gt=pred (using the equations described earlier).
+        num_errors_fg:THD: 0 errors in all thresholds because the gt=pred (using the equations described earlier).
+        num_errors_bg_est:THD: 0 errors in all thresholds because the gt=pred (using the equations described earlier).
+        num_errors_fg_est:THD: 0 errors in all thresholds because the gt=pred (using the equations described earlier).
     """
     gt_fpath = Path(f"{_ROOT}/test_data/stereo/eval_test_cases/dummy_case_1/disparity_gt/disparity_1.png")
     gt_obj_fpath = Path(f"{_ROOT}/test_data/stereo/eval_test_cases/dummy_case_1/disparity_gt/disparity_objects_1.png")
@@ -104,21 +133,50 @@ def test_compute_disparity_error_dummy_2() -> None:
     """Test the computation of the disparity errors using an exact disparity prediction for background and foreground
     regions.
 
+    The computed values are the following:
+
+        num_pixels_bg: Number of pixels in the background region.
+        num_pixels_fg: Number of pixels in the foreground region.
+        num_pixels_bg_est: Number of pixels in the background region.
+            Counts only the estimated disparities (no interpolation).
+        num_pixels_fg_est: Number of pixels in the foreground region.
+            Counts only the estimated disparities (no interpolation).
+        num_errors_bg:THD: Counts the number of disparity errors (bad pixels) in the background regions using:
+            bad_pixels = (abs_err > abs_error_thresh) & (rel_err > rel_error_thresh),
+            where abs_err = np.abs(pred_disparity - gt_disparity), rel_err = abs_err / gt_disparity,
+            abs_error_thresh (THD) is one of 10, 5, or 3 pixels, and rel_error_thresh is 0.1 (10%).
+        num_errors_fg:THD: Counts the number of disparity errors (bad pixels) in the foreground regions.
+        num_errors_bg_est:THD: Counts the number of disparity errors (bad pixels) in the foreground regions.
+            Counts only the estimated pixels (no interpolation).
+        num_errors_fg_est:THD: Counts the number of disparity errors (bad pixels) in the foreground regions.
+            Counts only the estimated pixels (no interpolation).
+
     Dummy test images (3 x 3):
         pred = np.array([[  1.0,   5.0,  10.0],
                          [ 50.0,  70.0,  90.0],
                          [100.0, 150.0, 200.0]], dtype=np.float32)
 
-        gt = np.array([[ 1.0,  5.0, 0.0],
-                       [50.0, 70.0, 0.0],
-                       [ 0.0,  0.0, 0.0]], dtype=np.float32)
+        gt = np.array([[  1.0,   5.0,  10.0],
+                       [ 50.0,  70.0,  90.0],
+                       [100.0, 150.0, 200.0]], dtype=np.float32)
 
-        gt_obj = np.array([[0.0, 0.0, 0.0],
-                           [0.0, 0.0, 0.0],
-                           [0.0, 0.0, 0.0]], dtype=np.float32)
+        gt_obj = np.array([[ 1.0,  5.0, 0.0],
+                           [50.0, 70.0, 0.0],
+                           [ 0.0,  0.0, 0.0]], dtype=np.float32)
 
     pred is the predicted disparity map, gt is the ground-truth disparity map, and gt_obj is the ground-truth disparity
     map for foreground objects.
+
+    The dummy data should produce the following results:
+        num_pixels_bg: 5 pixels in the background because now there are 4 pixels in the foreground region.
+        num_pixels_fg: 4 pixels in the foreground region.
+        num_pixels_bg_est: 5 pixels in the background because now there are 4 pixels in the foreground region.
+        num_pixels_fg_est: 4 pixels in the foreground region.
+
+        num_errors_bg:THD: 0 errors in all thresholds because the gt=pred (using the equations described earlier).
+        num_errors_fg:THD: 0 errors in all thresholds because the gt=pred (using the equations described earlier).
+        num_errors_bg_est:THD: 0 errors in all thresholds because the gt=pred (using the equations described earlier).
+        num_errors_fg_est:THD: 0 errors in all thresholds because the gt=pred (using the equations described earlier).
     """
     gt_fpath = Path(f"{_ROOT}/test_data/stereo/eval_test_cases/dummy_case_2/disparity_gt/disparity_1.png")
     gt_obj_fpath = Path(f"{_ROOT}/test_data/stereo/eval_test_cases/dummy_case_2/disparity_gt/disparity_objects_1.png")
@@ -155,6 +213,24 @@ def test_compute_disparity_error_dummy_2() -> None:
 def test_compute_disparity_error_dummy_3() -> None:
     """Test the computation of the disparity errors using a non-exact disparity prediction for background regions only.
 
+    The computed values are the following:
+
+        num_pixels_bg: Number of pixels in the background region.
+        num_pixels_fg: Number of pixels in the foreground region.
+        num_pixels_bg_est: Number of pixels in the background region.
+            Counts only the estimated disparities (no interpolation).
+        num_pixels_fg_est: Number of pixels in the foreground region.
+            Counts only the estimated disparities (no interpolation).
+        num_errors_bg:THD: Counts the number of disparity errors (bad pixels) in the background regions using:
+            bad_pixels = (abs_err > abs_error_thresh) & (rel_err > rel_error_thresh),
+            where abs_err = np.abs(pred_disparity - gt_disparity), rel_err = abs_err / gt_disparity,
+            abs_error_thresh (THD) is one of 10, 5, or 3 pixels, and rel_error_thresh is 0.1 (10%).
+        num_errors_fg:THD: Counts the number of disparity errors (bad pixels) in the foreground regions.
+        num_errors_bg_est:THD: Counts the number of disparity errors (bad pixels) in the foreground regions.
+            Counts only the estimated pixels (no interpolation).
+        num_errors_fg_est:THD: Counts the number of disparity errors (bad pixels) in the foreground regions.
+            Counts only the estimated pixels (no interpolation).
+
     Dummy test images (3 x 3):
         pred = np.array([[  2.0,   4.0,  10.0],
                          [ 70.0,  60.0,  50.0],
@@ -170,6 +246,27 @@ def test_compute_disparity_error_dummy_3() -> None:
 
     pred is the predicted disparity map, gt is the ground-truth disparity map, and gt_obj is the ground-truth disparity
     map for foreground objects.
+
+    The dummy data should produce the following results:
+        num_pixels_bg: 9 pixels because the dummy gt disparity map is 3 x 3 and all pixels have valid disparities.
+        num_pixels_fg: 0 pixels because the dummy gt_obj has no foreground objects.
+        num_pixels_bg_est: 9 pixels because the dummy pred disparity map is 3 x 3 and all pixels have valid disparities.
+        num_pixels_fg_est: 0 pixels because the dummy gt_obj has no foreground objects.
+
+        num_errors_bg:10: 4 errors if computed as: num_errors_bg:10 = (abs_err > 10) & (rel_err > 0.1).
+        num_errors_fg:10: 0 errors because there are no foreground objects.
+        num_errors_bg_est:10: 4 errors if computed as: num_errors_bg_est:10 = (abs_err > 10) & (rel_err > 0.1).
+        num_errors_fg_est:10: 0 errors because there are no foreground objects.
+
+        num_errors_bg:5: 5 errors if computed as: num_errors_bg:5 = (abs_err > 5) & (rel_err > 0.1).
+        num_errors_fg:5: 0 errors because there are no foreground objects.
+        num_errors_bg_est:5: 5 errors if computed as: num_errors_bg_est:5 = (abs_err > 5) & (rel_err > 0.1).
+        num_errors_fg_est:5: 0 errors because there are no foreground objects.
+
+        num_errors_bg:3: 5 errors if computed as: num_errors_bg:3 = (abs_err > 3) & (rel_err > 0.1).
+        num_errors_fg:3: 0 errors because there are no foreground objects.
+        num_errors_bg_est:3: 5 errors if computed as: num_errors_bg_est:3 = (abs_err > 3) & (rel_err > 0.1).
+        num_errors_fg_est:3: 0 errors because there are no foreground objects.
     """
     gt_fpath = Path(f"{_ROOT}/test_data/stereo/eval_test_cases/dummy_case_3/disparity_gt/disparity_1.png")
     gt_obj_fpath = Path(f"{_ROOT}/test_data/stereo/eval_test_cases/dummy_case_3/disparity_gt/disparity_objects_1.png")
