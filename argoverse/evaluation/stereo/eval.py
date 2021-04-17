@@ -4,7 +4,7 @@
 Evaluation:
 
     We consider the disparity of a pixel to be correctly estimated if the absolute disparity error is less than a
-    threshold and its relative error is less than 10% of its true value, similar to the KITTI Stereo 2015 benchmark [1].
+    threshold OR its relative error is less than 10% of its true value, similar to the KITTI Stereo 2015 benchmark [1].
     We define three disparity error thresholds: 3, 5, and 10 pixels.
 
     Some stereo matching methods such as Semi-Global Matching (SGM) might provide sparse disparity maps, meaning that

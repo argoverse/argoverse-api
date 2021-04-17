@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 
 # We consider the disparity of a pixel to be correctly estimated if the absolute disparity error is less than a
-# threshold and its relative error is less than 10% of its true value.
+# threshold OR its relative error is less than 10% of its true value.
 # We define three disparity error thresholds: 3, 5, and 10 pixels.
 # Similar to the KITTI Stereo 2015 evaluation, we empirically found that the combination of absolute and relative
 # disparity errors ensures an evaluation which is faithful with respect to the errors in the ground truth.
