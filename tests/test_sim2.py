@@ -1,6 +1,7 @@
 import copy
 
 import numpy as np
+import pytest
 
 from argoverse.utils.se2 import SE2
 from argoverse.utils.sim2 import Sim2
@@ -182,3 +183,13 @@ def test_transform_point_cloud() -> None:
         pts_a_ = aSb.transform_point_cloud(copy.deepcopy(pts_b))
 
         assert np.allclose(pts_a, pts_a_, atol=1e-7)
+
+
+def test_cannot_set_zero_scale() -> None:
+    """ Ensure that an exception is thrown if Sim(2) scale is set to zero."""
+    R = np.eye(2)
+    t = np.arange(2)
+    s = 0.0
+
+    with pytest.raises(ZeroDivisionError) as e_info:
+        aSb = Sim2(R, t, s)

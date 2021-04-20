@@ -26,7 +26,11 @@ class Sim2:
         """
         assert_np_array_shape(R, (2, 2))
         assert_np_array_shape(t, (2,))
+
         assert isinstance(s, float) or isinstance(s, int)
+        if np.isclose(s, 0.0):
+            raise ZeroDivisionError("3x3 matrix formation would require division by zero")
+
         self.R_ = R.astype(np.float32)
         self.t_ = t.astype(np.float32)
         self.s_ = float(s)
