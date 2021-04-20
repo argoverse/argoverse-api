@@ -3,7 +3,7 @@ Utility for 2d rigid body transformations with scaling.
 
 Refs:
     http://ethaneade.com/lie_groups.pdf
-    https://github.com/borglab/gtsam/blob/develop/gtsam_unstable/geometry/Similarity3.h
+    https://github.com/borglab/gtsam/blob/develop/gtsam/geometry/Similarity3.h
 """
 
 from typing import Union
