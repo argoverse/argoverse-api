@@ -100,3 +100,7 @@ class Sim2:
 
         # now scale points
         return transformed_point_cloud * self.s_
+
+    def transform_point_cloud(self, point_cloud: np.ndarray) -> np.ndarray:
+        """Alias for `transform_from()`, for synchrony w/ API provided by SE(2) and SE(3) classes."""
+        return self.transform_from(point_cloud)

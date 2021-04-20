@@ -1,5 +1,8 @@
+import copy
+
 import numpy as np
 
+from argoverse.utils.se2 import SE2
 from argoverse.utils.sim2 import Sim2
 
 
@@ -148,3 +151,34 @@ def test_transform_from_backwards() -> None:
 
     world_pts = wSimg.transform_from(img_pts)
     assert np.allclose(expected_world_pts, world_pts)
+
+
+def rotmat2d(theta: float) -> np.ndarray:
+    """ Convert angle `theta` (in radians) to a 2x2 rotation matrix."""
+    s = np.sin(theta)
+    c = np.cos(theta)
+    R = np.array([[c, -s], [s, c]])
+    return R
+
+
+def test_transform_point_cloud() -> None:
+    """Guarantee we can implement the SE(2) inferface, w/ scale=1.0
+
+    Sample 1000 random 2d rigid body transformations (R,t) and ensure
+    that 2d points are transformed equivalently with SE(2) or Sim(3) w/ unit scale.
+    """
+    for sample in range(1000):
+        # generate random 2x2 rotation matrix
+        theta = np.random.rand() * 2 * np.pi
+        R = rotmat2d(theta)
+        t = np.random.randn(2)
+
+        pts_b = np.random.randn(25, 2)
+
+        aTb = SE2(copy.deepcopy(R), copy.deepcopy(t))
+        aSb = Sim2(copy.deepcopy(R), copy.deepcopy(t), s=1.0)
+
+        pts_a = aTb.transform_point_cloud(copy.deepcopy(pts_b))
+        pts_a_ = aSb.transform_point_cloud(copy.deepcopy(pts_b))
+
+        assert np.allclose(pts_a, pts_a_, atol=1e-7)
