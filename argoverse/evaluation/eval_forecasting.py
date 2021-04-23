@@ -67,6 +67,9 @@ def get_displacement_errors_and_miss_rate(
     """Compute min fde and ade for each sample.
 
     Note: Both min_fde and min_ade values correspond to the trajectory which has minimum fde.
+    The Brier Score is defined here:
+        Brier, G. W. Verification of forecasts expressed in terms of probability. Monthly weather review, 1950.
+        https://journals.ametsoc.org/view/journals/mwre/78/1/1520-0493_1950_078_0001_vofeit_2_0_co_2.xml
 
     Args:
         forecasted_trajectories: Predicted top-k trajectory dict with key as seq_id and value as list of trajectories.
