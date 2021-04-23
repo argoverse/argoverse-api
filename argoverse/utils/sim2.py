@@ -6,6 +6,7 @@ Refs:
     https://github.com/borglab/gtsam/blob/develop/gtsam/geometry/Similarity3.h
 """
 
+import json
 from typing import Union
 
 import numpy as np
@@ -108,3 +109,22 @@ class Sim2:
     def transform_point_cloud(self, point_cloud: np.ndarray) -> np.ndarray:
         """Alias for `transform_from()`, for synchrony w/ API provided by SE(2) and SE(3) classes."""
         return self.transform_from(point_cloud)
+
+    @classmethod
+    def from_json(cls, json_fpath: str) -> "Sim2":
+        """Generate class inst. from a JSON file containing Sim(2) parameters as flattened matrices (row-major)."""
+        with open(json_fpath, "r") as f:
+            json_data = json.load(f)
+
+        R = np.array(json_data["R"]).reshape(2, 2)
+        t = np.array(json_data["t"]).reshape(2)
+        s = float(json_data["s"])
+        return cls(R, t, s)
+
+    @classmethod
+    def from_matrix(cls, T: np.ndarray) -> "Sim2":
+        """Generate class instance from a 3x3 Numpy matrix """
+        R = T[:2, :2]
+        t = T[:2, 2]
+        s = 1 / T[2, 2]
+        return cls(R, t, s)

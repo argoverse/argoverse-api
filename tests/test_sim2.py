@@ -1,10 +1,13 @@
 import copy
+from pathlib import Path
 
 import numpy as np
 import pytest
 
 from argoverse.utils.se2 import SE2
 from argoverse.utils.sim2 import Sim2
+
+TEST_DATA_ROOT = Path(__file__).resolve().parent / "test_data"
 
 
 def test_constructor() -> None:
@@ -112,6 +115,29 @@ def test_matrix() -> None:
     assert np.allclose(bSa_expected, bSa.matrix)
 
 
+def test_from_matrix() -> None:
+    """Ensure that classmethod can construct an object instance from a 3x3 numpy matrix."""
+
+    bRa = np.array([[0, -1], [1, 0]])
+    bta = np.array([1, 2])
+    bsa = 3.0
+    bSa = Sim2(R=bRa, t=bta, s=bsa)
+
+    bSa_ = Sim2.from_matrix(bSa.matrix)
+
+    # ensure we can reconstruct new instance from matrix
+    assert bSa == bSa_
+
+    # ensure generated class object has correct attributes
+    assert np.allclose(bSa_.rotation, bRa)
+    assert np.allclose(bSa_.translation, bta)
+    assert np.isclose(bSa_.scale, bsa)
+
+    # ensure generated class object has correct 3x3 matrix attribute
+    bSa_expected = np.array([[0, -1, 1], [1, 0, 2], [0, 0, 1 / 3]])
+    assert np.allclose(bSa_expected, bSa_.matrix)
+
+
 def test_matrix_homogenous_transform() -> None:
     """ Ensure 3x3 matrix transforms homogenous points as expected."""
     expected_img_pts = np.array([[6, 4], [4, 6], [0, 0], [1, 7]])
@@ -193,3 +219,16 @@ def test_cannot_set_zero_scale() -> None:
 
     with pytest.raises(ZeroDivisionError) as e_info:
         aSb = Sim2(R, t, s)
+
+
+def test_from_json() -> None:
+    """Ensure that classmethod can construct an object instance from a json file."""
+    json_fpath = TEST_DATA_ROOT / "a_Sim2_b.json"
+    aSb = Sim2.from_json(json_fpath)
+
+    expected_rotation = np.array([[1.0, 0.0], [0.0, 1.0]])
+    expected_translation = np.array([3930.0, 3240.0])
+    expected_scale = 1.6666666666666667
+    assert np.allclose(aSb.rotation, expected_rotation)
+    assert np.allclose(aSb.translation, expected_translation)
+    assert np.isclose(aSb.scale, expected_scale)

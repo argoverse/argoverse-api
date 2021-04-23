@@ -3,9 +3,12 @@
 import os
 import pathlib
 
+import numpy as np
 import pytest
+from scipy.spatial.transform import Rotation
 
 from argoverse.data_loading.simple_track_dataloader import SimpleArgoverseTrackingDataLoader
+from argoverse.utils.calibration import CameraConfig
 
 _TEST_DATA = pathlib.Path(__file__).parent / "test_data" / "tracking"
 _LOG_ID = "1"
@@ -26,6 +29,29 @@ def test_get_log_calibration_data(
     # Just check that it doesn't raise.
     assert data_loader.get_log_calibration_data(_LOG_ID)
 
+
+def test_get_log_camera_config(data_loader: SimpleArgoverseTrackingDataLoader):
+    """Ensure attributes of CameraConfig object are generated correctly."""
+    camera_name = "ring_front_center"
+    cam_config = data_loader.get_log_camera_config(_LOG_ID, camera_name)
+    assert isinstance(cam_config, CameraConfig)
+
+    assert cam_config.img_height == 1200
+    assert cam_config.img_width == 1920
+
+    # check intrinsics, should be 3x4 since we use 4x4 extrinsics
+    expected_K = np.array([[1392.11, 0, 980.18, 0],[0, 1392.11, 604.35, 0],[0, 0, 1, 0]])
+    assert np.allclose(expected_K, cam_config.intrinsic, atol=0.01)
+    assert cam_config.distortion_coeffs == [-0.1720396447593493, 0.11689572230654095, -0.02511932396889168]
+
+    # check extrinsics
+    qw, qx, qy, qz = 0.49605542988442836, -0.49896196582115804, 0.5027901707576079, -0.5021633313331392
+    R = Rotation.from_quat([qx,qy,qz,qw]).as_matrix()
+    t = [1.6519358245144808, -0.0005354981581146487, 1.3613890006792675]
+    egoTc = np.eye(4)
+    egoTc[:3,:3] = R
+    egoTc[:3,3] = t
+    assert np.allclose(cam_config.extrinsic, np.linalg.inv(egoTc), atol=1e-2)
 
 def test_get_city_SE3_egovehicle(
     data_loader: SimpleArgoverseTrackingDataLoader,
