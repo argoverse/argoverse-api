@@ -79,11 +79,11 @@ def get_displacement_errors_and_miss_rate(
         forecasted_probabilities: Probabilites associated with forecasted trajectories.
 
     Returns:
-        metric_results: Metric values for minADE, minFDE, MR, p-minADE, p-minFDE, p-MR
+        metric_results: Metric values for minADE, minFDE, MR, p-minADE, p-minFDE, p-MR, brier-minADE, brier-minFDE
     """
     metric_results: Dict[str, float] = {}
-    min_ade, prob_min_ade = [], []
-    min_fde, prob_min_fde = [], []
+    min_ade, prob_min_ade, brier_min_ade = [], [], []
+    min_fde, prob_min_fde, brier_min_fde = [], [], []
     n_misses, prob_n_misses = [], []
     for k, v in gt_trajectories.items():
         curr_min_ade = float("inf")
@@ -122,6 +122,7 @@ def get_displacement_errors_and_miss_rate(
                 )
                 + curr_min_ade
             )
+            brier_min_ade.append((1 - pruned_probabilities[min_idx]) ** 2 + curr_min_ade)
             prob_min_fde.append(
                 min(
                     -np.log(pruned_probabilities[min_idx]),
@@ -129,6 +130,8 @@ def get_displacement_errors_and_miss_rate(
                 )
                 + curr_min_fde
             )
+            brier_min_fde.append((1 - pruned_probabilities[min_idx]) ** 2 + curr_min_fde)
+
     metric_results["minADE"] = sum(min_ade) / len(min_ade)
     metric_results["minFDE"] = sum(min_fde) / len(min_fde)
     metric_results["MR"] = sum(n_misses) / len(n_misses)
@@ -136,6 +139,8 @@ def get_displacement_errors_and_miss_rate(
         metric_results["p-minADE"] = sum(prob_min_ade) / len(prob_min_ade)
         metric_results["p-minFDE"] = sum(prob_min_fde) / len(prob_min_fde)
         metric_results["p-MR"] = sum(prob_n_misses) / len(prob_n_misses)
+        metric_results["brier-minADE"] = sum(brier_min_ade) / len(brier_min_ade)
+        metric_results["brier-minFDE"] = sum(brier_min_fde) / len(brier_min_fde)
     return metric_results
 
 
