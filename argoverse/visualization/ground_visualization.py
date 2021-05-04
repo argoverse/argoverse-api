@@ -31,7 +31,7 @@ NUM_RANGE_BINS = 50
 def draw_ground_pts_in_image(
     sdb: SynchronizationDB,
     lidar_points: np.ndarray,
-    city_to_egovehicle_se3: SE3,
+    city_SE3_egovehicle: SE3,
     dataset_map: ArgoverseMap,
     log_id: str,
     lidar_timestamp: int,
@@ -47,7 +47,7 @@ def draw_ground_pts_in_image(
     Args:
         sdb: instance of SynchronizationDB
         lidar_points: Numpy array of shape (N,3) in egovehicle frame
-        city_to_egovehicle_se3: SE3 instance which takes a point in egovehicle frame and brings it into city frame
+        city_SE3_egovehicle: SE3 instance which takes a point in egovehicle frame and brings it into city frame
         dataset_map: Map dataset instance
         log_id: ID of the log
         city_name: A city's name (e.g. 'MIA' or 'PIT')
@@ -58,7 +58,7 @@ def draw_ground_pts_in_image(
 
     """
     # put into city coords, then prune away ground and non-RoI points
-    lidar_points = city_to_egovehicle_se3.transform_point_cloud(lidar_points)
+    lidar_points = city_SE3_egovehicle.transform_point_cloud(lidar_points)
     lidar_points = dataset_map.remove_non_driveable_area_points(lidar_points, city_name)
     _, not_ground_logicals = dataset_map.remove_ground_surface(
         copy.deepcopy(lidar_points), city_name, return_logicals=True
@@ -66,7 +66,7 @@ def draw_ground_pts_in_image(
     lidar_points = lidar_points[np.logical_not(not_ground_logicals) if plot_ground else not_ground_logicals]
 
     # put back into ego-vehicle coords
-    lidar_points = city_to_egovehicle_se3.inverse_transform_point_cloud(lidar_points)
+    lidar_points = city_SE3_egovehicle.inverse_transform_point_cloud(lidar_points)
 
     calib_fpath = f"{dataset_dir}/{log_id}/vehicle_calibration_info.json"
     calib_data = read_json_file(calib_fpath)

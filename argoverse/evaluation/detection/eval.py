@@ -116,7 +116,7 @@ class DetectionEvaluator:
         gt_fpaths = list(self.gt_root_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
 
         # map is only required if using Region of Interest (ROI) information to filter objects
-        avm = ArgoverseMap() if self.cfg.eval_only_roi_instances else None
+        avm = ArgoverseMap(self.cfg.map_root) if self.cfg.eval_only_roi_instances else None
 
         assert len(dt_fpaths) == len(gt_fpaths)
         data: DefaultDict[str, np.ndarray] = defaultdict(list)
