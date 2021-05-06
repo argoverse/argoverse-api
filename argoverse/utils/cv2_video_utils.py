@@ -49,4 +49,5 @@ class VideoWriter:
 
     def complete(self) -> None:
         """ """
-        self.writer.release()
+        if self.writer:
+            self.writer.release()
