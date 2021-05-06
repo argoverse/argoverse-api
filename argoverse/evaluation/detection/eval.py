@@ -69,7 +69,11 @@ from typing import DefaultDict, List
 import numpy as np
 import pandas as pd
 
-from argoverse.evaluation.detection.constants import N_TP_ERRORS, SIGNIFICANT_DIGITS, STATISTIC_NAMES
+from argoverse.evaluation.detection.constants import (
+    N_TP_ERRORS,
+    SIGNIFICANT_DIGITS,
+    STATISTIC_NAMES,
+)
 from argoverse.evaluation.detection.utils import DetectionCfg, accumulate, calc_ap, plot
 from argoverse.map_representation.map_api import ArgoverseMap
 
@@ -101,6 +105,11 @@ class DetectionEvaluator:
         self.figs_fpath = figs_fpath
         self.cfg = cfg
         self.num_procs = os.cpu_count() if num_procs == -1 else num_procs
+        self.avm = (
+            ArgoverseMap(self.cfg.map_root)
+            if self.cfg.eval_only_roi_instances
+            else None
+        )  # map is only required if using Region of Interest (ROI) information to filter objects
 
     def evaluate(self) -> pd.DataFrame:
         """Evaluate detection output and return metrics. The multiprocessing
@@ -112,20 +121,27 @@ class DetectionEvaluator:
             Evaluation metrics of shape (C + 1, K) where C + 1 is the number of classes.
             plus a row for their means. K refers to the number of evaluation metrics.
         """
-        dt_fpaths = list(self.dt_root_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
-        gt_fpaths = list(self.gt_root_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
-
-        # map is only required if using Region of Interest (ROI) information to filter objects
-        avm = ArgoverseMap(self.cfg.map_root) if self.cfg.eval_only_roi_instances else None
+        dt_fpaths = list(
+            self.dt_root_fpath.glob("*/per_sweep_annotations_amodal/*.json")
+        )
+        gt_fpaths = list(
+            self.gt_root_fpath.glob("*/per_sweep_annotations_amodal/*.json")
+        )
 
         assert len(dt_fpaths) == len(gt_fpaths)
         data: DefaultDict[str, np.ndarray] = defaultdict(list)
         cls_to_ninst: DefaultDict[str, int] = defaultdict(int)
 
         if self.num_procs == 1:
-            accum = [accumulate(self.dt_root_fpath, gt_fpath, self.cfg, avm) for gt_fpath in gt_fpaths]
+            accum = [
+                accumulate(self.dt_root_fpath, gt_fpath, self.cfg, self.avm)
+                for gt_fpath in gt_fpaths
+            ]
         else:
-            args = [(self.dt_root_fpath, gt_fpath, self.cfg, avm) for gt_fpath in gt_fpaths]
+            args = [
+                (self.dt_root_fpath, gt_fpath, self.cfg, self.avm)
+                for gt_fpath in gt_fpaths
+            ]
             with Pool(self.num_procs) as p:
                 accum = p.starmap(accumulate, args)
 
@@ -137,8 +153,12 @@ class DetectionEvaluator:
 
         data = defaultdict(np.ndarray, {k: np.vstack(v) for k, v in data.items()})
 
-        init_data = {dt_cls: self.cfg.summary_default_vals for dt_cls in self.cfg.dt_classes}
-        summary = pd.DataFrame.from_dict(init_data, orient="index", columns=STATISTIC_NAMES)
+        init_data = {
+            dt_cls: self.cfg.summary_default_vals for dt_cls in self.cfg.dt_classes
+        }
+        summary = pd.DataFrame.from_dict(
+            init_data, orient="index", columns=STATISTIC_NAMES
+        )
         summary_update = pd.DataFrame.from_dict(
             self.summarize(data, cls_to_ninst), orient="index", columns=STATISTIC_NAMES
         )
@@ -170,7 +190,9 @@ class DetectionEvaluator:
 
         for cls_name, cls_stats in data.items():
             ninst = cls_to_ninst[cls_name]
-            ranks = cls_stats[:, -1].argsort()[::-1]  # sort by last column, i.e. confidences
+            ranks = cls_stats[:, -1].argsort()[
+                ::-1
+            ]  # sort by last column, i.e. confidences
             cls_stats = cls_stats[ranks]
 
             for i, _ in enumerate(self.cfg.affinity_threshs):
@@ -185,7 +207,9 @@ class DetectionEvaluator:
             ap = np.array(summary[cls_name][:num_ths]).mean()
 
             # Select only the true positives for each instance.
-            tp_metrics_mask = ~np.isnan(cls_stats[:, num_ths : num_ths + N_TP_ERRORS]).all(axis=1)
+            tp_metrics_mask = ~np.isnan(
+                cls_stats[:, num_ths : num_ths + N_TP_ERRORS]
+            ).all(axis=1)
 
             # If there are no true positives set tp errors to their maximum values due to normalization below).
             if ~tp_metrics_mask.any():
@@ -211,7 +235,9 @@ class DetectionEvaluator:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("-d", "--dt_fpath", type=str, help="Detection root folder path.", required=True)
+    parser.add_argument(
+        "-d", "--dt_fpath", type=str, help="Detection root folder path.", required=True
+    )
     parser.add_argument(
         "-g",
         "--gt_fpath",
@@ -227,7 +253,9 @@ def main() -> None:
         default=-1,
     )
 
-    parser.add_argument("-f", "--fig_fpath", type=str, help="Figures root folder path.", default="figs")
+    parser.add_argument(
+        "-f", "--fig_fpath", type=str, help="Figures root folder path.", default="figs"
+    )
     args = parser.parse_args()
     logger.info(f"args == {args}")
 
@@ -235,7 +263,9 @@ def main() -> None:
     gt_fpath = Path(args.gt_fpath)
     fig_fpath = Path(args.fig_fpath)
 
-    evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath, num_procs=args.num_processes)
+    evaluator = DetectionEvaluator(
+        dt_fpath, gt_fpath, fig_fpath, num_procs=args.num_processes
+    )
     metrics = evaluator.evaluate()
     print(metrics)
 
