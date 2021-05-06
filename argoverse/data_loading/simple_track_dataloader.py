@@ -3,7 +3,7 @@
 import glob
 import sys
 from pathlib import Path
-from typing import Any, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 import numpy as np
 
@@ -43,7 +43,7 @@ class SimpleArgoverseTrackingDataLoader:
         assert isinstance(city_name, str)
         return city_name
 
-    def get_log_calibration_data(self, log_id: str) -> Mapping[str, Any]:
+    def get_log_calibration_data(self, log_id: str) -> Dict[str, Any]:
         """
         Args:
             log_id: str
