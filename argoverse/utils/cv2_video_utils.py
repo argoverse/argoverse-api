@@ -24,8 +24,8 @@ class VideoWriter:
         """ """
         self.output_fpath = output_fpath
         self.fps = fps
-        self.writer = None
-        self.codec = "mp4v"
+        self.writer: cv2.VideoWriter = None
+        self.codec: str = "mp4v"
 
     def init_outf(self, height: int, width: int) -> None:
         """ """

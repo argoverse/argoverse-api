@@ -191,7 +191,7 @@ def vis_one_image_opencv(
             mask_color_id += 1
 
             mask = decode_segment_to_mask(segms[i], image)
-            image = vis_mask(image, mask, color_mask)
+            image = vis_mask(image, mask, color_mask, color=(0, 0, 255))
 
     return image
 
