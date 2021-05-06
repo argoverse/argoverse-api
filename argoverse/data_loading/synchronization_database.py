@@ -14,6 +14,17 @@ from argoverse.utils.json_utils import read_json_file
 
 logger = logging.getLogger(__name__)
 
+RING_CAMERA_FPS = 30
+STEREO_CAMERA_FPS = 5
+LIDAR_FRAME_RATE_HZ = 10
+
+# in milliseconds
+RING_CAMERA_SHUTTER_INTERVAL_MS = (1 / RING_CAMERA_FPS) * 1000 # evaluates to 33.3 ms
+STEREO_CAMERA_SHUTTER_INTERVAL_MS = (1 / STEREO_CAMERA_FPS) * 1000 # evaluates to 200 ms
+LIDAR_SWEEP_INTERVAL_MS = (1 / LIDAR_FRAME_RATE_HZ) * 1000 # evaluates to 100 ms
+
+ALLOWED_TIMESTAMP_BUFFER_MS = 2 # allow 2 ms of buffer
+LIDAR_SWEEP_INTERVAL_W_BUFFER_MS = LIDAR_SWEEP_INTERVAL_MS + ALLOWED_TIMESTAMP_BUFFER_MS
 
 def get_timestamps_from_sensor_folder(sensor_folder_wildcard: str) -> np.ndarray:
     """Timestamp always lies at end of filename
@@ -59,21 +70,20 @@ def find_closest_integer_in_ref_arr(query_int: int, ref_arr: np.ndarray) -> Tupl
 
 class SynchronizationDB:
 
-    # Camera is 30 Hz (once per 33.3 milliseconds)
-    # LiDAR is 10 Hz
-    # Max we are halfway between 33.3 milliseconds on either side
+    # Max difference between camera and LiDAR observation would be the LiDAR timestamp is halfway between
+    # two camera observations (i.e. RING_CAMERA_SHUTTER_INTERVAL_MS / 2 milliseconds on either side)
     # then convert milliseconds to nanoseconds
-    MAX_LIDAR_RING_CAM_TIMESTAMP_DIFF = 33.3 * (1.0 / 2) * (1.0 / 1000) * 1e9
-    # Stereo Camera is 5 Hz (once per 200 milliseconds)
-    # LiDAR is 10 Hz
-    # Since Stereo is more sparse, we look for 200 millisecond on either side
+    MAX_LIDAR_RING_CAM_TIMESTAMP_DIFF = RING_CAMERA_SHUTTER_INTERVAL_MS * (1.0 / 2) * (1.0 / 1000) * 1e9
+    
+    # Since Stereo is more sparse, we look for (STEREO_CAMERA_SHUTTER_INTERVAL_MS / 2) milliseconds on either side
     # then convert milliseconds to nanoseconds
-    MAX_LIDAR_STEREO_CAM_TIMESTAMP_DIFF = 200 * (1.0 / 2) * (1.0 / 1000) * 1e9
+    MAX_LIDAR_STEREO_CAM_TIMESTAMP_DIFF = STEREO_CAMERA_SHUTTER_INTERVAL_MS * (1.0 / 2) * (1.0 / 1000) * 1e9
+    
     # LiDAR is 10 Hz (once per 100 milliseconds)
     # We give an extra 2 ms buffer for the message to arrive, totaling 102 ms.
     # At any point we sample, we shouldn't be more than 51 ms away.
     # then convert milliseconds to nanoseconds
-    MAX_LIDAR_ANYCAM_TIMESTAMP_DIFF = 102 * (1.0 / 2) * (1.0 / 1000) * 1e9
+    MAX_LIDAR_ANYCAM_TIMESTAMP_DIFF = LIDAR_SWEEP_INTERVAL_W_BUFFER_MS * (1.0 / 2) * (1.0 / 1000) * 1e9
 
     def __init__(self, dataset_dir: str, collect_single_log_id: Optional[str] = None) -> None:
         """Build the SynchronizationDB.
