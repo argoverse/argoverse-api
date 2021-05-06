@@ -7,6 +7,7 @@ Refs:
 """
 
 import json
+import os
 from typing import Union
 
 import numpy as np
@@ -111,7 +112,7 @@ class Sim2:
         return self.transform_from(point_cloud)
 
     @classmethod
-    def from_json(cls, json_fpath: str) -> "Sim2":
+    def from_json(cls, json_fpath: Union[str, "os.PathLike[str]"]) -> "Sim2":
         """Generate class inst. from a JSON file containing Sim(2) parameters as flattened matrices (row-major)."""
         with open(json_fpath, "r") as f:
             json_data = json.load(f)
