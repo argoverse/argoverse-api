@@ -101,6 +101,9 @@ class DetectionEvaluator:
         self.figs_fpath = figs_fpath
         self.cfg = cfg
         self.num_procs = os.cpu_count() if num_procs == -1 else num_procs
+        self.avm = (
+            ArgoverseMap(self.cfg.map_root) if self.cfg.eval_only_roi_instances else None
+        )  # map is only required if using Region of Interest (ROI) information to filter objects
 
     def evaluate(self) -> pd.DataFrame:
         """Evaluate detection output and return metrics. The multiprocessing
@@ -115,17 +118,15 @@ class DetectionEvaluator:
         dt_fpaths = list(self.dt_root_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
         gt_fpaths = list(self.gt_root_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
 
-        # map is only required if using Region of Interest (ROI) information to filter objects
-        avm = ArgoverseMap(self.cfg.map_root) if self.cfg.eval_only_roi_instances else None
-
         assert len(dt_fpaths) == len(gt_fpaths)
         data: DefaultDict[str, np.ndarray] = defaultdict(list)
         cls_to_ninst: DefaultDict[str, int] = defaultdict(int)
 
         if self.num_procs == 1:
-            accum = [accumulate(self.dt_root_fpath, gt_fpath, self.cfg, avm) for gt_fpath in gt_fpaths]
+            accum = [accumulate(self.dt_root_fpath, gt_fpath, self.cfg, self.avm) for gt_fpath in gt_fpaths]
+
         else:
-            args = [(self.dt_root_fpath, gt_fpath, self.cfg, avm) for gt_fpath in gt_fpaths]
+            args = [(self.dt_root_fpath, gt_fpath, self.cfg, self.avm) for gt_fpath in gt_fpaths]
             with Pool(self.num_procs) as p:
                 accum = p.starmap(accumulate, args)
 
