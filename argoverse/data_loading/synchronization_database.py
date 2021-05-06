@@ -70,12 +70,12 @@ def find_closest_integer_in_ref_arr(query_int: int, ref_arr: np.ndarray) -> Tupl
 
 class SynchronizationDB:
 
-    # Max difference between camera and LiDAR observation would be the LiDAR timestamp is halfway between
+    # Max difference between camera and LiDAR observation would be if the LiDAR timestamp is halfway between
     # two camera observations (i.e. RING_CAMERA_SHUTTER_INTERVAL_MS / 2 milliseconds on either side)
     # then convert milliseconds to nanoseconds
     MAX_LIDAR_RING_CAM_TIMESTAMP_DIFF = RING_CAMERA_SHUTTER_INTERVAL_MS * (1.0 / 2) * (1.0 / 1000) * 1e9
     
-    # Since Stereo is more sparse, we look for (STEREO_CAMERA_SHUTTER_INTERVAL_MS / 2) milliseconds on either side
+    # Since Stereo is more sparse, we look at (STEREO_CAMERA_SHUTTER_INTERVAL_MS / 2) milliseconds on either side
     # then convert milliseconds to nanoseconds
     MAX_LIDAR_STEREO_CAM_TIMESTAMP_DIFF = STEREO_CAMERA_SHUTTER_INTERVAL_MS * (1.0 / 2) * (1.0 / 1000) * 1e9
     
