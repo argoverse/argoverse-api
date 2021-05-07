@@ -208,7 +208,7 @@ def test_transform_point_cloud() -> None:
         pts_a = aTb.transform_point_cloud(copy.deepcopy(pts_b))
         pts_a_ = aSb.transform_point_cloud(copy.deepcopy(pts_b))
 
-        assert np.allclose(pts_a, pts_a_, atol=1e-7)
+        assert np.allclose(pts_a, pts_a_, atol=1e-6)
 
 
 def test_cannot_set_zero_scale() -> None:
