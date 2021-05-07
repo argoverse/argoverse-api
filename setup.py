@@ -27,7 +27,7 @@ if platform.system() == "Windows":
 
 setup(
     name="argoverse",
-    version="1.0.0",
+    version="1.0.1",
     description="",
     long_description=long_description,
     url="https://www.argoverse.org",
@@ -66,7 +66,7 @@ setup(
         "scipy>=1.4.0",
         "shapely",
         "sklearn",
-        "typing_extensions"
+        "typing_extensions",
     ],
     # for older pip version, use with --process-dependency-links
     dependency_links=["git+https://github.com/daavoo/pyntcloud#egg=pyntcloud-0.1.0"],
