@@ -232,3 +232,11 @@ def test_from_json() -> None:
     assert np.allclose(aSb.rotation, expected_rotation)
     assert np.allclose(aSb.translation, expected_translation)
     assert np.isclose(aSb.scale, expected_scale)
+
+
+def test_from_json_invalid_scale() -> None:
+    """Ensure that classmethod raises an error with invalid JSON input."""
+    json_fpath = TEST_DATA_ROOT / "a_Sim2_b___invalid.json"
+
+    with pytest.raises(ZeroDivisionError) as e_info:
+        aSb = Sim2.from_json(json_fpath)

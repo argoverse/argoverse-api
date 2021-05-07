@@ -124,7 +124,10 @@ class Sim2:
 
     @classmethod
     def from_matrix(cls, T: np.ndarray) -> "Sim2":
-        """Generate class instance from a 3x3 Numpy matrix """
+        """Generate class instance from a 3x3 Numpy matrix."""
+        if np.isclose(T[2, 2], 0.0):
+            raise ZeroDivisionError("Sim(2) scale calculation would lead to division by zero")
+
         R = T[:2, :2]
         t = T[:2, 2]
         s = 1 / T[2, 2]
