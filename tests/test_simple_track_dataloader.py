@@ -40,18 +40,19 @@ def test_get_log_camera_config(data_loader: SimpleArgoverseTrackingDataLoader):
     assert cam_config.img_width == 1920
 
     # check intrinsics, should be 3x4 since we use 4x4 extrinsics
-    expected_K = np.array([[1392.11, 0, 980.18, 0],[0, 1392.11, 604.35, 0],[0, 0, 1, 0]])
+    expected_K = np.array([[1392.11, 0, 980.18, 0], [0, 1392.11, 604.35, 0], [0, 0, 1, 0]])
     assert np.allclose(expected_K, cam_config.intrinsic, atol=0.01)
     assert cam_config.distortion_coeffs == [-0.1720396447593493, 0.11689572230654095, -0.02511932396889168]
 
     # check extrinsics
     qw, qx, qy, qz = 0.49605542988442836, -0.49896196582115804, 0.5027901707576079, -0.5021633313331392
-    R = Rotation.from_quat([qx,qy,qz,qw]).as_matrix()
+    R = Rotation.from_quat([qx, qy, qz, qw]).as_matrix()
     t = [1.6519358245144808, -0.0005354981581146487, 1.3613890006792675]
     egoTc = np.eye(4)
-    egoTc[:3,:3] = R
-    egoTc[:3,3] = t
+    egoTc[:3, :3] = R
+    egoTc[:3, 3] = t
     assert np.allclose(cam_config.extrinsic, np.linalg.inv(egoTc), atol=1e-2)
+
 
 def test_get_city_SE3_egovehicle(
     data_loader: SimpleArgoverseTrackingDataLoader,
@@ -119,7 +120,7 @@ def test_get_closest_lidar_fpath_no_match(
 def test_get_ordered_log_cam_fpaths(
     data_loader: SimpleArgoverseTrackingDataLoader,
 ) -> None:
-    """ Make sure all images for one camera in one log are returned in correct order. """
+    """Make sure all images for one camera in one log are returned in correct order."""
     camera_name = "ring_rear_right"
     cam_img_fpaths = data_loader.get_ordered_log_cam_fpaths(_LOG_ID, camera_name)
     gt_cam_img_fpaths = [

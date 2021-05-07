@@ -9,7 +9,7 @@ import numpy as np
 
 from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t, read_city_name
 from argoverse.data_loading.synchronization_database import SynchronizationDB
-from argoverse.utils.calibration import get_calibration_config, CameraConfig
+from argoverse.utils.calibration import CameraConfig, get_calibration_config
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat2rotmat
@@ -31,7 +31,7 @@ class SimpleArgoverseTrackingDataLoader:
         self.sdb = SynchronizationDB(data_dir)
 
     def get_city_name(self, log_id: str) -> str:
-        """
+        """Return the name of the city where the log of interest was cpatured.
         Args:
             log_id: str
 
