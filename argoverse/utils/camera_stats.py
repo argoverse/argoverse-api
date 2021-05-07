@@ -27,6 +27,8 @@ RING_CAMERA_LIST = [
 
 STEREO_CAMERA_LIST = ["stereo_front_left", "stereo_front_right"]
 
+RECTIFIED_STEREO_CAMERA_LIST = ["stereo_front_left_rect", "stereo_front_right_rect"]
+
 CAMERA_LIST = RING_CAMERA_LIST + STEREO_CAMERA_LIST
 
 logger = logging.getLogger(__name__)
