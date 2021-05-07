@@ -52,6 +52,9 @@ setup(
         "colour",
         "descartes",
         "imageio",
+        "h5py",
+        "hydra-core==1.1.0dev3",
+        "lap",
         "matplotlib",
         "motmetrics==1.1.3",
         "numpy==1.19",
@@ -63,9 +66,7 @@ setup(
         "scipy>=1.4.0",
         "shapely",
         "sklearn",
-        "typing_extensions",
-        "h5py",
-        "lap",
+        "typing_extensions"
     ],
     # for older pip version, use with --process-dependency-links
     dependency_links=["git+https://github.com/daavoo/pyntcloud#egg=pyntcloud-0.1.0"],
