@@ -30,6 +30,6 @@ class SensorDatasetConfig(NamedTuple):
 DATASET_NAME = "argoverse1.1"
 
 with initialize_config_module(config_module="argoverse.config"):
-    cfg = compose(config_name="argoverse1.1.yml")
+    cfg = compose(config_name=f"{DATASET_NAME}.yml")
     ArgoverseConfig: SensorDatasetConfig = instantiate(cfg.SensorDatasetConfig)
 
