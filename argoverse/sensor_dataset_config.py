@@ -1,5 +1,5 @@
 
-from typing import NamedTuple, Optional, Tuple
+from typing import NamedTuple, Optional
 
 from hydra.experimental import compose, initialize_config_module
 from hydra.utils import instantiate
