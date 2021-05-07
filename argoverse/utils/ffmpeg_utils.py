@@ -26,9 +26,6 @@ def write_video(image_prefix: str, output_prefix: str, fps: int = 10) -> None:
             a prefix, e.g. .png/.jpg. Absolute path
         output_prefix: absolute path for output video, without .mp4 prefix
         fps: integer, frames per second
-
-    Returns:
-        None
     """
     codec_params_string = get_ffmpeg_codec_params_string()
     cmd = f"ffmpeg -r {fps} -i {image_prefix} {codec_params_string} {output_prefix}_{fps}fps.mp4"
@@ -42,9 +39,6 @@ def write_nonsequential_idx_video(img_wildcard: str, output_fpath: str, fps: int
         img_wildcard: string
         output_fpath: string
         fps: integer, frames per second
-
-    Returns:
-       None
     """
     codec_params_string = get_ffmpeg_codec_params_string()
     cmd = f"ffmpeg -r {fps} -f image2 -i {img_wildcard} {codec_params_string} {output_fpath}"
@@ -56,9 +50,6 @@ def ffmpeg_compress_video(uncompressed_mp4_path: str, fps: int) -> None:
     """Generate compressed version of video, and delete uncompressed version.
     Args:
         img_wildcard: path to video to compress
-
-    Returns:
-       None
     """
     codec_params_string = get_ffmpeg_codec_params_string()
     fname_stem = Path(uncompressed_mp4_path).stem
