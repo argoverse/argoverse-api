@@ -22,17 +22,17 @@ class VideoWriter:
     """
 
     def __init__(self, output_fpath: str, fps: int = 30) -> None:
-        """ """
+        """Initialize VideoWriter options."""
         self.output_fpath = output_fpath
         self.fps = fps
         self.writer = None
         self.codec = "mp4v"
 
     def init_outf(self, height: int, width: int) -> None:
-        """ """
+        """Initialize the output video file."""
         self.writer = cv2.VideoWriter(
             filename=self.output_fpath,
-            # some installation of opencv may not support x264 (due to its license),
+            # some installation of OpenCV may not support x264 (due to its license),
             # you can try other format (e.g. MPEG)
             fourcc=cv2.VideoWriter_fourcc(*self.codec),
             fps=float(self.fps),
@@ -41,7 +41,7 @@ class VideoWriter:
         )
 
     def add_frame(self, rgb_frame: np.ndarray) -> None:
-        """"""
+        """Append a frame to the end of the video file."""
         h, w, _ = rgb_frame.shape
         if self.writer is None:
             self.init_outf(height=h, width=w)
