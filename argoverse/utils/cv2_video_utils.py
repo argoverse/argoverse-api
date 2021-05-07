@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+from typing import Optional
+
 import cv2
 import numpy as np
 
@@ -25,7 +27,7 @@ class VideoWriter:
         """Initialize VideoWriter options."""
         self.output_fpath = output_fpath
         self.fps = fps
-        self.writer = None
+        self.writer: Optional[cv2.VideoWriter] = None
         self.codec = "mp4v"
 
     def init_outf(self, height: int, width: int) -> None:
@@ -46,8 +48,10 @@ class VideoWriter:
         if self.writer is None:
             self.init_outf(height=h, width=w)
         bgr_frame = rgb_frame[:, :, ::-1]
-        self.writer.write(bgr_frame)
+        if self.writer is not None:
+            self.writer.write(bgr_frame)
 
     def complete(self) -> None:
         """ """
-        self.writer.release()
+        if self.writer is not None:
+            self.writer.release()
