@@ -18,11 +18,11 @@ dependencies:
  - imageio
  - scipy>=1.4.0
  - shapely
- - sklearn
  - typing_extensions
  - h5py
  - lap
  - pip:
+   - sklearn
    - opencv-python>=4.1.0.25
    - motmetrics==1.1.3
    - git+https://github.com/daavoo/pyntcloud#egg=pyntcloud-0.1.0
