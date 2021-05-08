@@ -237,7 +237,7 @@ def dump_clipped_3d_cuboids_to_images(
                     )
 
                 if generate_video_only:
-                    video_writer.add_frame(img[:, :, ::-1])
+                    video_writer.add_frame(rgb_frame=img[:, :, ::-1])
                 else:
                     cv2.imwrite(save_img_fpath, img)
                     saved_img_fpaths += [save_img_fpath]
@@ -285,14 +285,15 @@ def main(args: Any):
             accum = p.starmap(dump_clipped_3d_cuboids_to_images, single_process_args)
 
     else:
+        # run in a single process, instead
         dump_clipped_3d_cuboids_to_images(
-            log_ids,
-            args.max_num_images_to_render * 9,
-            args.dataset_dir,
-            args.experiment_prefix,
-            not args.no_motion_compensation,
-            args.omit_centerlines,
-            args.generate_video_only,
+            log_ids=log_ids,
+            max_num_images_to_render=args.max_num_images_to_render * 9,
+            data_dir=args.dataset_dir,
+            experiment_prefix=args.experiment_prefix,
+            motion_compensate=not args.no_motion_compensation,
+            omit_centerlines=args.omit_centerlines,
+            generate_video_only=args.generate_video_only,
         )
 
 
