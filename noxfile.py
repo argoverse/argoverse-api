@@ -10,7 +10,7 @@ nox.options.sessions = "lint", "safety", "mypy", "pytype", "tests"
 locations = "src", "tests", "noxfile.py", "docs/conf.py"
 
 
-@nox.session(venv_backend="conda")
+@nox.session(python=["3.7", "3.8"], venv_backend="conda")
 def black(session: Session) -> None:
     """Run black code formatter."""
     args = session.posargs or locations
@@ -19,7 +19,7 @@ def black(session: Session) -> None:
     session.run("black", *args)
 
 
-@nox.session(venv_backend="conda")
+@nox.session(python=["3.7", "3.8"], venv_backend="conda")
 def lint(session: Session) -> None:
     """Lint using flake8."""
     args = session.posargs or locations
@@ -37,7 +37,7 @@ def lint(session: Session) -> None:
     session.run("flake8", *args)
 
 
-@nox.session(venv_backend="conda")
+@nox.session(python=["3.7", "3.8"], venv_backend="conda")
 def safety(session: Session) -> None:
     """Scan dependencies for insecure packages."""
     with tempfile.NamedTemporaryFile() as requirements:
@@ -45,7 +45,7 @@ def safety(session: Session) -> None:
         session.run("safety", "check", f"--file={requirements.name}", "--full-report")
 
 
-@nox.session(venv_backend="conda")
+@nox.session(python=["3.7", "3.8"], venv_backend="conda")
 def mypy(session: Session) -> None:
     """Type-check using mypy."""
     args = session.posargs or locations
@@ -53,7 +53,7 @@ def mypy(session: Session) -> None:
     session.run("mypy", *args)
 
 
-@nox.session(venv_backend="conda")
+@nox.session(python=["3.7", "3.8"], venv_backend="conda")
 def pytype(session: Session) -> None:
     """Type-check using pytype."""
     args = session.posargs or ["--disable=import-error", *locations]
@@ -61,7 +61,7 @@ def pytype(session: Session) -> None:
     session.run("pytype", *args)
 
 
-@nox.session(venv_backend="conda")
+@nox.session(python=["3.7", "3.8"], venv_backend="conda")
 def tests(session: Session) -> None:
     """Run the test suite."""
     args = session.posargs or ["--cov", "-m", "not e2e"]
@@ -69,7 +69,7 @@ def tests(session: Session) -> None:
     session.run("pytest", *args)
 
 
-@nox.session(venv_backend="conda")
+@nox.session(python=["3.7", "3.8"], venv_backend="conda")
 def typeguard(session: Session) -> None:
     """Runtime type checking using Typeguard."""
     args = session.posargs or ["-m", "not e2e"]
@@ -77,7 +77,7 @@ def typeguard(session: Session) -> None:
     session.run("pytest", f"--typeguard-packages={package}", *args)
 
 
-@nox.session(venv_backend="conda")
+@nox.session(python=["3.7", "3.8"], venv_backend="conda")
 def xdoctest(session: Session) -> None:
     """Run examples with xdoctest."""
     args = session.posargs or ["all"]
@@ -85,7 +85,7 @@ def xdoctest(session: Session) -> None:
     session.run("python", "-m", "xdoctest", package, *args)
 
 
-@nox.session(venv_backend="conda")
+@nox.session(python=["3.7", "3.8"], venv_backend="conda")
 def coverage(session: Session) -> None:
     """Upload coverage data."""
     session.conda_install("coverage[toml]", "codecov")
@@ -93,7 +93,7 @@ def coverage(session: Session) -> None:
     session.run("codecov", *session.posargs)
 
 
-@nox.session(venv_backend="conda")
+@nox.session(python=["3.7", "3.8"], venv_backend="conda")
 def docs(session: Session) -> None:
     """Build the documentation."""
     session.conda_install("sphinx", "sphinx-autodoc-typehints")
