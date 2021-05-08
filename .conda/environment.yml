@@ -13,9 +13,7 @@ dependencies:
  - descartes
  - imageio
  - matplotlib
- - motmetrics==1.1.3
  - numpy==1.19
- - opencv-python>=4.1.0.25
  - pandas>=0.23.1
  - pillow
  - imageio
@@ -26,4 +24,6 @@ dependencies:
  - h5py
  - lap
  - pip:
+   - opencv-python>=4.1.0.25
+   - motmetrics==1.1.3
    - git+https://github.com/daavoo/pyntcloud#egg=pyntcloud-0.1.0
