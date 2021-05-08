@@ -6,7 +6,7 @@ import nox
 from nox.sessions import Session
 
 package = "argoverse"
-nox.options.sessions = "lint", "safety", "mypy", "pytype", "tests"
+nox.options.sessions = "lint", "safety", "mypy", "tests"
 locations = "argoverse", "tests", "noxfile.py"
 
 
