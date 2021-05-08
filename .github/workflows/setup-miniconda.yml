@@ -7,15 +7,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
         matrix:
-            os: ["ubuntu-latest"]
-            python-version: ["3.7", "3.8"]
+            os: ["macos-latest", "ubuntu-latest"]
     steps:
       - uses: actions/checkout@v2
       - uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: test
           environment-file: .conda/environment.yml
-          python-version: ${{ matrix.python-version }}
           auto-activate-base: false
       - shell: bash -l {0}
         run: |
