@@ -24,14 +24,13 @@ jobs:
       - name: Install dependencies
         shell: bash -l {0}
         run: |
-            conda install tox pre_commit -c conda-forge
+            conda install nox
       - name: Download Argoverse HD map files
         shell: bash -l {0}
         run: |
           wget https://s3.amazonaws.com/argoai-argoverse/hd_maps.tar.gz
           tar -xvzf hd_maps.tar.gz
-      - name: Test with tox
+      - name: Test with nox
         shell: bash -l {0}
         run: |
-          tox
-          pre-commit run --all-files
+          nox -rs
