@@ -14,7 +14,7 @@ jobs:
         with:
           activate-environment: test
           environment-file: .conda/environment.yml
-          python-version: [3.7, 3.8]
+          python-version: ["3.7", "3.8", "3.9"]
           auto-activate-base: false
       - shell: bash -l {0}
         run: |

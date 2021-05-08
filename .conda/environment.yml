@@ -14,7 +14,6 @@ dependencies:
  - imageio
  - matplotlib
  - numpy==1.19
- - pandas>=0.23.1
  - pillow
  - imageio
  - scipy>=1.4.0
