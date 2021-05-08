@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-python setup.py install
+$PYTHON setup.py install     # Python command to install the script.

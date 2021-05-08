@@ -1,0 +1,33 @@
+name: Use Setup-Miniconda From Marketplace
+on: [push]
+
+jobs:
+  miniconda:
+    name: Miniconda ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+        matrix:
+            os: ["ubuntu-latest", "macos-latest", "windows-latest"]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: test
+          environment-file: .conda/environment.yml
+          python-version: [3.7, 3.8]
+          auto-activate-base: false
+      - shell: bash -l {0}
+        run: |
+          conda info
+          conda list
+      - name: Lint
+        shell: bash -l {0}
+        run: |
+            conda install flake8
+            python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+            python -m flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Run pytest
+        shell: bash -l {0}
+        run: |
+            conda install pytest
+            pytest
