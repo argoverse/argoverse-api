@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         shell: bash -l {0}
         run: |
-            conda install tox==3.12.1 pre_commit==1.17.0 -c conda-forge
+            conda install tox pre_commit -c conda-forge
       - name: Download Argoverse HD map files
         run: |
           wget https://s3.amazonaws.com/argoai-argoverse/hd_maps.tar.gz
