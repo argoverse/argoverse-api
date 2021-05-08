@@ -7,14 +7,13 @@ from nox.sessions import Session
 
 package = "argoverse"
 nox.options.sessions = "lint", "safety", "mypy", "pytype", "tests"
-locations = "src", "tests", "noxfile.py", "docs/conf.py"
+locations = "argoverse", "tests", "noxfile.py"
 
 
 @nox.session(python=["3.7", "3.8"], venv_backend="conda")
 def black(session: Session) -> None:
     """Run black code formatter."""
     args = session.posargs or locations
-    # install_with_constraints(session, "black")
     session.conda_install("black")
     session.run("black", *args)
 
@@ -24,16 +23,17 @@ def lint(session: Session) -> None:
     """Lint using flake8."""
     args = session.posargs or locations
     session.conda_install(
-        session,
+        "--channel=conda-forge",
         "flake8",
-        "flake8-annotations",
-        "flake8-bandit",
-        "flake8-black",
-        "flake8-bugbear",
-        "flake8-docstrings",
-        "flake8-import-order",
-        "darglint",
+        # "flake8-annotations",
+        # "flake8-bandit",
+        # "flake8-black",
+        # "flake8-bugbear",
+        # "flake8-docstrings",
+        # "flake8-import-order",
+        # "darglint",
     )
+
     session.run("flake8", *args)
 
 
@@ -41,7 +41,7 @@ def lint(session: Session) -> None:
 def safety(session: Session) -> None:
     """Scan dependencies for insecure packages."""
     with tempfile.NamedTemporaryFile() as requirements:
-        session.conda_install("safety")
+        session.conda_install("--channel=conda-forge", "safety")
         session.run("safety", "check", f"--file={requirements.name}", "--full-report")
 
 
@@ -53,17 +53,28 @@ def mypy(session: Session) -> None:
     session.run("mypy", *args)
 
 
-@nox.session(python=["3.7", "3.8"], venv_backend="conda")
-def pytype(session: Session) -> None:
-    """Type-check using pytype."""
-    args = session.posargs or ["--disable=import-error", *locations]
-    session.conda_install("pytype")
-    session.run("pytype", *args)
+# @nox.session(python=["3.7", "3.8"], venv_backend="conda")
+# def pytype(session: Session) -> None:
+#     """Type-check using pytype."""
+#     args = session.posargs or ["--disable=import-error", *locations]
+#     session.conda_install("pytype")
+#     session.run("pytype", *args)
 
 
 @nox.session(python=["3.7", "3.8"], venv_backend="conda")
 def tests(session: Session) -> None:
     """Run the test suite."""
+    session.run(
+        "conda",
+        "env",
+        "update",
+        "--prefix",
+        session.virtualenv.location,
+        "--file",
+        ".conda/environment.yml",
+        # options
+        silent=False,
+    )
     args = session.posargs or ["--cov", "-m", "not e2e"]
     session.conda_install("coverage[toml]", "pytest", "pytest-cov", "pytest-mock")
     session.run("pytest", *args)

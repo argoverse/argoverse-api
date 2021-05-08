@@ -7,7 +7,6 @@ channels:
   - conda-forge
 
 dependencies:
- - python>=3.7
  - pip
  - colour
  - descartes
@@ -21,6 +20,7 @@ dependencies:
  - typing_extensions
  - h5py
  - lap
+ - cython
  - pip:
    - sklearn
    - opencv-python>=4.1.0.25
