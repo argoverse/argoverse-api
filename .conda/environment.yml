@@ -27,5 +27,3 @@ dependencies:
  - lap
  - pip:
    - git+https://github.com/daavoo/pyntcloud#egg=pyntcloud-0.1.0
-  
-
