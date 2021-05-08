@@ -26,10 +26,12 @@ jobs:
         run: |
             conda install tox pre_commit -c conda-forge
       - name: Download Argoverse HD map files
+        shell: bash -l {0}
         run: |
           wget https://s3.amazonaws.com/argoai-argoverse/hd_maps.tar.gz
           tar -xvzf hd_maps.tar.gz
       - name: Test with tox
+        shell: bash -l {0}
         run: |
           tox
           pre-commit run --all-files
