@@ -21,6 +21,7 @@ dependencies:
  - h5py
  - lap
  - cython
+ - disparity_interpolation
  - pip:
    - sklearn
    - opencv-python>=4.1.0.25
