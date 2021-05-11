@@ -53,7 +53,7 @@ setup(
         "descartes",
         "imageio",
         "h5py",
-        "hydra-core==1.1.0dev3",
+        "hydra-core==1.1.0dev6",
         "lap",
         "matplotlib",
         "motmetrics==1.1.3",
