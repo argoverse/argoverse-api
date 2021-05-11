@@ -18,11 +18,7 @@ def test_stereo_evaluation() -> None:
     gt_dir = Path(f"{_ROOT}/test_data/stereo/disparity_maps_v1.1/test/")
 
     evaluator = StereoEvaluator(
-        pred_dir,
-        gt_dir,
-        figs_fpath=None,
-        save_disparity_error_image=False,
-        num_procs=1,
+        pred_dir, gt_dir, figs_fpath=Path("figs"), save_disparity_error_image=False, num_procs=1,
     )
 
     summary = evaluator.evaluate()
@@ -105,7 +101,7 @@ def test_compute_disparity_error_dummy_1() -> None:
         pred_fpath,
         gt_fpath,
         gt_obj_fpath,
-        figs_fpath=None,
+        figs_fpath=Path("figs"),
         abs_error_thresholds=DEFAULT_ABS_ERROR_THRESHOLDS,
         rel_error_thresholds=DEFAULT_REL_ERROR_THRESHOLDS,
         save_disparity_error_image=False,
@@ -186,7 +182,7 @@ def test_compute_disparity_error_dummy_2() -> None:
         pred_fpath,
         gt_fpath,
         gt_obj_fpath,
-        figs_fpath=None,
+        figs_fpath=Path("figs"),
         abs_error_thresholds=DEFAULT_ABS_ERROR_THRESHOLDS,
         rel_error_thresholds=DEFAULT_REL_ERROR_THRESHOLDS,
         save_disparity_error_image=False,
@@ -276,7 +272,7 @@ def test_compute_disparity_error_dummy_3() -> None:
         pred_fpath,
         gt_fpath,
         gt_obj_fpath,
-        figs_fpath=None,
+        figs_fpath=Path("figs"),
         abs_error_thresholds=DEFAULT_ABS_ERROR_THRESHOLDS,
         rel_error_thresholds=DEFAULT_REL_ERROR_THRESHOLDS,
         save_disparity_error_image=False,

@@ -332,7 +332,7 @@ def plane_point_side_v3(p: np.ndarray, v: np.ndarray) -> Any:
     return p[:3].dot(v) + p[3]
 
 
-def cuboid_to_2d_frustum_bbox(corners: np.ndarray, planes: List[np.ndarray], K: np.ndarray) -> Optional[np.ndarray]:
+def cuboid_to_2d_frustum_bbox(corners: np.ndarray, planes: List[np.ndarray], K: np.ndarray) -> np.ndarray:
     """Convert a 3D cuboid to a 2D frustum bounding box.
 
     We bring the 3D points into each camera, and do the clipping there.
@@ -411,8 +411,8 @@ def cuboid_to_2d_frustum_bbox(corners: np.ndarray, planes: List[np.ndarray], K: 
     clipped_uv_verts = np.vstack([clipped_uv_verts, front_verts.reshape(-1, 2)])
     clipped_uv_verts = np.vstack([clipped_uv_verts, back_verts.reshape(-1, 2)])
 
-    if clipped_uv_verts.shape[0] == 0:
-        return None
+    # if clipped_uv_verts.shape[0] == 0:
+    #     return None
 
     bbox_2d = compute_point_cloud_bbox(clipped_uv_verts)
     return bbox_2d

@@ -171,14 +171,7 @@ def test_form_right_clipping_plane() -> None:
     right_plane = form_right_clipping_plane(fx, img_width)
 
     Y_OFFSET = 10  # arbitrary extent down the imager
-    right = np.array(
-        [
-            [0, 0, 0],
-            [img_width / 2.0, 0, fx],
-            [0, Y_OFFSET, 0],
-            [img_width / 2.0, Y_OFFSET, fx],
-        ]
-    )
+    right = np.array([[0, 0, 0], [img_width / 2.0, 0, fx], [0, Y_OFFSET, 0], [img_width / 2.0, Y_OFFSET, fx]])
 
     a, b, c, d = fit_plane_to_point_cloud(right)
     right_plane_gt = np.array([a, b, c, d])
@@ -198,14 +191,7 @@ def test_form_left_clipping_plane() -> None:
     left_plane = form_left_clipping_plane(fx, img_width)
 
     Y_OFFSET = 10
-    left = np.array(
-        [
-            [0, 0, 0],
-            [-img_width / 2.0, 0, fx],
-            [0, Y_OFFSET, 0],
-            [-img_width / 2.0, Y_OFFSET, fx],
-        ]
-    )
+    left = np.array([[0, 0, 0], [-img_width / 2.0, 0, fx], [0, Y_OFFSET, 0], [-img_width / 2.0, Y_OFFSET, fx]])
 
     a, b, c, d = fit_plane_to_point_cloud(left)
     left_plane_gt = -1 * np.array([a, b, c, d])
@@ -224,13 +210,7 @@ def test_form_top_clipping_plane() -> None:
     top_plane = form_top_clipping_plane(fx, img_height)
 
     img_width = 1000.0
-    top_pts = np.array(
-        [
-            [0, 0, 0],
-            [-img_width / 2, -img_height / 2, fx],
-            [img_width / 2, -img_height / 2, fx],
-        ]
-    )
+    top_pts = np.array([[0, 0, 0], [-img_width / 2, -img_height / 2, fx], [img_width / 2, -img_height / 2, fx]])
     a, b, c, d = fit_plane_to_point_cloud(top_pts)
     top_plane_gt = np.array([a, b, c, d])
 
@@ -250,13 +230,7 @@ def test_form_low_clipping_plane() -> None:
     low_plane = form_low_clipping_plane(fx, img_height)
 
     img_width = 10000
-    low_pts = np.array(
-        [
-            [0, 0, 0],
-            [-img_width / 2, img_height / 2, fx],
-            [img_width / 2, img_height / 2, fx],
-        ]
-    )
+    low_pts = np.array([[0, 0, 0], [-img_width / 2, img_height / 2, fx], [img_width / 2, img_height / 2, fx]])
     a, b, c, d = fit_plane_to_point_cloud(low_pts)
     low_plane_gt = np.array([a, b, c, d])
 
@@ -381,16 +355,7 @@ def test_cuboid_to_2d_frustum_bbox_smokescreen() -> None:
     `plot_frustum_planes_and_normals(planes, corners)` can help to do the visual check.
     """
     cuboid_verts_3d = np.array(
-        [
-            [2, 0, 10],
-            [-2, 0, 10],
-            [-2, 2, 10],
-            [2, 2, 10],
-            [2, 0, 18],
-            [-2, 0, 18],
-            [-2, 2, 18],
-            [2, 2, 18],
-        ]
+        [[2, 0, 10], [-2, 0, 10], [-2, 2, 10], [2, 2, 10], [2, 0, 18], [-2, 0, 18], [-2, 2, 18], [2, 2, 18]]
     )
     K = np.eye(3)
     # Set "focal_length_x_px_"
