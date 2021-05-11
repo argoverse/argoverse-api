@@ -1,6 +1,6 @@
 from typing import NamedTuple, Optional
 
-from hydra.experimental import compose, initialize_config_module
+import hydra
 from hydra.utils import instantiate
 
 
@@ -36,6 +36,6 @@ class SensorDatasetConfig(NamedTuple):
 
 DATASET_NAME = "argoverse1.1"
 
-with initialize_config_module(config_module="argoverse.config"):
-    cfg = compose(config_name=f"{DATASET_NAME}.yml")
+with hydra.initialize_config_module(config_module="argoverse.config"):
+    cfg = hydra.compose(config_name=f"{DATASET_NAME}.yaml")
     ArgoverseConfig: SensorDatasetConfig = instantiate(cfg.SensorDatasetConfig)
