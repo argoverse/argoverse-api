@@ -244,7 +244,7 @@ def verify_point_in_polygon_for_lanes() -> None:
 
 
 def plot_nearby_halluc_lanes(
-    ax: plt.axes.Axis,
+    ax: matplotlib.axes.Axes,
     city_name: str,
     avm: ArgoverseMap,
     query_x: float,
