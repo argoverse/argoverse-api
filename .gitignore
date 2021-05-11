@@ -41,3 +41,4 @@ tests/test_data/tmp
 .vscode
 tests/test_data/1obj_*.txt
 tests/test_data/mot16_scenario_*.txt
+.nox/*
