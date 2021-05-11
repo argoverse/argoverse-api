@@ -14,4 +14,4 @@ def set_log_level(caplog: logging.Logger) -> None:
     Set the log level to DEBUG for our testing to make sure that any bad log
     statements throw errors.
     """
-    caplog.setLevel(logging.DEBUG)
+    caplog.set_level(logging.DEBUG)
