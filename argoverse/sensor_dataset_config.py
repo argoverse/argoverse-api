@@ -4,25 +4,25 @@ from hydra.experimental import compose, initialize_config_module
 from hydra.utils import instantiate
 
 
-class ImageDimensions(NamedTuple):
-    """Dimensions are provided in pixels."""
+class SensorConfig(NamedTuple):
+    """Image dimensions for each sensor are provided in pixels."""
 
-    height: int
-    width: int
+    img_height: int
+    img_width: int
 
 
-class SensorDimensions(NamedTuple):
+class SensorSuiteConfig(NamedTuple):
     """Contains information about image dimensions for each sensor."""
 
-    ring_front_center: ImageDimensions
-    ring_front_left: ImageDimensions
-    ring_front_right: ImageDimensions
-    ring_side_left: ImageDimensions
-    ring_side_right: ImageDimensions
-    ring_rear_left: ImageDimensions
-    ring_rear_right: ImageDimensions
-    stereo_front_right: Optional[ImageDimensions]
-    stereo_front_left: Optional[ImageDimensions]
+    ring_front_center: SensorConfig
+    ring_front_left: SensorConfig
+    ring_front_right: SensorConfig
+    ring_side_left: SensorConfig
+    ring_side_right: SensorConfig
+    ring_rear_left: SensorConfig
+    ring_rear_right: SensorConfig
+    stereo_front_right: Optional[SensorConfig]
+    stereo_front_left: Optional[SensorConfig]
 
 
 class SensorDatasetConfig(NamedTuple):
@@ -31,7 +31,7 @@ class SensorDatasetConfig(NamedTuple):
     dataset_name: str
     ring_cam_fps: int
     stereo_cam_fps: int
-    sensors: SensorDimensions
+    sensors: SensorSuiteConfig
 
 
 DATASET_NAME = "argoverse1.1"

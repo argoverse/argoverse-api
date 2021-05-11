@@ -6,49 +6,49 @@ SensorDatasetConfig:
 
   # all ring cameras are `landscape` aspect ratio
   sensors:
-    _target_: argoverse.sensor_dataset_config.SensorDimensions
+    _target_: argoverse.sensor_dataset_config.SensorSuiteConfig
     
     ring_front_center: 
-      _target_: argoverse.sensor_dataset_config.ImageDimensions
-      height: 1200
-      width: 1920
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 1200
+      img_width: 1920
 
     ring_front_left:
-      _target_: argoverse.sensor_dataset_config.ImageDimensions
-      height: 1200
-      width: 1920
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 1200
+      img_width: 1920
 
     ring_front_right:
-      _target_: argoverse.sensor_dataset_config.ImageDimensions
-      height: 1200
-      width: 1920
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 1200
+      img_width: 1920
 
     ring_side_left:
-      _target_: argoverse.sensor_dataset_config.ImageDimensions
-      height: 1200
-      width: 1920
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 1200
+      img_width: 1920
 
     ring_side_right:
-      _target_: argoverse.sensor_dataset_config.ImageDimensions
-      height: 1200
-      width: 1920
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 1200
+      img_width: 1920
 
     ring_rear_left:
-      _target_: argoverse.sensor_dataset_config.ImageDimensions
-      height: 1200
-      width: 1920
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 1200
+      img_width: 1920
 
     ring_rear_right:
-      _target_: argoverse.sensor_dataset_config.ImageDimensions
-      height: 1200
-      width: 1920
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 1200
+      img_width: 1920
 
     stereo_front_right:
-      _target_: argoverse.sensor_dataset_config.ImageDimensions
-      height: 2056
-      width: 2464
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 2056
+      img_width: 2464
 
     stereo_front_left:
-      _target_: argoverse.sensor_dataset_config.ImageDimensions
-      height: 2056
-      width: 2464
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 2056
+      img_width: 2464
