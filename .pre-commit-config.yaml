@@ -14,6 +14,11 @@ repos:
         entry: black -l 120
         language: system
         types: [python]
+    -   id: isort
+        name: isort
+        entry: isort --profile black
+        language: system
+        types: [python]
     -   id: flake8
         name: flake8
         entry: flake8
