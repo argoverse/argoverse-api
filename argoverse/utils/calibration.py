@@ -326,10 +326,9 @@ def get_calibration_config(calibration: Dict[str, Any], camera_name: str) -> Cam
     camera_extrinsic_matrix = get_camera_extrinsic_matrix(camera_calibration)
     camera_intrinsic_matrix = get_camera_intrinsic_matrix(camera_calibration)
 
-    try:
-        img_width, img_height = get_image_dims_for_camera(camera_name)
-    except:
-        raise ValueError(f"Unknown camera name: {camera_name}")
+    img_width, img_height = get_image_dims_for_camera(camera_name)
+    if img_width is None or img_height is None:
+        raise ValueError(f"Specified camera has unknown dimensions: {camera_name}")
 
     return CameraConfig(
         camera_extrinsic_matrix,
