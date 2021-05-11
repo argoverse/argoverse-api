@@ -75,8 +75,5 @@ class SE2:
             The composed transformation.
         """
         chained_transform_matrix = self.transform_matrix.dot(right_se2.transform_matrix)
-        chained_se2 = SE2(
-            rotation=chained_transform_matrix[:2, :2],
-            translation=chained_transform_matrix[:2, 2],
-        )
+        chained_se2 = SE2(rotation=chained_transform_matrix[:2, :2], translation=chained_transform_matrix[:2, 2],)
         return chained_se2

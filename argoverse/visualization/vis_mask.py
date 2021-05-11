@@ -65,21 +65,12 @@ def vis_mask(
 
     mask = np.full_like(image[start_y:end_y, start_x:end_x], color)
     image[start_y:end_y, start_x:end_x] = cv2.addWeighted(
-        image[start_y:end_y, start_x:end_x],
-        1 - alpha,
-        mask,
-        alpha,
-        0.0,
+        image[start_y:end_y, start_x:end_x], 1 - alpha, mask, alpha, 0.0,
     )
     return image.astype(np.uint8)
 
 
-def vis_class(
-    image: np.ndarray,
-    pos: Tuple[float, float],
-    class_str: str,
-    font_scale: float = 50.0,
-) -> np.ndarray:
+def vis_class(image: np.ndarray, pos: Tuple[float, float], class_str: str, font_scale: float = 50.0,) -> np.ndarray:
     """Visualizes a class.
 
     Args:
@@ -291,12 +282,7 @@ def vis_one_image(
 
             for contour in contours:
                 polygon = Polygon(
-                    contour.reshape((-1, 2)),
-                    fill=True,
-                    facecolor=color_mask,
-                    edgecolor="w",
-                    linewidth=1.2,
-                    alpha=0.5,
+                    contour.reshape((-1, 2)), fill=True, facecolor=color_mask, edgecolor="w", linewidth=1.2, alpha=0.5,
                 )
                 ax.add_patch(polygon)
 

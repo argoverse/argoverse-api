@@ -87,13 +87,7 @@ def plot_bbox_3d_mayavi(
 
     if draw_text:
         mayavi_wrapper.mlab.text3d(  # type: ignore
-            corners[0, 0],
-            corners[0, 1],
-            corners[0, 2],
-            draw_text,
-            scale=text_scale,
-            color=colors[0],
-            figure=fig,
+            corners[0, 0], corners[0, 1], corners[0, 2], draw_text, scale=text_scale, color=colors[0], figure=fig,
         )
 
     # Draw the sides in green
@@ -225,39 +219,21 @@ def draw_coordinate_frame_at_origin(fig: Figure) -> Figure:
     axes = np.array([[2.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]], dtype=np.float64)
     # e_1 in red
     mayavi_wrapper.mlab.plot3d(  # type: ignore
-        [0, axes[0, 0]],
-        [0, axes[0, 1]],
-        [0, axes[0, 2]],
-        color=(1, 0, 0),
-        tube_radius=None,
-        figure=fig,
+        [0, axes[0, 0]], [0, axes[0, 1]], [0, axes[0, 2]], color=(1, 0, 0), tube_radius=None, figure=fig,
     )
     # e_2 in green
     mayavi_wrapper.mlab.plot3d(  # type: ignore
-        [0, axes[1, 0]],
-        [0, axes[1, 1]],
-        [0, axes[1, 2]],
-        color=(0, 1, 0),
-        tube_radius=None,
-        figure=fig,
+        [0, axes[1, 0]], [0, axes[1, 1]], [0, axes[1, 2]], color=(0, 1, 0), tube_radius=None, figure=fig,
     )
     # e_3 in blue
     mayavi_wrapper.mlab.plot3d(  # type: ignore
-        [0, axes[2, 0]],
-        [0, axes[2, 1]],
-        [0, axes[2, 2]],
-        color=(0, 0, 1),
-        tube_radius=None,
-        figure=fig,
+        [0, axes[2, 0]], [0, axes[2, 1]], [0, axes[2, 2]], color=(0, 0, 1), tube_radius=None, figure=fig,
     )
     return fig
 
 
 def draw_lidar(
-    point_cloud: np.ndarray,
-    colormap: str = "spectral",
-    fig: Optional[Figure] = None,
-    bgcolor: Color = (0, 0, 0),
+    point_cloud: np.ndarray, colormap: str = "spectral", fig: Optional[Figure] = None, bgcolor: Color = (0, 0, 0),
 ) -> Figure:
     """Render a :ref:`PointCloud` with a 45 degree viewing frustum from ego-vehicle.
 
@@ -289,19 +265,11 @@ def draw_lidar(
 
     # draw points
     fig = plot_points_3D_mayavi(
-        points=point_cloud,
-        fig=fig,
-        per_pt_color_strengths=thresholded_heights,
-        fixed_color=None,
-        colormap=colormap,
+        points=point_cloud, fig=fig, per_pt_color_strengths=thresholded_heights, fixed_color=None, colormap=colormap,
     )
     fig = draw_coordinate_frame_at_origin(fig)
     mayavi_wrapper.mlab.view(  # type: ignore
-        azimuth=180,
-        elevation=70,
-        focalpoint=[12.0909996, -1.04700089, -2.03249991],
-        distance=62.0,
-        figure=fig,
+        azimuth=180, elevation=70, focalpoint=[12.0909996, -1.04700089, -2.03249991], distance=62.0, figure=fig,
     )
     return fig
 

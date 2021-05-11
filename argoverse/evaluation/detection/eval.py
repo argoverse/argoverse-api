@@ -52,7 +52,7 @@ Evaluation:
 Results:
 
     The results are represented as a (C + 1, P) table, where C + 1 represents the number of evaluation classes
-    in addition to the mean statistics average across all classes, and P refers to the number of included statistics, 
+    in addition to the mean statistics average across all classes, and P refers to the number of included statistics,
     e.g. AP, ATE, ASE, AOE, CDS by default.
 
     Note: The `evaluate` function will use all available logical cores on the machine.
@@ -186,10 +186,7 @@ class DetectionEvaluator:
             ap = np.array(summary[cls_name][:num_ths]).mean()
 
             # Calculate TP metrics.
-            tp_metrics = np.mean(
-                cls_stats[:, num_ths : num_ths + N_TP_ERRORS],
-                axis=0,
-            )
+            tp_metrics = np.mean(cls_stats[:, num_ths : num_ths + N_TP_ERRORS], axis=0,)
 
             # Convert errors to scores.
             tp_scores = 1 - (tp_metrics / self.cfg.tp_normalization_terms)
@@ -207,11 +204,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("-d", "--dt_fpath", type=str, help="Detection root folder path.", required=True)
     parser.add_argument(
-        "-g",
-        "--gt_fpath",
-        type=str,
-        help="Ground truth root folder path.",
-        required=True,
+        "-g", "--gt_fpath", type=str, help="Ground truth root folder path.", required=True,
     )
     parser.add_argument(
         "-p",

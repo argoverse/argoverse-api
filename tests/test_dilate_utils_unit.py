@@ -70,13 +70,6 @@ def test_dilate_by_l2_horizline_1point42px() -> None:
     dilated_img = dilate_by_l2(img, dilation_thresh=1.42)
     # ground truth
     dilated_img_gt = np.array(
-        [
-            [0, 0, 0, 0, 0],
-            [0, 1, 1, 1, 1],
-            [0, 1, 1, 1, 1],
-            [0, 1, 1, 1, 1],
-            [0, 0, 0, 0, 0],
-        ],
-        dtype=np.uint8,
+        [[0, 0, 0, 0, 0], [0, 1, 1, 1, 1], [0, 1, 1, 1, 1], [0, 1, 1, 1, 1], [0, 0, 0, 0, 0]], dtype=np.uint8,
     )
     assert np.allclose(dilated_img, dilated_img_gt)

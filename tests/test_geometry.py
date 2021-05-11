@@ -88,16 +88,7 @@ def test_rotate_polygon_about_pt_3d() -> None:
     center_pt = np.array([1.0, 1.0, 5.0])
     rotated_pts = rotate_polygon_about_pt(pts, R, center_pt)
 
-    gt_rotated_pts = np.array(
-        [
-            [-1.5, 0, -1],
-            [-1, 1, -1],
-            [-2, 1, -1],
-            [-1.5, 0, 2.3],
-            [-1, 1, 2.3],
-            [-2, 1, 2.3],
-        ]
-    )
+    gt_rotated_pts = np.array([[-1.5, 0, -1], [-1, 1, -1], [-2, 1, -1], [-1.5, 0, 2.3], [-1, 1, 2.3], [-2, 1, 2.3]])
 
     assert np.allclose(rotated_pts, gt_rotated_pts)
 
@@ -225,20 +216,7 @@ def test_filter_point_cloud_to_polygon_2d_redcross() -> None:
 
     """
     polygon = np.array(
-        [
-            [1, 1],
-            [1, 2],
-            [-1, 2],
-            [-1, 1],
-            [-2, 1],
-            [-2, -1],
-            [-1, -1],
-            [-1, -2],
-            [1, -2],
-            [1, -2],
-            [2, -1],
-            [2, 1],
-        ]
+        [[1, 1], [1, 2], [-1, 2], [-1, 1], [-2, 1], [-2, -1], [-1, -1], [-1, -2], [1, -2], [1, -2], [2, -1], [2, 1]]
     )
     point_cloud_2d = np.array([[0.9, 0.9], [1.1, 1.1], [1, 2.0], [1, 2.1], [0, 1.99]])  # in  # out  # out  # out  # in
     interior_pts = filter_point_cloud_to_polygon(polygon, point_cloud_2d)
@@ -248,11 +226,7 @@ def test_filter_point_cloud_to_polygon_2d_redcross() -> None:
 
 
 def point_inside_polygon_interior_sanity_check(
-    n_vertices: int,
-    poly_x_pts: np.ndarray,
-    poly_y_pts: np.ndarray,
-    test_x: float,
-    test_y: float,
+    n_vertices: int, poly_x_pts: np.ndarray, poly_y_pts: np.ndarray, test_x: float, test_y: float,
 ) -> bool:
     """
     We use this function to verify shapely.geometry's correctness. This fn only works correctly

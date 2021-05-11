@@ -179,11 +179,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("-d", "--pred_fpath", type=str, help="Stereo root folder path.", required=True)
     parser.add_argument(
-        "-g",
-        "--gt_fpath",
-        type=str,
-        help="Ground truth root folder path.",
-        required=True,
+        "-g", "--gt_fpath", type=str, help="Ground truth root folder path.", required=True,
     )
     parser.add_argument(
         "-p",

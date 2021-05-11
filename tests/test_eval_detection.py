@@ -47,10 +47,7 @@ def evaluator_identity() -> DetectionEvaluator:
     """Define an evaluator that compares a set of results to itself."""
     detection_cfg = DetectionCfg(dt_classes=["VEHICLE"], eval_only_roi_instances=False)
     return DetectionEvaluator(
-        TEST_DATA_LOC / "detections_identity",
-        TEST_DATA_LOC,
-        TEST_DATA_LOC / "test_figures",
-        detection_cfg,
+        TEST_DATA_LOC / "detections_identity", TEST_DATA_LOC, TEST_DATA_LOC / "test_figures", detection_cfg,
     )
 
 
@@ -59,10 +56,7 @@ def evaluator_assignment() -> DetectionEvaluator:
     """Define an evaluator that compares a set of results to one with an extra detection to check assignment."""
     detection_cfg = DetectionCfg(dt_classes=["VEHICLE"], eval_only_roi_instances=False)
     return DetectionEvaluator(
-        TEST_DATA_LOC / "detections_assignment",
-        TEST_DATA_LOC,
-        TEST_DATA_LOC / "test_figures",
-        detection_cfg,
+        TEST_DATA_LOC / "detections_assignment", TEST_DATA_LOC, TEST_DATA_LOC / "test_figures", detection_cfg,
     )
 
 
@@ -71,10 +65,7 @@ def evaluator() -> DetectionEvaluator:
     """Definte an evaluator that compares a set of detections with known error to the ground truth."""
     detection_cfg = DetectionCfg(dt_classes=["VEHICLE"], eval_only_roi_instances=False)
     return DetectionEvaluator(
-        TEST_DATA_LOC / "detections",
-        TEST_DATA_LOC,
-        TEST_DATA_LOC / "test_figures",
-        detection_cfg,
+        TEST_DATA_LOC / "detections", TEST_DATA_LOC, TEST_DATA_LOC / "test_figures", detection_cfg,
     )
 
 
@@ -215,26 +206,8 @@ def test_accumulate() -> None:
         cls_to_accum["VEHICLE"]
         == np.array(
             [
-                [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0,
-                    expected_ATE,
-                    expected_ASE,
-                    expected_AOE,
-                    expected_AP,
-                ],
-                [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0,
-                    expected_ATE,
-                    expected_ASE,
-                    expected_AOE,
-                    expected_AP,
-                ],
+                [1.0, 1.0, 1.0, 1.0, expected_ATE, expected_ASE, expected_AOE, expected_AP],
+                [1.0, 1.0, 1.0, 1.0, expected_ATE, expected_ASE, expected_AOE, expected_AP],
             ]
         )
     ).all()

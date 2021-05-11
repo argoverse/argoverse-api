@@ -57,14 +57,7 @@ def test_quat2rotmat_1() -> None:
 
 def test_quat2rotmat_2() -> None:
     """Test receiving a quaternion in (w, x, y, z) from a camera extrinsic matrix."""
-    q = np.array(
-        [
-            0.4962730586309743,
-            -0.503110985154011,
-            0.4964713836540661,
-            -0.5040918101963521,
-        ]
-    )
+    q = np.array([0.4962730586309743, -0.503110985154011, 0.4964713836540661, -0.5040918101963521])
     R = quat2rotmat(q)
     assert np.allclose(R, quat2rotmat_numpy(q))
 
@@ -80,14 +73,7 @@ def test_quat2rotmat_2() -> None:
 
 def test_quat2rotmat_3() -> None:
     """Test receiving a quaternion in (w, x, y, z) from a camera extrinsic matrix."""
-    q = np.array(
-        [
-            0.6115111374269877,
-            -0.6173269265351116,
-            -0.3480540121107544,
-            0.3518806604959585,
-        ]
-    )
+    q = np.array([0.6115111374269877, -0.6173269265351116, -0.3480540121107544, 0.3518806604959585])
     R = quat2rotmat(q)
     assert np.allclose(R, quat2rotmat_numpy(q))
 
@@ -103,14 +89,7 @@ def test_quat2rotmat_3() -> None:
 
 def test_quat2rotmat_4() -> None:
     """Test receiving a quaternion in (w, x, y, z) from an object trajectory."""
-    q = np.array(
-        [
-            0.0036672729619914197,
-            -1.3748614058859026e-05,
-            -0.00023389080405946338,
-            0.9999932480847505,
-        ]
-    )
+    q = np.array([0.0036672729619914197, -1.3748614058859026e-05, -0.00023389080405946338, 0.9999932480847505])
     R = quat2rotmat(q)
     assert np.allclose(R, quat2rotmat_numpy(q))
 
@@ -126,14 +105,7 @@ def test_quat2rotmat_4() -> None:
 
 def test_quat2rotmat_5() -> None:
     """Test receiving a quaternion in (w, x, y, z) from an object trajectory."""
-    q = np.array(
-        [
-            0.9998886199825181,
-            -0.002544078377693514,
-            -0.0028621717588219564,
-            -0.01442509159370476,
-        ]
-    )
+    q = np.array([0.9998886199825181, -0.002544078377693514, -0.0028621717588219564, -0.01442509159370476])
     R = quat2rotmat(q)
     assert np.allclose(R, quat2rotmat_numpy(q))
 

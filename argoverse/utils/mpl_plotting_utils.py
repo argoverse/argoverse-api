@@ -12,10 +12,7 @@ from shapely.geometry import LineString, Polygon
 
 
 def draw_polygon_mpl(
-    ax: plt.Axes,
-    polygon: np.ndarray,
-    color: Union[Tuple[float, float, float], str],
-    linewidth: Optional[float] = None,
+    ax: plt.Axes, polygon: np.ndarray, color: Union[Tuple[float, float, float], str], linewidth: Optional[float] = None,
 ) -> None:
     """Draw a polygon.
 
@@ -50,9 +47,7 @@ def draw_polygonpatch_matplotlib(points: Any, color: Union[Tuple[float, float, f
 
 
 def draw_lane_polygons(
-    ax: plt.Axes,
-    lane_polygons: np.ndarray,
-    color: Union[Tuple[float, float, float], str] = "y",
+    ax: plt.Axes, lane_polygons: np.ndarray, color: Union[Tuple[float, float, float], str] = "y",
 ) -> None:
     """Draw a lane using polygons.
 
@@ -66,10 +61,7 @@ def draw_lane_polygons(
 
 
 def plot_bbox_2D(
-    ax: plt.Axes,
-    pts: np.ndarray,
-    color: Union[Tuple[float, float, float], str],
-    linestyle: str = "-",
+    ax: plt.Axes, pts: np.ndarray, color: Union[Tuple[float, float, float], str], linestyle: str = "-",
 ) -> None:
     """Draw a bounding box.
 
@@ -128,10 +120,7 @@ def animate_polyline(polyline: np.ndarray, axes_margin: int = 5, show_plot: bool
 
 
 def plot_lane_segment_patch(
-    polygon_pts: np.ndarray,
-    ax: plt.Axes,
-    color: Union[Tuple[float, float, float], str] = "y",
-    alpha: float = 0.3,
+    polygon_pts: np.ndarray, ax: plt.Axes, color: Union[Tuple[float, float, float], str] = "y", alpha: float = 0.3,
 ) -> None:
     """Plot a lane segment using a PolygonPatch.
 
@@ -147,10 +136,7 @@ def plot_lane_segment_patch(
 
 
 def plot_nearby_centerlines(
-    lane_centerlines: Dict[Any, Any],
-    ax: plt.Axes,
-    nearby_lane_ids: List[int],
-    color: Union[Tuple[int, int, int], str],
+    lane_centerlines: Dict[Any, Any], ax: plt.Axes, nearby_lane_ids: List[int], color: Union[Tuple[int, int, int], str],
 ) -> None:
     """Plot centerlines.
 

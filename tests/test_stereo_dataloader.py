@@ -29,13 +29,11 @@ def test_get_log_calibration_data(data_loader: ArgoverseStereoDataLoader) -> Non
 def test_get_ordered_log_stereo_image_fpaths(data_loader: ArgoverseStereoDataLoader) -> None:
     """Test getting the list of paths to chronologically ordered rectified stereo images in a log."""
     left_stereo_img_fpaths = data_loader.get_ordered_log_stereo_image_fpaths(
-        log_id=_LOG_ID,
-        camera_name=STEREO_FRONT_LEFT_RECT,
+        log_id=_LOG_ID, camera_name=STEREO_FRONT_LEFT_RECT,
     )
 
     right_stereo_img_fpaths = data_loader.get_ordered_log_stereo_image_fpaths(
-        log_id=_LOG_ID,
-        camera_name=STEREO_FRONT_RIGHT_RECT,
+        log_id=_LOG_ID, camera_name=STEREO_FRONT_RIGHT_RECT,
     )
 
     # Test if the length of the lists (left and right) are 1 (length of the test lists).
@@ -46,13 +44,11 @@ def test_get_ordered_log_stereo_image_fpaths(data_loader: ArgoverseStereoDataLoa
 def test_ordered_log_disparity_map_fpaths(data_loader: ArgoverseStereoDataLoader) -> None:
     """Test getting the list of paths to chronologically ordered disparity maps in a log."""
     disparity_map_fpaths = data_loader.get_ordered_log_disparity_map_fpaths(
-        log_id=_LOG_ID,
-        disparity_name="stereo_front_left_rect_disparity",
+        log_id=_LOG_ID, disparity_name="stereo_front_left_rect_disparity",
     )
 
     disparity_obj_map_fpaths = data_loader.get_ordered_log_disparity_map_fpaths(
-        log_id=_LOG_ID,
-        disparity_name="stereo_front_left_rect_objects_disparity",
+        log_id=_LOG_ID, disparity_name="stereo_front_left_rect_objects_disparity",
     )
 
     # Test if the length of the lists are 1 (length of the test lists).
@@ -63,8 +59,7 @@ def test_ordered_log_disparity_map_fpaths(data_loader: ArgoverseStereoDataLoader
 def test_get_rectified_stereo_image(data_loader: ArgoverseStereoDataLoader) -> None:
     """Test loading a rectified stereo image."""
     left_stereo_img_fpaths = data_loader.get_ordered_log_stereo_image_fpaths(
-        log_id=_LOG_ID,
-        camera_name=STEREO_FRONT_LEFT_RECT,
+        log_id=_LOG_ID, camera_name=STEREO_FRONT_LEFT_RECT,
     )
 
     rectified_stereo_image = data_loader.get_rectified_stereo_image(left_stereo_img_fpaths[0])
@@ -76,8 +71,7 @@ def test_get_rectified_stereo_image(data_loader: ArgoverseStereoDataLoader) -> N
 def test_get_disparity_map(data_loader: ArgoverseStereoDataLoader) -> None:
     """Test loading a disparity map."""
     disparity_img_fpaths = data_loader.get_ordered_log_disparity_map_fpaths(
-        log_id=_LOG_ID,
-        disparity_name="stereo_front_left_rect_disparity",
+        log_id=_LOG_ID, disparity_name="stereo_front_left_rect_disparity",
     )
 
     disparity_map = data_loader.get_disparity_map(disparity_img_fpaths[0])

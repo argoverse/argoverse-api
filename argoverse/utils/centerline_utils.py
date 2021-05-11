@@ -123,10 +123,7 @@ def convert_lane_boundaries_to_polygon(right_lane_bounds: np.ndarray, left_lane_
 
 
 def filter_candidate_centerlines(
-    xy: np.ndarray,
-    candidate_cl: List[np.ndarray],
-    stationary_threshold: float = 2.0,
-    max_dist_margin: float = 2.0,
+    xy: np.ndarray, candidate_cl: List[np.ndarray], stationary_threshold: float = 2.0, max_dist_margin: float = 2.0,
 ) -> List[np.ndarray]:
     """Filter candidate centerlines based on the distance travelled along the centerline.
 

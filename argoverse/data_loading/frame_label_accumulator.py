@@ -41,12 +41,7 @@ class PerFrameLabelAccumulator:
     """
 
     def __init__(
-        self,
-        dataset_dir: str,
-        labels_dir: str,
-        experiment_prefix: str,
-        bboxes_3d: bool = False,
-        save: bool = True,
+        self, dataset_dir: str, labels_dir: str, experiment_prefix: str, bboxes_3d: bool = False, save: bool = True,
     ) -> None:
         """Initialize PerFrameLabelAccumulator object for use with tracking benchmark data.
 
@@ -216,11 +211,7 @@ class PerFrameLabelAccumulator:
         return traj_city_fr
 
     def convert_bbox_to_city_frame(
-        self,
-        lidar_timestamp_ns: int,
-        dataset_dir: str,
-        log_id: str,
-        bbox_ego_frame: np.ndarray,
+        self, lidar_timestamp_ns: int, dataset_dir: str, log_id: str, bbox_ego_frame: np.ndarray,
     ) -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
         """Convert bounding box to city frame.
         Args:

@@ -92,12 +92,7 @@ def compute_disparity_error(
         write_dir_path = Path(f"{figs_fpath}/{log_id}")
 
         write_disparity_error_image(
-            pred_disparity,
-            gt_disparity,
-            timestamp,
-            write_dir_path,
-            abs_error_thresholds,
-            rel_error_thresholds,
+            pred_disparity, gt_disparity, timestamp, write_dir_path, abs_error_thresholds, rel_error_thresholds,
         )
 
     return errors

@@ -72,12 +72,7 @@ def generate_forecasting_h5(
 
             d = np.array(
                 [
-                    [
-                        key,
-                        np.float32(x),
-                        np.float32(y),
-                        probabilities[key][int(np.floor(i / future_frames))],
-                    ]
+                    [key, np.float32(x), np.float32(y), probabilities[key][int(np.floor(i / future_frames))]]
                     for i, (x, y) in enumerate(value)
                 ]
             )
@@ -198,13 +193,7 @@ def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") 
     # translation = center
     center = np.array([bbox.centroid.xy[0][0], bbox.centroid.xy[1][0], min(z) + height / 2])
 
-    R = np.array(
-        [
-            [np.cos(angle), -np.sin(angle), 0],
-            [np.sin(angle), np.cos(angle), 0],
-            [0, 0, 1],
-        ]
-    )
+    R = np.array([[np.cos(angle), -np.sin(angle), 0], [np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
 
     q = quaternion.from_rotation_matrix(R)
 
@@ -268,11 +257,7 @@ def save_label(argoverse_data: ArgoverseTrackingLoader, labels: List[ObjectLabel
 
     for label in labels:
         json_data = {
-            "center": {
-                "x": label.translation[0],
-                "y": label.translation[1],
-                "z": label.translation[2],
-            },
+            "center": {"x": label.translation[0], "y": label.translation[1], "z": label.translation[2]},
             "rotation": {
                 "x": label.quaternion[0],
                 "y": label.quaternion[1],

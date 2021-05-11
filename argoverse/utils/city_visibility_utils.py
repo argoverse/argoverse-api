@@ -55,9 +55,7 @@ def clip_point_cloud_to_visible_region(
         visualize = False
         if visualize:
             viz_polar_bin_contents(
-                bin_lidar_pts,
-                egovehicle_pts[invalid_egovehicle_bools],
-                filename=f"polar_bin_{i}.jpg",
+                bin_lidar_pts, egovehicle_pts[invalid_egovehicle_bools], filename=f"polar_bin_{i}.jpg",
             )
 
         egovehicle_pts = egovehicle_pts[np.logical_not(invalid_egovehicle_bools)]
@@ -76,11 +74,7 @@ def viz_polar_bin_contents(bin_lidar_pts: np.ndarray, invalid_egovehicle_pts: np
     # visualize the contents of this polar bin
     plt.scatter(bin_lidar_pts[:, 0], bin_lidar_pts[:, 1], 10, marker=".", color="b")
     plt.scatter(
-        invalid_egovehicle_pts[:, 0],
-        invalid_egovehicle_pts[:, 1],
-        10,
-        marker=".",
-        color="r",
+        invalid_egovehicle_pts[:, 0], invalid_egovehicle_pts[:, 1], 10, marker=".", color="r",
     )
     plt.axis("equal")
     plt.savefig(filename)

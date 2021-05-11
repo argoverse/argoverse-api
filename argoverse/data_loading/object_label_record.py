@@ -185,13 +185,7 @@ class ObjectLabelRecord:
             prev = selected_corners[-1]
             for corner in selected_corners:
                 draw_clipped_line_segment(
-                    img,
-                    prev.copy(),
-                    corner.copy(),
-                    camera_config,
-                    linewidth,
-                    planes,
-                    color,
+                    img, prev.copy(), corner.copy(), camera_config, linewidth, planes, color,
                 )
                 prev = corner
 
@@ -199,13 +193,7 @@ class ObjectLabelRecord:
         for i in range(4):
             # between front and back corners
             draw_clipped_line_segment(
-                img,
-                corners[i],
-                corners[i + 4],
-                camera_config,
-                linewidth,
-                planes,
-                colors[2][::-1],
+                img, corners[i], corners[i + 4], camera_config, linewidth, planes, colors[2][::-1],
             )
 
         # Draw front (first 4 corners) in blue
@@ -229,24 +217,14 @@ class ObjectLabelRecord:
             )
             img = draw_alpha_rectangle(img, top_left, bottom_right, EMERALD_RGB, alpha=BKGRND_RECT_ALPHA)
             add_text_cv2(
-                img,
-                text=str(self.label_class),
-                x=uv_ct[0] - TEXT_OFFS_LEFT,
-                y=uv_ct[1],
-                color=WHITE_BGR,
+                img, text=str(self.label_class), x=uv_ct[0] - TEXT_OFFS_LEFT, y=uv_ct[1], color=WHITE_BGR,
             )
 
         # Draw blue line indicating the front half
         center_bottom_forward = np.mean(corners[2:4], axis=0)
         center_bottom = np.mean(corners[[2, 3, 7, 6]], axis=0)
         draw_clipped_line_segment(
-            img,
-            center_bottom,
-            center_bottom_forward,
-            camera_config,
-            linewidth,
-            planes,
-            colors[0][::-1],
+            img, center_bottom, center_bottom_forward, camera_config, linewidth, planes, colors[0][::-1],
         )
 
         return img
@@ -368,15 +346,7 @@ def json_label_dict_to_obj_record(label: Dict[str, Any]) -> ObjectLabelRecord:
     else:
         score = 1.0
     obj_rec = ObjectLabelRecord(
-        quaternion,
-        translation,
-        length,
-        width,
-        height,
-        occlusion,
-        label_class,
-        track_id,
-        score,
+        quaternion, translation, length, width, height, occlusion, label_class, track_id, score,
     )
     return obj_rec
 

@@ -33,9 +33,7 @@ def project_to_line_seq(
 
 
 def project_to_line(
-    trajectory: np.ndarray,
-    center_polyline: np.ndarray,
-    enforce_same_density: bool = False,
+    trajectory: np.ndarray, center_polyline: np.ndarray, enforce_same_density: bool = False,
 ) -> Tuple[float, np.ndarray]:
     """Project a trajectory onto a polyline.
 

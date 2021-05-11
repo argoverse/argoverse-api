@@ -14,14 +14,7 @@ def test_interp_square_grid_nearest_3to4() -> None:
     out_dim = 4
     interp_type = "nearest"
     out_grid = interp_square_grid(grid_data, in_dim=in_dim, out_dim=out_dim, interp_type=interp_type)
-    gt_interp_grid = np.array(
-        [
-            [1.0, 1.0, 1.0, 1.0],
-            [1.0, 2.0, 2.0, 1.0],
-            [1.0, 2.0, 2.0, 1.0],
-            [1.0, 1.0, 1.0, 1.0],
-        ]
-    )
+    gt_interp_grid = np.array([[1.0, 1.0, 1.0, 1.0], [1.0, 2.0, 2.0, 1.0], [1.0, 2.0, 2.0, 1.0], [1.0, 1.0, 1.0, 1.0]])
     assert np.allclose(out_grid, gt_interp_grid)
 
 

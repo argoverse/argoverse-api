@@ -7,7 +7,7 @@ from nox.sessions import Session
 
 package = "argoverse"
 # nox.options.sessions = "lint", "safety", "mypy", "tests"
-nox.options.sessions = "lint", "mypy", "tests"
+nox.options.sessions = "black", "lint", "mypy", "tests"
 locations = "argoverse", "tests", "noxfile.py"
 
 
@@ -16,7 +16,7 @@ def black(session: Session) -> None:
     """Run black code formatter."""
     args = session.posargs or locations
     session.conda_install("black")
-    session.run("black", *args)
+    session.run("black", "-l 120", *args)
 
 
 @nox.session(python=["3.7", "3.8"], venv_backend="conda")

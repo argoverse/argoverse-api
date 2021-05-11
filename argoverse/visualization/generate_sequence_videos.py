@@ -23,10 +23,7 @@ from argoverse.visualization.visualize_sequences import viz_sequence
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument("--root", help="sequence location ")
 parser.add_argument(
-    "--max_videos",
-    type=int,
-    help="maximum number of sequence to process. -1 to get all sequence",
-    default=10,
+    "--max_videos", type=int, help="maximum number of sequence to process. -1 to get all sequence", default=10,
 )
 parser.add_argument("--output_dir", help="output directory", default="vis_video")
 
@@ -81,18 +78,13 @@ def main(arguments: List[str]) -> int:
             df_cur = df.loc[df["TIMESTAMP"] <= time]
 
             viz_sequence(
-                df_cur,
-                lane_centerlines=lane_centerlines,
-                show=False,
-                smoothen=False,
+                df_cur, lane_centerlines=lane_centerlines, show=False, smoothen=False,
             )
 
             os.makedirs(seq_out_dir, exist_ok=True)
 
             plt.savefig(
-                os.path.join(seq_out_dir, f"{count}.png"),
-                bbox_inches="tight",
-                pad_inches=0,
+                os.path.join(seq_out_dir, f"{count}.png"), bbox_inches="tight", pad_inches=0,
             )
             plt.close()
             count += 1

@@ -48,9 +48,7 @@ def compute_mid_pivot_arc(single_pt: np.ndarray, arc_pts: np.ndarray) -> Tuple[n
 
 
 def compute_midpoint_line(
-    left_ln_bnds: np.ndarray,
-    right_ln_bnds: np.ndarray,
-    num_interp_pts: int = NUM_CENTERLINE_INTERP_PTS,
+    left_ln_bnds: np.ndarray, right_ln_bnds: np.ndarray, num_interp_pts: int = NUM_CENTERLINE_INTERP_PTS,
 ) -> Tuple[np.ndarray, float]:
     """
     Compute the lane segment centerline by interpolating n points along each

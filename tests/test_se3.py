@@ -147,12 +147,7 @@ def test_SE3_chaining_transforms() -> None:
 
     pts = np.array([[1.0, 0.0, 4.0], [1.0, 0.0, 3.0]])
     transformed_pts = fr2_se3_fr0.transform_point_cloud(pts.copy())
-    gt_transformed_pts = np.array(
-        [
-            [-np.sqrt(2) / 2, -np.sqrt(2) / 2, 4.0],
-            [-np.sqrt(2) / 2, -np.sqrt(2) / 2, 3.0],
-        ]
-    )
+    gt_transformed_pts = np.array([[-np.sqrt(2) / 2, -np.sqrt(2) / 2, 4.0], [-np.sqrt(2) / 2, -np.sqrt(2) / 2, 3.0]])
 
     assert np.allclose(transformed_pts, gt_transformed_pts)
 

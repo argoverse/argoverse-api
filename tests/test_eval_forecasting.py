@@ -270,11 +270,7 @@ test_metric_params = {
     ids=[k for k in test_metric_params],
 )
 def test_forecasting_metrics(
-    forecasted_trajectories,
-    ground_truth_trajectories,
-    max_n_guesses,
-    forecasted_probabilities,
-    expected_metrics,
+    forecasted_trajectories, ground_truth_trajectories, max_n_guesses, forecasted_probabilities, expected_metrics,
 ) -> None:
     metrics = compute_forecasting_metrics(
         forecasted_trajectories,

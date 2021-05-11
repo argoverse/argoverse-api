@@ -196,11 +196,7 @@ def render_global_city_map_bev(
             color = blue
 
         draw_polyline_cv2(
-            centerline_2d * UPSAMPLE_FACTOR,
-            rendered_image,
-            color,
-            im_h * UPSAMPLE_FACTOR,
-            im_w * UPSAMPLE_FACTOR,
+            centerline_2d * UPSAMPLE_FACTOR, rendered_image, color, im_h * UPSAMPLE_FACTOR, im_w * UPSAMPLE_FACTOR,
         )
 
     # provide colormap in corner

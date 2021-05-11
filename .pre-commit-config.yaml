@@ -1,22 +1,22 @@
 fail_fast: false
 
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks.git
-    rev: 0b70e28
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
     hooks:
-    - id: check-json
-    - id: mixed-line-ending
-      args: ['--fix=lf']
-    - id: end-of-file-fixer
-    - id: debug-statements
--   repo: https://github.com/pre-commit/mirrors-isort.git
-    rev: 687aecc
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+-   repo: local
     hooks:
-    - id: isort
-      args: ["--profile", "black", "-l", "120"]
--   repo: https://github.com/psf/black
-    rev: 172c0a7
-    hooks:
-    - id: black
-      args: ["-l", "120"]
+    -   id: black
+        name: black
+        entry: black -l 120
+        language: system
+        types: [python]
+    -   id: flake8
+        name: flake8
+        entry: flake8
+        language: system
+        types: [python]
 exclude: "docs/.*$"

@@ -100,14 +100,7 @@ def label_to_bbox(label: _LabelType) -> Tuple[np.ndarray, float]:
 
     bbox = np.array([p0, p1, p2, height], dtype=object)
 
-    R = quat2rotmat(
-        (
-            label["rotation"]["w"],
-            label["rotation"]["x"],
-            label["rotation"]["y"],
-            label["rotation"]["z"],
-        )
-    )
+    R = quat2rotmat((label["rotation"]["w"], label["rotation"]["x"], label["rotation"]["y"], label["rotation"]["z"],))
     t = np.array([label["center"]["x"], label["center"]["y"], label["center"]["z"]])[:, np.newaxis]
 
     v = np.array([1, 0, 0])[:, np.newaxis]

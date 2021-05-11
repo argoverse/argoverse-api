@@ -32,17 +32,7 @@ def temp_test_straight_centerline_to_polygon() -> None:
     polygon = centerline_to_polygon(centerline)
     # polygon wraps around with right boundary, then reversed
     # left boundary, then back to start vertex
-    gt_polygon = np.array(
-        [
-            [-3.8, 2.0],
-            [-3.8, 0.0],
-            [-3.8, -2.0],
-            [3.8, -2.0],
-            [3.8, 0.0],
-            [3.8, 2.0],
-            [-3.8, 2.0],
-        ]
-    )
+    gt_polygon = np.array([[-3.8, 2.0], [-3.8, 0.0], [-3.8, -2.0], [3.8, -2.0], [3.8, 0.0], [3.8, 2.0], [-3.8, 2.0]])
 
     assert np.array_equal(polygon, gt_polygon)
 
@@ -122,31 +112,12 @@ def test_get_nt_distance() -> None:
 
     xy = np.array([(0.0, 4.0), (3.0, 3.0), (1.0, 2.0), (4.0, 2.0), (5.0, 0.0), (7.0, 1.0)])
     centerline = np.array(
-        [
-            (1.0, 5.0),
-            (1.5, 4.0),
-            (2.0, 3.0),
-            (2.5, 2.0),
-            (3.0, 1.0),
-            (4.0, 1.0),
-            (5.0, 1.0),
-            (6.0, 1.0),
-            (7.0, 1.0),
-        ]
+        [(1.0, 5.0), (1.5, 4.0), (2.0, 3.0), (2.5, 2.0), (3.0, 1.0), (4.0, 1.0), (5.0, 1.0), (6.0, 1.0), (7.0, 1.0)]
     )
 
     nt_dist = get_nt_distance(xy, centerline)
 
-    expected_nt_dist = np.array(
-        [
-            [1.34, 0.44],
-            [2.68, 0.89],
-            [2.68, 1.34],
-            [5.47, 1.0],
-            [6.47, 1.0],
-            [8.47, 0.0],
-        ]
-    )
+    expected_nt_dist = np.array([[1.34, 0.44], [2.68, 0.89], [2.68, 1.34], [5.47, 1.0], [6.47, 1.0], [8.47, 0.0]])
     print(nt_dist, expected_nt_dist)
     np.array_equal(nt_dist, expected_nt_dist)
 

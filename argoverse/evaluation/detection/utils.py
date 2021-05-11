@@ -149,10 +149,7 @@ def accumulate(
             max_num_objs=MAX_NUM_BOXES,
         )
         gt_filtered = filter_instances(
-            gts,
-            class_name,
-            filter_metric=cfg.dt_metric,
-            max_detection_range=cfg.max_dt_range,
+            gts, class_name, filter_metric=cfg.dt_metric, max_detection_range=cfg.max_dt_range,
         )
         gt_filtered = remove_duplicate_instances(gt_filtered, cfg)
 

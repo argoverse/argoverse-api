@@ -16,7 +16,7 @@ from argoverse.utils.json_utils import save_json_dict
 _ROOT = Path(__file__).resolve().parent
 
 """
-FRAG: the number of track fragmentations (FM) counts how many times a 
+FRAG: the number of track fragmentations (FM) counts how many times a
 ground truth trajectory is interrupted (untracked). In other words, a
 fragmentation is counted each time a trajectory changes its status
 from tracked to untracked and tracking of that same trajectory is
@@ -111,10 +111,7 @@ class TrackedObjects:
 
 
 def dump_1obj_scenario_json(
-    centers: List[Tuple[int, int, int]],
-    yaw_angles: List[float],
-    log_id: str,
-    is_gt: bool,
+    centers: List[Tuple[int, int, int]], yaw_angles: List[float], log_id: str, is_gt: bool,
 ) -> None:
     """
     Egovehicle stationary (represented by `o`).

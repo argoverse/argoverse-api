@@ -174,9 +174,7 @@ def eval_tracks(
 
             timestamp_lidar = int(Path(path_track_data[ind_frame]).stem.split("_")[-1])
             path_gt = os.path.join(
-                path_dataset,
-                "per_sweep_annotations_amodal",
-                f"tracked_object_labels_{timestamp_lidar}.json",
+                path_dataset, "per_sweep_annotations_amodal", f"tracked_object_labels_{timestamp_lidar}.json",
             )
 
             if not os.path.exists(path_gt):
@@ -199,13 +197,7 @@ def eval_tracks(
 
                 bbox, orientation = label_to_bbox(gt_data[i])
 
-                center = np.array(
-                    [
-                        gt_data[i]["center"]["x"],
-                        gt_data[i]["center"]["y"],
-                        gt_data[i]["center"]["z"],
-                    ]
-                )
+                center = np.array([gt_data[i]["center"]["x"], gt_data[i]["center"]["y"], gt_data[i]["center"]["z"]])
                 if bbox[3] > 0 and in_distance_range_pose(np.zeros(3), center, d_min, d_max):
                     track_label_uuid = gt_data[i]["track_label_uuid"]
                     gt[track_label_uuid] = {}
@@ -341,10 +333,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--path_dataset", type=str, default="../../argodataset_30Hz/cvpr_test_set")
     parser.add_argument(
-        "--centroid_method",
-        type=str,
-        default="average",
-        choices=["label_center", "average"],
+        "--centroid_method", type=str, default="average", choices=["label_center", "average"],
     )
     parser.add_argument("--flag", type=str, default="")
     parser.add_argument("--d_min", type=float, default=0)
