@@ -16,6 +16,7 @@ import numpy as np
 from argoverse.data_loading.object_label_record import json_label_dict_to_obj_record
 from argoverse.data_loading.simple_track_dataloader import SimpleArgoverseTrackingDataLoader
 from argoverse.map_representation.map_api import ArgoverseMap
+from argoverse.sensor_dataset_config import ArgoverseConfig
 from argoverse.utils.calibration import (
     CameraConfig,
     get_calibration_config,
@@ -40,8 +41,8 @@ Number = Union[int, float]
 
 # jigger lane pixel values by [-10,10] range
 LANE_COLOR_NOISE = 20
-STEREO_FPS = 5
-RING_CAM_FPS = 30
+STEREO_FPS = ArgoverseConfig.stereo_cam_fps
+RING_CAM_FPS = ArgoverseConfig.ring_cam_fps
 
 
 def plot_lane_centerlines_in_img(
