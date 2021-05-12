@@ -25,7 +25,9 @@ def quat2rotmat(q: np.ndarray) -> np.ndarray:
     Returns:
         R: Array of shape (3, 3) representing a rotation matrix.
     """
-    assert np.isclose(np.linalg.norm(q), 1.0, atol=1e-12)
+    if not np.isclose(np.linalg.norm(q), 1.0, atol=1e-12):
+        # forced to re-normalize quaternion, since its norm was not equal to 1
+        q /= np.linalg.norm(q)
 
     quat_xyzw = quat_argo2scipy(q)
     return Rotation.from_quat(quat_xyzw).as_matrix()
