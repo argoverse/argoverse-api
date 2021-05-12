@@ -84,13 +84,13 @@ class SynchronizationDB:
     # two camera observations (i.e. RING_CAMERA_SHUTTER_INTERVAL_MS / 2 milliseconds on either side)
     # then convert milliseconds to nanoseconds
     MAX_LIDAR_RING_CAM_TIMESTAMP_DIFF = to_metric_time(
-        RING_CAMERA_SHUTTER_INTERVAL_MS / 2, src=Millisecond, dst=Nanosecond
+        ts=RING_CAMERA_SHUTTER_INTERVAL_MS / 2, src=Millisecond, dst=Nanosecond
     )
 
     # Since Stereo is more sparse, we look at (STEREO_CAMERA_SHUTTER_INTERVAL_MS / 2) milliseconds on either side
     # then convert milliseconds to nanoseconds
     MAX_LIDAR_STEREO_CAM_TIMESTAMP_DIFF = to_metric_time(
-        STEREO_CAMERA_SHUTTER_INTERVAL_MS / 2, src=Millisecond, dst=Nanosecond
+        ts=STEREO_CAMERA_SHUTTER_INTERVAL_MS / 2, src=Millisecond, dst=Nanosecond
     )
 
     # LiDAR is 10 Hz (once per 100 milliseconds)
@@ -98,7 +98,7 @@ class SynchronizationDB:
     # At any point we sample, we shouldn't be more than 51 ms away.
     # then convert milliseconds to nanoseconds
     MAX_LIDAR_ANYCAM_TIMESTAMP_DIFF = to_metric_time(
-        LIDAR_SWEEP_INTERVAL_W_BUFFER_MS / 2, src=Millisecond, dst=Nanosecond
+        ts=LIDAR_SWEEP_INTERVAL_W_BUFFER_MS / 2, src=Millisecond, dst=Nanosecond
     )
 
     def __init__(self, dataset_dir: str, collect_single_log_id: Optional[str] = None) -> None:
