@@ -32,7 +32,7 @@ class SensorSuiteConfig:
     stereo_front_left_rect: Optional[SensorConfig] = None
 
     def has_camera(self, camera_name: str) -> bool:
-        """Check to see if the query camera """
+        """Check to see if metadata regarding a camera of interest is present."""
         if camera_name not in self.__dict__.keys():
             return False
         # ensure field is not empty
