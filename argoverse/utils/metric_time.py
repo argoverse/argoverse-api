@@ -1,8 +1,6 @@
 from enum import Enum, auto
 from typing import Union
 
-import numpy as np
-
 
 class TimeUnit(Enum):
     Second = auto()

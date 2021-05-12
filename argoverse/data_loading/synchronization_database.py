@@ -9,14 +9,15 @@ from typing import Dict, Iterable, List, Optional, Tuple, cast
 
 import numpy as np
 
-import argoverse.utils.metric_time.TimeUnit.Millisecond as Millisecond
-import argoverse.utils.metric_time.TimeUnit.Nanosecond as Nanosecond
-import argoverse.utils.metric_time.TimeUnit.Second as Second
 from argoverse.utils.camera_stats import RING_CAMERA_LIST, STEREO_CAMERA_LIST
 from argoverse.utils.json_utils import read_json_file
-from argoverse.utils.metric_time import to_metric_time
+from argoverse.utils.metric_time import TimeUnit, to_metric_time
 
 logger = logging.getLogger(__name__)
+
+Millisecond = TimeUnit.Millisecond
+Nanosecond = TimeUnit.Nanosecond
+Second = TimeUnit.Second
 
 RING_CAMERA_FPS = 30
 STEREO_CAMERA_FPS = 5

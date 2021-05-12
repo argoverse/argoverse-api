@@ -1,3 +1,5 @@
+import numpy as np
+
 from argoverse.utils.metric_time import TimeUnit, to_metric_time
 
 
