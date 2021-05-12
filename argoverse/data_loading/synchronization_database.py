@@ -22,14 +22,15 @@ RING_CAMERA_FPS = 30
 STEREO_CAMERA_FPS = 5
 LIDAR_FRAME_RATE_HZ = 10
 
-# in milliseconds
-RING_CAMERA_SHUTTER_INTERVAL_MS = to_metric_time(
-    ts=1 / RING_CAMERA_FPS, src=Second, dst=Millisecond
-)  # evaluates to 33.3 ms
-STEREO_CAMERA_SHUTTER_INTERVAL_MS = to_metric_time(
-    1 / STEREO_CAMERA_FPS, src=Second, dst=Millisecond
-)  # evaluates to 200 ms
-LIDAR_SWEEP_INTERVAL_MS = to_metric_time(1 / LIDAR_FRAME_RATE_HZ, src=Second, dst=Millisecond)  # evaluates to 100 ms
+# constants defined in milliseconds
+# below evaluates to 33.3 ms
+RING_CAMERA_SHUTTER_INTERVAL_MS = to_metric_time(ts=1 / RING_CAMERA_FPS, src=Second, dst=Millisecond)
+
+# below evaluates to 200 ms
+STEREO_CAMERA_SHUTTER_INTERVAL_MS = to_metric_time(ts=1 / STEREO_CAMERA_FPS, src=Second, dst=Millisecond)
+
+# below evaluates to 100 ms
+LIDAR_SWEEP_INTERVAL_MS = to_metric_time(ts=1 / LIDAR_FRAME_RATE_HZ, src=Second, dst=Millisecond)
 
 ALLOWED_TIMESTAMP_BUFFER_MS = 2  # allow 2 ms of buffer
 LIDAR_SWEEP_INTERVAL_W_BUFFER_MS = LIDAR_SWEEP_INTERVAL_MS + ALLOWED_TIMESTAMP_BUFFER_MS
