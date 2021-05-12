@@ -39,11 +39,11 @@ def get_image_dims_for_camera(camera_name: str) -> Tuple[Optional[int], Optional
     Returns:
         Tuple of [img_width, image_height] in pixels
     """
-    try:
+    if ArgoverseConfig.camera_sensors.has_camera(camera_name):
         camera_sensor_config = getattr(ArgoverseConfig.camera_sensors, camera_name)
         img_width = camera_sensor_config.img_width
         img_height = camera_sensor_config.img_height
-    except:
+    else:
         logger.error(f"{camera_name} not recognized")
         return None, None
     return img_width, img_height
