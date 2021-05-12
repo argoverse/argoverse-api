@@ -12,6 +12,7 @@ from typing import Any, Iterable, List, Mapping, Sequence, Tuple, Union
 import cv2
 import imageio
 import numpy as np
+from typing_extensions import Final
 
 from argoverse.data_loading.object_label_record import json_label_dict_to_obj_record
 from argoverse.data_loading.simple_track_dataloader import SimpleArgoverseTrackingDataLoader
@@ -40,9 +41,9 @@ logger = logging.getLogger(__name__)
 Number = Union[int, float]
 
 # jigger lane pixel values by [-10,10] range
-LANE_COLOR_NOISE = 20
-STEREO_FPS = ArgoverseConfig.stereo_cam_fps
-RING_CAM_FPS = ArgoverseConfig.ring_cam_fps
+LANE_COLOR_NOISE: Final = 20
+STEREO_FPS: Final = ArgoverseConfig.stereo_cam_fps
+RING_CAM_FPS: Final = ArgoverseConfig.ring_cam_fps
 
 
 def plot_lane_centerlines_in_img(
