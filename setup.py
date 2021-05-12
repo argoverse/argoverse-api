@@ -58,6 +58,7 @@ setup(
         "matplotlib",
         "motmetrics==1.1.3",
         "numpy==1.19",
+        "omegaconf==2.1.0.dev26",
         "opencv-python>=4.1.0.25",
         "pandas>=0.23.1",
         "pillow",
