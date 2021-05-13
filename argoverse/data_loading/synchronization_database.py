@@ -8,7 +8,9 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple, cast
 
 import numpy as np
+from typing_extensions import Final
 
+from argoverse.sensor_dataset_config import ArgoverseConfig
 from argoverse.utils.camera_stats import RING_CAMERA_LIST, STEREO_CAMERA_LIST
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.metric_time import TimeUnit, to_metric_time
@@ -19,9 +21,9 @@ Millisecond = TimeUnit.Millisecond
 Nanosecond = TimeUnit.Nanosecond
 Second = TimeUnit.Second
 
-RING_CAMERA_FPS = 30
-STEREO_CAMERA_FPS = 5
-LIDAR_FRAME_RATE_HZ = 10
+RING_CAMERA_FPS: Final = ArgoverseConfig.ring_cam_fps
+STEREO_CAMERA_FPS: Final = ArgoverseConfig.stereo_cam_fps
+LIDAR_FRAME_RATE_HZ: Final = 10
 
 # constants defined in milliseconds
 # below evaluates to 33.3 ms
