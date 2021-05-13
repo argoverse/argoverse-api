@@ -4,7 +4,8 @@
 Unit quaternions are a way to compactly represent 3D rotations
 while avoiding singularities or discontinuities (e.g. gimbal lock).
 
-We require that the quaternions are normalized beforehand to be unit-length.
+If a quaternion is not normalized beforehand to be unit-length, we will
+re-normalize it on the fly.
 """
 
 import logging
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def quat2rotmat(q: np.ndarray) -> np.ndarray:
-    """Convert a unit-length quaternion into a rotation matrix.
+    """Normalizes a quaternion to unit-length, then converts it into a rotation matrix.
 
     Note that libraries such as Scipy expect a quaternion in scalar-last [x, y, z, w] format,
     whereas at Argo we work with scalar-first [w, x, y, z] format, so we convert between the
