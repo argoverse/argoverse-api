@@ -1,7 +1,7 @@
 """
 Utility for 2d rigid body transformations with scaling.
 
-Refs:
+References:
     http://ethaneade.com/lie_groups.pdf
     https://github.com/borglab/gtsam/blob/develop/gtsam/geometry/Similarity3.h
 """
@@ -116,7 +116,7 @@ class Sim2:
         """Save the Sim(2) object to a JSON representation on disk.
 
         Args:
-            save_fpath: path to where json file should be saved to
+            save_fpath: path to where json file should be saved
         """
         dict_for_serialization = {
             "R": self.rotation.flatten().tolist(),
