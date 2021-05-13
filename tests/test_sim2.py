@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.se2 import SE2
 from argoverse.utils.sim2 import Sim2
 
@@ -240,3 +241,25 @@ def test_from_json_invalid_scale() -> None:
 
     with pytest.raises(ZeroDivisionError) as e_info:
         aSb = Sim2.from_json(json_fpath)
+
+
+def test_save_as_json() -> None:
+    """Ensure that JSON serialization of a class instance works correctly."""
+    bSc = Sim2(R=np.array([[0, 1], [1, 0]]), t=np.array([-5, 5]), s=0.1)
+    save_fpath = TEST_DATA_ROOT / "b_Sim2_c.json"
+    bSc.save_as_json(save_fpath=save_fpath)
+
+    bSc_dict = read_json_file(save_fpath)
+    assert bSc_dict["R"] == [0, 1, 1, 0]
+    assert bSc_dict["t"] == [-5, 5]
+    assert bSc_dict["s"] == 0.1
+
+
+def test_round_trip() -> None:
+    """Test round trip of serialization, then de-serialization."""
+    bSc = Sim2(R=np.array([[0, 1], [1, 0]]), t=np.array([-5, 5]), s=0.1)
+    save_fpath = TEST_DATA_ROOT / "b_Sim2_c.json"
+    bSc.save_as_json(save_fpath=save_fpath)
+
+    bSc_ = Sim2.from_json(save_fpath)
+    assert bSc_ == bSc
