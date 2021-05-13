@@ -11,8 +11,30 @@ import numpy as np
 
 from argoverse.utils.camera_stats import RING_CAMERA_LIST, STEREO_CAMERA_LIST
 from argoverse.utils.json_utils import read_json_file
+from argoverse.utils.metric_time import TimeUnit, to_metric_time
 
 logger = logging.getLogger(__name__)
+
+Millisecond = TimeUnit.Millisecond
+Nanosecond = TimeUnit.Nanosecond
+Second = TimeUnit.Second
+
+RING_CAMERA_FPS = 30
+STEREO_CAMERA_FPS = 5
+LIDAR_FRAME_RATE_HZ = 10
+
+# constants defined in milliseconds
+# below evaluates to 33.3 ms
+RING_CAMERA_SHUTTER_INTERVAL_MS = to_metric_time(ts=1 / RING_CAMERA_FPS, src=Second, dst=Millisecond)
+
+# below evaluates to 200 ms
+STEREO_CAMERA_SHUTTER_INTERVAL_MS = to_metric_time(ts=1 / STEREO_CAMERA_FPS, src=Second, dst=Millisecond)
+
+# below evaluates to 100 ms
+LIDAR_SWEEP_INTERVAL_MS = to_metric_time(ts=1 / LIDAR_FRAME_RATE_HZ, src=Second, dst=Millisecond)
+
+ALLOWED_TIMESTAMP_BUFFER_MS = 2  # allow 2 ms of buffer
+LIDAR_SWEEP_INTERVAL_W_BUFFER_MS = LIDAR_SWEEP_INTERVAL_MS + ALLOWED_TIMESTAMP_BUFFER_MS
 
 
 def get_timestamps_from_sensor_folder(sensor_folder_wildcard: str) -> np.ndarray:
@@ -59,21 +81,26 @@ def find_closest_integer_in_ref_arr(query_int: int, ref_arr: np.ndarray) -> Tupl
 
 class SynchronizationDB:
 
-    # Camera is 30 Hz (once per 33.3 milliseconds)
-    # LiDAR is 10 Hz
-    # Max we are halfway between 33.3 milliseconds on either side
+    # Max difference between camera and LiDAR observation would be if the LiDAR timestamp is halfway between
+    # two camera observations (i.e. RING_CAMERA_SHUTTER_INTERVAL_MS / 2 milliseconds on either side)
     # then convert milliseconds to nanoseconds
-    MAX_LIDAR_RING_CAM_TIMESTAMP_DIFF = 33.3 * (1.0 / 2) * (1.0 / 1000) * 1e9
-    # Stereo Camera is 5 Hz (once per 200 milliseconds)
-    # LiDAR is 10 Hz
-    # Since Stereo is more sparse, we look for 200 millisecond on either side
+    MAX_LIDAR_RING_CAM_TIMESTAMP_DIFF = to_metric_time(
+        ts=RING_CAMERA_SHUTTER_INTERVAL_MS / 2, src=Millisecond, dst=Nanosecond
+    )
+
+    # Since Stereo is more sparse, we look at (STEREO_CAMERA_SHUTTER_INTERVAL_MS / 2) milliseconds on either side
     # then convert milliseconds to nanoseconds
-    MAX_LIDAR_STEREO_CAM_TIMESTAMP_DIFF = 200 * (1.0 / 2) * (1.0 / 1000) * 1e9
+    MAX_LIDAR_STEREO_CAM_TIMESTAMP_DIFF = to_metric_time(
+        ts=STEREO_CAMERA_SHUTTER_INTERVAL_MS / 2, src=Millisecond, dst=Nanosecond
+    )
+
     # LiDAR is 10 Hz (once per 100 milliseconds)
     # We give an extra 2 ms buffer for the message to arrive, totaling 102 ms.
     # At any point we sample, we shouldn't be more than 51 ms away.
     # then convert milliseconds to nanoseconds
-    MAX_LIDAR_ANYCAM_TIMESTAMP_DIFF = 102 * (1.0 / 2) * (1.0 / 1000) * 1e9
+    MAX_LIDAR_ANYCAM_TIMESTAMP_DIFF = to_metric_time(
+        ts=LIDAR_SWEEP_INTERVAL_W_BUFFER_MS / 2, src=Millisecond, dst=Nanosecond
+    )
 
     def __init__(self, dataset_dir: str, collect_single_log_id: Optional[str] = None) -> None:
         """Build the SynchronizationDB.
@@ -139,8 +166,8 @@ class SynchronizationDB:
             # convert to nanoseconds->milliseconds for readability
             logger.warning(
                 "No corresponding LiDAR sweep: %s > %s ms",
-                timestamp_diff / 1e6,
-                self.MAX_LIDAR_ANYCAM_TIMESTAMP_DIFF / 1e6,
+                to_metric_time(ts=timestamp_diff, src=Nanosecond, dst=Millisecond),
+                to_metric_time(ts=self.MAX_LIDAR_ANYCAM_TIMESTAMP_DIFF, src=Nanosecond, dst=Millisecond),
             )
             return None
         return closest_lidar_timestamp
@@ -174,8 +201,8 @@ class SynchronizationDB:
             logger.warning(
                 "No corresponding ring image at %s: %s > %s ms",
                 lidar_timestamp,
-                timestamp_diff / 1e6,
-                self.MAX_LIDAR_RING_CAM_TIMESTAMP_DIFF / 1e6,
+                to_metric_time(ts=timestamp_diff, src=Nanosecond, dst=Millisecond),
+                to_metric_time(ts=self.MAX_LIDAR_RING_CAM_TIMESTAMP_DIFF, src=Nanosecond, dst=Millisecond),
             )
             return None
         elif timestamp_diff > self.MAX_LIDAR_STEREO_CAM_TIMESTAMP_DIFF and camera_name in STEREO_CAMERA_LIST:
@@ -183,8 +210,8 @@ class SynchronizationDB:
             logger.warning(
                 "No corresponding stereo image at %s: %s > %s ms",
                 lidar_timestamp,
-                timestamp_diff / 1e6,
-                self.MAX_LIDAR_STEREO_CAM_TIMESTAMP_DIFF / 1e6,
+                to_metric_time(ts=timestamp_diff, src=Nanosecond, dst=Millisecond),
+                to_metric_time(ts=self.MAX_LIDAR_STEREO_CAM_TIMESTAMP_DIFF, src=Nanosecond, dst=Millisecond),
             )
             return None
         return closest_cam_ch_timestamp
