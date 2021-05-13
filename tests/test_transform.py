@@ -6,6 +6,7 @@ utility yields the correct result given the swapped argument order.
 """
 
 import numpy as np
+import pytest
 
 from argoverse.utils.transform import quat2rotmat
 
@@ -145,3 +146,25 @@ def test_quat2rotmat_5() -> None:
         ]
     )
     assert np.allclose(R_gt, R)
+
+
+def test_invalid_quaternion_zero_norm():
+    """Ensure that passing a zero-norm quaternion raises an error, as normalization would divide by 0."""
+    q = np.array([0.0, 0.0, 0.0, 0.0])
+
+    with pytest.raises(ZeroDivisionError) as e_info:
+        R = quat2rotmat(q)
+
+
+def test_quaternion_renormalized():
+    """Make sure that a quaternion is correctly re-normalized.
+
+    Normalized and unnormalized quaternion variants should generate the same 3d rotation matrix.
+    """
+    q1 = np.array([0.0, 0.0, 0.0, 1.0])
+    R1 = quat2rotmat(q1)
+
+    q2 = np.array([0.0, 0.0, 0.0, 2.0])
+    R2 = quat2rotmat(q2)
+
+    assert np.allclose(R1, R2)
