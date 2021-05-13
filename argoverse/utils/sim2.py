@@ -13,6 +13,7 @@ from typing import Union
 import numpy as np
 
 from argoverse.utils.helpers import assert_np_array_shape
+from argoverse.utils.json_utils import save_json_dict
 
 
 class Sim2:
@@ -110,6 +111,19 @@ class Sim2:
     def transform_point_cloud(self, point_cloud: np.ndarray) -> np.ndarray:
         """Alias for `transform_from()`, for synchrony w/ API provided by SE(2) and SE(3) classes."""
         return self.transform_from(point_cloud)
+
+    def save_as_json(self, save_fpath: Union[str, "os.PathLike[str]"]) -> None:
+        """Save the Sim(2) object to a JSON representation on disk.
+
+        Args:
+            save_fpath: path to where json file should be saved to
+        """
+        dict_for_serialization = {
+            "R": self.rotation.flatten().tolist(),
+            "t": self.translation.flatten().tolist(),
+            "s": self.scale,
+        }
+        save_json_dict(save_fpath, dict_for_serialization)
 
     @classmethod
     def from_json(cls, json_fpath: Union[str, "os.PathLike[str]"]) -> "Sim2":
