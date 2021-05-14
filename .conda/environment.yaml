@@ -2,6 +2,8 @@
 # Usage: `conda env update -f environment.yml`
 
 name: argoverse
+channels:
+  - anaconda
 dependencies:
- - pip:
-   - disparity-interpolation
+  - python=3.8
+  - poetry
