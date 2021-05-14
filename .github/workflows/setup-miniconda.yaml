@@ -13,7 +13,7 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: test
-          environment-file: .conda/environment.yml
+          environment-file: .conda/environment.yaml
           auto-activate-base: false
       - shell: bash -l {0}
         run: |
@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         shell: bash -l {0}
         run: |
-            conda install nox -c conda-forge
+            poetry install nox
       - name: Download Argoverse HD map files
         shell: bash -l {0}
         run: |
