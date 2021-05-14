@@ -1,5 +1,3 @@
-fail_fast: false
-
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.3.0
@@ -11,17 +9,11 @@ repos:
     hooks:
     -   id: black
         name: black
-        entry: black -l 120
-        language: system
-        types: [python]
-    -   id: isort
-        name: isort
-        entry: isort --profile black
+        entry: poetry run black
         language: system
         types: [python]
     -   id: flake8
         name: flake8
-        entry: flake8
+        entry: poetry run flake8
         language: system
         types: [python]
-exclude: "docs/.*$"

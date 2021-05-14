@@ -72,7 +72,7 @@ def tests(session: Session) -> None:
         "--prefix",
         session.virtualenv.location,
         "--file",
-        ".conda/environment.yml",
+        ".conda/environment.yaml",
         # options
         silent=False,
     )

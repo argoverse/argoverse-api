@@ -29,6 +29,8 @@ disparity-interpolation = "^1.0.3"
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"
 pre-commit = "^2.12.1"
+black = "^21.5b1"
+flake8 = "^3.9.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
