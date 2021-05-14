@@ -1,0 +1,7 @@
+# This is Conda environment file
+# Usage: `conda env update -f environment.yml`
+
+name: argoverse
+dependencies:
+ - pip:
+   - disparity-interpolation
