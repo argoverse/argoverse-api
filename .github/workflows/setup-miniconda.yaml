@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         shell: bash -l {0}
         run: |
-            poetry install nox
+            pip install nox
       - name: Download Argoverse HD map files
         shell: bash -l {0}
         run: |
@@ -31,4 +31,4 @@ jobs:
       - name: Test with nox
         shell: bash -l {0}
         run: |
-          nox -rs
+          nox
