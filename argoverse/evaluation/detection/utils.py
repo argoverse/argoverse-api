@@ -92,7 +92,7 @@ class DetectionCfg(NamedTuple):
     dt_classes: List[str] = COMPETITION_CLASSES
     dt_metric: FilterMetric = FilterMetric.EUCLIDEAN
     max_dt_range: float = 100.0  # Meters
-    save_figs: bool = True
+    save_figs: bool = False
     tp_normalization_terms: np.ndarray = np.array([tp_thresh, MAX_SCALE_ERROR, MAX_YAW_ERROR])
     summary_default_vals: np.ndarray = np.array([MIN_AP, tp_thresh, MAX_NORMALIZED_ASE, MAX_NORMALIZED_AOE, MIN_CDS])
     eval_only_roi_instances: bool = True
