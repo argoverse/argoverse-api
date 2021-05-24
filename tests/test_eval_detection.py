@@ -32,6 +32,7 @@ from argoverse.evaluation.detection.utils import (
     interp,
     iou_aligned_3d,
     plot,
+    rank,
     remove_duplicate_instances,
     wrap_angle,
 )
@@ -215,8 +216,26 @@ def test_accumulate() -> None:
         cls_to_accum["VEHICLE"]
         == np.array(
             [
-                [1.0, 1.0, 1.0, 1.0, expected_ATE, expected_ASE, expected_AOE, expected_AP],
-                [1.0, 1.0, 1.0, 1.0, expected_ATE, expected_ASE, expected_AOE, expected_AP],
+                [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    expected_ATE,
+                    expected_ASE,
+                    expected_AOE,
+                    expected_AP,
+                ],
+                [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    expected_ATE,
+                    expected_ASE,
+                    expected_AOE,
+                    expected_AP,
+                ],
             ]
         )
     ).all()
@@ -389,7 +408,7 @@ def test_orientation_error(metrics_identity: DataFrame, metrics: DataFrame) -> N
     assert metrics.AOE.loc["Average Metrics"] == expected_result_det
 
 
-def test_remove_duplicate_instances():
+def test_remove_duplicate_instances() -> None:
     """Ensure a duplicate ground truth cuboid can be filtered out correctly."""
     instances = [
         SimpleNamespace(**{"translation": np.array([1, 1, 0])}),
@@ -407,7 +426,7 @@ def test_remove_duplicate_instances():
     assert np.allclose(unique_instances[2].translation, np.array([2, 2, 0]))
 
 
-def test_remove_duplicate_instances_ground_truth():
+def test_remove_duplicate_instances_ground_truth() -> None:
     """Ensure that if an extra duplicate cuboid is present in ground truth, it would be ignored."""
     dt_fpath = TEST_DATA_LOC / "remove_duplicates_detections"
     gt_fpath = TEST_DATA_LOC / "remove_duplicates_ground_truth"
@@ -420,14 +439,23 @@ def test_remove_duplicate_instances_ground_truth():
     assert metrics.AP.loc["Pedestrian"] == 1.0
 
 
-def test_filter_objs_to_roi():
-    """ Use the map to filter out an object that lies outside the ROI in a parking lot """
+def test_filter_objs_to_roi() -> None:
+    """Use the map to filter out an object that lies outside the ROI in a parking lot."""
     avm = ArgoverseMap()
 
     # should be outside of ROI
     outside_obj = {
-        "center": {"x": -14.102872067388489, "y": 19.466695178746022, "z": 0.11740010190455852},
-        "rotation": {"x": 0.0, "y": 0.0, "z": -0.038991328555453404, "w": 0.9992395490058831},
+        "center": {
+            "x": -14.102872067388489,
+            "y": 19.466695178746022,
+            "z": 0.11740010190455852,
+        },
+        "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": -0.038991328555453404,
+            "w": 0.9992395490058831,
+        },
         "length": 4.56126567460171,
         "width": 1.9370055686754908,
         "height": 1.5820081349372281,
@@ -438,8 +466,17 @@ def test_filter_objs_to_roi():
 
     # should be inside the ROI
     inside_obj = {
-        "center": {"x": -20.727430239506702, "y": 3.4488006757501353, "z": 0.4036619561689685},
-        "rotation": {"x": 0.0, "y": 0.0, "z": 0.0013102003738908123, "w": 0.9999991416871218},
+        "center": {
+            "x": -20.727430239506702,
+            "y": 3.4488006757501353,
+            "z": 0.4036619561689685,
+        },
+        "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0013102003738908123,
+            "w": 0.9999991416871218,
+        },
         "length": 4.507580779458834,
         "width": 1.9243189627993598,
         "height": 1.629934978730058,
@@ -464,7 +501,7 @@ def test_filter_objs_to_roi():
 
 
 def test_AP_on_filtered_instances() -> None:
-    """ """
+    """Test AP calculation on instances filtered on region-of-interest."""
     dt_fpath = TEST_DATA_LOC / "remove_nonroi_detections"
     gt_fpath = TEST_DATA_LOC / "remove_nonroi_ground_truth"
     fig_fpath = TEST_DATA_LOC / "test_figures"
@@ -474,3 +511,47 @@ def test_AP_on_filtered_instances() -> None:
     metrics = evaluator.evaluate()
 
     assert metrics.AP.loc["Vehicle"] == 1.0
+
+
+def test_rank() -> None:
+    """Test ranking of detections and scores during detection evaluation."""
+    dts: np.ndarray = np.array(
+        [
+            ObjectLabelRecord(
+                quaternion=np.array([1, 0, 0, 0]),
+                translation=np.array([0, 0, 0]),
+                length=5.0,
+                width=5.0,
+                height=5.0,
+                occlusion=0,
+                score=0.7,
+                track_id="0",
+            ),
+            ObjectLabelRecord(
+                quaternion=np.array([1, 0, 0, 0]),
+                translation=np.array([10, 10, 10]),
+                length=5.0,
+                width=5.0,
+                height=5.0,
+                occlusion=0,
+                score=0.9,
+                track_id="1",
+            ),
+            ObjectLabelRecord(
+                quaternion=np.array([1, 0, 0, 0]),
+                translation=np.array([20, 20, 20]),
+                length=5.0,
+                width=5.0,
+                height=5.0,
+                occlusion=0,
+                score=0.8,
+                track_id="2",
+            ),
+        ]
+    )
+
+    ranked_dts, ranked_scores = rank(dts)
+    track_ids = np.array([dt.track_id for dt in ranked_dts.tolist()])
+    expected_track_ids = np.array(["1", "2", "0"])
+    expected_scores = np.array([0.9, 0.8, 0.7])
+    assert (track_ids == expected_track_ids).all() and (ranked_scores == expected_scores).all()
