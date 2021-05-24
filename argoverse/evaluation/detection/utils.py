@@ -149,7 +149,10 @@ def accumulate(
             max_num_objs=MAX_NUM_BOXES,
         )
         gt_filtered = filter_instances(
-            gts, class_name, filter_metric=cfg.dt_metric, max_detection_range=cfg.max_dt_range,
+            gts,
+            class_name,
+            filter_metric=cfg.dt_metric,
+            max_detection_range=cfg.max_dt_range,
         )
         gt_filtered = remove_duplicate_instances(gt_filtered, cfg)
 
@@ -212,16 +215,6 @@ def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
             of true positive thresholds used for AP computation and S is the number of true positive errors.
     """
 
-<<<<<<< HEAD
-    num_dts: int = dts.shape[0]
-    num_gts: int = gts.shape[0]
-
-    # Return an empty array if there are no detections or ground truth annotations.
-    if num_dts == 0 and num_gts == 0:
-        return np.array([])
-
-=======
->>>>>>> 778da7eb415a27279bc5e41f109ae03cd884b147
     n_threshs = len(cfg.affinity_threshs)
     metrics = np.zeros((num_dts, n_threshs + N_TP_ERRORS))
 
