@@ -322,13 +322,14 @@ def filter_instances(
 
 
 def rank(dts: np.ndarray) -> np.ndarray:
-    """Rank the `ObjectLabelRecord` objects in descending order by score.
+    """Rank the detections in descending order according to score (detector confidence).
+
 
     Args:
         dts: Array of `ObjectLabelRecord` objects. (N,).
 
     Returns:
-        ranked_dts: Array of `ObjectLabelRecord` objects ranked by score. (N,).
+        ranked_dts: Array of `ObjectLabelRecord` objects ranked by score. (MAX_NUM_BOXES,).
     """
     scores = np.array([dt.score for dt in dts.tolist()])
     ranks = scores.argsort()[::-1]
