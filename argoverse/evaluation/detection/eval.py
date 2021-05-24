@@ -238,6 +238,7 @@ def main() -> None:
 
     evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath, num_procs=args.num_processes)
     metrics = evaluator.evaluate()
+    print(metrics)
 
 
 if __name__ == "__main__":
