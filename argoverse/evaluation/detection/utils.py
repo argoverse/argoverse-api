@@ -157,10 +157,10 @@ def accumulate(
         logger.info(f"{dt_filtered.shape[0]} detections")
         logger.info(f"{gt_filtered.shape[0]} ground truth")
         if dt_filtered.shape[0] > 0:
-            ranked_label_records = rank(dt_filtered)
-            metrics = assign(ranked_label_records, gt_filtered, cfg)
+            ranked_dts = rank(dt_filtered)
+            metrics = assign(ranked_dts, gt_filtered, cfg)
 
-            scores = [[record.score] for record in ranked_label_records.tolist()]
+            scores = [[record.score] for record in ranked_dts.tolist()]
             cls_to_accum[class_name] = np.hstack((metrics, scores))
 
         cls_to_ninst[class_name] = gt_filtered.shape[0]
@@ -321,24 +321,24 @@ def filter_instances(
     return filtered_instances
 
 
-def rank(label_records: np.ndarray) -> np.ndarray:
+def rank(dts: np.ndarray) -> np.ndarray:
     """Rank the `ObjectLabelRecord` objects in descending order by score.
 
     Args:
-        label_records: Array of `ObjectLabelRecord` objects. (N,).
+        dts: Array of `ObjectLabelRecord` objects. (N,).
 
     Returns:
-        ranked_label_records: Array of `ObjectLabelRecord` objects ranked by score. (N,).
+        ranked_dts: Array of `ObjectLabelRecord` objects ranked by score. (N,).
     """
-    scores = np.array([dt.score for dt in label_records.tolist()])
+    scores = np.array([dt.score for dt in dts.tolist()])
     ranks = scores.argsort()[::-1]
 
-    ranked_label_records = label_records[ranks]
+    ranked_dts = dts[ranks]
 
     # Ensure the number of boxes considered per class is at most `MAX_NUM_BOXES`.
-    if ranked_label_records.shape[0] > MAX_NUM_BOXES:
-        ranked_label_records = ranked_label_records[:MAX_NUM_BOXES]
-    return ranked_label_records
+    if ranked_dts.shape[0] > MAX_NUM_BOXES:
+        ranked_dts = ranked_dts[:MAX_NUM_BOXES]
+    return ranked_dts
 
 
 def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
