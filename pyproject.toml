@@ -1,5 +1,10 @@
-[settings]
-known_first_party=argoverse
-# cat setup.py | grep -Pzo "(?s)install_requires.+?]" | tail -n+2 | head -n-1 | grep -Po '"[a-zA-Z0-9]+' | sed 's/"/,/'
+[tool.isort]
+known_first_party = argoverse
 known_third_party=mayavi,pytest,colour,descartes,imageio,matplotlib,motmetrics,numpy,cv2,pandas,pillow,imageio,pyntcloud,scipy,shapely,sklearn
 line_length = 120
+multi_line_output = 3
+profile = "black"
+
+
+[tool.black]
+line-length = 120
