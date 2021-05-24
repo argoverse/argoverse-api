@@ -92,10 +92,10 @@ class DetectionCfg(NamedTuple):
     dt_classes: List[str] = COMPETITION_CLASSES
     dt_metric: FilterMetric = FilterMetric.EUCLIDEAN
     max_dt_range: float = 100.0  # Meters
-    save_figs: bool = False
+    save_figs: bool = True
     tp_normalization_terms: np.ndarray = np.array([tp_thresh, MAX_SCALE_ERROR, MAX_YAW_ERROR])
     summary_default_vals: np.ndarray = np.array([MIN_AP, tp_thresh, MAX_NORMALIZED_ASE, MAX_NORMALIZED_AOE, MIN_CDS])
-    eval_only_roi_instances: bool = True
+    eval_only_roi_instances: bool = False
     map_root: _PathLike = Path(__file__).parent.parent.parent.parent / "map_files"  # argoverse-api/map_files
 
 
@@ -212,10 +212,6 @@ def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
             of true positive thresholds used for AP computation and S is the number of true positive errors.
     """
 
-    # Ensure the number of boxes considered per class is at most `MAX_NUM_BOXES`.
-    if dts.shape[0] > MAX_NUM_BOXES:
-        dts = dts[:MAX_NUM_BOXES]
-
     n_threshs = len(cfg.affinity_threshs)
     metrics = np.zeros((dts.shape[0], n_threshs + N_TP_ERRORS))
 
@@ -323,7 +319,7 @@ def filter_instances(
     return filtered_instances
 
 
-def rank(dts: List[ObjectLabelRecord]) -> Tuple[np.ndarray, np.ndarray]:
+def rank(dts: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     """Get the rankings for the detections, according to detector confidence.
 
     Args:
@@ -333,10 +329,17 @@ def rank(dts: List[ObjectLabelRecord]) -> Tuple[np.ndarray, np.ndarray]:
         ranks: Ranking for the detections (N,).
         scores: Detection scores (N,).
     """
-    scores = np.array([dt.score for dt in dts])
+    scores = np.array([dt.score for dt in dts.tolist()])
     ranks = scores.argsort()[::-1]
+
     ranked_detections = dts[ranks]
-    return ranked_detections, scores[:, np.newaxis]
+    ranked_scores = scores[ranks, None]
+
+    # Ensure the number of boxes considered per class is at most `MAX_NUM_BOXES`.
+    if ranked_detections.shape[0] > MAX_NUM_BOXES:
+        ranked_detections = ranked_detections[:MAX_NUM_BOXES]
+        ranked_scores = ranked_scores[:MAX_NUM_BOXES]
+    return ranked_detections, ranked_scores
 
 
 def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
