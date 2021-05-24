@@ -262,7 +262,6 @@ def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
     return metrics
 
 
-@profile
 def filter_objs_to_roi(
     instances: np.ndarray, avm: ArgoverseMap, city_SE3_egovehicle: SE3, city_name: str
 ) -> np.ndarray:
