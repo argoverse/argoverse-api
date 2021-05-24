@@ -206,7 +206,7 @@ def draw_box(
 
 
 def show_image_with_boxes(img: np.ndarray, objects: Iterable[ObjectLabelRecord], calib: Calibration) -> np.ndarray:
-    """ Show image with 2D bounding boxes """
+    """Show image with 2D bounding boxes"""
     img1 = np.copy(img)
     K = calib.K
     d = calib.d

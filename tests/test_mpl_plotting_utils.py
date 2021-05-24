@@ -12,7 +12,7 @@ from argoverse.utils.mpl_plotting_utils import (
 
 
 def test_draw_polygon_mpl_smokescreen_nolinewidth() -> None:
-    """"""
+    """ """
     ax = plt.axes([1, 1, 1, 1])
     # polygon: Numpy array of shape (N,2) or (N,3)
     polygon = np.array([[0, 0], [1, 1], [1, 0], [0, 0]])
@@ -22,7 +22,7 @@ def test_draw_polygon_mpl_smokescreen_nolinewidth() -> None:
 
 
 def test_draw_polygon_mpl_smokescreen_with_linewidth() -> None:
-    """"""
+    """ """
     ax = plt.axes([1, 1, 1, 1])
     # polygon: Numpy array of shape (N,2) or (N,3)
     polygon = np.array([[0, 0], [1, 1], [1, 0], [0, 0]])
@@ -33,7 +33,7 @@ def test_draw_polygon_mpl_smokescreen_with_linewidth() -> None:
 
 
 def test_plot_lane_segment_patch_smokescreen() -> None:
-    """"""
+    """ """
     ax = plt.axes([1, 1, 1, 1])
     polygon_pts = np.array([[-1, 0], [1, 0], [0, 1]])
     color = "r"
@@ -43,7 +43,7 @@ def test_plot_lane_segment_patch_smokescreen() -> None:
 
 
 def test_plot_nearby_centerlines_smokescreen() -> None:
-    """"""
+    """ """
     ax = plt.axes([1, 1, 1, 1])
     # lane_centerlines: Python dictionary where key is lane ID, value is
     # object describing the lane
@@ -63,7 +63,7 @@ def test_plot_nearby_centerlines_smokescreen() -> None:
 
 
 def test_animate_polyline_smokescreen() -> None:
-    """"""
+    """ """
     polyline = np.array([[0, 0], [1, 1], [2, 0], [0, 2]])
     axes_margin = 2
     animate_polyline(polyline, axes_margin, show_plot=False)

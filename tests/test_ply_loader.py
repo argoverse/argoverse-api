@@ -32,7 +32,7 @@ def test_load_ply() -> None:
 
 
 def test_load_ply_by_attrib():
-    """ Ensure intensity (i.e. reflectance) and ring index can be loaded from toy sweep """
+    """Ensure intensity (i.e. reflectance) and ring index can be loaded from toy sweep"""
     ply_fpath = _TEST_DIR / "test_data/tracking/1/lidar/PC_0.ply"
     pc = load_ply_by_attrib(ply_fpath, attrib_spec="xyzil")
     assert pc.shape == (10, 5)
@@ -41,7 +41,7 @@ def test_load_ply_by_attrib():
 
 
 def test_load_ply_by_attrib_invalid_attributes():
-    """Try to load a toy sweep, using invalid attribute specification """
+    """Try to load a toy sweep, using invalid attribute specification"""
     ply_fpath = _TEST_DIR / "test_data/tracking/1/lidar/PC_0.ply"
     # "a" is an invalid point attribute
     pc = load_ply_by_attrib(ply_fpath, "xya")
@@ -49,7 +49,7 @@ def test_load_ply_by_attrib_invalid_attributes():
 
 
 def test_load_ply_by_attrib_real_sweep():
-    """ Load an actual LiDAR sweep, with valid attribute specification """
+    """Load an actual LiDAR sweep, with valid attribute specification"""
     ply_fpath = os.path.join(_TEST_DIR, "test_data", "d60558d2-d1aa-34ee-a902-e061e346e02a__PC_315971347819783000.ply")
     pc = load_ply_by_attrib(ply_fpath, attrib_spec="xyzil")
     assert pc.shape == (91083, 5)

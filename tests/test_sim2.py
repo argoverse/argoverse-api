@@ -20,35 +20,35 @@ def test_constructor() -> None:
 
 
 def test_is_eq() -> None:
-    """ Ensure object equality works properly (are equal). """
+    """Ensure object equality works properly (are equal)."""
     bSa = Sim2(R=np.eye(2), t=np.array([1, 2]), s=3.0)
     bSa_ = Sim2(R=np.eye(2), t=np.array([1.0, 2.0]), s=3)
     assert bSa == bSa_
 
 
 def test_not_eq_translation() -> None:
-    """ Ensure object equality works properly (not equal translation). """
+    """Ensure object equality works properly (not equal translation)."""
     bSa = Sim2(R=np.eye(2), t=np.array([2, 1]), s=3.0)
     bSa_ = Sim2(R=np.eye(2), t=np.array([1.0, 2.0]), s=3)
     assert bSa != bSa_
 
 
 def test_not_eq_rotation() -> None:
-    """ Ensure object equality works properly (not equal rotation). """
+    """Ensure object equality works properly (not equal rotation)."""
     bSa = Sim2(R=np.eye(2), t=np.array([2, 1]), s=3.0)
     bSa_ = Sim2(R=-1 * np.eye(2), t=np.array([2.0, 1.0]), s=3)
     assert bSa != bSa_
 
 
 def test_not_eq_scale() -> None:
-    """ Ensure object equality works properly (not equal scale). """
+    """Ensure object equality works properly (not equal scale)."""
     bSa = Sim2(R=np.eye(2), t=np.array([2, 1]), s=3.0)
     bSa_ = Sim2(R=np.eye(2), t=np.array([2.0, 1.0]), s=1.0)
     assert bSa != bSa_
 
 
 def test_rotation() -> None:
-    """ Ensure rotation component is returned properly. """
+    """Ensure rotation component is returned properly."""
     R = np.array([[0, -1], [1, 0]])
     t = np.array([1, 2])
     bSa = Sim2(R=R, t=t, s=3.0)
@@ -58,7 +58,7 @@ def test_rotation() -> None:
 
 
 def test_translation() -> None:
-    """ Ensure translation component is returned properly. """
+    """Ensure translation component is returned properly."""
     R = np.array([[0, -1], [1, 0]])
     t = np.array([1, 2])
     bSa = Sim2(R=R, t=t, s=3.0)
@@ -68,7 +68,7 @@ def test_translation() -> None:
 
 
 def test_scale() -> None:
-    """ Ensure the scale factor is returned properly. """
+    """Ensure the scale factor is returned properly."""
     bRa = np.eye(2)
     bta = np.array([1, 2])
     bsa = 3.0
@@ -77,7 +77,7 @@ def test_scale() -> None:
 
 
 def test_compose():
-    """ Ensure we can compose two Sim(2) transforms together. """
+    """Ensure we can compose two Sim(2) transforms together."""
     scale = 2.0
     imgSw = Sim2(R=np.eye(2), t=np.array([1.0, 3.0]), s=scale)
 
@@ -102,7 +102,7 @@ def test_inverse():
 
 
 def test_matrix() -> None:
-    """ Ensure 3x3 matrix is formed correctly"""
+    """Ensure 3x3 matrix is formed correctly"""
     bRa = np.array([[0, -1], [1, 0]])
     bta = np.array([1, 2])
     bsa = 3.0
@@ -113,7 +113,7 @@ def test_matrix() -> None:
 
 
 def test_matrix_homogenous_transform() -> None:
-    """ Ensure 3x3 matrix transforms homogenous points as expected."""
+    """Ensure 3x3 matrix transforms homogenous points as expected."""
     expected_img_pts = np.array([[6, 4], [4, 6], [0, 0], [1, 7]])
 
     world_pts = np.array([[2, -1], [1, 0], [-1, -3], [-0.5, 0.5]])
@@ -155,7 +155,7 @@ def test_transform_from_backwards() -> None:
 
 
 def rotmat2d(theta: float) -> np.ndarray:
-    """ Convert angle `theta` (in radians) to a 2x2 rotation matrix."""
+    """Convert angle `theta` (in radians) to a 2x2 rotation matrix."""
     s = np.sin(theta)
     c = np.cos(theta)
     R = np.array([[c, -s], [s, c]])
@@ -186,7 +186,7 @@ def test_transform_point_cloud() -> None:
 
 
 def test_cannot_set_zero_scale() -> None:
-    """ Ensure that an exception is thrown if Sim(2) scale is set to zero."""
+    """Ensure that an exception is thrown if Sim(2) scale is set to zero."""
     R = np.eye(2)
     t = np.arange(2)
     s = 0.0

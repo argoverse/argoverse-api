@@ -57,7 +57,7 @@ class ArgoverseMap:
     """
 
     def __init__(self, root: _PathLike = ROOT) -> None:
-        """ Initialize the Argoverse Map. """
+        """Initialize the Argoverse Map."""
         self.root = root
 
         self.city_name_to_city_id_dict = {"PIT": PITTSBURGH_ID, "MIA": MIAMI_ID}

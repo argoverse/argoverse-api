@@ -14,7 +14,7 @@ from argoverse.utils.helpers import assert_np_array_shape
 
 
 class Sim2:
-    """ Implements the Similarity(2) class."""
+    """Implements the Similarity(2) class."""
 
     def __init__(self, R: np.ndarray, t: np.ndarray, s: Union[int, float]) -> None:
         """Initialize from rotation R, translation t, and scale s.
