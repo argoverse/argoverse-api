@@ -338,10 +338,7 @@ def rank(dts: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     ranked_scores = scores[ranks]
 
     # Ensure the number of boxes considered per class is at most `MAX_NUM_BOXES`.
-    if ranked_dts.shape[0] > MAX_NUM_BOXES:
-        ranked_dts = ranked_dts[:MAX_NUM_BOXES]
-        ranked_scores = ranked_scores[:MAX_NUM_BOXES]
-    return ranked_dts, ranked_scores
+    return ranked_dts[:MAX_NUM_BOXES], ranked_scores[:MAX_NUM_BOXES]
 
 
 def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
