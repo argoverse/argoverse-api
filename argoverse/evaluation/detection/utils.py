@@ -157,8 +157,10 @@ def accumulate(
         logger.info(f"{dt_filtered.shape[0]} detections")
         logger.info(f"{gt_filtered.shape[0]} ground truth")
         if dt_filtered.shape[0] > 0:
-            ranked_detections, scores = rank(dt_filtered)
-            metrics = assign(ranked_detections, gt_filtered, cfg)
+            ranked_label_records = rank(dt_filtered)
+            metrics = assign(ranked_label_records, gt_filtered, cfg)
+
+            scores = [[record.score] for record in ranked_label_records.tolist()]
             cls_to_accum[class_name] = np.hstack((metrics, scores))
 
         cls_to_ninst[class_name] = gt_filtered.shape[0]
@@ -319,27 +321,24 @@ def filter_instances(
     return filtered_instances
 
 
-def rank(dts: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    """Get the rankings for the detections, according to detector confidence.
+def rank(label_records: np.ndarray) -> np.ndarray:
+    """Rank the `ObjectLabelRecord` objects in descending order by score.
 
     Args:
-        dts: Detections (N,).
+        label_records: Array of `ObjectLabelRecord` objects. (N,).
 
     Returns:
-        ranks: Ranking for the detections (N,).
-        scores: Detection scores (N,).
+        ranked_label_records: Array of `ObjectLabelRecord` objects ranked by score. (N,).
     """
-    scores = np.array([dt.score for dt in dts.tolist()])
+    scores = np.array([dt.score for dt in label_records.tolist()])
     ranks = scores.argsort()[::-1]
 
-    ranked_detections = dts[ranks]
-    ranked_scores = scores[ranks, None]
+    ranked_label_records = label_records[ranks]
 
     # Ensure the number of boxes considered per class is at most `MAX_NUM_BOXES`.
-    if ranked_detections.shape[0] > MAX_NUM_BOXES:
-        ranked_detections = ranked_detections[:MAX_NUM_BOXES]
-        ranked_scores = ranked_scores[:MAX_NUM_BOXES]
-    return ranked_detections, ranked_scores
+    if ranked_label_records.shape[0] > MAX_NUM_BOXES:
+        ranked_label_records = ranked_label_records[:MAX_NUM_BOXES]
+    return ranked_label_records
 
 
 def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
