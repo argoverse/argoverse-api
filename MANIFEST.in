@@ -1,2 +1,5 @@
 # include the LICENSE
 include LICENSE
+
+# include argoverse-v1.1.yaml in pip installation
+include argoverse/config/argoverse-v1.1.yaml

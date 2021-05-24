@@ -156,9 +156,10 @@ def accumulate(
         logger.info(f"{dt_filtered.shape[0]} detections")
         logger.info(f"{gt_filtered.shape[0]} ground truth")
         if dt_filtered.shape[0] > 0:
-            ranked_detections, scores = rank(dt_filtered)
-            metrics = assign(ranked_detections, gt_filtered, cfg)
-            cls_to_accum[class_name] = np.hstack((metrics, scores))
+            ranked_dts, ranked_scores = rank(dt_filtered)
+
+            metrics = assign(ranked_dts, gt_filtered, cfg)
+            cls_to_accum[class_name] = np.hstack((metrics, ranked_scores[:, None]))
 
         cls_to_ninst[class_name] = gt_filtered.shape[0]
     return cls_to_accum, cls_to_ninst
@@ -211,6 +212,7 @@ def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
             of true positive thresholds used for AP computation and S is the number of true positive errors.
     """
 
+<<<<<<< HEAD
     num_dts: int = dts.shape[0]
     num_gts: int = gts.shape[0]
 
@@ -218,6 +220,8 @@ def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
     if num_dts == 0 and num_gts == 0:
         return np.array([])
 
+=======
+>>>>>>> 778da7eb415a27279bc5e41f109ae03cd884b147
     n_threshs = len(cfg.affinity_threshs)
     metrics = np.zeros((num_dts, n_threshs + N_TP_ERRORS))
 
@@ -330,20 +334,28 @@ def filter_instances(
     return filtered_instances
 
 
-def rank(dts: List[ObjectLabelRecord]) -> Tuple[np.ndarray, np.ndarray]:
-    """Get the rankings for the detections, according to detector confidence.
+def rank(dts: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """Rank the detections in descending order according to score (detector confidence).
+
 
     Args:
-        dts: Detections (N,).
+        dts: Array of `ObjectLabelRecord` objects. (N,).
 
     Returns:
-        ranks: Ranking for the detections (N,).
-        scores: Detection scores (N,).
+        ranked_dts: Array of `ObjectLabelRecord` objects ranked by score (N,) where N <= MAX_NUM_BOXES.
+        ranked_scores: Array of floats sorted in descending order (N,) where N <= MAX_NUM_BOXES.
     """
-    scores = np.array([dt.score for dt in dts])
+    scores = np.array([dt.score for dt in dts.tolist()])
     ranks = scores.argsort()[::-1]
-    ranked_detections = dts[ranks]
-    return ranked_detections, scores[:, np.newaxis]
+
+    ranked_dts = dts[ranks]
+    ranked_scores = scores[ranks]
+
+    # Ensure the number of boxes considered per class is at most `MAX_NUM_BOXES`.
+    if ranked_dts.shape[0] > MAX_NUM_BOXES:
+        ranked_dts = ranked_dts[:MAX_NUM_BOXES]
+        ranked_scores = ranked_scores[:MAX_NUM_BOXES]
+    return ranked_dts, ranked_scores
 
 
 def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:

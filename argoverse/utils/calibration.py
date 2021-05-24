@@ -15,11 +15,8 @@ from argoverse.utils.camera_stats import (
     CAMERA_LIST,
     RECTIFIED_STEREO_CAMERA_LIST,
     RING_CAMERA_LIST,
-    RING_IMG_HEIGHT,
-    RING_IMG_WIDTH,
     STEREO_CAMERA_LIST,
-    STEREO_IMG_HEIGHT,
-    STEREO_IMG_WIDTH,
+    get_image_dims_for_camera,
 )
 from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat2rotmat
@@ -323,14 +320,9 @@ def get_calibration_config(calibration: Dict[str, Any], camera_name: str) -> Cam
     camera_extrinsic_matrix = get_camera_extrinsic_matrix(camera_calibration)
     camera_intrinsic_matrix = get_camera_intrinsic_matrix(camera_calibration)
 
-    if camera_name in STEREO_CAMERA_LIST or camera_name in RECTIFIED_STEREO_CAMERA_LIST:
-        img_width = STEREO_IMG_WIDTH
-        img_height = STEREO_IMG_HEIGHT
-    elif camera_name in RING_CAMERA_LIST:
-        img_width = RING_IMG_WIDTH
-        img_height = RING_IMG_HEIGHT
-    else:
-        raise ValueError(f"Unknown camera name: {camera_name}")
+    img_width, img_height = get_image_dims_for_camera(camera_name)
+    if img_width is None or img_height is None:
+        raise ValueError(f"Specified camera has unknown dimensions: {camera_name}")
 
     return CameraConfig(
         camera_extrinsic_matrix,

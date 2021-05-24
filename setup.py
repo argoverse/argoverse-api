@@ -27,7 +27,7 @@ if platform.system() == "Windows":
 
 setup(
     name="argoverse",
-    version="1.0.0",
+    version="1.0.1",
     description="",
     long_description=long_description,
     url="https://www.argoverse.org",
@@ -52,9 +52,13 @@ setup(
         "colour",
         "descartes",
         "imageio",
+        "h5py",
+        "hydra-core==1.1.0dev6",
+        "lap",
         "matplotlib",
         "motmetrics==1.1.3",
         "numpy==1.19",
+        "omegaconf==2.1.0.dev26",
         "opencv-python>=4.1.0.25",
         "pandas>=0.23.1",
         "pillow",
@@ -64,8 +68,6 @@ setup(
         "shapely",
         "sklearn",
         "typing_extensions",
-        "h5py",
-        "lap",
     ],
     # for older pip version, use with --process-dependency-links
     dependency_links=["git+https://github.com/daavoo/pyntcloud#egg=pyntcloud-0.1.0"],
