@@ -1,6 +1,7 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 """Tests to verify the SE3 class works correctly."""
 
+import time
 from typing import Union
 
 import numpy as np
@@ -159,3 +160,45 @@ def test_SE3_chaining_transforms() -> None:
     combined_R = get_yaw_angle_rotmat(theta0 + theta1)
     assert np.allclose(fr2_se3_fr0.rotation, combined_R)
     assert np.allclose(fr2_se3_fr0.translation, np.zeros(3))
+
+
+def test_SE3_transform_point_cloud_optimized() -> None:
+    """Ensure that our transform_point_cloud() implementation is faster than a naive implementation.
+
+    We use 1k trials, with a point cloud of 100k points. The chosen SE(3) transformation is arbitrary.
+    """
+
+    def transform_point_cloud_slow(point_cloud: np.ndarray, transform_matrix: np.ndarray) -> np.ndarray:
+        """Slow, unoptimized method -- allocated unnecessary array for homogeneous coordinates."""
+        # convert to homogeneous
+        num_pts = point_cloud.shape[0]
+        homogeneous_pts = np.hstack([point_cloud, np.ones((num_pts, 1))])
+        transformed_point_cloud = homogeneous_pts.dot(transform_matrix.T)
+        return transformed_point_cloud[:, :3]
+
+    num_trials = 1000
+    num_pts = 100000
+    pts_src = np.random.randn(num_pts, 3)
+
+    # x, y, z of cuboid center
+    t = np.array([-34.7128603513203, 5.29461762417753, 0.10328996181488])
+
+    # quaternion has order (w,x,y,z)
+    q = np.array([0.700322174885275, 0.0, 0.0, -0.713826905743933])
+    R = quat2rotmat(q)
+
+    dst_se3_src = SE3(rotation=R.copy(), translation=t.copy())
+
+    start = time.time()
+    for i in range(num_trials):
+        pts_dst = dst_se3_src.transform_point_cloud(pts_src)
+    end = time.time()
+    optimized_duration = end - start
+
+    start = time.time()
+    for i in range(num_trials):
+        pts_dst = transform_point_cloud_slow(pts_src, dst_se3_src.transform_matrix)
+    end = time.time()
+    unoptimized_duration = end - start
+
+    assert optimized_duration < unoptimized_duration
