@@ -554,4 +554,4 @@ def test_rank() -> None:
     track_ids = np.array([dt.track_id for dt in ranked_dts.tolist()])
     expected_track_ids = np.array(["1", "2", "0"])
     expected_scores = np.array([0.9, 0.8, 0.7])
-    assert (track_ids == expected_track_ids).all() and (ranked_scores == expected_scores).all()
+    assert np.all(track_ids == expected_track_ids) and np.all(ranked_scores == expected_scores)
