@@ -49,7 +49,7 @@ def quat_argo2scipy(q: np.ndarray) -> np.ndarray:
 
 
 def quat_argo2scipy_vectorized(q: np.ndarray) -> np.ndarray:
-    """ "Re-order Argoverse's scalar-first [w,x,y,z] quaternion order to Scipy's scalar-last [x,y,z,w]"""
+    """Re-order Argoverse's scalar-first [w,x,y,z] quaternion order to Scipy's scalar-last [x,y,z,w]"""
     return q[..., [1, 2, 3, 0]]
 
 
