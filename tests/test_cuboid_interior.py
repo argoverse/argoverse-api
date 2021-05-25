@@ -81,7 +81,7 @@ def get_scenario_1() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 
 
 def test_extract_pc_in_box3d_hull() -> None:
-    """ """
+    """Test extracting a point cloud from a 3D convex hull."""
     pc_raw, bbox_3d, gt_segment, gt_is_valid = get_scenario_1()
     segment, is_valid = extract_pc_in_box3d_hull(pc_raw, bbox_3d)
 
