@@ -32,7 +32,7 @@ def add_lane_segment_to_ax(
 def find_lane_segment_bounds_in_table(
     avm: ArgoverseMap, city_name: str, lane_segment_id: int
 ) -> Tuple[float, float, float, float]:
-    """ """
+    """Helper function to find lane segment bounds within prepopulated table."""
     match_found = False
     # find the lane segment inside the table
     for table_idx, table_lane_id in avm.city_halluc_tableidx_to_laneid_map[city_name].items():
