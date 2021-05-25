@@ -5,14 +5,14 @@ from argoverse.utils.ffmpeg_utils import write_nonsequential_idx_video, write_vi
 
 
 def test_ffmpeg_seq_frame_vid_smokescreen() -> None:
-    """Test writing sequential video with `ffmpeg`."""
+    """Test writing video consecutive, nanosecond, integer timestamps in `ffmpeg`."""
     image_prefix = "imgs_%d.jpg"
     output_prefix = "out"
     write_video(image_prefix, output_prefix)
 
 
 def test_ffmpeg_nonseq_frame_vid_smokescreen() -> None:
-    """Test writing non-sequential video with `ffmpeg`."""
+    """Test writing video with non-consecutive, nanosecond, integer timestamps in `ffmpeg`."""
     img_wildcard = "imgs_%*.jpg"
     output_fpath = "out.mp4"
     fps = 10
