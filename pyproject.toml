@@ -1,0 +1,8 @@
+[tool.isort]
+known_first_party = "argoverse"
+line_length = 120
+multi_line_output = 3
+profile = "black"
+
+[tool.black]
+line-length = 120
