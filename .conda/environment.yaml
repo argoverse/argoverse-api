@@ -1,0 +1,9 @@
+# This is Conda environment file
+# Usage: `conda env update -f environment.yml`
+
+name: argoverse
+channels:
+  - anaconda
+dependencies:
+  - python=3.8
+  - poetry

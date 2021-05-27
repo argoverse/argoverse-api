@@ -1,0 +1,38 @@
+[tool.black]
+line-length = 120
+
+[tool.poetry]
+name = "argoverse-api"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = ">=3.7"
+colour = "^0.1.5"
+descartes = "^1.1.0"
+imageio = "^2.9.0"
+matplotlib = "^3.4.2"
+numpy = "1.19"
+Pillow = "^8.2.0"
+Shapely = "^1.7.1"
+typing-extensions = "^3.10.0"
+lap = "^0.4.0"
+Cython = "^0.29.23"
+sklearn = "^0.0"
+opencv-python = "^4.5.2"
+motmetrics = "1.1.3"
+pyntcloud = "0.1.0"
+disparity-interpolation = "^1.0.3"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.4"
+pre-commit = "^2.12.1"
+black = "^21.5b1"
+flake8 = "^3.9.2"
+nox = "^2020.12.31"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
