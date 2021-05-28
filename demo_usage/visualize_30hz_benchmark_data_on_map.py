@@ -327,7 +327,7 @@ class DatasetOnMapVisualizer:
 
 
 def visualize_30hz_benchmark_data_on_map(args: Any) -> None:
-    """"""
+    """Function to render lidar, tracks, and map elements overlaid on a bird's-eye-view."""
     domv = DatasetOnMapVisualizer(
         args.dataset_dir,
         args.experiment_prefix,

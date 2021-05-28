@@ -234,7 +234,7 @@ def compute_v_a(traj: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
 
 
 def make_att_files(root_dir: str) -> None:
-    """ Write a .pkl file with difficulty attributes per track """
+    """Write a .pkl file with difficulty attributes per track"""
     path_output_vis = "vis_output"
     filename_output = "att_file.npy"
 

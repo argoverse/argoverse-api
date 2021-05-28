@@ -75,7 +75,7 @@ def polygons_and_gt_bboxes() -> Tuple[List[np.ndarray], List[np.ndarray]]:
 def test_find_all_polygon_bboxes_overlapping_query_bbox(
     polygons_and_gt_bboxes: Tuple[List[np.ndarray], List[np.ndarray]]
 ) -> None:
-    """Test for correctness of """
+    """Test for correctness of finding polygons which overlap with the query bbox."""
     poly_bboxes = np.array([compute_point_cloud_bbox(poly) for poly in polygons_and_gt_bboxes[0]])
 
     query_bbox = np.array([-1.5, 0.5, 1.5, 1.5])

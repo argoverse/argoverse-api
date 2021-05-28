@@ -67,7 +67,7 @@ def test_get_closest_im_fpath_exists(
 def test_get_closest_lidar_fpath_found_match(
     data_loader: SimpleArgoverseTrackingDataLoader,
 ) -> None:
-    """ Just barely within 51 ms allowed buffer"""
+    """Just barely within 51 ms allowed buffer"""
     cam_timestamp = int(50 * 1e6)
     ply_fpath = data_loader.get_closest_lidar_fpath(_LOG_ID, cam_timestamp)
 
@@ -93,7 +93,7 @@ def test_get_closest_lidar_fpath_no_match(
 def test_get_ordered_log_cam_fpaths(
     data_loader: SimpleArgoverseTrackingDataLoader,
 ) -> None:
-    """ Make sure all images for one camera in one log are returned in correct order. """
+    """Make sure all images for one camera in one log are returned in correct order."""
     camera_name = "ring_rear_right"
     cam_img_fpaths = data_loader.get_ordered_log_cam_fpaths(_LOG_ID, camera_name)
     gt_cam_img_fpaths = [
