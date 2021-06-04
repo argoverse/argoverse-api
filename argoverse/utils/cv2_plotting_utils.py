@@ -1,7 +1,7 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 """OpenCV plotting utility functions."""
 
-from typing import Dict, Iterable, List, Tuple, Union
+from typing import List, Tuple
 
 import cv2
 import numpy as np

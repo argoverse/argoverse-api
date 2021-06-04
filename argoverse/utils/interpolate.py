@@ -2,7 +2,6 @@
 
 from typing import Tuple, cast
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 # For a single line segment
@@ -177,11 +176,8 @@ def interp_arc(t: int, px: np.ndarray, py: np.ndarray) -> np.ndarray:
     """
     px, py = eliminate_duplicates_2d(px, py)
 
-    # equally spaced in arclength
+    # equally spaced in arclength -- the number of points that will be uniformly interpolated
     eq_spaced_points = np.linspace(0, 1, t)
-
-    # how many points will be uniformly interpolated?
-    nt = eq_spaced_points.size
 
     # the number of points on the curve itself
     n = px.size
@@ -189,8 +185,7 @@ def interp_arc(t: int, px: np.ndarray, py: np.ndarray) -> np.ndarray:
     # are px and py both vectors of the same length?
     assert px.size == py.size
 
-    pxy = np.array((px, py)).T
-    ndim = 2
+    pxy = np.array((px, py)).T  # 2d polyline
 
     # Compute the chordal arclength of each segment.
     # Compute differences between each x coord, to get the dx's

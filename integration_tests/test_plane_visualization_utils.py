@@ -1,6 +1,5 @@
 import os
 import pathlib
-import sys
 
 import matplotlib.pyplot as plt
 import pytest
@@ -58,4 +57,4 @@ def test_populate_frustum_voxels() -> None:
 def test_get_perpendicular() -> None:
     """Test getting an orthogonal vector from a given query vector."""
     n = [0, 1, 1]
-    result = get_perpendicular(n)
+    get_perpendicular(n)

@@ -2,7 +2,6 @@
 
 import copy
 import os
-from os import PathLike
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 

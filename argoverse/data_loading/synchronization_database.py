@@ -5,14 +5,13 @@
 import glob
 import logging
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple, cast
+from typing import Dict, Iterable, Optional, Tuple, cast
 
 import numpy as np
 from typing_extensions import Final
 
 from argoverse.sensor_dataset_config import ArgoverseConfig
 from argoverse.utils.camera_stats import RING_CAMERA_LIST, STEREO_CAMERA_LIST
-from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.metric_time import TimeUnit, to_metric_time
 
 logger = logging.getLogger(__name__)

@@ -6,8 +6,7 @@ and then to clip line segments to live within the frustum only.
 """
 
 import copy
-import sys
-from typing import Any, Iterable, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 import numpy as np
 
@@ -232,7 +231,7 @@ def generate_frustum_planes(K: np.ndarray, camera_name: str, near_clip_dist: flo
     if img_width is None or img_height is None:
         return None
 
-    P = np.array([0.0, 0.0, 0.0])
+    # frustum starts at optical center [0,0,0]
     fx = K[0, 0]
     fy = K[1, 1]
 

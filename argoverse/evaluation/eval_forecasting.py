@@ -3,8 +3,7 @@
 """This module evaluates the forecasted trajectories against the ground truth."""
 
 import math
-import pickle as pkl
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import numpy as np
 

@@ -3,7 +3,7 @@
 """Fast search functions of nearest neighbor based on Manhattan distance."""
 
 import logging
-from typing import List, Tuple, Union
+from typing import List, Tuple
 
 import numpy as np
 

@@ -11,13 +11,7 @@ import numpy as np
 from typing_extensions import Literal
 
 from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
-from argoverse.utils.camera_stats import (
-    CAMERA_LIST,
-    RECTIFIED_STEREO_CAMERA_LIST,
-    RING_CAMERA_LIST,
-    STEREO_CAMERA_LIST,
-    get_image_dims_for_camera,
-)
+from argoverse.utils.camera_stats import CAMERA_LIST, RECTIFIED_STEREO_CAMERA_LIST, get_image_dims_for_camera
 from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import quat2rotmat
 

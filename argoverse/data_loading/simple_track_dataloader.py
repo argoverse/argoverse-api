@@ -1,17 +1,13 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
 import glob
-import sys
 from pathlib import Path
 from typing import Any, List, Mapping, Optional
-
-import numpy as np
 
 from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t, read_city_name
 from argoverse.data_loading.synchronization_database import SynchronizationDB
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.se3 import SE3
-from argoverse.utils.transform import quat2rotmat
 
 
 class SimpleArgoverseTrackingDataLoader:

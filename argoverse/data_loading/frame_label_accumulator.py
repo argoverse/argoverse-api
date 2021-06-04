@@ -5,7 +5,6 @@
 import glob
 import logging
 import os
-import pickle as pkl
 import tempfile
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -18,9 +17,7 @@ from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor
 from argoverse.data_loading.synchronization_database import SynchronizationDB
 from argoverse.data_loading.trajectory_loader import TrajectoryLabel, load_json_track_labels
 from argoverse.utils.json_utils import read_json_file
-from argoverse.utils.pkl_utils import load_pkl_dictionary, save_pkl_dictionary
-from argoverse.utils.se3 import SE3
-from argoverse.utils.transform import quat2rotmat
+from argoverse.utils.pkl_utils import save_pkl_dictionary
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +62,8 @@ class PerFrameLabelAccumulator:
         log_egopose_dict_fpath = f"{tmp_dir}/log_egopose_dict_{experiment_prefix}.pkl"
         log_timestamp_dict_fpath = f"{tmp_dir}/log_timestamp_dict_{experiment_prefix}.pkl"
 
-        coordinate_system = "map_world_fr"
+        # coordinate system is the map world frame
+
         self.per_city_traj_dict: Dict[str, List[Tuple[np.ndarray, str]]] = {
             "MIA": [],
             "PIT": [],

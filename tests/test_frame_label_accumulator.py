@@ -1,9 +1,7 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 """Forecasting Loader unit tests"""
 
-import glob
 import pathlib
-import tempfile
 
 import numpy as np
 import pytest

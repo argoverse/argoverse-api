@@ -1,7 +1,6 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 """Tracking Loader unit tests"""
 
-import glob
 import pathlib
 
 import numpy as np

@@ -1,15 +1,11 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
-import os
 import pathlib
 
 import numpy as np
 
 from argoverse.evaluation import eval_tracking, eval_utils
 from argoverse.utils import ply_loader
-from argoverse.utils.json_utils import read_json_file
-from argoverse.utils.se3 import SE3
-from argoverse.utils.transform import quat2rotmat
 
 TEST_DATA_LOC = pathlib.Path(__file__).parent.parent / "tests" / "test_data" / "tracking"
 D_MIN = 0

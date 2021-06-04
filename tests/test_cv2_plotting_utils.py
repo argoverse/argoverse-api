@@ -2,12 +2,7 @@
 
 import numpy as np
 
-from argoverse.utils.cv2_plotting_utils import (
-    draw_point_cloud_in_img_cv2,
-    draw_polygon_cv2,
-    draw_polyline_cv2,
-    plot_bbox_polygon_cv2,
-)
+from argoverse.utils.cv2_plotting_utils import draw_point_cloud_in_img_cv2, draw_polygon_cv2, plot_bbox_polygon_cv2
 
 
 def test_draw_point_cloud_in_img_cv2_smokescreen() -> None:

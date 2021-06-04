@@ -2,12 +2,10 @@
 
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
-import copy
 import json
 import os
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
-import cv2
 import numpy as np
 
 from argoverse.utils.calibration import CameraConfig, proj_cam_to_uv

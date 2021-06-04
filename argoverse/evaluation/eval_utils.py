@@ -1,7 +1,6 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 """Utilities used in evaluation of performance."""
 
-import copy
 from typing import Any, Dict, List, Tuple
 
 import numpy as np

@@ -4,8 +4,6 @@ import shutil
 import sys
 from typing import Any, Dict, List
 
-from typing_extensions import TypedDict
-
 from argoverse.utils.json_utils import read_json_file, save_json_dict
 
 root_dir = sys.argv[1]
