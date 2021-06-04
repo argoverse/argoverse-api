@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
 
-import hydra
-from hydra.utils import instantiate
 from omegaconf import MISSING
 
 
@@ -49,8 +47,27 @@ class SensorDatasetConfig:
     camera_sensors: SensorSuiteConfig = MISSING
 
 
-DATASET_NAME = "argoverse-v1.1"
+@dataclass(frozen=True)
+class ArgoverseConfig(SensorDatasetConfig):
+    RING_CAMERA_HEIGHT: int = 1920
+    RING_CAMERA_WIDTH: int = 1200
 
-with hydra.initialize_config_module(config_module="argoverse.config"):
-    cfg = hydra.compose(config_name=f"{DATASET_NAME}.yaml")
-    ArgoverseConfig: SensorDatasetConfig = instantiate(cfg.SensorDatasetConfig)
+    STEREO_CAMERA_HEIGHT: int = 2056
+    STEREO_CAMERA_WIDTH: int = 2464
+
+    dataset_name: str = "argoverse"
+    ring_cam_fps: int = 30
+    stereo_cam_fps: int = 5
+
+    camera_sensors: SensorSuiteConfig = SensorSuiteConfig(
+        SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_front_center"),
+        SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_front_left"),
+        SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_front_right"),
+        SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_side_left"),
+        SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_side_right"),
+        SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_rear_left"),
+        SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_rear_right"),
+        SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_front_center"),
+        SensorConfig(STEREO_CAMERA_HEIGHT, STEREO_CAMERA_WIDTH, "stereo_front_left"),
+        SensorConfig(STEREO_CAMERA_HEIGHT, STEREO_CAMERA_WIDTH, "stereo_front_right"),
+    )
