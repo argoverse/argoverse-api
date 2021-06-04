@@ -49,8 +49,8 @@ class SensorDatasetConfig:
 
 @dataclass(frozen=True)
 class ArgoverseConfig(SensorDatasetConfig):
-    RING_CAMERA_HEIGHT: int = 1920
-    RING_CAMERA_WIDTH: int = 1200
+    RING_CAMERA_HEIGHT: int = 1200
+    RING_CAMERA_WIDTH: int = 1920
 
     STEREO_CAMERA_HEIGHT: int = 2056
     STEREO_CAMERA_WIDTH: int = 2464
