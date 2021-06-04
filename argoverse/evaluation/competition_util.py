@@ -6,7 +6,6 @@ import os
 import shutil
 import tempfile
 import uuid
-import zipfile
 from typing import Dict, List, Optional, Tuple, Union
 
 import h5py

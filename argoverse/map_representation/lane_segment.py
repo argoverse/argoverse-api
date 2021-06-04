@@ -1,5 +1,5 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
-from typing import List, Optional, Sequence
+from typing import List, Optional
 
 import numpy as np
 

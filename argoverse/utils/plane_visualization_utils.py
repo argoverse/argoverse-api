@@ -1,6 +1,5 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
-import sys
 from typing import List, Optional
 
 import numpy as np
@@ -11,7 +10,6 @@ from argoverse.visualization.mayavi_utils import (
     Figure,
     draw_mayavi_line_segment,
     plot_3d_clipped_bbox_mayavi,
-    plot_bbox_3d_mayavi,
     plot_points_3D_mayavi,
 )
 

@@ -367,7 +367,6 @@ def test_1obj_poor_translation() -> None:
     result_dict = run_eval(exp_name=log_id)
 
     assert result_dict["num_frames"] == 4
-    sw = 0
     mota = 1 - ((2 + 2 + 0) / 4)  # 1 - (FN+FP+SW)/#GT
     assert mota == 0.0
     assert result_dict["mota"] == 0.0

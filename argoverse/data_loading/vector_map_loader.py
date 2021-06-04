@@ -41,8 +41,6 @@ In Argoverse, a `LaneSegment` object is derived from a combination of a single `
 
 import logging
 import os
-import pathlib
-import sys
 import xml.etree.ElementTree as ET
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union, cast
 

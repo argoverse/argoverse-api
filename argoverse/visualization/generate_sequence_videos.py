@@ -4,18 +4,13 @@
 
 import argparse
 import os
-import re
 import shutil
 import sys
-from collections import defaultdict
 from typing import List
 
-import matplotlib.animation as anim
-import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.interpolate import interp1d
 
 from argoverse.map_representation.map_api import ArgoverseMap
 from argoverse.visualization.visualize_sequences import viz_sequence
@@ -49,7 +44,6 @@ def main(arguments: List[str]) -> int:
         # Get API for Argo Dataset map
         avm = ArgoverseMap()
         city_name = df["CITY_NAME"].values[0]
-        seq_lane_bbox = avm.city_halluc_bbox_table[city_name]
         seq_lane_props = avm.city_lane_centerlines_dict[city_name]
 
         x_min = min(df["X"])

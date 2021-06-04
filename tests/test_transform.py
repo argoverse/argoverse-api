@@ -153,7 +153,7 @@ def test_invalid_quaternion_zero_norm():
     q = np.array([0.0, 0.0, 0.0, 0.0])
 
     with pytest.raises(ZeroDivisionError) as e_info:
-        R = quat2rotmat(q)
+        quat2rotmat(q)
 
 
 def test_quaternion_renormalized():

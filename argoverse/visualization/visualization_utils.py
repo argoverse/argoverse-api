@@ -4,7 +4,6 @@ import logging
 from collections import defaultdict
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
@@ -12,7 +11,7 @@ from PIL import Image
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
-from argoverse.utils.calibration import Calibration, determine_valid_cam_coords, proj_cam_to_uv
+from argoverse.utils.calibration import Calibration
 from argoverse.utils.frustum_clipping import generate_frustum_planes
 
 point_size = 0.01
@@ -208,8 +207,6 @@ def draw_box(
 def show_image_with_boxes(img: np.ndarray, objects: Iterable[ObjectLabelRecord], calib: Calibration) -> np.ndarray:
     """Show image with 2D bounding boxes."""
     img1 = np.copy(img)
-    K = calib.K
-    d = calib.d
 
     h, w = np.shape(img1)[0:2]
     planes = generate_frustum_planes(calib.K, calib.camera)
@@ -219,7 +216,6 @@ def show_image_with_boxes(img: np.ndarray, objects: Iterable[ObjectLabelRecord],
         if obj.occlusion == 100:
             continue
         box3d_pts_3d = obj.as_3d_bbox()
-        uv = calib.project_ego_to_image(box3d_pts_3d)
         uv_cam = calib.project_ego_to_cam(box3d_pts_3d)
 
         img1 = obj.render_clip_frustum_cv2(

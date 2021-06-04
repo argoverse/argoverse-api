@@ -6,7 +6,7 @@ from typing import Iterable, List, Sequence, Set, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-from shapely.geometry import LinearRing, LineString, Point, Polygon
+from shapely.geometry import LinearRing, LineString, Point
 
 from argoverse.map_representation.lane_segment import LaneSegment
 
@@ -81,10 +81,7 @@ def centerline_to_polygon(
     # right centerline position depends on sign of dx and dy
     subtract_cond1 = np.logical_and(dx > 0, dy < 0)
     subtract_cond2 = np.logical_and(dx > 0, dy > 0)
-    add_cond1 = np.logical_and(dx < 0, dy < 0)
-    add_cond2 = np.logical_and(dx < 0, dy > 0)
     subtract_cond = np.logical_or(subtract_cond1, subtract_cond2)
-    add_cond = np.logical_or(add_cond1, add_cond2)
     left_centerline, right_centerline = swap_left_and_right(subtract_cond, left_centerline, right_centerline)
 
     # right centerline also depended on if we added or subtracted y
@@ -258,8 +255,6 @@ def get_nt_distance(xy: np.ndarray, centerline: np.ndarray, viz: bool = False) -
     traj_len = xy.shape[0]
     nt_distance = np.zeros((traj_len, 2))
 
-    delta_offset = 0.01
-    last = 0
     max_dist: float = -1
 
     for i in range(traj_len):

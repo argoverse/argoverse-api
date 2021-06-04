@@ -4,13 +4,11 @@
 import glob
 from typing import Set, Tuple
 
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
 from argoverse.map_representation.map_api import ArgoverseMap
 from argoverse.utils.datetime_utils import generate_datetime_string
-from argoverse.utils.geometry import point_inside_polygon
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.mpl_plotting_utils import plot_lane_segment_patch
 

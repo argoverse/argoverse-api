@@ -300,7 +300,6 @@ def test_compute_midpoint_line_curved_maintain_4_waypts() -> None:
     draw_polygon_mpl(ax, centerline_pts, "r")
 
     gt_centerline_pts = np.array([[-1, 2], [1, 2], [3, 0], [3, -2]])
-    gt_lane_width = 2.0
 
     assert np.allclose(centerline_pts[0], gt_centerline_pts[0])
     assert np.allclose(centerline_pts[-1], gt_centerline_pts[-1])

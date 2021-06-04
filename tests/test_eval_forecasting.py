@@ -2,7 +2,7 @@
 
 """This module tests the motion forecasting metric computation."""
 
-from typing import Dict, Mapping
+from typing import Mapping
 
 import numpy as np
 import pytest

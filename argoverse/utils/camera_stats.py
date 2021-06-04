@@ -3,7 +3,7 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
 import logging
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 from argoverse.sensor_dataset_config import ArgoverseConfig
 

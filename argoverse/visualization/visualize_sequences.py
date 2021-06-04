@@ -1,14 +1,9 @@
 #!/usr/bin/env python
 
 """A simple python script template."""
-import argparse
-import os
-import shutil
-import sys
 from collections import defaultdict
 from typing import Dict, List, Optional
 
-import matplotlib.animation as anim
 import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
 import numpy as np
@@ -42,13 +37,11 @@ def viz_sequence(
 ) -> None:
 
     # Seq data
-    time_list = np.sort(np.unique(df["TIMESTAMP"].values))
     city_name = df["CITY_NAME"].values[0]
 
     if lane_centerlines is None:
         # Get API for Argo Dataset map
         avm = ArgoverseMap()
-        seq_lane_bbox = avm.city_halluc_bbox_table[city_name]
         seq_lane_props = avm.city_lane_centerlines_dict[city_name]
 
     plt.figure(0, figsize=(8, 7))

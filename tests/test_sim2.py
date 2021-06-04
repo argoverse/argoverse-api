@@ -192,4 +192,4 @@ def test_cannot_set_zero_scale() -> None:
     s = 0.0
 
     with pytest.raises(ZeroDivisionError) as e_info:
-        aSb = Sim2(R, t, s)
+        Sim2(R, t, s)

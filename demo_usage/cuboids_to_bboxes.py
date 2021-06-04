@@ -1,13 +1,11 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 import argparse
 import copy
-import glob
 import logging
 import os
-import sys
 from multiprocessing import Pool
 from pathlib import Path
-from typing import Any, Iterable, List, Mapping, Sequence, Tuple, Union
+from typing import Any, Iterable, List, Sequence, Tuple, Union
 
 import cv2
 import imageio
@@ -287,7 +285,7 @@ def main(args: Any):
             for log_id in log_ids
         ]
         with Pool(os.cpu_count()) as p:
-            accum = p.starmap(dump_clipped_3d_cuboids_to_images, single_process_args)
+            p.starmap(dump_clipped_3d_cuboids_to_images, single_process_args)
 
     else:
         # run in a single process, instead

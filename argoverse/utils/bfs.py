@@ -2,7 +2,7 @@
 
 """Breadth-First-Search of Graphs."""
 
-from typing import Any, Collection, List, Mapping, MutableMapping, Sequence
+from typing import Any, List, Mapping, MutableMapping, Sequence
 
 
 def bfs_enumerate_paths(graph: Mapping[str, Sequence[str]], start: str, max_depth: int = 4) -> List[List[str]]:
