@@ -60,50 +60,48 @@ Results:
 """
 import argparse
 import logging
-import os
+import multiprocessing as mp
 from collections import defaultdict
-from multiprocessing import Pool
+from dataclasses import dataclass
 from pathlib import Path
-from typing import DefaultDict, List
+from typing import DefaultDict, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
+from tqdm.contrib.concurrent import process_map
 
 from argoverse.evaluation.detection.constants import N_TP_ERRORS, SIGNIFICANT_DIGITS, STATISTIC_NAMES
-from argoverse.evaluation.detection.utils import DetectionCfg, accumulate, calc_ap, plot
+from argoverse.evaluation.detection.utils import AccumulateJob, DetectionCfg, accumulate, calc_ap, plot
 from argoverse.map_representation.map_api import ArgoverseMap
 
 logger = logging.getLogger(__name__)
 
 
+@dataclass
 class DetectionEvaluator:
-    """Instantiates a DetectionEvaluator object for evaluation."""
+    """A DetectionEvaluator object for evaluation.
 
-    def __init__(
-        self,
-        dt_root_fpath: Path,
-        gt_root_fpath: Path,
-        figs_fpath: Path,
-        cfg: DetectionCfg = DetectionCfg(),
-        num_procs: int = -1,
-    ) -> None:
-        """
-        Args:
-            dt_fpath_root: Path to the folder which contains the detections.
-            gt_fpath_root: Path to the folder which contains the split of logs.
-            figs_fpath: Path to the folder which will contain the output figures.
-            cfg: Detection configuration settings.
-            num_procs: Number of processes among which to subdivide work.
-                Specifying -1 will use one process per available core
-        """
-        self.dt_root_fpath = dt_root_fpath
-        self.gt_root_fpath = gt_root_fpath
-        self.figs_fpath = figs_fpath
-        self.cfg = cfg
-        self.num_procs = os.cpu_count() if num_procs == -1 else num_procs
-        self.avm = (
-            ArgoverseMap(self.cfg.map_root) if self.cfg.eval_only_roi_instances else None
-        )  # map is only required if using Region of Interest (ROI) information to filter objects
+    Args:
+        dt_fpath_root: Path to the folder which contains the detections.
+        gt_fpath_root: Path to the folder which contains the split of logs.
+        figs_fpath: Path to the folder which will contain the output figures.
+        cfg: Detection configuration settings.
+        num_procs: Number of processes among which to subdivide work.
+            Specifying -1 will use one process per available core
+    """
+
+    dt_root_fpath: Path
+    gt_root_fpath: Path
+    figs_fpath: Path
+    cfg: DetectionCfg = DetectionCfg()
+    num_procs: int = -1
+
+    avm: Optional[ArgoverseMap] = (
+        ArgoverseMap(cfg.map_root) if cfg.eval_only_roi_instances else None
+    )  # map is only required if using Region of Interest (ROI) information to filter objects
+
+    def __post_init__(self) -> None:
+        self.num_procs = mp.cpu_count() if self.num_procs == -1 else self.num_procs
 
     def evaluate(self) -> pd.DataFrame:
         """Evaluate detection output and return metrics. The multiprocessing
@@ -119,16 +117,15 @@ class DetectionEvaluator:
         gt_fpaths = list(self.gt_root_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
 
         assert len(dt_fpaths) == len(gt_fpaths)
-        data: DefaultDict[str, np.ndarray] = defaultdict(list)
+        data: DefaultDict[str, List[np.ndarray]] = defaultdict(list)
         cls_to_ninst: DefaultDict[str, int] = defaultdict(int)
 
+        jobs = [AccumulateJob(self.dt_root_fpath, gt_fpath, self.cfg, self.avm) for gt_fpath in gt_fpaths]
         if self.num_procs == 1:
-            accum = [accumulate(self.dt_root_fpath, gt_fpath, self.cfg, self.avm) for gt_fpath in gt_fpaths]
-
+            accum = [accumulate(job) for job in jobs]
         else:
-            args = [(self.dt_root_fpath, gt_fpath, self.cfg, self.avm) for gt_fpath in gt_fpaths]
-            with Pool(self.num_procs) as p:
-                accum = p.starmap(accumulate, args)
+            chunksize = max(1, len(jobs) // self.num_procs)
+            accum = process_map(accumulate, jobs, max_workers=self.num_procs, chunksize=chunksize)
 
         for frame_stats, frame_cls_to_inst in accum:
             for cls_name, cls_stats in frame_stats.items():
@@ -136,12 +133,12 @@ class DetectionEvaluator:
             for cls_name, num_inst in frame_cls_to_inst.items():
                 cls_to_ninst[cls_name] += num_inst
 
-        data = defaultdict(np.ndarray, {k: np.vstack(v) for k, v in data.items()})
+        aggregated_data = {k: np.vstack(v) for k, v in data.items()}
 
         init_data = {dt_cls: self.cfg.summary_default_vals for dt_cls in self.cfg.dt_classes}
         summary = pd.DataFrame.from_dict(init_data, orient="index", columns=STATISTIC_NAMES)
         summary_update = pd.DataFrame.from_dict(
-            self.summarize(data, cls_to_ninst), orient="index", columns=STATISTIC_NAMES
+            self.summarize(aggregated_data, cls_to_ninst), orient="index", columns=STATISTIC_NAMES
         )
 
         summary.update(summary_update)
@@ -152,7 +149,7 @@ class DetectionEvaluator:
         return summary
 
     def summarize(
-        self, data: DefaultDict[str, np.ndarray], cls_to_ninst: DefaultDict[str, int]
+        self, data: Dict[str, np.ndarray], cls_to_ninst: DefaultDict[str, int]
     ) -> DefaultDict[str, List[float]]:
         """Calculate and print the detection metrics.
 
@@ -205,8 +202,6 @@ class DetectionEvaluator:
             cds = ap * tp_scores.mean()
 
             summary[cls_name] = [ap, *tp_metrics, cds]
-
-        logger.info(f"summary = {summary}")
         return summary
 
 
