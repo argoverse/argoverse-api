@@ -67,6 +67,7 @@ setup(
         "scipy>=1.4.0",
         "shapely",
         "sklearn",
+        "tqdm",
         "typing_extensions",
     ],
     # for older pip version, use with --process-dependency-links

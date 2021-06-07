@@ -13,6 +13,7 @@ import copy
 import logging
 import os
 from collections import defaultdict
+from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
 from typing import DefaultDict, List, NamedTuple, Optional, Tuple, Union
@@ -99,15 +100,28 @@ class DetectionCfg(NamedTuple):
     map_root: _PathLike = Path(__file__).parent.parent.parent.parent / "map_files"  # argoverse-api/map_files
 
 
-def accumulate(
-    dt_root_fpath: Path, gt_fpath: Path, cfg: DetectionCfg, avm: Optional[ArgoverseMap]
-) -> Tuple[DefaultDict[str, np.ndarray], DefaultDict[str, int]]:
-    """Accumulate the true/false positives (boolean flags) and true positive errors for each class.
+@dataclass
+class AccumulateJob:
+    """Dataclass args for running `accumulate`.
 
     Args:
         dt_root_fpath: Detections root folder file path.
         gt_fpath: Ground truth file path.
         cfg: Detection configuration.
+        avm: Argoverse map object.
+    """
+
+    dt_root_fpath: Path
+    gt_fpath: Path
+    cfg: DetectionCfg
+    avm: Optional[ArgoverseMap]
+
+
+def accumulate(job: AccumulateJob) -> Tuple[DefaultDict[str, np.ndarray], DefaultDict[str, int]]:
+    """Accumulate the true/false positives (boolean flags) and true positive errors for each class.
+
+    Args:
+        job: Accumulate job.
 
     Returns:
         cls_to_accum: Class to accumulated statistics dictionary of shape |C| -> (N, K + S) where C
@@ -116,8 +130,10 @@ def accumulate(
         cls_to_ninst: Mapping of shape |C| -> (1,) the class names to the number of instances in the ground
             truth dataset.
     """
+    dt_root_fpath, gt_fpath, cfg, avm = job.dt_root_fpath, job.gt_fpath, job.cfg, job.avm
+
     log_id = gt_fpath.parents[1].stem
-    logger.info(f"log_id = {log_id}")
+    logger.debug(f"log_id = {log_id}")
     ts = int(gt_fpath.stem.split("_")[-1])
 
     dt_fpath = dt_root_fpath / f"{log_id}/per_sweep_annotations_amodal/" f"tracked_object_labels_{ts}.json"
@@ -154,8 +170,8 @@ def accumulate(
         )
         gt_filtered = remove_duplicate_instances(gt_filtered, cfg)
 
-        logger.info(f"{dt_filtered.shape[0]} detections")
-        logger.info(f"{gt_filtered.shape[0]} ground truth")
+        logger.debug(f"{dt_filtered.shape[0]} detections")
+        logger.debug(f"{gt_filtered.shape[0]} ground truth")
         if dt_filtered.shape[0] > 0:
             ranked_dts, ranked_scores = rank(dt_filtered)
 

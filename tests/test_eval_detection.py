@@ -19,6 +19,7 @@ from argoverse.data_loading.object_label_record import ObjectLabelRecord, json_l
 from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
 from argoverse.evaluation.detection.eval import DetectionEvaluator
 from argoverse.evaluation.detection.utils import (
+    AccumulateJob,
     AffFnType,
     DetectionCfg,
     DistFnType,
@@ -200,13 +201,13 @@ def test_wrap_angle() -> None:
 def test_accumulate() -> None:
     """Verify that the accumulate function matches known output for a self-comparison."""
     cfg = DetectionCfg(eval_only_roi_instances=False)
-    # compare a set of labels to itself
-    cls_to_accum, cls_to_ninst = accumulate(
+    job = AccumulateJob(
         TEST_DATA_LOC / "detections",
         TEST_DATA_LOC / "detections/1/per_sweep_annotations_amodal/tracked_object_labels_0.json",
         cfg,
         avm=None,  # ArgoverseMap instance not required when not using ROI info in evaluation
     )
+    cls_to_accum, cls_to_ninst = accumulate(job)
     # ensure the detections match at all thresholds, have 0 TP errors, and have AP = 1
     expected_ATE = 0.0
     expected_ASE = 0.0
