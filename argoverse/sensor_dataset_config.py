@@ -55,7 +55,7 @@ class ArgoverseConfig(SensorDatasetConfig):
     STEREO_CAMERA_HEIGHT: int = 2056
     STEREO_CAMERA_WIDTH: int = 2464
 
-    dataset_name: str = "argoverse"
+    dataset_name: str = "argoverse-v1.1"
     ring_cam_fps: int = 30
     stereo_cam_fps: int = 5
 
