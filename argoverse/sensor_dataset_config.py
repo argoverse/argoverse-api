@@ -60,13 +60,13 @@ class ArgoverseConfig(SensorDatasetConfig):
     stereo_cam_fps: int = 5
 
     camera_sensors: SensorSuiteConfig = SensorSuiteConfig(
-        SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_front_center"),
-        SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_front_left"),
-        SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_front_right"),
-        SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_side_left"),
-        SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_side_right"),
-        SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_rear_left"),
-        SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_rear_right"),
-        SensorConfig(STEREO_CAMERA_HEIGHT, STEREO_CAMERA_WIDTH, "stereo_front_left"),
-        SensorConfig(STEREO_CAMERA_HEIGHT, STEREO_CAMERA_WIDTH, "stereo_front_right"),
+        ring_front_center=SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_front_center"),
+        ring_front_left=SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_front_left"),
+        ring_front_right=SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_front_right"),
+        ring_side_left=SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_side_left"),
+        ring_side_right=SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_side_right"),
+        ring_rear_left=SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_rear_left"),
+        ring_rear_right=SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_rear_right"),
+        stereo_front_left=SensorConfig(STEREO_CAMERA_HEIGHT, STEREO_CAMERA_WIDTH, "stereo_front_left"),
+        stereo_front_right=SensorConfig(STEREO_CAMERA_HEIGHT, STEREO_CAMERA_WIDTH, "stereo_front_right"),
     )
