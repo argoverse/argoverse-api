@@ -39,7 +39,7 @@ class SE3:
         """Undo the translation and then the rotation (Inverse SE(3) transformation)."""
         point_cloud = point_cloud.copy()
         point_cloud -= self.translation
-        return point_cloud.dot(self.rotation)
+        return point_cloud @ self.rotation
 
     def inverse(self) -> "SE3":
         """Return the inverse of the current SE3 transformation.
