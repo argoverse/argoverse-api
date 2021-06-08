@@ -37,9 +37,7 @@ class SE3:
 
     def inverse_transform_point_cloud(self, point_cloud: np.ndarray) -> np.ndarray:
         """Undo the translation and then the rotation (Inverse SE(3) transformation)."""
-        point_cloud = point_cloud.copy()
-        point_cloud -= self.translation
-        return point_cloud @ self.rotation
+        return (point_cloud.copy() - self.translation) @ self.rotation
 
     def inverse(self) -> "SE3":
         """Return the inverse of the current SE3 transformation.
