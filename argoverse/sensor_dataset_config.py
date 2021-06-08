@@ -67,7 +67,6 @@ class ArgoverseConfig(SensorDatasetConfig):
         SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_side_right"),
         SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_rear_left"),
         SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_rear_right"),
-        SensorConfig(RING_CAMERA_HEIGHT, RING_CAMERA_WIDTH, "ring_front_center"),
         SensorConfig(STEREO_CAMERA_HEIGHT, STEREO_CAMERA_WIDTH, "stereo_front_left"),
         SensorConfig(STEREO_CAMERA_HEIGHT, STEREO_CAMERA_WIDTH, "stereo_front_right"),
     )
