@@ -27,22 +27,17 @@ class SE3:
         """Apply the SE(3) transformation to this point cloud.
 
         Args:
-            point_cloud: Array of shape (N, 3)
+            point_cloud: Array of shape (N, 3). If the transform represents dst_SE3_src,
+                then point_cloud should consist of points in frame `src`
 
         Returns:
-            transformed_point_cloud: Array of shape (N, 3)
+            Array of shape (N, 3) representing the transformed point cloud, i.e. points in frame `dst`
         """
-        # convert to homogeneous
-        num_pts = point_cloud.shape[0]
-        homogeneous_pts = np.hstack([point_cloud, np.ones((num_pts, 1))])
-        transformed_point_cloud = homogeneous_pts.dot(self.transform_matrix.T)
-        return transformed_point_cloud[:, :3]
+        return point_cloud @ self.rotation.T + self.translation
 
     def inverse_transform_point_cloud(self, point_cloud: np.ndarray) -> np.ndarray:
         """Undo the translation and then the rotation (Inverse SE(3) transformation)."""
-        point_cloud = point_cloud.copy()
-        point_cloud -= self.translation
-        return point_cloud.dot(self.rotation)
+        return (point_cloud.copy() - self.translation) @ self.rotation
 
     def inverse(self) -> "SE3":
         """Return the inverse of the current SE3 transformation.
