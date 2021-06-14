@@ -193,3 +193,14 @@ def test_cannot_set_zero_scale() -> None:
 
     with pytest.raises(ZeroDivisionError) as e_info:
         Sim2(R, t, s)
+
+
+def test_transform_from_wrong_dims() -> None:
+    """Ensure that 1d input is not allowed (row vectors are required, as Nx2)."""
+    bRa = np.eye(2)
+    bta = np.array([1, 2])
+    bsa = 3.0
+    bSa = Sim2(R=bRa, t=bta, s=bsa)
+
+    with pytest.raises(ValueError) as e_info:
+        val = bSa.transform_from(np.array([1.0, 3.0]))
