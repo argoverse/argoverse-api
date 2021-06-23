@@ -234,13 +234,13 @@ def test_sim2_theta_deg_1() -> None:
     assert aSb.theta_deg == 0
 
 
-def test_sim2_theta_deg_1() -> None:
+def test_sim2_theta_deg_2() -> None:
     """Ensure we can recover the rotation angle theta"""
-    R = np.eye(2)
+    R = rotmat2d(np.deg2rad(135))
     t = np.arange(2)
     s = 10.5
     aSb = Sim2(R, t, s)
-    assert aSb.theta_deg == 0
+    assert aSb.theta_deg == 135
 
 
 def test_sim2_repr() -> None:
