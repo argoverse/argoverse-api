@@ -63,13 +63,11 @@ setup(
         "pandas>=0.23.1",
         "pillow",
         "imageio",
-        "pyntcloud @ git+https://github.com/daavoo/pyntcloud#egg=pyntcloud-0.1.0",
+        "pyntcloud>=0.1.0",
         "scipy>=1.4.0",
         "shapely",
         "sklearn",
         "tqdm",
         "typing_extensions",
     ],
-    # for older pip version, use with --process-dependency-links
-    dependency_links=["git+https://github.com/daavoo/pyntcloud#egg=pyntcloud-0.1.0"],
 )
