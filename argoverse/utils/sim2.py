@@ -54,7 +54,7 @@ class Sim2:
         return f"Angle (deg.): {self.theta_deg}, Trans.: {np.round(self.t_,2)}, Scale: {self.s_}"
 
     def __eq__(self, other: object) -> bool:
-        """Check for equality with other Sim(2) object"""
+        """Check for equality with other Sim(2) object."""
         if not isinstance(other, Sim2):
             return False
 

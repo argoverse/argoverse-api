@@ -120,7 +120,7 @@ def test_compose_3() -> None:
 
 
 def test_inverse() -> None:
-    """ """
+    """Ensure that the .inverse() method returns the correct result."""
     scale = 2.0
     imgSw = Sim2(R=np.eye(2), t=np.array([1.0, 3.0]), s=scale)
 
@@ -226,7 +226,7 @@ def test_cannot_set_zero_scale() -> None:
 
 
 def test_sim2_theta_deg_1() -> None:
-    """Ensure we can recover the rotation angle theta"""
+    """Ensure we can recover the rotation angle theta, when theta=0 degrees."""
     R = np.eye(2)
     t = np.arange(2)
     s = 10.5
@@ -235,7 +235,7 @@ def test_sim2_theta_deg_1() -> None:
 
 
 def test_sim2_theta_deg_2() -> None:
-    """Ensure we can recover the rotation angle theta"""
+    """Ensure we can recover the rotation angle theta, when theta=135 degrees."""
     R = rotmat2d(np.deg2rad(135))
     t = np.arange(2)
     s = 10.5
