@@ -37,11 +37,16 @@ class Sim2:
 
     @property
     def theta_deg(self) -> float:
-        """Recover the rotation angle `theta` from the 2d rotation matrix.
+        """Recover the rotation angle `theta` (in degrees) from the 2d rotation matrix.
 
-        Note: tan(theta) = s/c = (opp/hyp) / (adj/hyp) = opp/adj
+        Note: the first column of the rotation matrix R provides sine and cosine of theta,
+            since R is encoded as [c,-s]
+                                  [s, c]
+
+        We use the following identity: tan(theta) = s/c = (opp/hyp) / (adj/hyp) = opp/adj
         """
-        theta_rad = np.arctan2(self.R_[1, 0], self.R_[0, 0])
+        c, s = self.R_[0, 0], self.R_[1, 0]
+        theta_rad = np.arctan2(s, c)
         return np.rad2deg(theta_rad)
 
     def __repr__(self) -> str:
