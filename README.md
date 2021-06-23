@@ -33,11 +33,6 @@
 - Linux
 - MacOS
 
-### Dependencies
-
-- `git`
-- `python>=3.7`
-
 ### 1) Clone
 
 - Clone this repo to your local machine using:
