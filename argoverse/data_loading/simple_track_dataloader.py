@@ -27,7 +27,7 @@ class SimpleArgoverseTrackingDataLoader:
         self.sdb = SynchronizationDB(data_dir)
 
     def get_city_name(self, log_id: str) -> str:
-        """Return the name of the city where the log of interest was cpatured.
+        """Return the name of the city where the log of interest was captured.
         Args:
             log_id: str
 
