@@ -35,6 +35,19 @@ class Sim2:
         self.t_ = t.astype(np.float32)
         self.s_ = float(s)
 
+    @property
+    def theta_deg(self) -> float:
+        """Recover the rotation angle `theta` from the 2d rotation matrix.
+
+        Note: tan(theta) = s/c = (opp/hyp) / (adj/hyp) = opp/adj
+        """
+        theta_rad = np.arctan2(self.R_[1, 0], self.R_[0, 0])
+        return np.rad2deg(theta_rad)
+
+    def __repr__(self) -> str:
+        """ """
+        return f"Angle (deg.): {self.theta_deg}, Trans.: {np.round(self.t_,2)}, Scale: {self.s_}"
+
     def __eq__(self, other: object) -> bool:
         """Check for equality with other Sim(2) object"""
         if not isinstance(other, Sim2):
@@ -77,7 +90,7 @@ class Sim2:
 
     def compose(self, S: "Sim2") -> "Sim2":
         """Composition with another Sim2."""
-        return Sim2(self.R_ * S.R_, ((1.0 / S.s_) * self.t_) + self.R_ @ S.t_, self.s_ * S.s_)
+        return Sim2(self.R_ @ S.R_, ((1.0 / S.s_) * self.t_) + self.R_ @ S.t_, self.s_ * S.s_)
 
     def inverse(self) -> "Sim2":
         """Return the inverse."""
