@@ -71,12 +71,12 @@ class Sim2:
 
     @property
     def rotation(self) -> np.ndarray:
-        """Return the 2x2 rotation matrix"""
+        """Return the 2x2 rotation matrix."""
         return self.R_
 
     @property
     def translation(self) -> np.ndarray:
-        """Return the (2,) translation vector"""
+        """Return the (2,) translation vector."""
         return self.t_
 
     @property
@@ -86,7 +86,7 @@ class Sim2:
 
     @property
     def matrix(self) -> np.ndarray:
-        """Calculate 3*3 matrix group equivalent"""
+        """Calculate 3*3 matrix group equivalent."""
         T = np.zeros((3, 3))
         T[:2, :2] = self.R_
         T[:2, 2] = self.t_
