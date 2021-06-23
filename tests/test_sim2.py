@@ -80,8 +80,8 @@ def test_scale() -> None:
     assert bSa.scale == 3.0
 
 
-def test_compose():
-    """Ensure we can compose two Sim(2) transforms together."""
+def test_compose_1() -> None:
+    """Ensure we can compose two Sim(2) transforms together, with identity rotations."""
     scale = 2.0
     imgSw = Sim2(R=np.eye(2), t=np.array([1.0, 3.0]), s=scale)
 
@@ -93,8 +93,38 @@ def test_compose():
     assert wSw == imgSw.compose(wSimg)
 
 
-def test_inverse():
-    """ """
+def test_compose_2() -> None:
+    """Verify composition of Sim2 objects works for non-identity input."""
+    aSb = Sim2(R=rotmat2d(np.deg2rad(90)), t=np.array([1, 2]), s=4)
+
+    bSc = Sim2(R=rotmat2d(np.deg2rad(-45)), t=np.array([3, 4]), s=0.5)
+
+    aSc = aSb.compose(bSc)
+    # Via composition: 90 + -45 = 45 degrees
+    assert aSc.theta_deg == 45.0
+    # Via composition: 4 * 0.5 = 2.0
+    assert aSc.scale == 2.0
+
+
+def test_compose_3() -> None:
+    """Verify correctness of composed inverted and non-inverted transformations."""
+
+    # Note: these are dummy translation values; should be ignored when considering correctness
+    aSb = Sim2(R=rotmat2d(np.deg2rad(20)), t=np.array([1, 2]), s=2)
+
+    bSc = Sim2(R=rotmat2d(np.deg2rad(30)), t=np.array([1, 2]), s=3)
+
+    aSc = Sim2(R=rotmat2d(np.deg2rad(50)), t=np.array([1, 2]), s=6)
+
+    # ground truth is an identity transformation
+    aSa_gt = Sim2(R=np.eye(2), t=np.zeros(2), s=1.0)
+    aSa_est = aSb.compose(bSc).compose(aSc.inverse())
+
+    assert np.isclose(aSa_gt.theta_deg, aSa_est.theta_deg, atol=1e-5)
+
+
+def test_inverse() -> None:
+    """Ensure that the .inverse() method returns the correct result."""
     scale = 2.0
     imgSw = Sim2(R=np.eye(2), t=np.array([1.0, 3.0]), s=scale)
 
@@ -220,6 +250,34 @@ def test_cannot_set_zero_scale() -> None:
 
     with pytest.raises(ZeroDivisionError) as e_info:
         Sim2(R, t, s)
+
+
+def test_sim2_theta_deg_1() -> None:
+    """Ensure we can recover the rotation angle theta, when theta=0 degrees."""
+    R = np.eye(2)
+    t = np.arange(2)
+    s = 10.5
+    aSb = Sim2(R, t, s)
+    assert aSb.theta_deg == 0
+
+
+def test_sim2_theta_deg_2() -> None:
+    """Ensure we can recover the rotation angle theta, when theta=135 degrees."""
+    R = rotmat2d(np.deg2rad(135))
+    t = np.arange(2)
+    s = 10.5
+    aSb = Sim2(R, t, s)
+    assert aSb.theta_deg == 135
+
+
+def test_sim2_repr() -> None:
+    """Ensure we can print the class, and obtain the correct string representation from __repr__."""
+    R = np.eye(2)
+    t = np.arange(2)
+    s = 10.5
+    aSb = Sim2(R, t, s)
+    print(aSb)
+    assert repr(aSb) == "Angle (deg.): 0.0, Trans.: [0. 1.], Scale: 10.5"
 
 
 def test_transform_from_wrong_dims() -> None:
