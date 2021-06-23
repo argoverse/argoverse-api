@@ -102,7 +102,7 @@ class Sim2:
             raise ValueError("Input point cloud is not 2-dimensional.")
         assert_np_array_shape(point_cloud, (None, 2))
         # (2,2) x (2,N) + (2,1) = (2,N) -> transpose
-        transformed_point_cloud = (self.R_ @ point_cloud.T + self.t_.reshape(2, 1)).T
+        transformed_point_cloud = (point_cloud @ self.R_.T) + self.t_
 
         # now scale points
         return transformed_point_cloud * self.s_
