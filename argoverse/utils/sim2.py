@@ -45,7 +45,7 @@ class Sim2:
         return np.rad2deg(theta_rad)
 
     def __repr__(self) -> str:
-        """ """
+        """Return a human-readable string representation of the class."""
         return f"Angle (deg.): {self.theta_deg}, Trans.: {np.round(self.t_,2)}, Scale: {self.s_}"
 
     def __eq__(self, other: object) -> bool:
