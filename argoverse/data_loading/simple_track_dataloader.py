@@ -2,10 +2,11 @@
 
 import glob
 from pathlib import Path
-from typing import Any, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t, read_city_name
 from argoverse.data_loading.synchronization_database import SynchronizationDB
+from argoverse.utils.calibration import CameraConfig, get_calibration_config
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.se3 import SE3
 
@@ -26,7 +27,7 @@ class SimpleArgoverseTrackingDataLoader:
         self.sdb = SynchronizationDB(data_dir)
 
     def get_city_name(self, log_id: str) -> str:
-        """
+        """Return the name of the city where the log of interest was cpatured.
         Args:
             log_id: str
 
@@ -38,7 +39,7 @@ class SimpleArgoverseTrackingDataLoader:
         assert isinstance(city_name, str)
         return city_name
 
-    def get_log_calibration_data(self, log_id: str) -> Mapping[str, Any]:
+    def get_log_calibration_data(self, log_id: str) -> Dict[str, Any]:
         """
         Args:
             log_id: str
@@ -50,6 +51,12 @@ class SimpleArgoverseTrackingDataLoader:
         log_calib_data = read_json_file(calib_fpath)
         assert isinstance(log_calib_data, dict)
         return log_calib_data
+
+    def get_log_camera_config(self, log_id: str, camera_name: str) -> CameraConfig:
+        """Return an object containing camera extrinsics, intrinsics, and image dimensions."""
+        log_calib_data = self.get_log_calibration_data(log_id)
+        camera_config = get_calibration_config(log_calib_data, camera_name)
+        return camera_config
 
     def get_city_to_egovehicle_se3(self, log_id: str, timestamp: int) -> Optional[SE3]:
         """Deprecated version of get_city_SE3_egovehicle() below, as does not follow standard naming convention
