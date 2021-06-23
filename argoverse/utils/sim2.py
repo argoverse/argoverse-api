@@ -47,7 +47,7 @@ class Sim2:
         """
         c, s = self.R_[0, 0], self.R_[1, 0]
         theta_rad = np.arctan2(s, c)
-        return np.rad2deg(theta_rad)
+        return float(np.rad2deg(theta_rad))
 
     def __repr__(self) -> str:
         """Return a human-readable string representation of the class."""
