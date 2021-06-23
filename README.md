@@ -27,7 +27,16 @@
 
 ## Installation
 
-Requires Linux/MacOS, git, and Python 3.6+
+
+### Supported Platforms
+
+- Linux
+- MacOS
+
+### Dependencies
+
+- `git`
+- `python>=3.7`
 
 ### 1) Clone
 
