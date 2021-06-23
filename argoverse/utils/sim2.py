@@ -94,8 +94,21 @@ class Sim2:
         return T
 
     def compose(self, S: "Sim2") -> "Sim2":
-        """Composition with another Sim2."""
-        return Sim2(self.R_ @ S.R_, ((1.0 / S.s_) * self.t_) + self.R_ @ S.t_, self.s_ * S.s_)
+        """Composition with another Sim2.
+
+        This can be understood via block matrix multiplication, if self is parameterized as (R1,t1,s1)
+        and if `S` is parameterized as (R2,t2,s2):
+
+        [R1  t1]   [R2  t2]   [R1 @ R2   R1@t2 + t1/s2]
+        [0 1/s1] @ [0 1/s2] = [ 0          1/(s1*s2)  ]
+        """
+        # fmt: off
+        return Sim2(
+            R=self.R_ @ S.R_,
+            t=self.R_ @ S.t_ + ((1.0 / S.s_) * self.t_),
+            s=self.s_ * S.s_
+        )
+        # fmt: on
 
     def inverse(self) -> "Sim2":
         """Return the inverse."""
