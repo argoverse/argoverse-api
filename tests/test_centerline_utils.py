@@ -12,32 +12,42 @@ from argoverse.utils.centerline_utils import (
 )
 
 
-def temp_test_straight_centerline_to_polygon():
+def temp_test_straight_centerline_to_polygon() -> None:
     """
-        Try converting a simple straight polyline into a polygon. Represents
-        the conversion from a centerline to a lane segment polygon.
+    Try converting a simple straight polyline into a polygon. Represents
+    the conversion from a centerline to a lane segment polygon.
 
-        Note that the returned polygon will ba a Numpy array of
-        shape (2N+1,2), with duplicate first and last vertices.
-        Dots below signify the centerline coordinates.
+    Note that the returned polygon will ba a Numpy array of
+    shape (2N+1,2), with duplicate first and last vertices.
+    Dots below signify the centerline coordinates.
 
-                |   .   |
-                |   .   |
-                |   .   |
-                |   .   |
-        """
+            |   .   |
+            |   .   |
+            |   .   |
+            |   .   |
+    """
     # create centerline: Numpy array of shape (N,2)
     centerline = np.array([[0, 2.0], [0.0, 0.0], [0.0, -2.0]])
 
     polygon = centerline_to_polygon(centerline)
     # polygon wraps around with right boundary, then reversed
     # left boundary, then back to start vertex
-    gt_polygon = np.array([[-3.8, 2.0], [-3.8, 0.0], [-3.8, -2.0], [3.8, -2.0], [3.8, 0.0], [3.8, 2.0], [-3.8, 2.0]])
+    gt_polygon = np.array(
+        [
+            [-3.8, 2.0],
+            [-3.8, 0.0],
+            [-3.8, -2.0],
+            [3.8, -2.0],
+            [3.8, 0.0],
+            [3.8, 2.0],
+            [-3.8, 2.0],
+        ]
+    )
 
     assert np.array_equal(polygon, gt_polygon)
 
 
-def test_is_overlapping_lane_seq():
+def test_is_overlapping_lane_seq() -> None:
     """Test is_overlapping_lane_seq"""
 
     lane_seq1 = [1, 2, 3, 4]
@@ -56,7 +66,7 @@ def test_is_overlapping_lane_seq():
     assert not is_overlapping_lane_seq(lane_seq1, lane_seq2)
 
 
-def test_get_nt_distance_point():
+def test_get_nt_distance_point() -> None:
     """Compute distances in centerline frame for a point"""
     """Test Case
 
@@ -92,7 +102,7 @@ def test_get_nt_distance_point():
     assert_almost_equal(norm_dist, 1.000, 3)
 
 
-def test_get_nt_distance():
+def test_get_nt_distance() -> None:
     """Compute distances in centerline frame for a trajectory"""
     """Test Case
 
@@ -112,17 +122,36 @@ def test_get_nt_distance():
 
     xy = np.array([(0.0, 4.0), (3.0, 3.0), (1.0, 2.0), (4.0, 2.0), (5.0, 0.0), (7.0, 1.0)])
     centerline = np.array(
-        [(1.0, 5.0), (1.5, 4.0), (2.0, 3.0), (2.5, 2.0), (3.0, 1.0), (4.0, 1.0), (5.0, 1.0), (6.0, 1.0), (7.0, 1.0)]
+        [
+            (1.0, 5.0),
+            (1.5, 4.0),
+            (2.0, 3.0),
+            (2.5, 2.0),
+            (3.0, 1.0),
+            (4.0, 1.0),
+            (5.0, 1.0),
+            (6.0, 1.0),
+            (7.0, 1.0),
+        ]
     )
 
     nt_dist = get_nt_distance(xy, centerline)
 
-    expected_nt_dist = np.array([[1.34, 0.44], [2.68, 0.89], [2.68, 1.34], [5.47, 1.0], [6.47, 1.0], [8.47, 0.0]])
+    expected_nt_dist = np.array(
+        [
+            [1.34, 0.44],
+            [2.68, 0.89],
+            [2.68, 1.34],
+            [5.47, 1.0],
+            [6.47, 1.0],
+            [8.47, 0.0],
+        ]
+    )
     print(nt_dist, expected_nt_dist)
     np.array_equal(nt_dist, expected_nt_dist)
 
 
-def test_filter_candidate_centerlines():
+def test_filter_candidate_centerlines() -> None:
     """Test filter candidate centerlines"""
 
     # Test Case

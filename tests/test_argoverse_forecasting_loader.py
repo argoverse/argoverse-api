@@ -1,10 +1,10 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 """Forecasting Loader unit tests"""
 
-import glob
 import pathlib
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from argoverse.data_loading.argoverse_forecasting_loader import ArgoverseForecastingLoader
@@ -12,17 +12,23 @@ from argoverse.data_loading.argoverse_forecasting_loader import ArgoverseForecas
 TEST_DATA_LOC = pathlib.Path(__file__).parent.parent / "tests" / "test_data" / "forecasting"
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore
 def data_loader() -> ArgoverseForecastingLoader:
     return ArgoverseForecastingLoader(TEST_DATA_LOC)
 
 
 def test_id_list(data_loader: ArgoverseForecastingLoader) -> None:
-    track_id_gt = [
-        "00000000-0000-0000-0000-000000000000",
-        "00000000-0000-0000-0000-000000007735",
-        "00000000-0000-0000-0000-000000008206",
-    ]
+    track_id_gt = (
+        pd.DataFrame(
+            [
+                "00000000-0000-0000-0000-000000000000",
+                "00000000-0000-0000-0000-000000007735",
+                "00000000-0000-0000-0000-000000008206",
+            ]
+        )
+        .values.flatten()
+        .tolist()
+    )
     assert data_loader.track_id_list == track_id_gt
 
 

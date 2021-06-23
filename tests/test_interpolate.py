@@ -4,22 +4,22 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from argoverse.utils.interpolate import compute_lane_width, compute_mid_pivot_arc, compute_midpoint_line
+from argoverse.utils.interpolate import compute_lane_width, compute_mid_pivot_arc, compute_midpoint_line, interp_arc
 
 
-def test_compute_lane_width_straight():
+def test_compute_lane_width_straight() -> None:
     """
-        Compute the lane width of the following straight lane segment
-        (waypoints indicated with "o" symbol):
+    Compute the lane width of the following straight lane segment
+    (waypoints indicated with "o" symbol):
 
-                o   o
-                |   |
-                o   o
-                |   |
-                o   o
+            o   o
+            |   |
+            o   o
+            |   |
+            o   o
 
-        We can swap boundaries for this lane, and the width should be identical.
-        """
+    We can swap boundaries for this lane, and the width should be identical.
+    """
     left_even_pts = np.array([[1, 1], [1, 0], [1, -1]])
     right_even_pts = np.array([[-1, 1], [-1, 0], [-1, -1]])
     lane_width = compute_lane_width(left_even_pts, right_even_pts)
@@ -31,21 +31,21 @@ def test_compute_lane_width_straight():
     assert np.isclose(lane_width, gt_lane_width)
 
 
-def test_compute_lane_width_telescoping():
+def test_compute_lane_width_telescoping() -> None:
     """
-        Compute the lane width of the following straight lane segment
-        (waypoints indicated with "o" symbol):
+    Compute the lane width of the following straight lane segment
+    (waypoints indicated with "o" symbol):
 
-           o          o
-           \\        //
-                o        o
-                \\     //
-                 o     o
-                  \\ //
-                    o
+       o          o
+       \\        //
+            o        o
+            \\     //
+             o     o
+              \\ //
+                o
 
-        We can swap boundaries for this lane, and the width should be identical.
-        """
+    We can swap boundaries for this lane, and the width should be identical.
+    """
     left_even_pts = np.array([[3, 2], [2, 1], [1, 0], [0, -1]])
     right_even_pts = np.array([[-3, 2], [-2, 1], [-1, 0], [0, -1]])
     lane_width = compute_lane_width(left_even_pts, right_even_pts)
@@ -57,7 +57,7 @@ def test_compute_lane_width_telescoping():
     assert np.isclose(lane_width, gt_lane_width)
 
 
-def test_compute_lane_width_curved_width1():
+def test_compute_lane_width_curved_width1() -> None:
     """
         Compute the lane width of the following curved lane segment
         Should have width 1 at each pair of boundary waypoints.
@@ -82,7 +82,7 @@ def test_compute_lane_width_curved_width1():
     assert np.isclose(lane_width, gt_lane_width)
 
 
-def test_compute_lane_width_curved_not_width1():
+def test_compute_lane_width_curved_not_width1() -> None:
     """
         Compute the lane width of the following curved lane segment
 
@@ -109,7 +109,7 @@ def test_compute_lane_width_curved_not_width1():
     assert np.isclose(lane_width, gt_lane_width)
 
 
-def test_compute_mid_pivot_arc_3pt_cul_de_sac():
+def test_compute_mid_pivot_arc_3pt_cul_de_sac() -> None:
     """
     Make sure we handle the cul-de-sac case correctly.
 
@@ -144,7 +144,7 @@ def test_compute_mid_pivot_arc_3pt_cul_de_sac():
     assert np.isclose(lane_width, gt_lane_width)
 
 
-def test_compute_mid_pivot_arc_5pt_cul_de_sac():
+def test_compute_mid_pivot_arc_5pt_cul_de_sac() -> None:
     """
     Make sure we handle the cul-de-sac case correctly.
 
@@ -179,7 +179,7 @@ def test_compute_mid_pivot_arc_5pt_cul_de_sac():
     assert np.isclose(lane_width, gt_lane_width)
 
 
-def test_compute_midpoint_line_cul_de_sac_right_onept():
+def test_compute_midpoint_line_cul_de_sac_right_onept() -> None:
     """
     Make sure that if we provide left and right boundary polylines,
     we can get the correct centerline by averaging left and right waypoints.
@@ -196,7 +196,7 @@ def test_compute_midpoint_line_cul_de_sac_right_onept():
     assert np.isclose(lane_width, gt_lane_width)
 
 
-def test_compute_midpoint_line_cul_de_sac_left_onept():
+def test_compute_midpoint_line_cul_de_sac_left_onept() -> None:
     """
     Make sure that if we provide left and right boundary polylines,
     we can get the correct centerline by averaging left and right waypoints.
@@ -213,7 +213,7 @@ def test_compute_midpoint_line_cul_de_sac_left_onept():
     assert np.isclose(lane_width, gt_lane_width)
 
 
-def test_compute_midpoint_line_straightline_maintain_5_waypts():
+def test_compute_midpoint_line_straightline_maintain_5_waypts() -> None:
     """
     Make sure that if we provide left and right boundary polylines,
     we can get the correct centerline by averaging left and right waypoints.
@@ -229,7 +229,7 @@ def test_compute_midpoint_line_straightline_maintain_5_waypts():
     assert np.isclose(lane_width, gt_lane_width)
 
 
-def test_compute_midpoint_line_straightline_maintain_4_waypts():
+def test_compute_midpoint_line_straightline_maintain_4_waypts() -> None:
     """
     Make sure that if we provide left and right boundary polylines,
     we can get the correct centerline by averaging left and right waypoints.
@@ -245,7 +245,7 @@ def test_compute_midpoint_line_straightline_maintain_4_waypts():
     assert np.isclose(lane_width, gt_lane_width)
 
 
-def test_compute_midpoint_line_straightline_maintain_3_waypts():
+def test_compute_midpoint_line_straightline_maintain_3_waypts() -> None:
     """
     Make sure that if we provide left and right boundary polylines,
     we can get the correct centerline by averaging left and right waypoints.
@@ -261,7 +261,7 @@ def test_compute_midpoint_line_straightline_maintain_3_waypts():
     assert np.isclose(lane_width, gt_lane_width)
 
 
-def test_compute_midpoint_line_straightline_maintain_2_waypts():
+def test_compute_midpoint_line_straightline_maintain_2_waypts() -> None:
     """
     Make sure that if we provide left and right boundary polylines,
     we can get the correct centerline by averaging left and right waypoints.
@@ -277,12 +277,12 @@ def test_compute_midpoint_line_straightline_maintain_2_waypts():
     assert np.isclose(lane_width, gt_lane_width)
 
 
-def test_compute_midpoint_line_curved_maintain_4_waypts():
+def test_compute_midpoint_line_curved_maintain_4_waypts() -> None:
     """
     Make sure that if we provide left and right boundary polylines,
     we can get the correct centerline by averaging left and right waypoints.
 
-    Note that because of the curve and the arc interpolation, the land width and centerline in the middle points 
+    Note that because of the curve and the arc interpolation, the land width and centerline in the middle points
     will be shifted.
     """
     right_ln_bnds = np.array([[-1, 3], [1, 3], [4, 0], [4, -2]])
@@ -300,7 +300,19 @@ def test_compute_midpoint_line_curved_maintain_4_waypts():
     draw_polygon_mpl(ax, centerline_pts, "r")
 
     gt_centerline_pts = np.array([[-1, 2], [1, 2], [3, 0], [3, -2]])
-    gt_lane_width = 2.0
 
     assert np.allclose(centerline_pts[0], gt_centerline_pts[0])
     assert np.allclose(centerline_pts[-1], gt_centerline_pts[-1])
+
+
+def test_interp_arc_straight_line() -> None:
+    """ """
+    pts = np.array([[-10, 0], [10, 0]])
+    interp_pts = interp_arc(t=3, px=pts[:, 0], py=pts[:, 1])
+    gt_interp_pts = np.array([[-10, 0], [0, 0], [10, 0]])
+    assert np.allclose(interp_pts, gt_interp_pts)
+
+    pts = np.array([[-10, 0], [10, 0]])
+    interp_pts = interp_arc(t=4, px=pts[:, 0], py=pts[:, 1])
+    gt_interp_pts = np.array([[-10, 0], [-10 / 3, 0], [10 / 3, 0], [10, 0]])
+    assert np.allclose(interp_pts, gt_interp_pts)

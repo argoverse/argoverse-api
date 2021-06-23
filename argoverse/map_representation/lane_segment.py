@@ -1,5 +1,5 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
-from typing import Optional, Sequence
+from typing import List, Optional
 
 import numpy as np
 
@@ -13,8 +13,8 @@ class LaneSegment:
         is_intersection: bool,
         l_neighbor_id: Optional[int],
         r_neighbor_id: Optional[int],
-        predecessors: Sequence[int],
-        successors: Optional[Sequence[int]],
+        predecessors: List[int],
+        successors: Optional[List[int]],
         centerline: np.ndarray,
     ) -> None:
         """Initialize the lane segment.

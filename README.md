@@ -1,7 +1,7 @@
-[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
+[![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![Build Status](https://travis-ci.org/argoai/argoverse-api.svg?branch=master)](https://travis-ci.org/argoai/argoverse-api)
+![Linux CI](https://github.com/argoai/argoverse-api/workflows/Python%20CI/badge.svg)
 
 # Argoverse API
 
@@ -20,6 +20,7 @@
 - [Contributing](#contributing)
 - [Disclaimer](#disclaimer)
 - [License](#license)
+- [Open-Source Libraries Using Argoverse](#other-repos)
 
 
 ---
@@ -54,7 +55,7 @@ argodataset
 
 We provide both the full dataset and the sample version of the dataset for testing purposes. Head to [our website](https://www.argoverse.org/data.html#download-link) to see the download option.
 
-* **Argoverse-Tracking** provides track annotations and raw data from camera (@30hz) and lidar sensors (@10hz) as well as two stereo cameras (@5hz). We've released a total 113 scenes/logs, separated into 65 logs for training, 24 logs for validating, and 24 logs for testing. We've separated training data into smaller files to make it easier to download, but you should extract them all into one folder.
+* **Argoverse-Tracking** provides track annotations, egovehicle poses, and *undistorted*, raw data from camera (@30hz) and lidar sensors (@10hz) as well as two stereo cameras (@5hz). We've released a total 113 scenes/logs, separated into 65 logs for training, 24 logs for validating, and 24 logs for testing. We've separated training data into smaller files to make it easier to download, but you should extract them all into one folder.
     We also provide sample data (1 log) in `tracking_sample.tar.gz`.
 
 * **Argoverse-Forecasting** contains 327790 sequences of interesting scenarios. Each sequence follows the trajectory of the main agent for 5 seconds, while keeping track of all other actors (e.g car, pedestrian). We've separated them into 208272 training sequences, 40127 validation sequences, and 79391 test sequences.
@@ -69,7 +70,7 @@ Note that you need to download HD map data (and extract them into project root f
         pip install -e /path_to_root_directory_of_the_repo/
 * if you receive any error about `No matching distribution found for pyntcloud`, upgrade your pip using `pip install --upgrade pip` or pip install with `--process-dependency-links`
 
-Make sure that you can run `import argoverse` in python, and you are good to go!
+Make sure that you can run `python -c "import argoverse"` in python, and you are good to go!
 
 ### (optional) Install mayavi
 * Some visualizations may require `mayavi`. See instructions on how to install Mayavi [here](https://docs.enthought.com/mayavi/mayavi/installation.html).
@@ -143,6 +144,23 @@ This will produce images and videos will be in the directory `<experiment prefix
 For all log segments, accurate calibration between LiDAR and cameras enables sensor fusion approaches. In version 1.1 of Argoverse, we improved the stereo calibration significantly, as well.
 
 ---
+## A Note Regarding Coordinate Transforms
+We provide a number of SE(3) and SE(2) coordinate transforms in the raw Argoverse data. The main notation we use is:
+
+`p_dst = dst_SE3_src * p_src` or `p_dst = dst_SE2_src * p_src`.
+We'll describe the 6-dof transforms in more detail below:
+
+- **Map pose**: represents the location and orientation of the ego-vehicle inside the city (i.e. map) reference frame, `city_SE3_egovehicle`. We provide map pose for each log in `poses/city_SE3_egovehicle_{nanosec_timestamp}.json`. This transform brings a point in the egovehicle's reference frame into the city's reference frame.
+- **Camera extrinsics**: for each camera sensor, a variable named `egovehicle_SE3_camera` can be found in our log calibration files `vehicle_calibration_info.json`. When we [form the extrinsics matrix](https://github.com/argoai/argoverse-api/blob/master/argoverse/utils/calibration.py#L265) in our API, we use its inverse, `camera_SE3_egovehicle`, i.e. to bring points *into* the camera coordinate frame before perspective projection.
+- **Object labels**: an `egovehicle_SE3_object` transformation is provided for each annotated cuboid, that takes points from the labeled object's reference frame (located at the object centroid), to the egovehicle's reference frame. This data is provided per LiDAR sweep at `per_sweep_annotations_amodal/tracked_object_labels_{nanosec_timestamp}.json`.
+
+Note that for convenience, the LiDAR point cloud sweep data is provided *directly in the ego-vehicle's coordinate frame*, rather than in either of the LiDAR sensor frames. The ego-vehicle's reference frame is placed at the center of the rear axle (see Figure 3 of our [paper](https://arxiv.org/pdf/1911.02620.pdf), with "x" pointing forward, "z" pointing up, and "y" pointing to the left).
+
+A simple example for understanding the *object labels* -- imagine the ego-vehicle is stopped at a 4-way intersection at a red light, and an object is going straight through the intersection with a green light, moving from left to right in front of us. If that labeled object is instantaneously 4 meters ahead of the egovehicle (+4 m along the x-axis), then the annotation would include the rotation to align the labeled object with the egovehicle's x-axis. Since we use the right-hand rule, we need a 90 degree rotation about the "z"-axis to align the object's x-axis with the egovehicle's x-axis. If (0,0,0) is the origin of the labeled object, to move itself into the egovehicle frame, you would need to add 4 to its x coordinate, thus adding the translation vector (4,0,0). 
+
+**What about tracks in the forecasting dataset?** These are provided directly in the city reference frame (i.e. the map coordinate system).
+
+---
 
 ## Baselines
 
@@ -164,3 +182,8 @@ Argoverse APIs are created by John Lambert, Patsorn Sangkloy, Ming-Fang Chang, a
 ## License
 
 We release our API under the MIT license. We retain the Apache 2.0 license on certain files. See **[LICENSE](./LICENSE)**
+
+## Open-Source Libraries Using Argoverse
+
+- A nuScenes to Argoverse converter can be found at https://github.com/bhavya01/nuscenes_to_argoverse, contributed by Bhavya Bahl and John Lambert.
+- A Waymo Open Dataset to Argoverse converter can be found at https://github.com/johnwlambert/waymo_to_argoverse, contributed by John Lambert and Hemanth Chittanuru.

@@ -1,19 +1,17 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 """Forecasting Loader unit tests"""
 
-import glob
 import pathlib
-import tempfile
 
 import numpy as np
 import pytest
 
 from argoverse.data_loading.frame_label_accumulator import PerFrameLabelAccumulator
 
-TEST_DATA_LOC = pathlib.Path(__file__).parent.parent / "tests" / "test_data" / "tracking"
+TEST_DATA_LOC = str(pathlib.Path(__file__).parent.parent / "tests" / "test_data" / "tracking")
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore
 def frame_acc() -> PerFrameLabelAccumulator:
     pfa = PerFrameLabelAccumulator(TEST_DATA_LOC, TEST_DATA_LOC, "test", save=False)
     pfa.accumulate_per_log_data()
@@ -23,6 +21,7 @@ def frame_acc() -> PerFrameLabelAccumulator:
 
 def test_traj_label_place_in_city(frame_acc: PerFrameLabelAccumulator) -> None:
     traj_list = frame_acc.get_log_trajectory_labels("1")
+    assert traj_list is not None
     city_frame_1_gt = [
         [[2.0, -1.0, -1.0], [2.0, -3.0, -1.0], [4.0, -1.0, -1.0], [4.0, -3.0, -1.0]],
         [[3.0, 1.0, 1.0], [3.0, 3.0, 1.0], [5.0, 1.0, 1.0], [5.0, 3.0, 1.0]],

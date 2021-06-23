@@ -1,14 +1,9 @@
 #!/usr/bin/env python
 
 """A simple python script template."""
-import argparse
-import os
-import shutil
-import sys
 from collections import defaultdict
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
-import matplotlib.animation as anim
 import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
 import numpy as np
@@ -35,17 +30,18 @@ def interpolate_polyline(polyline: np.ndarray, num_points: int) -> np.ndarray:
 
 
 def viz_sequence(
-    df: pd.DataFrame, lane_centerlines: Optional[np.ndarray] = None, show: bool = True, smoothen: bool = False
+    df: pd.DataFrame,
+    lane_centerlines: Optional[List[np.ndarray]] = None,
+    show: bool = True,
+    smoothen: bool = False,
 ) -> None:
 
     # Seq data
-    time_list = np.sort(np.unique(df["TIMESTAMP"].values))
     city_name = df["CITY_NAME"].values[0]
 
     if lane_centerlines is None:
         # Get API for Argo Dataset map
         avm = ArgoverseMap()
-        seq_lane_bbox = avm.city_halluc_bbox_table[city_name]
         seq_lane_props = avm.city_lane_centerlines_dict[city_name]
 
     plt.figure(0, figsize=(8, 7))
@@ -75,7 +71,15 @@ def viz_sequence(
                 lane_centerlines.append(lane_cl)
 
     for lane_cl in lane_centerlines:
-        plt.plot(lane_cl[:, 0], lane_cl[:, 1], "--", color="grey", alpha=1, linewidth=1, zorder=0)
+        plt.plot(
+            lane_cl[:, 0],
+            lane_cl[:, 1],
+            "--",
+            color="grey",
+            alpha=1,
+            linewidth=1,
+            zorder=0,
+        )
     frames = df.groupby("TRACK_ID")
 
     plt.xlabel("Map X")
@@ -136,7 +140,15 @@ def viz_sequence(
         object_type_tracker[object_type] += 1
 
     red_star = mlines.Line2D([], [], color="red", marker="*", linestyle="None", markersize=7, label="Agent")
-    green_circle = mlines.Line2D([], [], color="green", marker="o", linestyle="None", markersize=7, label="Others")
+    green_circle = mlines.Line2D(
+        [],
+        [],
+        color="green",
+        marker="o",
+        linestyle="None",
+        markersize=7,
+        label="Others",
+    )
     black_triangle = mlines.Line2D([], [], color="black", marker="^", linestyle="None", markersize=7, label="AV")
 
     plt.axis("off")

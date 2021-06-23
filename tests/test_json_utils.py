@@ -1,6 +1,7 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 """Unit tests for JSON utility functions."""
 import json
+import os
 import pathlib
 
 from argoverse.utils.json_utils import read_json_file, save_json_dict
@@ -31,6 +32,8 @@ def test_save_json_dict() -> None:
     with open(json_fpath, "rb") as f:
         loaded_dict = json.load(f)
 
+    # remove the temporary file now
+    os.remove(json_fpath)
     assert intended_dict == loaded_dict
 
     # make sure key sets are identical
