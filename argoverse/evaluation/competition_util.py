@@ -10,7 +10,6 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import h5py
 import numpy as np
-import quaternion
 from scipy.spatial import ConvexHull
 from shapely.geometry import Polygon
 from sklearn.cluster.dbscan_ import DBSCAN
@@ -18,6 +17,7 @@ from sklearn.cluster.dbscan_ import DBSCAN
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
 from argoverse.utils.se3 import SE3
+from argoverse.utils.transform import rotmat2quat
 
 TYPE_LIST = Union[List[np.ndarray], np.ndarray]
 
@@ -169,6 +169,7 @@ def dist(p1: Tuple[float, float], p2: Tuple[float, float]) -> float:
 
 
 def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") -> ObjectLabelRecord:
+    """ """
     # poly in polygon format
 
     bbox = poly.minimum_rotated_rectangle
@@ -197,18 +198,20 @@ def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") 
     # translation = center
     center = np.array([bbox.centroid.xy[0][0], bbox.centroid.xy[1][0], min(z) + height / 2])
 
+    c = np.cos(angle)
+    s = np.sin(angle)
     R = np.array(
         [
-            [np.cos(angle), -np.sin(angle), 0],
-            [np.sin(angle), np.cos(angle), 0],
+            [c, -s, 0],
+            [s, c, 0],
             [0, 0, 1],
         ]
     )
 
-    q = quaternion.from_rotation_matrix(R)
+    q = rotmat2quat(R)
 
     return ObjectLabelRecord(
-        quaternion=quaternion.as_float_array(q),
+        quaternion=q,
         translation=center,
         length=length,
         width=width,
@@ -266,18 +269,14 @@ def save_label(argoverse_data: ArgoverseTrackingLoader, labels: List[ObjectLabel
     timestamp = argoverse_data.lidar_timestamp_list[idx]
 
     for label in labels:
+        (qw, qx, qy, qz) = label.quaternion
         json_data = {
             "center": {
                 "x": label.translation[0],
                 "y": label.translation[1],
                 "z": label.translation[2],
             },
-            "rotation": {
-                "x": label.quaternion[0],
-                "y": label.quaternion[1],
-                "z": label.quaternion[2],
-                "w": label.quaternion[3],
-            },
+            "rotation": {"x": qx, "y": qy, "z": qz, "w": qw},
             "length": label.length,
             "width": label.width,
             "height": label.height,

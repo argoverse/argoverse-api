@@ -16,6 +16,13 @@ from scipy.spatial.transform import Rotation
 logger = logging.getLogger(__name__)
 
 
+def rotmat2quat(R: np.ndarray) -> np.ndarray:
+    """Convert a rotation-matrix to a quaternion in Argo's scalar-first notation (w, x, y, z)."""
+    quat_xyzw = Rotation.from_matrix(R).as_quat()
+    quat_wxyz = quat_scipy2argo(quat_xyzw)
+    return quat_wxyz
+
+
 def quat2rotmat(q: np.ndarray) -> np.ndarray:
     """Normalizes a quaternion to unit-length, then converts it into a rotation matrix.
 
@@ -46,6 +53,13 @@ def quat_argo2scipy(q: np.ndarray) -> np.ndarray:
     w, x, y, z = q
     q_scipy = np.array([x, y, z, w])
     return q_scipy
+
+
+def quat_scipy2argo(q: np.ndarray) -> np.ndarray:
+    """Re-order Scipy's scalar-last [x,y,z,w] quaternion order to Argoverse's scalar-first [w,x,y,z]."""
+    x, y, z, w = q
+    q_argo = np.array([w, x, y, z])
+    return q_argo
 
 
 def quat_argo2scipy_vectorized(q: np.ndarray) -> np.ndarray:
