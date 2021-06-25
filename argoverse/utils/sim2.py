@@ -51,7 +51,7 @@ class Sim2:
 
     def __repr__(self) -> str:
         """Return a human-readable string representation of the class."""
-        return f"Angle (deg.): {self.theta_deg}, Trans.: {np.round(self.t_,2)}, Scale: {self.s_}"
+        return f"Angle (deg.): {self.theta_deg:.1f}, Trans.: {np.round(self.t_,2)}, Scale: {self.s_:.1f}"
 
     def __eq__(self, other: object) -> bool:
         """Check for equality with other Sim(2) object."""
