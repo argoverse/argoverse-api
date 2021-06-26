@@ -37,6 +37,12 @@ TOP_VERT_INDICES: List[int] = [0, 1, 4, 5]
 
 
 class ObjectLabelRecord:
+    """Parameterizes an object via a 3d bounding box and the object's pose within the egovehicle's frame.
+
+    We refer to the object's pose as `egovehicle_SE3_object` and is parameterized by (R,t), where R is
+    a quaternion in scalar-first order.
+    """
+
     def __init__(
         self,
         quaternion: np.ndarray,
@@ -72,7 +78,7 @@ class ObjectLabelRecord:
         self.score = score
 
     def as_2d_bbox(self) -> np.ndarray:
-        """Construct a 2D bounding box from this label.
+        """Convert the object cuboid to a 2D bounding box, with vertices inside the egovehicle's frame.
 
         Length is x, width is y, and z is height
 
@@ -97,10 +103,7 @@ class ObjectLabelRecord:
         return bbox_in_egovehicle_frame
 
     def as_3d_bbox(self) -> np.ndarray:
-        r"""Calculate the 8 bounding box corners.
-
-        Args:
-            None
+        r"""Calculate the 8 bounding box corners (returned as points inside the egovehicle's frame).
 
         Returns:
             Numpy array of shape (8,3)
@@ -147,7 +150,7 @@ class ObjectLabelRecord:
     ) -> np.ndarray:
         r"""We bring the 3D points into each camera, and do the clipping there.
 
-        Renders box using OpenCV2. Roughly based on
+        Renders box using OpenCV2. Edge coloring and vertex ordering is roughly based on
         https://github.com/nutonomy/nuscenes-devkit/blob/master/python-sdk/nuscenes_utils/data_classes.py
 
         ::
