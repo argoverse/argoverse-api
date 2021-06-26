@@ -171,11 +171,11 @@ def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") 
 
     Args:
         poly: Shapely polygon object representing a convex hull of an object
-        category:
-        track_id
+        category: object category to which object belongs, e.g. VEHICLE, PEDESTRIAN, etc
+        track_id: unique identifier
 
     Returns:
-        object
+        object representing a 3d cuboid
     """
     bbox = poly.minimum_rotated_rectangle
 
