@@ -16,6 +16,19 @@ from scipy.spatial.transform import Rotation
 logger = logging.getLogger(__name__)
 
 
+def yaw_to_quaternion3d(yaw: float) -> np.ndarray:
+    """Convert a rotation angle in the xy plane (i.e. about the z axis) to a quaternion.
+
+    Args:
+        yaw: angle to rotate about the z-axis, representing an Euler angle, in radians
+
+    Returns:
+        array w/ quaternion coefficients (qw,qx,qy,qz) in scalar-first order, per Argoverse convention.
+    """
+    qx, qy, qz, qw = Rotation.from_euler(seq="z", angles=yaw, degrees=False).as_quat()
+    return np.array([qw, qx, qy, qz])
+
+
 def rotmat2quat(R: np.ndarray) -> np.ndarray:
     """Convert a rotation-matrix to a quaternion in Argo's scalar-first notation (w, x, y, z)."""
     quat_xyzw = Rotation.from_matrix(R).as_quat()
