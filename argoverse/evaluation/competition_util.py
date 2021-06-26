@@ -129,7 +129,6 @@ def get_polygon_from_points(points: np.ndarray) -> Polygon:
     Returns:
         polygon: shapely Polygon representing the points along the convex hull's boundary
     """
-    points = points
     hull = ConvexHull(points)
 
     # `simplices` contains indices of points forming the simplical facets of the convex hull.
