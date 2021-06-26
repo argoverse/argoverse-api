@@ -17,7 +17,7 @@ from sklearn.cluster.dbscan_ import DBSCAN
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
 from argoverse.utils.se3 import SE3
-from argoverse.utils.transform import rotmat2quat
+from argoverse.utils.transform import yaw_to_quaternion3d
 
 TYPE_LIST = Union[List[np.ndarray], np.ndarray]
 
@@ -101,7 +101,6 @@ def generate_tracking_zip(input_path: str, output_path: str, filename: str = "ar
         filename: to be used as the name of the file
 
     """
-
     if not os.path.exists(output_path):
         os.makedirs(output_path)
     dirpath = tempfile.mkdtemp()
@@ -122,8 +121,7 @@ def generate_tracking_zip(input_path: str, output_path: str, filename: str = "ar
 
 
 def get_polygon_from_points(points: np.ndarray) -> Polygon:
-    """
-    function to generate (convex hull) shapely polygon from set of points
+    """Convert a point set to a Shapely polygon representing its convex hull.
 
     Args:
         points: list of 2d coordinate points
@@ -169,9 +167,16 @@ def dist(p1: Tuple[float, float], p2: Tuple[float, float]) -> float:
 
 
 def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") -> ObjectLabelRecord:
-    """ """
-    # poly in polygon format
+    """Convert a Shapely Polygon to a 3d cuboid by estimating the minimum-bounding rectangle.
 
+    Args:
+        poly: Shapely polygon object representing a convex hull of an object
+        category:
+        track_id
+
+    Returns:
+        object
+    """
     bbox = poly.minimum_rotated_rectangle
 
     x = bbox.exterior.xy[0]
@@ -191,24 +196,13 @@ def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") 
     else:
         unit_v = unit_vector((x[0], y[0]), (x[1], y[1]))
 
-    angle = math.atan2(unit_v[1], unit_v[0])
+    angle_rad = math.atan2(unit_v[1], unit_v[0])
+    q = yaw_to_quaternion3d(angle_rad)
 
     height = max(z) - min(z)
 
     # translation = center
     center = np.array([bbox.centroid.xy[0][0], bbox.centroid.xy[1][0], min(z) + height / 2])
-
-    c = np.cos(angle)
-    s = np.sin(angle)
-    R = np.array(
-        [
-            [c, -s, 0],
-            [s, c, 0],
-            [0, 0, 1],
-        ]
-    )
-
-    q = rotmat2quat(R)
 
     return ObjectLabelRecord(
         quaternion=q,
@@ -223,7 +217,7 @@ def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") 
 
 
 def get_objects(clustering: DBSCAN, pts: np.ndarray, category: str = "VEHICLE") -> List[Tuple[np.ndarray, uuid.UUID]]:
-
+    """ """
     core_samples_mask = np.zeros_like(clustering.labels_, dtype=bool)
     core_samples_mask[clustering.core_sample_indices_] = True
     labels = clustering.labels_
@@ -269,7 +263,7 @@ def save_label(argoverse_data: ArgoverseTrackingLoader, labels: List[ObjectLabel
     timestamp = argoverse_data.lidar_timestamp_list[idx]
 
     for label in labels:
-        (qw, qx, qy, qz) = label.quaternion
+        qw, qx, qy, qz = label.quaternion
         json_data = {
             "center": {
                 "x": label.translation[0],
