@@ -47,7 +47,7 @@ setup(
     packages=find_packages(exclude=["tests", "integration_tests", "map_files"]),
     package_data={"argoverse": ["argoverse/visualization/data/**/*"]},
     include_package_data=True,
-    python_requires=">= 3.6",
+    python_requires=">= 3.7",
     install_requires=[
         "colour",
         "descartes",
