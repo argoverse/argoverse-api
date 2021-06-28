@@ -58,7 +58,7 @@ class ObjectLabelRecord:
         """Create an ObjectLabelRecord.
 
         Args:
-           quaternion: Numpy vector representing quaternion (qw,qx,qy,qz), box/cuboid orientation
+           quaternion: Numpy vector representing quaternion (qw,qx,qy,qz), box/cuboid orientation.
            translation: Numpy vector representing translation, center of box given as x, y, z.
            length: object length.
            width: object width.
