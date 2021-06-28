@@ -35,8 +35,26 @@ class Sim2:
         self.t_ = t.astype(np.float32)
         self.s_ = float(s)
 
+    @property
+    def theta_deg(self) -> float:
+        """Recover the rotation angle `theta` (in degrees) from the 2d rotation matrix.
+
+        Note: the first column of the rotation matrix R provides sine and cosine of theta,
+            since R is encoded as [c,-s]
+                                  [s, c]
+
+        We use the following identity: tan(theta) = s/c = (opp/hyp) / (adj/hyp) = opp/adj
+        """
+        c, s = self.R_[0, 0], self.R_[1, 0]
+        theta_rad = np.arctan2(s, c)
+        return float(np.rad2deg(theta_rad))
+
+    def __repr__(self) -> str:
+        """Return a human-readable string representation of the class."""
+        return f"Angle (deg.): {self.theta_deg:.1f}, Trans.: {np.round(self.t_,2)}, Scale: {self.s_:.1f}"
+
     def __eq__(self, other: object) -> bool:
-        """Check for equality with other Sim(2) object"""
+        """Check for equality with other Sim(2) object."""
         if not isinstance(other, Sim2):
             return False
 
@@ -53,12 +71,12 @@ class Sim2:
 
     @property
     def rotation(self) -> np.ndarray:
-        """Return the 2x2 rotation matrix"""
+        """Return the 2x2 rotation matrix."""
         return self.R_
 
     @property
     def translation(self) -> np.ndarray:
-        """Return the (2,) translation vector"""
+        """Return the (2,) translation vector."""
         return self.t_
 
     @property
@@ -68,7 +86,7 @@ class Sim2:
 
     @property
     def matrix(self) -> np.ndarray:
-        """Calculate 3*3 matrix group equivalent"""
+        """Calculate 3*3 matrix group equivalent."""
         T = np.zeros((3, 3))
         T[:2, :2] = self.R_
         T[:2, 2] = self.t_
@@ -76,8 +94,21 @@ class Sim2:
         return T
 
     def compose(self, S: "Sim2") -> "Sim2":
-        """Composition with another Sim2."""
-        return Sim2(self.R_ * S.R_, ((1.0 / S.s_) * self.t_) + self.R_ @ S.t_, self.s_ * S.s_)
+        """Composition with another Sim2.
+
+        This can be understood via block matrix multiplication, if self is parameterized as (R1,t1,s1)
+        and if `S` is parameterized as (R2,t2,s2):
+
+        [R1  t1]   [R2  t2]   [R1 @ R2   R1@t2 + t1/s2]
+        [0 1/s1] @ [0 1/s2] = [ 0          1/(s1*s2)  ]
+        """
+        # fmt: off
+        return Sim2(
+            R=self.R_ @ S.R_,
+            t=self.R_ @ S.t_ + ((1.0 / S.s_) * self.t_),
+            s=self.s_ * S.s_
+        )
+        # fmt: on
 
     def inverse(self) -> "Sim2":
         """Return the inverse."""
@@ -98,9 +129,11 @@ class Sim2:
         Returns:
             transformed_point_cloud: Nx2 array representing 2d points in frame B
         """
+        if not point_cloud.ndim == 2:
+            raise ValueError("Input point cloud is not 2-dimensional.")
         assert_np_array_shape(point_cloud, (None, 2))
         # (2,2) x (2,N) + (2,1) = (2,N) -> transpose
-        transformed_point_cloud = (self.R_ @ point_cloud.T + self.t_.reshape(2, 1)).T
+        transformed_point_cloud = (point_cloud @ self.R_.T) + self.t_
 
         # now scale points
         return transformed_point_cloud * self.s_
