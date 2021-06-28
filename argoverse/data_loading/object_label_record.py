@@ -37,7 +37,7 @@ TOP_VERT_INDICES: List[int] = [0, 1, 4, 5]
 
 
 class ObjectLabelRecord:
-    """Parameterizes an object via a 3d bounding box and the object's pose within the egovehicle's frame.
+    """Parameterizes an object via a 3d bounding box and its pose within the egovehicle's reference frame.
 
     We refer to the object's pose as `egovehicle_SE3_object` and is parameterized by (R,t), where R is
     a quaternion in scalar-first order.
@@ -78,7 +78,7 @@ class ObjectLabelRecord:
         self.score = score
 
     def as_2d_bbox(self) -> np.ndarray:
-        """Convert the object cuboid to a 2D bounding box, with vertices inside the egovehicle's frame.
+        """Convert the object cuboid to a 2D bounding box, with vertices provided in the egovehicle's reference frame.
 
         Length is x, width is y, and z is height
 
