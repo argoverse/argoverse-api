@@ -204,16 +204,21 @@ def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") 
 
     height = max(z) - min(z)
 
-    # location of object in egovehicle coordinates
+    # translation = center
     center = np.array([bbox.centroid.xy[0][0], bbox.centroid.xy[1][0], min(z) + height / 2])
 
+    c = np.cos(angle_rad)
+    s = np.sin(angle_rad)
     R = np.array(
         [
-            [np.cos(angle), -np.sin(angle), 0],
-            [np.sin(angle), np.cos(angle), 0],
+            [c, -s, 0],
+            [s, c, 0],
             [0, 0, 1],
         ]
     )
+
+    # location of object in egovehicle coordinates
+    center = np.array([centroid[0], centroid[1], min(z) + height / 2])
 
     return ObjectLabelRecord(
         quaternion=q,
