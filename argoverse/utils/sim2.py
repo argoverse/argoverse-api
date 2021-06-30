@@ -1,16 +1,21 @@
 """
 Utility for 2d rigid body transformations with scaling.
 
-Refs:
+References:
     http://ethaneade.com/lie_groups.pdf
     https://github.com/borglab/gtsam/blob/develop/gtsam/geometry/Similarity3.h
 """
 
+import json
+import os
 from typing import Union
 
 import numpy as np
 
 from argoverse.utils.helpers import assert_np_array_shape
+from argoverse.utils.json_utils import save_json_dict
+
+_PathLike = Union[str, "os.PathLike[str]"]
 
 
 class Sim2:
@@ -141,3 +146,38 @@ class Sim2:
     def transform_point_cloud(self, point_cloud: np.ndarray) -> np.ndarray:
         """Alias for `transform_from()`, for synchrony w/ API provided by SE(2) and SE(3) classes."""
         return self.transform_from(point_cloud)
+
+    def save_as_json(self, save_fpath: _PathLike) -> None:
+        """Save the Sim(2) object to a JSON representation on disk.
+
+        Args:
+            save_fpath: path to where json file should be saved
+        """
+        dict_for_serialization = {
+            "R": self.rotation.flatten().tolist(),
+            "t": self.translation.flatten().tolist(),
+            "s": self.scale,
+        }
+        save_json_dict(save_fpath, dict_for_serialization)
+
+    @classmethod
+    def from_json(cls, json_fpath: _PathLike) -> "Sim2":
+        """Generate class inst. from a JSON file containing Sim(2) parameters as flattened matrices (row-major)."""
+        with open(json_fpath, "r") as f:
+            json_data = json.load(f)
+
+        R = np.array(json_data["R"]).reshape(2, 2)
+        t = np.array(json_data["t"]).reshape(2)
+        s = float(json_data["s"])
+        return cls(R, t, s)
+
+    @classmethod
+    def from_matrix(cls, T: np.ndarray) -> "Sim2":
+        """Generate class instance from a 3x3 Numpy matrix."""
+        if np.isclose(T[2, 2], 0.0):
+            raise ZeroDivisionError("Sim(2) scale calculation would lead to division by zero.")
+
+        R = T[:2, :2]
+        t = T[:2, 2]
+        s = 1 / T[2, 2]
+        return cls(R, t, s)
