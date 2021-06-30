@@ -10,14 +10,14 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import h5py
 import numpy as np
-import quaternion
 from scipy.spatial import ConvexHull
 from shapely.geometry import Polygon
-from sklearn.cluster.dbscan_ import DBSCAN
+from sklearn.cluster import DBSCAN
 
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
 from argoverse.utils.se3 import SE3
+from argoverse.utils.transform import yaw_to_quaternion3d
 
 TYPE_LIST = Union[List[np.ndarray], np.ndarray]
 
@@ -169,7 +169,15 @@ def dist(p1: Tuple[float, float], p2: Tuple[float, float]) -> float:
 
 
 def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") -> ObjectLabelRecord:
-    # poly in polygon format
+    """Convert a Shapely Polygon to a 3d cuboid by estimating the minimum-bounding rectangle.
+
+    Args:
+        poly: Shapely polygon object representing a convex hull of an object
+        category: object category to which object belongs, e.g. VEHICLE, PEDESTRIAN, etc
+        track_id: unique identifier
+    Returns:
+        object representing a 3d cuboid
+    """
 
     bbox = poly.minimum_rotated_rectangle
 
@@ -182,6 +190,7 @@ def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") 
     d1 = dist((x[0], y[0]), (x[1], y[1]))
     d2 = dist((x[1], y[1]), (x[2], y[2]))
 
+    # assign orientation so that the rectangle's longest side represents the object's length
     width = min(d1, d2)
     length = max(d1, d2)
 
@@ -190,25 +199,26 @@ def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") 
     else:
         unit_v = unit_vector((x[0], y[0]), (x[1], y[1]))
 
-    angle = math.atan2(unit_v[1], unit_v[0])
+    angle_rad = np.arctan2(unit_v[1], unit_v[0])
+    q = yaw_to_quaternion3d(angle_rad)
 
     height = max(z) - min(z)
 
-    # translation = center
+    # location of object in egovehicle coordinates
     center = np.array([bbox.centroid.xy[0][0], bbox.centroid.xy[1][0], min(z) + height / 2])
 
+    c = np.cos(angle_rad)
+    s = np.sin(angle_rad)
     R = np.array(
         [
-            [np.cos(angle), -np.sin(angle), 0],
-            [np.sin(angle), np.cos(angle), 0],
+            [c, -s, 0],
+            [s, c, 0],
             [0, 0, 1],
         ]
     )
 
-    q = quaternion.from_rotation_matrix(R)
-
     return ObjectLabelRecord(
-        quaternion=quaternion.as_float_array(q),
+        quaternion=q,
         translation=center,
         length=length,
         width=width,
@@ -266,18 +276,14 @@ def save_label(argoverse_data: ArgoverseTrackingLoader, labels: List[ObjectLabel
     timestamp = argoverse_data.lidar_timestamp_list[idx]
 
     for label in labels:
+        qw, qx, qy, qz = label.quaternion
         json_data = {
             "center": {
                 "x": label.translation[0],
                 "y": label.translation[1],
                 "z": label.translation[2],
             },
-            "rotation": {
-                "x": label.quaternion[0],
-                "y": label.quaternion[1],
-                "z": label.quaternion[2],
-                "w": label.quaternion[3],
-            },
+            "rotation": {"x": qx, "y": qy, "z": qz, "w": qw},
             "length": label.length,
             "width": label.width,
             "height": label.height,
