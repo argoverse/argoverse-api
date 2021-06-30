@@ -15,6 +15,8 @@ import numpy as np
 from argoverse.utils.helpers import assert_np_array_shape
 from argoverse.utils.json_utils import save_json_dict
 
+_PathLike = Union[str, "os.PathLike[str]"]
+
 
 class Sim2:
     """Implements the Similarity(2) class."""
@@ -145,7 +147,7 @@ class Sim2:
         """Alias for `transform_from()`, for synchrony w/ API provided by SE(2) and SE(3) classes."""
         return self.transform_from(point_cloud)
 
-    def save_as_json(self, save_fpath: Union[str, "os.PathLike[str]"]) -> None:
+    def save_as_json(self, save_fpath: _PathLike) -> None:
         """Save the Sim(2) object to a JSON representation on disk.
 
         Args:
@@ -159,7 +161,7 @@ class Sim2:
         save_json_dict(save_fpath, dict_for_serialization)
 
     @classmethod
-    def from_json(cls, json_fpath: Union[str, "os.PathLike[str]"]) -> "Sim2":
+    def from_json(cls, json_fpath: _PathLike) -> "Sim2":
         """Generate class inst. from a JSON file containing Sim(2) parameters as flattened matrices (row-major)."""
         with open(json_fpath, "r") as f:
             json_data = json.load(f)
