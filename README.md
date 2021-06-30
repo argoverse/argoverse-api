@@ -27,7 +27,8 @@
 
 ## Installation
 
-Requires Linux/MacOS, git, and Python 3.6+
+- Linux
+- MacOS
 
 ### 1) Clone
 
@@ -63,12 +64,11 @@ We provide both the full dataset and the sample version of the dataset for testi
 
 Note that you need to download HD map data (and extract them into project root folder) for the API to function properly. You can selectively download either **Argoverse-Tracking** or **Argoverse-Forecasting** or both, depending on what type of data you need. The data can be extracted to any location in your local machine.
 
-### 4) Install argoverse module
+### 4) Install argoverse package
 
 * `argoverse` can be installed as a python package using
 
         pip install -e /path_to_root_directory_of_the_repo/
-* if you receive any error about `No matching distribution found for pyntcloud`, upgrade your pip using `pip install --upgrade pip` or pip install with `--process-dependency-links`
 
 Make sure that you can run `python -c "import argoverse"` in python, and you are good to go!
 
