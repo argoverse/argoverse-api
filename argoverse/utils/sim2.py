@@ -8,6 +8,7 @@ References:
 
 import json
 import os
+from pathlib import Path
 from typing import Union
 
 import numpy as np
@@ -153,6 +154,9 @@ class Sim2:
         Args:
             save_fpath: path to where json file should be saved
         """
+        if not Path(save_fpath).exists():
+            os.makedirs(Path(save_fpath).parent, exist_ok=True)
+        
         dict_for_serialization = {
             "R": self.rotation.flatten().tolist(),
             "t": self.translation.flatten().tolist(),
