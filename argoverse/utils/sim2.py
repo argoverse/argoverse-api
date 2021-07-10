@@ -156,7 +156,7 @@ class Sim2:
         """
         if not Path(save_fpath).exists():
             os.makedirs(Path(save_fpath).parent, exist_ok=True)
-        
+
         dict_for_serialization = {
             "R": self.rotation.flatten().tolist(),
             "t": self.translation.flatten().tolist(),
