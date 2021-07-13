@@ -377,9 +377,8 @@ class ArgoverseMapV2:
         Build index of rasterized ground height.
 
         Returns:
-            city_ground_height_index: a dictionary of dictionaries. Key is city_name, and values
-                    are dictionaries that store the "ground_height_matrix" and also the
-                    city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city
+            city_ground_height_index: a dictionary of dictionaries. A dictionary that stores the "ground_height_matrix" and also the
+                    city_se2_pkl_image: SE(2) that produces takes point in pkl image to city
                     coordinates, e.g. p_city = city_Transformation_pklimage * p_pklimage
         """
         city_rasterized_ground_height_dict: Dict[str, np.ndarray] = {}
@@ -402,12 +401,9 @@ class ArgoverseMapV2:
     def get_rasterized_driveable_area(self) -> Tuple[np.ndarray, Sim2]:
         """Get the driveable area.
 
-        Args:
-            city_name: either 'MIA' for Miami or 'PIT' for Pittsburgh
-
         Returns:
             da_matrix: Numpy array of shape (M,N) representing binary values for driveable area
-            city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.
+            city_se2_pkl_image: SE(2) that produces takes point in pkl image to city coordinates, e.g.
                     p_city = city_Transformation_pklimage * p_pklimage
         """
         da_mat = self.city_rasterized_da_roi_dict["da_mat"]
@@ -415,9 +411,6 @@ class ArgoverseMapV2:
 
     def get_rasterized_roi(self) -> Tuple[np.ndarray, Sim2]:
         """Get the driveable area.
-
-        Args:
-            city_name: string, either 'MIA' for Miami or 'PIT' for Pittsburgh
 
         Returns:
             da_matrix: Numpy array of shape (M,N) representing binary values for driveable area
@@ -430,9 +423,6 @@ class ArgoverseMapV2:
     def get_rasterized_ground_height(self) -> Tuple[np.ndarray, Sim2]:
         """
         Get ground height matrix along with se2 that convert to city coordinate
-
-        Args:
-            city_name: either 'MIA' for Miami or 'PIT' for Pittsburgh
 
         Returns:
             ground_height_matrix
