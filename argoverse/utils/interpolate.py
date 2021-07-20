@@ -155,26 +155,31 @@ def eliminate_duplicates_2d(px: np.ndarray, py: np.ndarray) -> Tuple[np.ndarray,
     return px, py
 
 
-def interp_arc(t: int, px: np.ndarray, py: np.ndarray) -> np.ndarray:
-    """Linearly interpolate equally-spaced points along a polyline.
+def interp_arc(t: int, px: np.ndarray, py: np.ndarray, pz: np.ndarray = None) -> np.ndarray:
+    """Linearly interpolate equally-spaced points along a polyline, either in 2d or 3d.
 
     We use a chordal parameterization so that interpolated arc-lengths
     will approximate original polyline chord lengths.
         Ref: M. Floater and T. Surazhsky, Parameterization for curve
             interpolation. 2005.
+            https://www.mathworks.com/matlabcentral/fileexchange/34874-interparc
 
-    We remove duplicate consecutive points, since these have zero
+    For the 2d case, we remove duplicate consecutive points, since these have zero
     distance and thus cause division by zero in chord length computation.
 
     Args:
         t: number of points that will be uniformly interpolated and returned
         px: Numpy array of shape (N,), representing x-coordinates of the arc
         py: Numpy array of shape (N,), representing y-coordinates of the arc
+        pz: Numpy array of shape (N,), representing z-coordinates of the arc
 
     Returns:
         pt: Numpy array of shape (N,2)
     """
-    px, py = eliminate_duplicates_2d(px, py)
+    dim = 3 if pz is not None else 2
+
+    if dim == 2:
+        px, py = eliminate_duplicates_2d(px, py)
 
     # equally spaced in arclength -- the number of points that will be uniformly interpolated
     eq_spaced_points = np.linspace(0, 1, t)
@@ -184,8 +189,13 @@ def interp_arc(t: int, px: np.ndarray, py: np.ndarray) -> np.ndarray:
 
     # are px and py both vectors of the same length?
     assert px.size == py.size
+    if pz is not None:
+        assert px.size == pz.size
 
-    pxy = np.array((px, py)).T  # 2d polyline
+    if dim == 2:
+        pxy = np.array((px, py)).T  # 2d polyline
+    else:
+        pxy = np.array((px, py, pz)).T  # 2d polyline
 
     # Compute the chordal arclength of each segment.
     # Compute differences between each x coord, to get the dx's
@@ -204,6 +214,9 @@ def interp_arc(t: int, px: np.ndarray, py: np.ndarray) -> np.ndarray:
     tbins[np.where((tbins >= n) | (eq_spaced_points >= 1))] = n - 1
 
     s = np.divide((eq_spaced_points - cumarc[tbins - 1]), chordlen[tbins - 1])
-    pt = pxy[tbins - 1, :] + np.multiply((pxy[tbins, :] - pxy[tbins - 1, :]), (np.vstack([s] * 2)).T)
+    anchors = pxy[tbins - 1, :]
+    # broadcast to scale each row of pxy by a different row of s
+    offsets = (pxy[tbins, :] - pxy[tbins - 1, :]) * s.reshape(dim,1)
+    pt = anchors + offsets
 
     return pt
