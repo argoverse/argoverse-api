@@ -216,7 +216,7 @@ def interp_arc(t: int, px: np.ndarray, py: np.ndarray, pz: np.ndarray = None) ->
     s = np.divide((eq_spaced_points - cumarc[tbins - 1]), chordlen[tbins - 1])
     anchors = pxy[tbins - 1, :]
     # broadcast to scale each row of pxy by a different row of s
-    offsets = (pxy[tbins, :] - pxy[tbins - 1, :]) * s.reshape(dim,1)
+    offsets = (pxy[tbins, :] - pxy[tbins - 1, :]) * s.reshape(-1,1)
     pt = anchors + offsets
 
     return pt

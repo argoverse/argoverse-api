@@ -316,3 +316,29 @@ def test_interp_arc_straight_line() -> None:
     interp_pts = interp_arc(t=4, px=pts[:, 0], py=pts[:, 1])
     gt_interp_pts = np.array([[-10, 0], [-10 / 3, 0], [10 / 3, 0], [10, 0]])
     assert np.allclose(interp_pts, gt_interp_pts)
+
+
+def test_interp_arc_straight_line_3d() -> None:
+    """Ensure that linear interpolation works in 3d."""
+    # fmt: off
+    pts = np.array(
+        [
+            [-10, 0, -1],
+            [10, 0, 1],
+        ]
+    )
+    # fmt: on
+    interp_pts = interp_arc(t=3, px=pts[:,0], py=pts[:,1], pz=pts[:,2])
+
+    # expect to get 3 waypoints along the straight line
+    # fmt: off
+    expected_interp_pts = np.array(
+        [
+            [-10.,   0.,  -1.],
+            [  0.,   0.,   0.],
+            [ 10.,   0.,   1.]
+        ]
+    )
+    # fmt: on
+    assert np.allclose(interp_pts, expected_interp_pts)
+
