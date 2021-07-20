@@ -56,15 +56,15 @@ class LocalLaneMarking(NamedTuple):
     """Information about a lane marking, representing either the left or right boundary of a lane segment.
 
     Args:
-        bnd_type: 
+        bound_type: 
         src_lane_id:
-        bnd_side: string representing which side of a lane segment this marking represents, i.e. "left" or "right".
+        bound_side: string representing which side of a lane segment this marking represents, i.e. "left" or "right".
         polyline: array of shape (N,3)
     """
 
-    bnd_type: str
+    bound_type: str
     src_lane_id: int
-    bnd_side: str
+    bound_side: str
     polyline: np.ndarray
 
 
@@ -73,43 +73,43 @@ class VectorLaneSegment:
     """
     Args:
         id: unique identifier for this lane segment (guaranteed to be unique only within this local map).
-        right_ln_bnd: array of shape (M,3) representing the right lane boundary
-        right_bnd_type:
+        right_ln_bound: array of shape (M,3) representing the right lane boundary
+        right_bound_type:
         r_neighbor_id: unique identifier of the lane segment representing this object's right neighbor.
-        left_ln_bnd: array of shape (N,3) representing the right lane boundary
-        left_bnd_type:
+        left_ln_bound: array of shape (N,3) representing the right lane boundary
+        left_bound_type:
         l_neighbor_id: unique identifier of the lane segment representing this object's left neighbor.
         predecessors: unique identifiers of lane segments that are predecessors of this object.
         successors: unique identifiers of lane segments that represent successor of this object.
         lane_type:
         polygon_boundary: array of shape (N,3) 
         is_intersection: boolean value representing whether or not this lane segment lies within an intersection.
-        render_l_bnd: boolean flag for visualization, indicating whether to render the left lane boundary.
-        render_r_bnd: boolean flag for visualization, indicating whether to render the right lane boundary.
+        render_l_bound: boolean flag for visualization, indicating whether to render the left lane boundary.
+        render_r_bound: boolean flag for visualization, indicating whether to render the right lane boundary.
     """
 
     id: Optional[int] = None
-    right_ln_bnd: Optional[np.ndarray] = None
-    right_bnd_type: Optional[str] = None
+    right_ln_bound: Optional[np.ndarray] = None
+    right_bound_type: Optional[str] = None
     r_neighbor_id: Optional[int] = None
-    left_ln_bnd: Optional[np.ndarray] = None
-    left_bnd_type: Optional[str] = None
+    left_ln_bound: Optional[np.ndarray] = None
+    left_bound_type: Optional[str] = None
     l_neighbor_id: Optional[int] = None
     predecessors: Optional[List[int]] = None
     successors: Optional[List[int]] = None
     lane_type: Optional[str] = None
     polygon_boundary: Optional[np.ndarray] = None
     is_intersection: Optional[bool] = None
-    render_l_bnd: Optional[bool] = True
-    render_r_bnd: Optional[bool] = True
+    render_l_bound: Optional[bool] = True
+    render_r_bound: Optional[bool] = True
 
     def get_left_lane_marking(self):
         """ """
-        return LocalLaneMarking(self.left_bnd_type, self.id, "left", self.left_ln_bnd)
+        return LocalLaneMarking(self.left_bound_type, self.id, "left", self.left_ln_bound)
 
     def get_right_lane_marking(self):
         """ """
-        return LocalLaneMarking(self.right_bnd_type, self.id, "right", self.right_ln_bnd)
+        return LocalLaneMarking(self.right_bound_type, self.id, "right", self.right_ln_bound)
 
 
 class ArgoverseMapV2:
@@ -157,11 +157,11 @@ class ArgoverseMapV2:
         """
         vls_dict: Dict[int, VectorLaneSegment] = {}
         for lane_segment in self._vector_data["lane_segments"]:
-            right_ln_bnd = point_arr_from_points_list_dict(lane_segment["right_lane_boundary"]["points"])
-            left_ln_bnd = point_arr_from_points_list_dict(lane_segment["left_lane_boundary"]["points"])
-            lane_polygon = convert_lane_boundaries3d_to_polygon3d(right_ln_bnd, left_ln_bnd)
+            right_ln_bound = point_arr_from_points_list_dict(lane_segment["right_lane_boundary"]["points"])
+            left_ln_bound = point_arr_from_points_list_dict(lane_segment["left_lane_boundary"]["points"])
+            lane_polygon = convert_lane_boundaries3d_to_polygon3d(right_ln_bound, left_ln_bound)
 
-            if not (right_ln_bnd.shape[1] == 3 and left_ln_bnd.shape[1] == 3):
+            if not (right_ln_bound.shape[1] == 3 and left_ln_bound.shape[1] == 3):
                 raise RuntimeError("Boundary waypoints should be 3-dimensional.")
 
             # TODO: reverse directed graph on-the-fly to generate predecessors
@@ -169,11 +169,11 @@ class ArgoverseMapV2:
             vls_id = lane_segment["id"]
             vls_dict[vls_id] = VectorLaneSegment(
                 id=vls_id,
-                right_ln_bnd=right_ln_bnd,
-                right_bnd_type=lane_segment["right_lane_mark_type"],
+                right_ln_bound=right_ln_bound,
+                right_bound_type=lane_segment["right_lane_mark_type"],
                 r_neighbor_id=lane_segment["right_neighbor"],
-                left_ln_bnd=left_ln_bnd,
-                left_bnd_type=lane_segment["left_lane_mark_type"],
+                left_ln_bound=left_ln_bound,
+                left_bound_type=lane_segment["left_lane_mark_type"],
                 l_neighbor_id=lane_segment["left_neighbor"],
                 successors=lane_segment["successors"],
                 lane_type=lane_segment["lane_type"],
@@ -279,8 +279,8 @@ class ArgoverseMapV2:
         Returns:
             lane_centerline: Numpy array of shape (N,3)
         """
-        left_ln_bnd = self._lane_segments_dict[lane_segment_id].left_ln_bnd
-        right_ln_bnd = self._lane_segments_dict[lane_segment_id].right_ln_bnd
+        left_ln_bound = self._lane_segments_dict[lane_segment_id].left_ln_bound
+        right_ln_bound = self._lane_segments_dict[lane_segment_id].right_ln_bound
 
         lane_centerline = ""  # TODO: add 3d linear interpolation fn
 
