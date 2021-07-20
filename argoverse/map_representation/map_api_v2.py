@@ -14,7 +14,8 @@ import glob
 import logging
 import os
 from pathlib import Path
-from typing import Dict, List, Mapping, NamedTuple, Optional, Tuple, Union
+from typing import Dict, List, NamedTuple, Optional, Tuple, Union
+from typing_extensions import Final
 
 import numpy as np
 from dataclasses import dataclass
@@ -27,22 +28,23 @@ from argoverse.utils.sim2 import Sim2
 
 _PathLike = Union[str, "os.PathLike[str]"]
 
-ROI_ISOCONTOUR = 5.0  # in meters
+ROI_ISOCONTOUR: Final[float] = 5.0  # in meters
 
 logger = logging.getLogger(__name__)
 
 
 class PedCrossing(NamedTuple):
-    """
+    """Represents a pedestrian crossing (i.e. crosswalk) as two edges along its principal axis.
+
     Args:
-        edge1: array of shape (N,3) representing
-        edge2: array of shape (N,3) representing
+        edge1: array of shape (N,3) representing one edge of the crosswalk.
+        edge2: array of shape (N,3) representing the other edge of the crosswalk.
     """
     edge1: np.ndarray
     edge2: np.ndarray
 
     def get_edges(self) -> Tuple[np.ndarray, np.ndarray]:
-        """ """
+        """Retrieve the two principal edges of the crosswalk, in 2d."""
         return (self.edge1[:, :2], self.edge2[:, :2])
 
     def __eq__(self, other: "PedCrossing") -> bool:
@@ -77,7 +79,7 @@ class VectorLaneSegment:
         left_ln_bnd: array of shape (N,3) representing the right lane boundary
         left_bnd_type:
         l_neighbor_id: unique identifier of the lane segment representing this object's left neighbor.
-        predecessors: unique identifiers of lane segments 
+        predecessors: unique identifiers of lane segments that are predecessors of this object.
         successors: unique identifiers of lane segments that represent successor of this object.
         lane_type:
         polygon_boundary: array of shape (N,3) 
@@ -127,7 +129,7 @@ class ArgoverseMapV2:
         """
         self._log_map_dirpath = log_map_dirpath
         log_id = Path(log_map_dirpath).stem
-        logger.info(f"Loaded map for {log_id}")
+        logger.info("Loaded map for %s", log_id)
         vector_data_fnames = glob.glob(os.path.join(log_map_dirpath, "log_map_archive_*.json"))
         if not len(vector_data_fnames) == 1:
             raise RuntimeError("JSON file containing vector map data is missing.")
@@ -153,7 +155,7 @@ class ArgoverseMapV2:
         Returns:
             vls_dict: mapping from lane segment ID to vector lane segment object, parameterized in 3d.
         """
-        vls_dict = {}
+        vls_dict: Dict[int, VectorLaneSegment] = {}
         for lane_segment in self._vector_data["lane_segments"]:
             right_ln_bnd = point_arr_from_points_list_dict(lane_segment["right_lane_boundary"]["points"])
             left_ln_bnd = point_arr_from_points_list_dict(lane_segment["left_lane_boundary"]["points"])
@@ -190,7 +192,7 @@ class ArgoverseMapV2:
         Returns:
             lpcs: local pedestrian crossings.
         """
-        lpcs = []
+        lpcs: List[PedCrossing] = []
 
         for ped_crossing in self._vector_data["pedestrian_crossings"]:
             edge1 = point_arr_from_points_list_dict(ped_crossing["edge1"]["points"])
@@ -206,7 +208,7 @@ class ArgoverseMapV2:
 
         Note: the first and last polygon vertex are identical (i.e. the first index is repeated).
         """
-        das = []
+        das: List[np.ndarray] = []
         for da_data in self._vector_data["drivable_areas"]:
             #import pdb; pdb.set_trace()
             da = point_arr_from_points_list_dict(da_data["area_boundary"]["points"])
@@ -323,7 +325,7 @@ class ArgoverseMapV2:
         """
         return list(self._lane_segments_dict.values())
 
-    def __build_rasterized_driveable_area_roi_index(self) -> Mapping[str, np.ndarray]:
+    def __build_rasterized_driveable_area_roi_index(self) -> Dict[str, np.ndarray]:
         """Rasterize and return 3d vector drivable area as a 2d array, and dilate it by 5 meters, to return a region of interest mask.
 
         Note: This function provides "drivable area" and "region of interest" as binary segmentation masks in the bird's eye view.
@@ -372,7 +374,7 @@ class ArgoverseMapV2:
 
         return rasterized_da_roi_dict
 
-    def __build_city_ground_height_index(self) -> Mapping[str, np.ndarray]:
+    def __build_city_ground_height_index(self) -> Dict[str, np.ndarray]:
         """
         Build index of rasterized ground height.
 
@@ -456,7 +458,7 @@ def get_mask_from_polygons(polygons: List[np.ndarray], img_h:int, img_w: int) ->
 
 
 def point_arr_from_points_list_dict(points_dict: List[Dict[str, float]]) -> np.ndarray:
-    """ """
+    """Convert a list of dictionaries containing vertices of a 3d polyline or polygon into a Nx3 Numpy array."""
     arr = np.vstack([np.array([v["x"], v["y"], v["z"]]).reshape(1, 3) for v in points_dict])
     assert arr.shape[1] == 3
     return arr
