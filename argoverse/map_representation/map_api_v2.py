@@ -56,10 +56,10 @@ class LocalLaneMarking(NamedTuple):
     """Information about a lane marking, representing either the left or right boundary of a lane segment.
 
     Args:
-        bound_type: 
-        src_lane_id:
+        bound_type: type of marking that represents the lane boundary, e.g. "SOLID_WHITE" or "DASHED_YELLOW".
+        src_lane_id: id of lane segment to which this lane marking belongs.
         bound_side: string representing which side of a lane segment this marking represents, i.e. "left" or "right".
-        polyline: array of shape (N,3)
+        polyline: array of shape (N,3) representing the waypoints of the lane segment's marked boundary.
     """
 
     bound_type: str
@@ -73,11 +73,11 @@ class VectorLaneSegment:
     """
     Args:
         id: unique identifier for this lane segment (guaranteed to be unique only within this local map).
-        right_ln_bound: array of shape (M,3) representing the right lane boundary
-        right_bound_type:
+        right_ln_bound: array of shape (M,3) representing the right lane boundary.
+        right_bound_type: type of marking that represents the right lane boundary.
         r_neighbor_id: unique identifier of the lane segment representing this object's right neighbor.
         left_ln_bound: array of shape (N,3) representing the right lane boundary
-        left_bound_type:
+        left_bound_type: type of marking that represents the left lane boundary.
         l_neighbor_id: unique identifier of the lane segment representing this object's left neighbor.
         predecessors: unique identifiers of lane segments that are predecessors of this object.
         successors: unique identifiers of lane segments that represent successor of this object.
@@ -210,7 +210,6 @@ class ArgoverseMapV2:
         """
         das: List[np.ndarray] = []
         for da_data in self._vector_data["drivable_areas"]:
-            #import pdb; pdb.set_trace()
             da = point_arr_from_points_list_dict(da_data["area_boundary"]["points"])
 
             # append the first vertex to the end of vertex list
