@@ -20,6 +20,7 @@ from typing_extensions import Final
 import numpy as np
 from dataclasses import dataclass
 
+from argoverse.data_loading.vector_map_v2_loader import point_arr_from_points_list_dict
 from argoverse.utils.centerline_utils import convert_lane_boundaries3d_to_polygon3d
 from argoverse.utils.dilation_utils import dilate_by_l2
 from argoverse.utils.interpolate import interp_arc
@@ -455,9 +456,3 @@ def get_mask_from_polygons(polygons: List[np.ndarray], img_h:int, img_w: int) ->
     mask = np.array(mask_img)
     return mask
 
-
-def point_arr_from_points_list_dict(points_dict: List[Dict[str, float]]) -> np.ndarray:
-    """Convert a list of dictionaries containing vertices of a 3d polyline or polygon into a Nx3 Numpy array."""
-    arr = np.vstack([np.array([v["x"], v["y"], v["z"]]).reshape(1, 3) for v in points_dict])
-    assert arr.shape[1] == 3
-    return arr
