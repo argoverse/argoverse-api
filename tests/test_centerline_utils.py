@@ -17,23 +17,23 @@ def test_convert_lane_boundaries3d_to_polygon3d() -> None:
     """Ensure 3d lane polygon is  created correctly from 3d left and right lane boundaries."""
     right_ln_bnd = np.array(
         [
-            [7,3],
-            [11,-1]
+            [ 7, 3, 5],
+            [11,-1, 4]
         ])
     left_ln_bnd = np.array(
         [
-            [10,3],
-            [14,-1]
+            [10, 3, 7],
+            [14,-1, 8]
         ])
     polygon = convert_lane_boundaries3d_to_polygon3d(right_ln_bnd, left_ln_bnd)
 
     gt_polygon = np.array(
     [
-        [ 7,  3],
-        [11, -1],
-        [14, -1],
-        [10,  3],
-        [ 7,  3]
+        [ 7,  3, 5],
+        [11, -1, 4],
+        [14, -1, 8],
+        [10,  3, 7],
+        [ 7,  3, 5]
     ])
     assert np.allclose(polygon, gt_polygon)
 
