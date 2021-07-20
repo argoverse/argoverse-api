@@ -146,11 +146,12 @@ class TestArgoverseMapV2(unittest.TestCase):
     #     expected_centerline = np.array([])
     #     np.testing.assert_allclose(centerline, expected_centerline)
 
-    # def test_get_scenario_lane_segments(self) -> None:
-    #     """Ensure that all VectorLaneSegment objects in the local map can be returned as a list."""
-    #     vector_lane_segments = self.v2_map.get_scenario_lane_segments()
-    #     assert isinstance(vector_lane_segments, list)
-    #     assert all([isinstance(vls, VectorLaneSegment) for vls in vector_lane_segments])
+    def test_get_scenario_lane_segments(self) -> None:
+        """Ensure that all VectorLaneSegment objects in the local map can be returned as a list."""
+        vector_lane_segments = self.v2_map.get_scenario_lane_segments()
+        assert isinstance(vector_lane_segments, list)
+        assert all([isinstance(vls, VectorLaneSegment) for vls in vector_lane_segments])
+        assert len(vector_lane_segments) == 3
 
     def test_get_scenario_ped_crossings(self) -> None:
         """Ensure that all PedCrossing objects in the local map can be returned as a list."""
