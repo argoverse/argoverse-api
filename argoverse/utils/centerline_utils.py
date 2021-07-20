@@ -119,6 +119,32 @@ def convert_lane_boundaries_to_polygon(right_lane_bounds: np.ndarray, left_lane_
     return polygon
 
 
+
+def convert_lane_boundaries3d_to_polygon3d(right_ln_bnd: np.ndarray, left_ln_bnd: np.ndarray) -> np.ndarray:
+    """Given 3d left and right boundaries of a lane segment, provide the exterior vertices of the 3d lane segment polygon.
+
+    Note: We chain the right segment with a reversed left segment, and then repeat the first vertex. In other words, 
+    the first and last vertex are identical.
+
+    L _________
+      .       .
+      .       .
+    R _________
+
+    Args:
+        right_ln_bnd: K x 3 array
+        left_ln_bnd: M x 3 array
+
+    Returns:
+        polygon: (K+M+1) x 3 array
+    """
+    polygon = np.vstack([right_ln_bnd, left_ln_bnd[::-1]])
+    polygon = np.vstack([polygon, right_ln_bnd[0]])
+    assert polygon.ndim == 2
+    assert polygon.shape[1] == 3
+    return polygon
+
+
 def filter_candidate_centerlines(
     xy: np.ndarray,
     candidate_cl: List[np.ndarray],
