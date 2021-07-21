@@ -1,0 +1,47 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build wheels and sdist on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        python-version: ['3.7', '3.8', '3.9']
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Build wheels
+        run: |
+          pip install -U build
+          python -m build
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          path: |
+            dist/*.whl
+            dist/*.tar.gz
+
+  upload_pypi:
+    needs: [build]
+    runs-on: ${{ matrix.os }}
+    # upload to PyPI on every tag starting with 'v'
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: artifact
+          path: dist
+
+      - uses: pypa/gh-action-pypi-publish@v1.4.2
+        with:
+          user: __token__
+          password: ${{ secrets.pypi_password }}
