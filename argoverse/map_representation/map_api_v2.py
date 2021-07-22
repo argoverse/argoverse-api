@@ -21,7 +21,7 @@ import numpy as np
 from dataclasses import dataclass
 
 from argoverse.data_loading.vector_map_v2_loader import point_arr_from_points_list_dict
-from argoverse.utils.centerline_utils import convert_lane_boundaries3d_to_polygon3d
+from argoverse.utils.centerline_utils import convert_lane_boundaries_to_polygon
 from argoverse.utils.dilation_utils import dilate_by_l2
 from argoverse.utils.interpolate import interp_arc
 from argoverse.utils.json_utils import read_json_file
@@ -161,7 +161,7 @@ class ArgoverseMapV2:
         for lane_segment in self._vector_data["lane_segments"]:
             right_ln_bound = point_arr_from_points_list_dict(lane_segment["right_lane_boundary"]["points"])
             left_ln_bound = point_arr_from_points_list_dict(lane_segment["left_lane_boundary"]["points"])
-            lane_polygon = convert_lane_boundaries3d_to_polygon3d(right_ln_bound, left_ln_bound)
+            lane_polygon = convert_lane_boundaries_to_polygon(right_ln_bound, left_ln_bound)
 
             if not (right_ln_bound.shape[1] == 3 and left_ln_bound.shape[1] == 3):
                 raise RuntimeError("Boundary waypoints should be 3-dimensional.")

@@ -101,27 +101,7 @@ def centerline_to_polygon(
 
 
 def convert_lane_boundaries_to_polygon(right_lane_bounds: np.ndarray, left_lane_bounds: np.ndarray) -> np.ndarray:
-    """
-    Take a left and right lane boundary and make a polygon of the lane segment, closing both ends of the segment.
-
-    These polygons have the last vertex repeated (that is, first vertex == last vertex).
-
-    Args:
-       right_lane_bounds: Right lane boundary points. Shape is (N, 2).
-       left_lane_bounds: Left lane boundary points.
-
-    Returns:
-       polygon: Numpy array of shape (2N+1,2)
-    """
-    assert right_lane_bounds.shape[0] == left_lane_bounds.shape[0]
-    polygon = np.vstack([right_lane_bounds, left_lane_bounds[::-1]])
-    polygon = np.vstack([polygon, right_lane_bounds[0]])
-    return polygon
-
-
-
-def convert_lane_boundaries3d_to_polygon3d(right_ln_bnd: np.ndarray, left_ln_bnd: np.ndarray) -> np.ndarray:
-    """Given 3d left and right boundaries of a lane segment, provide the exterior vertices of the 3d lane segment polygon.
+    """Given 3d left and right boundaries of a lane segment, provide the exterior vertices of the 2d or 3d lane segment polygon.
 
     Note: We chain the right segment with a reversed left segment, and then repeat the first vertex. In other words, 
     the first and last vertex are identical.
@@ -132,17 +112,19 @@ def convert_lane_boundaries3d_to_polygon3d(right_ln_bnd: np.ndarray, left_ln_bnd
     R _________
 
     Args:
-        right_ln_bnd: K x 3 array
-        left_ln_bnd: M x 3 array
+       right_lane_bounds: Array of shape (K,2) or (K,3) representing right lane boundary points.
+       left_lane_bounds: Array of shape (M,2) or (M,3) representing left lane boundary points.
 
     Returns:
-        polygon: (K+M+1) x 3 array
+       polygon: Numpy array of shape (K+M+1,2) or (K+M+1,3)
     """
-    polygon = np.vstack([right_ln_bnd, left_ln_bnd[::-1]])
-    polygon = np.vstack([polygon, right_ln_bnd[0]])
-    assert polygon.ndim == 2
-    assert polygon.shape[1] == 3
+    assert right_lane_bounds.shape[0] == left_lane_bounds.shape[0]
+    polygon = np.vstack([right_lane_bounds, left_lane_bounds[::-1]])
+    polygon = np.vstack([polygon, right_lane_bounds[0]])
+    if not polygon.ndim == 2 or polygon.shape[1] not in [2,3]:
+        raise RuntimeError("Polygons must be Nx2 or Nx3 in shape.")
     return polygon
+
 
 
 def filter_candidate_centerlines(
