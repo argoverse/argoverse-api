@@ -41,6 +41,7 @@ class PedCrossing(NamedTuple):
         edge1: array of shape (N,3) representing one edge of the crosswalk.
         edge2: array of shape (N,3) representing the other edge of the crosswalk.
     """
+
     edge1: np.ndarray
     edge2: np.ndarray
 
@@ -83,7 +84,7 @@ class VectorLaneSegment:
         predecessors: unique identifiers of lane segments that are predecessors of this object.
         successors: unique identifiers of lane segments that represent successor of this object.
         lane_type:
-        polygon_boundary: array of shape (N,3) 
+        polygon_boundary: array of shape (N,3)
         is_intersection: boolean value representing whether or not this lane segment lies within an intersection.
         render_l_bound: boolean flag for visualization, indicating whether to render the left lane boundary.
         render_r_bound: boolean flag for visualization, indicating whether to render the right lane boundary.
@@ -219,14 +220,13 @@ class ArgoverseMapV2:
             das.append(da)
 
         return das
-        
+
     def get_scenario_vector_drivable_areas(self) -> List[np.ndarray]:
         """Fetch a list of polygons, whose union represents the drivable area for the log/scenario.
 
         Note: this function provides drivable areas in vector, not raster, format).
         """
         return self._drivable_areas_list
-
 
     def get_lane_segment_successor_ids(self, lane_segment_id: int) -> Optional[List[int]]:
         """Get lane id for the lane sucessor of the specified lane_segment_id.
@@ -340,22 +340,23 @@ class ArgoverseMapV2:
 
         # TODO: just load this from disk, instead of having to compute on the fly.
         import math
-        xmin = math.floor(min([ da[:,0].min() for da in self._drivable_areas_list]))
-        ymin = math.floor(min([ da[:,1].min() for da in self._drivable_areas_list]))
-        xmax = math.ceil(max([ da[:,0].max() for da in self._drivable_areas_list]))
-        ymax = math.ceil(max([ da[:,1].max() for da in self._drivable_areas_list]))
-        
+
+        xmin = math.floor(min([da[:, 0].min() for da in self._drivable_areas_list]))
+        ymin = math.floor(min([da[:, 1].min() for da in self._drivable_areas_list]))
+        xmax = math.ceil(max([da[:, 0].max() for da in self._drivable_areas_list]))
+        ymax = math.ceil(max([da[:, 1].max() for da in self._drivable_areas_list]))
+
         # TODO: choose the resolution of the rasterization, will affect image dimensions
         img_h = ymax - ymin + 1
         img_w = xmax - xmin + 1
 
-        npyimg_Sim2_city = Sim2(R=np.eye(2), t=np.array([-xmin,-ymin]), s=1.0)
+        npyimg_Sim2_city = Sim2(R=np.eye(2), t=np.array([-xmin, -ymin]), s=1.0)
 
         # convert vertices for each polygon from a 3d array in city coordinates, to a 2d array in image/array coordinates.
         da_polygons_img = []
         for da_polygon_city in self._drivable_areas_list:
 
-            da_polygon_img = npyimg_Sim2_city.transform_from(da_polygon_city[:,:2])
+            da_polygon_img = npyimg_Sim2_city.transform_from(da_polygon_city[:, :2])
             da_polygon_img = np.round(da_polygon_img).astype(np.int32)
             da_polygons_img.append(da_polygon_img)
 
@@ -395,7 +396,9 @@ class ArgoverseMapV2:
         # load the file with rasterized values
         city_rasterized_ground_height_dict["ground_height"] = np.load(npy_fpath)
 
-        sim2_json_fpath = f"{self.log_map_dirpath}/{self.city_name}_{self.city_id}_ground_surface_npyimage_Sim2_city_2020_07_13.json"
+        sim2_json_fpath = (
+            f"{self.log_map_dirpath}/{self.city_name}_{self.city_id}_ground_surface_npyimage_Sim2_city_2020_07_13.json"
+        )
         city_rasterized_ground_height_dict["npyimage_Sim2_city"] = Sim2.from_json(sim2_json_fpath)
 
         return city_rasterized_ground_height_dict
@@ -435,11 +438,11 @@ class ArgoverseMapV2:
         return (ground_height_mat, self.city_rasterized_ground_height_dict["npyimage_Sim2_city"])
 
 
-def get_mask_from_polygons(polygons: List[np.ndarray], img_h:int, img_w: int) -> np.ndarray:
+def get_mask_from_polygons(polygons: List[np.ndarray], img_h: int, img_w: int) -> np.ndarray:
     """Rasterize multiple polygons onto a single 2d array.
 
     Args:
-        polygons: 
+        polygons:
         img_h: height of the image to generate, in pixels
         img_w: width of the image to generate, in pixels
 
@@ -447,12 +450,12 @@ def get_mask_from_polygons(polygons: List[np.ndarray], img_h:int, img_w: int) ->
         mask: 2d array with 0/1 values representing a binary segmentation mask
     """
     from PIL import Image, ImageDraw
+
     mask_img = Image.new("L", size=(img_w, img_h), color=0)
     for polygon in polygons:
-        polygon = [ tuple([x,y]) for (x,y) in polygon]
+        polygon = [tuple([x, y]) for (x, y) in polygon]
 
         ImageDraw.Draw(mask_img).polygon(polygon, outline=1, fill=1)
-    
+
     mask = np.array(mask_img)
     return mask
-
