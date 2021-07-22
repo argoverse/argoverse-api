@@ -5,8 +5,8 @@ on: [pull_request]
 
 jobs:
   run-unit-tests:
-    
     name: Run all unit tests in codebase
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
