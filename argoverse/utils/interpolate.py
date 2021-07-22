@@ -195,7 +195,7 @@ def interp_arc(t: int, px: np.ndarray, py: np.ndarray, pz: np.ndarray = None) ->
     if dim == 2:
         pxy = np.array((px, py)).T  # 2d polyline
     else:
-        pxy = np.array((px, py, pz)).T  # 2d polyline
+        pxy = np.array((px, py, pz)).T  # 3d polyline
 
     # Compute the chordal arclength of each segment.
     # Compute differences between each x coord, to get the dx's

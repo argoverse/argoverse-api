@@ -36,18 +36,35 @@ def test_compute_lane_width_telescoping() -> None:
     Compute the lane width of the following straight lane segment
     (waypoints indicated with "o" symbol):
 
-       o          o
-       \\        //
-            o        o
-            \\     //
-             o     o
-              \\ //
-                o
+    right       left
+     o           o
+     \\         //
+      o        o
+       \\     //
+        o     o
+         \\ //
+           o
 
     We can swap boundaries for this lane, and the width should be identical.
     """
-    left_even_pts = np.array([[3, 2], [2, 1], [1, 0], [0, -1]])
-    right_even_pts = np.array([[-3, 2], [-2, 1], [-1, 0], [0, -1]])
+    # fmt: off
+    left_even_pts = np.array(
+        [
+            [3, 2],
+            [2, 1],
+            [1, 0],
+            [0, -1]
+        ]
+    )
+    right_even_pts = np.array(
+        [
+            [-3, 2],
+            [-2, 1],
+            [-1, 0],
+            [ 0,-1]
+        ]
+    )
+    # fmt: on
     lane_width = compute_lane_width(left_even_pts, right_even_pts)
     gt_lane_width = (6.0 + 4.0 + 2.0 + 0.0) / 4
     assert np.isclose(lane_width, gt_lane_width)
@@ -309,12 +326,29 @@ def test_interp_arc_straight_line() -> None:
     """ """
     pts = np.array([[-10, 0], [10, 0]])
     interp_pts = interp_arc(t=3, px=pts[:, 0], py=pts[:, 1])
-    gt_interp_pts = np.array([[-10, 0], [0, 0], [10, 0]])
+    # fmt: off
+    gt_interp_pts = np.array(
+        [
+            [-10, 0],
+            [  0, 0],
+            [ 10, 0]
+        ]
+    )
+    # fmt: on
     assert np.allclose(interp_pts, gt_interp_pts)
 
     pts = np.array([[-10, 0], [10, 0]])
     interp_pts = interp_arc(t=4, px=pts[:, 0], py=pts[:, 1])
-    gt_interp_pts = np.array([[-10, 0], [-10 / 3, 0], [10 / 3, 0], [10, 0]])
+    # fmt: off
+    gt_interp_pts = np.array(
+        [
+            [-10, 0],
+            [-10 / 3, 0],
+            [10 / 3, 0],
+            [10, 0]
+        ]
+    )
+    # fmt: on
     assert np.allclose(interp_pts, gt_interp_pts)
 
 
@@ -342,3 +376,66 @@ def test_interp_arc_straight_line_3d() -> None:
     # fmt: on
     assert np.allclose(interp_pts, expected_interp_pts)
 
+
+def test_interp_arc_straight_line_3d_5pts() -> None:
+    """Ensure that linear interpolation works in 3d, with 5 desired waypoints."""
+    # fmt: off
+    pts = np.array(
+        [
+            [-10, 0, -1],
+            [10, 0, 1],
+        ]
+    )
+    # fmt: on
+    interp_pts = interp_arc(t=5, px=pts[:,0], py=pts[:,1], pz=pts[:,2])
+
+    # expect to get 5 waypoints along the straight line
+    # fmt: off
+    expected_interp_pts = np.array(
+        [
+            [-10,  0, -1],
+            [ -5, 0, -0.5],
+            [  0, 0, 0],
+            [  5, 0, 0.5],
+            [ 10, 0, 1]
+        ]
+    )
+    # fmt: on
+    assert np.allclose(interp_pts, expected_interp_pts)
+
+
+
+def test_interp_arc_curved_line_3d_5pts() -> None:
+    """Ensure that linear interpolation works for curves in 3d, with 5 desired waypoints.
+
+    Shape of interpolated polyline:
+        .        +       .
+         \\           //
+            .        . 
+              \\   //
+                 .
+    """
+    # fmt: off
+    pts = np.array(
+        [
+            [-10, 0, -1],
+            [ 0, -10, 0.5],
+            [10, 0, 1],
+        ]
+    )
+    # fmt: on
+    interp_pts = interp_arc(t=5, px=pts[:,0], py=pts[:,1], pz=pts[:,2])
+
+    # expect to get 5 waypoints along the straight line
+    # fmt: off
+    expected_interp_pts = np.array(
+        [
+            [-10,  0, -1],
+            [ -5, -5, -0.25],
+            [  0, -10, 0.5],
+            [  5, -5, 0.75],
+            [ 10, 0, 1]
+        ]
+    )
+    # fmt: on
+    assert np.allclose(interp_pts, expected_interp_pts, atol=0.03)
