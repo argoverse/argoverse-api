@@ -5,10 +5,10 @@ from pathlib import Path
 from typing import List
 
 import cv2
-import disparity_interpolation
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from numba import njit
 
 from argoverse.evaluation.stereo.constants import (
     DEFAULT_ABS_ERROR_THRESHOLDS,
@@ -67,6 +67,7 @@ def compute_disparity_error(
     density = num_pixels_all_est / num_pixels_all
 
     if density < 1.0:
+        pred_disparity[pred_disparity == 0] = -1  # Set invalid disparities to -1
         pred_disparity = interpolate_disparity(pred_disparity)
 
     # Compute errors
@@ -128,7 +129,8 @@ def accumulate_stereo_metrics(abs_error_thresholds: List[int]) -> pd.DataFrame:
     return pd.DataFrame([[0] * num_fields], columns=columns)
 
 
-def interpolate_disparity(disp: np.ndarray) -> np.ndarray:
+@njit(nogil=True)
+def interpolate_disparity(disparity: np.ndarray) -> np.ndarray:
     """Interpolate disparity image to inpaint holes.
 
     The predicted disparity map might contain holes which need to be interpolated for a dense result.
@@ -140,15 +142,62 @@ def interpolate_disparity(disp: np.ndarray) -> np.ndarray:
     The expected run time for the Argoverse stereo image with 2056 × 2464 pixels is ~50 ms.
 
     Args:
-        disp: Array of shape (M, N) representing a float32 single-channel disparity map.
+        disparity: Array of shape (M, N) representing a float32 single-channel disparity map.
 
     Returns:
-        disp_interp: Array of shape (M, N) representing a float32 single-channel interpolated disparity map.
+        disparity: Array of shape (M, N) representing a float32 single-channel interpolated disparity map.
     """
-    disp[disp == 0] = -1
-    disp_interp = disparity_interpolation.disparity_interpolator(disp)
+    height, width = disparity.shape
 
-    return disp_interp
+    for v in range(height):
+        count = 0
+        for u in range(width):
+            # If disparity is valid
+            if disparity[v, u] >= 0:
+                #  At least one pixel requires interpolation
+                if count >= 1:
+                    # First and last value for interpolation
+                    u1 = u - count
+                    u2 = u - 1
+                    # Set pixel to min disparity
+                    if u1 > 0 and u2 < width - 1:
+                        d_ipol = min(disparity[v, u1 - 1], disparity[v, u2 + 1])
+                        for u_curr in range(u1, u2 + 1):
+                            disparity[v, u_curr] = d_ipol
+                count = 0
+            else:
+                count += 1
+
+        # Extrapolate to the left
+        for u in range(width):
+            if disparity[v, u] >= 0:
+                for u2 in range(u):
+                    disparity[v, u2] = disparity[v, u]
+                break
+
+        # Extrapolate to the right
+        for u in range(width - 1, -1, -1):
+            if disparity[v, u] >= 0:
+                for u2 in range(u + 1, width):
+                    disparity[v, u2] = disparity[v, u]
+                break
+
+    for u in range(0, width):
+        # Extrapolate to the top
+        for v in range(0, height):
+            if disparity[v, u] >= 0:
+                for v2 in range(0, v):
+                    disparity[v2, u] = disparity[v, u]
+                break
+
+        # Extrapolate to the bottom
+        for v in range(height - 1, -1, -1):
+            if disparity[v, u] >= 0:
+                for v2 in range(v + 1, height):
+                    disparity[v2, u] = disparity[v, u]
+                break
+
+    return disparity
 
 
 def write_disparity_error_image(
