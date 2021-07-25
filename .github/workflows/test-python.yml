@@ -11,7 +11,7 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         # Limit to '3.7' for now. TODO: Check on relation to tox / nox.
-        python-version: ['3.7']
+        python-version: ['3.7', '3.8', '3.9']
     
     steps:
     - uses: actions/checkout@v2
@@ -36,6 +36,6 @@ jobs:
 
     - name: Test with tox
       run: |
-        tox
+        tox -e py
         pre-commit run --all-files
         
