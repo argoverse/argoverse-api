@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    name: Build wheels and sdist on ${{ matrix.os }}
+    name: ${{ matrix.os }}-py${{ matrix.python-version }}-build-upload
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
