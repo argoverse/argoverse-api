@@ -67,7 +67,6 @@ def compute_disparity_error(
     density = num_pixels_all_est / num_pixels_all
 
     if density < 1.0:
-        pred_disparity[pred_disparity == 0] = -1  # Set invalid disparities to -1
         pred_disparity = interpolate_disparity(pred_disparity)
 
     # Compute errors
@@ -148,6 +147,8 @@ def interpolate_disparity(disparity: np.ndarray) -> np.ndarray:
         disparity: Array of shape (M, N) representing a float32 single-channel interpolated disparity map.
     """
     height, width = disparity.shape
+
+    disparity = np.where(disparity == 0, -1, disparity)  # Set invalid disparities to -1
 
     for v in range(height):
         count = 0
