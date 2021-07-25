@@ -1,10 +1,10 @@
-name: Build
+name: Build and upload to PyPI
 
 on: [push, pull_request]
 
 jobs:
   build:
-    name: ${{ matrix.os }}-py${{ matrix.python-version }}-build-upload
+    name: ${{ matrix.os }}-py${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
