@@ -21,7 +21,16 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install tox==3.12.1 pre-commit==1.17.0
+        pip install tox==3.12.1 \
+                    pre-commit==1.17.0 \
+                    coverage \
+                    pytest \
+                    pytest-cov \
+                    mypy \
+                    flake8 \
+                    flake8-logging-format \
+                    flake8-string-format \
+                    numba
 
     - name: Install wget for Windows
       if: matrix.os == 'windows-latest'
