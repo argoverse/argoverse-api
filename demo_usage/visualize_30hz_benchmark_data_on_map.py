@@ -247,7 +247,7 @@ class DatasetOnMapVisualizer:
             city_to_egovehicle_se3: Transformation from egovehicle frame to city frame
             avm: ArgoverseMap instance
         """
-        if axis is not "city_axis":
+        if axis != "city_axis":
             # rendering instead in the egovehicle reference frame
             for da_idx, local_da in enumerate(local_das):
                 local_da = city_to_egovehicle_se3.inverse_transform_point_cloud(local_da)
@@ -262,7 +262,7 @@ class DatasetOnMapVisualizer:
         draw_lane_polygons(ax, local_lane_polygons)
         draw_lane_polygons(ax, local_das, color="tab:pink")
 
-        if axis is not "city_axis":
+        if axis != "city_axis":
             lidar_pts = rotate_polygon_about_pt(lidar_pts, city_to_egovehicle_se3.rotation, np.zeros((3,)))
             draw_point_cloud_bev(ax, lidar_pts)
 
@@ -283,7 +283,7 @@ class DatasetOnMapVisualizer:
                     bbox_ego_frame = rotate_polygon_about_pt(
                         bbox_ego_frame, city_to_egovehicle_se3.rotation, np.zeros((3,))
                     )
-                    if axis is "city_axis":
+                    if axis == "city_axis":
                         plot_bbox_2D(ax, bbox_city_fr, color)
                         if self.plot_lane_tangent_arrows:
                             bbox_center = np.mean(bbox_city_fr, axis=0)

@@ -348,7 +348,7 @@ if __name__ == "__main__":
     logger.info(args)
 
     if args.log_ids is None:
-        logger.error(f"Please provide a comma seperated list of log ids")
-        raise ValueError(f"Please provide a comma seperated list of log ids")
+        logger.error("Please provide a comma seperated list of log ids")
+        raise ValueError("Please provide a comma seperated list of log ids")
 
     main(args)
