@@ -10,7 +10,6 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        # Limit to '3.7' for now. TODO: Check on relation to tox / nox.
         python-version: ['3.7', '3.8', '3.9']
     
     steps:
