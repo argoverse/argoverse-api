@@ -129,7 +129,7 @@ def accumulate_stereo_metrics(abs_error_thresholds: List[int]) -> pd.DataFrame:
     return pd.DataFrame([[0] * num_fields], columns=columns)
 
 
-@njit(nogil=True)
+@njit(nogil=True)  # type: ignore
 def interpolate_disparity(disparity: np.ndarray) -> np.ndarray:
     """Interpolate disparity image to inpaint holes.
 
