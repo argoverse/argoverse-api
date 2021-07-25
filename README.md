@@ -75,6 +75,14 @@ Make sure that you can run `python -c "import argoverse"` in python, and you are
 ### (optional) Install mayavi
 * Some visualizations may require `mayavi`. See instructions on how to install Mayavi [here](https://docs.enthought.com/mayavi/mayavi/installation.html).
 
+### (optional) Stereo tutorial dependencies
+* You will need to install four dependencies to run the [stereo tutorial](https://github.com/argoai/argoverse-api/blob/master/demo_usage/competition_stereo_tutorial.ipynb):
+
+    * **Open3D**: See instructions on how to install [here](https://github.com/intel-isl/Open3D).
+    * **OpenCV contrib**: See instructions on how to install [here](https://pypi.org/project/opencv-contrib-python).
+    * **Plotly**: See instructions on how to install [here](https://github.com/plotly/plotly.py).
+    * **Numba**: See instructions on how to install [here](http://numba.pydata.org/).
+
 ### (optional) Remake the object-oriented label folders
 * The `track_labels_amodal` folders contains object-oriented labels (in contrast to per-frame labels in `per_sweep_annotations_amodal` folders. Run following script to remake `track_labels_amodal` folders and fix existing issues:
 
