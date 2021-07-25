@@ -10,8 +10,13 @@ profile = "black"
 line-length = 120
 
 [tool.mypy]
-ignore_missing_imports = True
-strict = True
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "argoverse"
+]
+strict = true
 
 [tool.pytest.ini_options]
 addopts = "--cov argoverse --cov-append --cov-branch --cov-report=term-missing"
