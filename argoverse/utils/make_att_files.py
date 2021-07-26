@@ -115,7 +115,7 @@ def save_bev_img(
             )
             cv2.line(img, p1, p2, color=color)
 
-    kernel = np.ones((5, 5), np.float)
+    kernel = np.ones((5, 5), float)
     img = cv2.dilate(img, kernel, iterations=1)
     cv2.putText(
         img,

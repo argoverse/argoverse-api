@@ -412,8 +412,8 @@ def calc_ap(gt_ranked: np.ndarray, recalls_interp: np.ndarray, ninst: int) -> Tu
     """
     tp = gt_ranked
 
-    cumulative_tp = np.cumsum(tp, dtype=np.int)
-    cumulative_fp = np.cumsum(~tp, dtype=np.int)
+    cumulative_tp = np.cumsum(tp, dtype=int)
+    cumulative_fp = np.cumsum(~tp, dtype=int)
     cumulative_fn = ninst - cumulative_tp
 
     precisions = cumulative_tp / (cumulative_tp + cumulative_fp + np.finfo(float).eps)
