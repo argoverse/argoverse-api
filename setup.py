@@ -57,6 +57,7 @@ setup(
         "lap",
         "matplotlib",
         "motmetrics==1.1.3",
+        "numba",
         "numpy==1.21.1",
         "omegaconf==2.1.0",
         "opencv-python>=4.1.0.25",
