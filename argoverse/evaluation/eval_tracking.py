@@ -98,6 +98,7 @@ def get_distance(x1: Dict[str, np.ndarray], x2: Dict[str, np.ndarray], name: str
     else:
         raise NotImplementedError("Not implemented..")
 
+
 def eval_tracks(
     path_tracker_output_root: _PathLike,
     path_dataset_root: _PathLike,
@@ -160,7 +161,7 @@ def eval_tracks(
         path_track_data = sorted(
             glob.glob(os.path.join(os.fspath(path_tracker_output), "per_sweep_annotations_amodal", "*"))
         )
-        all_uuids  = {}
+        all_uuids = {}
         logger.info("log_id = %s", log_id)
 
         for ind_frame in range(len(path_track_data)):
@@ -182,7 +183,7 @@ def eval_tracks(
 
             gt: Dict[str, Dict[str, Any]] = {}
             id_gts = []
-            track_label_uuids =  {}
+            track_label_uuids = {}
             for i in range(len(gt_data)):
                 if gt_data[i]["label_class"] != category:
                     continue
@@ -230,11 +231,9 @@ def eval_tracks(
             track_data = read_json_file(path_track_data[ind_frame])
 
             for track in track_data:
-
                 if track["track_label_uuid"] not in all_uuids:
                     all_uuids[track["track_label_uuid"]] = len(all_uuids) + 1
                 key = all_uuids[track["track_label_uuid"]]
-
 
                 if track["label_class"] != category or track["height"] == 0:
                     continue
@@ -265,6 +264,7 @@ def eval_tracks(
                 for track_key, track_value in tracks.items():
                     count_all += 1
                     centroid_distance = get_distance(gt_value, track_value, "centroid")
+                    # appends distances if centroid distance is valid
                     if np.isfinite(centroid_distance):
                         gt_track_data_c.append(centroid_distance)
                         gt_track_data_i.append(get_distance(gt_value, track_value, "iou"))
