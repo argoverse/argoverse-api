@@ -10,26 +10,35 @@ of the egovehicle (AV).
 """
 
 import copy
-import glob
 import logging
 import os
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Optional, Tuple, Union
+from shapely.geometry import LineString
+from typing import Dict, Iterable, List, Mapping, NamedTuple, Optional, Tuple, Union
 from typing_extensions import Final
 
 import numpy as np
 from dataclasses import dataclass
 
 from argoverse.data_loading.vector_map_v2_loader import point_arr_from_points_list_dict
-from argoverse.utils.centerline_utils import convert_lane_boundaries_to_polygon
+from argoverse.utils.centerline_utils import (
+    convert_lane_boundaries_to_polygon,
+    filter_candidate_centerlines,
+    get_centerlines_most_aligned_with_trajectory,
+    remove_overlapping_lane_seq,
+)
 from argoverse.utils.dilation_utils import dilate_by_l2
-from argoverse.utils.interpolate import interp_arc
+from argoverse.utils.geometry import point_inside_polygon
 from argoverse.utils.json_utils import read_json_file
+from argoverse.utils.manhattan_search import (
+    find_all_polygon_bboxes_overlapping_query_bbox,
+)
 from argoverse.utils.sim2 import Sim2
 
 _PathLike = Union[str, "os.PathLike[str]"]
 
-ROI_ISOCONTOUR: Final[float] = 5.0  # in meters
+ROI_ISOCONTOUR_M: Final[float] = 5.0
+CL_CANDIDATE_MANHATTAN_THRESHOLD_M: Final[float] = 2.5
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +97,7 @@ class VectorLaneSegment:
         is_intersection: boolean value representing whether or not this lane segment lies within an intersection.
         render_l_bound: boolean flag for visualization, indicating whether to render the left lane boundary.
         render_r_bound: boolean flag for visualization, indicating whether to render the right lane boundary.
+        centerline: array of shape (N, 3) representing the lane centerline.
     """
 
     id: Optional[int] = None
@@ -104,6 +114,7 @@ class VectorLaneSegment:
     is_intersection: Optional[bool] = None
     render_l_bound: Optional[bool] = True
     render_r_bound: Optional[bool] = True
+    centerline: Optional[np.ndarray] = None
 
     def get_left_lane_marking(self):
         """ """
@@ -129,18 +140,19 @@ class ArgoverseMapV2:
         Args:
            log_map_dirpath: e.g. "log_map_archive_gs1B8ZCv7DMi8cMt5aN5rSYjQidJXvGP__2020-07-21-Z1F0076____city_72406.json"
         """
-        self._log_map_dirpath = log_map_dirpath
-        log_id = Path(log_map_dirpath).stem
-        logger.info("Loaded map for %s", log_id)
-        vector_data_fnames = glob.glob(os.path.join(log_map_dirpath, "log_map_archive_*.json"))
+        self._log_map_dirpath = Path(log_map_dirpath)
+        log_id = self._log_map_dirpath.stem
+        logger.info(f"Loaded map for {log_id}")
+        vector_data_fnames = list(self._log_map_dirpath.glob("log_map_archive_*.json"))
         if not len(vector_data_fnames) == 1:
             raise RuntimeError("JSON file containing vector map data is missing.")
         vector_data_fname = vector_data_fnames[0]
 
-        log_vector_map_fpath = os.path.join(log_map_dirpath, vector_data_fname)
+        log_vector_map_fpath = self._log_map_dirpath / vector_data_fname
         self._vector_data = read_json_file(log_vector_map_fpath)
 
         self._lane_segments_dict = self.__build_lane_segment_index()
+        self._halluc_bbox_dict = self.__build_hallucinated_lane_bbox_index()
         self._ped_crossings_list = self.__build_ped_crossing_index()
         self._drivable_areas_list = self.__build_drivable_area_index()
 
@@ -162,6 +174,8 @@ class ArgoverseMapV2:
             right_ln_bound = point_arr_from_points_list_dict(lane_segment["right_lane_boundary"]["points"])
             left_ln_bound = point_arr_from_points_list_dict(lane_segment["left_lane_boundary"]["points"])
             lane_polygon = convert_lane_boundaries_to_polygon(right_ln_bound, left_ln_bound)
+            centerline = point_arr_from_points_list_dict(lane_segment["centerline"]["points"]) if \
+                lane_segment["centerline"]["points"] else None
 
             if not (right_ln_bound.shape[1] == 3 and left_ln_bound.shape[1] == 3):
                 raise RuntimeError("Boundary waypoints should be 3-dimensional.")
@@ -181,9 +195,28 @@ class ArgoverseMapV2:
                 lane_type=lane_segment["lane_type"],
                 polygon_boundary=lane_polygon,  # uses x,y,z
                 is_intersection=lane_segment["is_intersection"],
+                centerline=centerline,
             )
 
         return vls_dict
+
+    def __build_hallucinated_lane_bbox_index(self) -> Mapping[int, np.ndarray]:
+        """
+        Populate the pre-computed hallucinated extent of each lane polygon, to allow for fast
+        queries.
+
+        Returns:
+            halluc_bbox_dict: Maps lane ID to hallucinated bounding box of shape (4,) - [x_min, y_min, x_max, y_max]
+        """
+        halluc_bbox_dict: Dict[int, np.ndarray] = {}
+
+        for vls_id, vls in self._lane_segments_dict.items():
+            vls_halluc_bbox = np.array([vls.polygon_boundary[:, 0].min(), vls.polygon_boundary[:, 1].min(),
+                                        vls.polygon_boundary[:, 0].max(), vls.polygon_boundary[:, 1].max()])
+            halluc_bbox_dict[vls_id] = vls_halluc_bbox
+
+        return halluc_bbox_dict
+
 
     def __build_ped_crossing_index(self) -> List[PedCrossing]:
         """Build a lookup index of all pedestrian crossings (i.e. crosswalks) that are local to this log/scenario.
@@ -270,19 +303,22 @@ class ArgoverseMapV2:
         """
         return list(self._lane_segments_dict.keys())
 
-    def get_lane_segment_centerline(self, lane_segment_id: int, city_name: str) -> np.ndarray:
+    def get_lane_segment_centerline(self, lane_segment_id: int) -> np.ndarray:
         """We return an inferred 3D centerline for any particular lane segment by forming a ladder of left and right waypoints.
 
         Args:
             lane_segment_id: unique identifier for a lane segment within a log scenario map (within a single city).
 
+        Raises:
+            NotImplementedError: If lane segment doesn't have a pre-computed centerline.
+
         Returns:
             lane_centerline: Numpy array of shape (N,3)
         """
-        left_ln_bound = self._lane_segments_dict[lane_segment_id].left_ln_bound
-        right_ln_bound = self._lane_segments_dict[lane_segment_id].right_ln_bound
-
-        lane_centerline = ""  # TODO: add 3d linear interpolation fn
+        lane_centerline = self._lane_segments_dict[lane_segment_id].centerline
+        if lane_centerline is None:
+            # TODO: Implement on-the-fly centerline interpolation
+            raise NotImplementedError("Lane segment centerlines must be pre-computed.")
 
         return lane_centerline
 
@@ -325,7 +361,233 @@ class ArgoverseMapV2:
         """
         return list(self._lane_segments_dict.values())
 
-    def __build_rasterized_driveable_area_roi_index(self) -> Dict[str, np.ndarray]:
+    def get_candidate_centerlines_for_traj(
+        self,
+        xy: np.ndarray,
+        max_search_radius_m: float = 50.0,
+    ) -> List[np.ndarray]:
+        """Get centerline candidates upto a threshold.
+
+        Algorithm:
+        1. Take the lanes in the bubble of last obs coordinate
+        2. Extend before and after considering all possible candidates
+        3. Get centerlines with max distance along centerline
+
+        Args:
+            xy: trajectory of shape (N, 2).
+            max_search_radius_m: Maximum radius to search for centerline candidates.
+
+        Returns:
+            candidate_centerlines: List of candidate centerlines, each of shape (*, 2).
+        """
+
+        # Get all lane candidates within a bubble
+        cur_search_threshold = CL_CANDIDATE_MANHATTAN_THRESHOLD_M
+        curr_lane_candidates = self.get_lane_ids_in_xy_bbox(xy[-1, 0], xy[-1, 1], cur_search_threshold)
+
+        # Keep expanding the bubble until at least 1 lane is found
+        while len(curr_lane_candidates) < 1 and cur_search_threshold < max_search_radius_m:
+            cur_search_threshold *= 2
+            curr_lane_candidates = self.get_lane_ids_in_xy_bbox(xy[-1, 0], xy[-1, 1], cur_search_threshold)
+
+        assert len(curr_lane_candidates) > 0, "No nearby lanes found!!"
+
+        # Set DFS threshold
+        displacement = np.sqrt((xy[0, 0] - xy[-1, 0]) ** 2 + (xy[0, 1] - xy[-1, 1]) ** 2)
+        dfs_threshold = displacement * 2.0
+
+        # DFS to get all successor and predecessor candidates
+        obs_pred_lanes: List[List[int]] = []
+        for lane in curr_lane_candidates:
+            candidates_future = self.dfs(lane, 0, dfs_threshold)
+            candidates_past = self.dfs(lane, 0, dfs_threshold, True)
+
+            # Merge past and future
+            for past_lane_seq in candidates_past:
+                for future_lane_seq in candidates_future:
+                    assert past_lane_seq[-1] == future_lane_seq[0], "Incorrect DFS for candidate lanes past and future"
+                    obs_pred_lanes.append(past_lane_seq + future_lane_seq[1:])
+
+        # Removing overlapping lanes
+        obs_pred_lanes = remove_overlapping_lane_seq(obs_pred_lanes)
+
+        # Remove unnecessary extended predecessors
+        obs_pred_lanes = self.remove_extended_predecessors(obs_pred_lanes, xy)
+
+        # Getting candidate centerlines
+        candidate_cl = self.get_cl_from_lane_seq(obs_pred_lanes)
+
+        # Reduce the number of candidates based on distance travelled along the centerline
+        candidate_centerlines = filter_candidate_centerlines(xy, candidate_cl)
+
+        # If no candidate found using above criteria, take the onces along with travel is the maximum
+        if len(candidate_centerlines) < 1:
+            candidate_centerlines = get_centerlines_most_aligned_with_trajectory(xy, candidate_cl)
+
+        return candidate_centerlines
+
+    def get_lane_ids_in_xy_bbox(
+        self,
+        query_x: float,
+        query_y: float,
+        query_search_range_manhattan_m: float = 5.0,
+    ) -> List[int]:
+        """
+        Prune away all lane segments based on Manhattan distance. We vectorize this instead
+        of using a for-loop. Get all lane IDs within a bounding box in the xy plane.
+        This is a approximation of a bubble search for point-to-polygon distance.
+        The bounding boxes of small point clouds (lane centerline waypoints) are precomputed in the map.
+        We then can perform an efficient search based on manhattan distance search radius from a
+        given 2D query point.
+        We pre-assign lane segment IDs to indices inside a big lookup array, with precomputed
+        hallucinated lane polygon extents.
+
+        Args:
+            query_x: representing x coordinate of xy query location
+            query_y: representing y coordinate of xy query location
+            query_search_range_manhattan: search radius along axes
+
+        Returns:
+            lane_ids: lane segment IDs that live within a bubble
+        """
+        query_min_x = query_x - query_search_range_manhattan_m
+        query_max_x = query_x + query_search_range_manhattan_m
+        query_min_y = query_y - query_search_range_manhattan_m
+        query_max_y = query_y + query_search_range_manhattan_m
+
+        lane_id_bbox_pairs = list(self._halluc_bbox_dict.items())
+        halluc_bboxes = np.stack([lane_id_bbox_pair[1] for lane_id_bbox_pair in lane_id_bbox_pairs])
+
+        overlap_idxs = find_all_polygon_bboxes_overlapping_query_bbox(
+            halluc_bboxes,
+            np.array([query_min_x, query_min_y, query_max_x, query_max_y]),
+        )
+
+        neighborhood_lane_ids: List[int] = [lane_id_bbox_pairs[idx][0] for idx in overlap_idxs]
+        return neighborhood_lane_ids
+
+    def dfs(
+        self,
+        lane_id: int,
+        dist: float = 0,
+        threshold: float = 30,
+        extend_along_predecessor: bool = False,
+    ) -> List[List[int]]:
+        """
+        Perform depth first search over lane graph up to the threshold.
+        Args:
+            lane_id: Starting lane_id (Eg. 12345)
+            dist: Distance of the current path
+            threshold: Threshold after which to stop the search
+            extend_along_predecessor: if true, dfs over predecessors, else successors
+        Returns:
+            lanes_to_return (list of list of integers): List of sequence of lane ids
+                Eg. [[12345, 12346, 12347], [12345, 12348]]
+        """
+        if dist > threshold:
+            return [[lane_id]]
+    
+        traversed_lanes: List[List[int]] = []
+        child_lane_ids = self._lane_segments_dict[lane_id].predecessors if extend_along_predecessor else \
+                            self._lane_segments_dict[lane_id].successors
+
+        if child_lane_ids is not None:
+            for child_lane_id in child_lane_ids:
+                centerline = self.get_lane_segment_centerline(child_lane_id)
+                cl_length = LineString(centerline).length
+                curr_lane_ids = self.dfs(
+                    child_lane_id,
+                    dist + cl_length,
+                    threshold,
+                    extend_along_predecessor,
+                )
+                traversed_lanes.extend(curr_lane_ids)
+
+        if len(traversed_lanes) == 0:
+            return [[lane_id]]
+
+        lanes_to_return: List[List[int]] = []
+        for lane_seq in traversed_lanes:
+            lanes_to_return.append(lane_seq + [lane_id] if extend_along_predecessor else [lane_id] + lane_seq)
+        return lanes_to_return
+
+    def remove_extended_predecessors(self, lane_seqs: List[List[int]], xy: np.ndarray) -> List[List[int]]:
+        """
+        Remove lane_ids which are obtained by finding way too many predecessors from lane sequences.
+        If any lane id is an occupied lane id for the first coordinate of the trajectory, ignore all the
+        lane ids that occured before that
+
+        Args:
+            lane_seqs: List of list of lane ids (Eg. [[12345, 12346, 12347], [12345, 12348]])
+            xy: trajectory coordinates
+
+        Returns:
+            filtered_lane_seq (list of list of integers): List of list of lane ids obtained after filtering
+        """
+        filtered_lane_seq: List[List[int]] = []
+        occupied_lane_ids = self.get_lane_segments_containing_xy(xy[0, 0], xy[0, 1])
+
+        for lane_seq in lane_seqs:
+            for i in range(len(lane_seq)):
+                if lane_seq[i] in occupied_lane_ids:
+                    new_lane_seq = lane_seq[i:]
+                    break
+                new_lane_seq = lane_seq
+            filtered_lane_seq.append(new_lane_seq)
+
+        return filtered_lane_seq
+
+    def get_lane_segments_containing_xy(self, query_x: float, query_y: float) -> List[int]:
+        """
+        Get the occupied lane ids, i.e. given (x,y), list those lane IDs whose hallucinated
+        lane polygon contains this (x,y) query point.
+        This function performs a "point-in-polygon" test.
+
+        Args:
+            query_x: representing x coordinate of xy query location
+            query_y: representing y coordinate of xy query location
+
+        Returns:
+            occupied_lane_ids: list of integers, representing lane segment IDs containing (x,y)
+        """
+        neighborhood_lane_ids = self.get_lane_ids_in_xy_bbox(query_x, query_y)
+
+        occupied_lane_ids: List[int] = []
+        if neighborhood_lane_ids is not None:
+            for lane_id in neighborhood_lane_ids:
+                lane_polygon = self.get_lane_segment_polygon(lane_id)
+                inside = point_inside_polygon(
+                    lane_polygon.shape[0],
+                    lane_polygon[:, 0],
+                    lane_polygon[:, 1],
+                    query_x,
+                    query_y,
+                )
+                if inside:
+                    occupied_lane_ids += [lane_id]
+
+        return occupied_lane_ids
+
+    def get_cl_from_lane_seq(self, lane_seqs: Iterable[List[int]]) -> List[np.ndarray]:
+        """Get centerlines corresponding to each lane sequence in lane_sequences.
+
+        Args:
+            lane_seqs: Iterable of sequence of lane ids (Eg. [[12345, 12346, 12347], [12345, 12348]])
+
+        Returns:
+            candidate_cl: list of numpy arrays for centerline corresponding to each lane sequence
+        """
+
+        candidate_cl = []
+        for lanes in lane_seqs:
+            curr_candidate_cl = np.empty((0, 2))
+            for curr_lane in lanes:
+                curr_candidate = self.get_lane_segment_centerline(curr_lane)[:, :2]
+                curr_candidate_cl = np.vstack((curr_candidate_cl, curr_candidate))
+            candidate_cl.append(curr_candidate_cl)
+        return candidate_cl
+
+    def __build_rasterized_driveable_area_roi_index(self) -> Mapping[str, np.ndarray]:
         """Rasterize and return 3d vector drivable area as a 2d array, and dilate it by 5 meters, to return a region of interest mask.
 
         Note: This function provides "drivable area" and "region of interest" as binary segmentation masks in the bird's eye view.
@@ -371,7 +633,7 @@ class ArgoverseMapV2:
 
         # initialize ROI as zero-level isocontour of drivable area, and the dilate to 5-meter isocontour
         roi_mat_init = copy.deepcopy(rasterized_da_roi_dict["da_mat"])
-        rasterized_da_roi_dict["roi_mat"] = dilate_by_l2(roi_mat_init, dilation_thresh=ROI_ISOCONTOUR)
+        rasterized_da_roi_dict["roi_mat"] = dilate_by_l2(roi_mat_init, dilation_thresh=ROI_ISOCONTOUR_M)
 
         return rasterized_da_roi_dict
 
@@ -386,8 +648,8 @@ class ArgoverseMapV2:
         """
         city_rasterized_ground_height_dict: Dict[str, np.ndarray] = {}
 
-        Sim2_json_fpaths = glob.glob(os.path.join(self._log_map_dirpath, "*driveable_area_npyimage_Sim2_city*.json"))
-        if not len(Sim2_json_fpaths) == 1:
+        sim2_json_fpaths = list(self._log_map_dirpath.glob("*driveable_area_npyimage_Sim2_city*.json"))
+        if not len(sim2_json_fpaths) == 1:
             raise RuntimeError("Sim(2) mapping from city to image coords is missing")
         # city_rasterized_da_roi_dict["npyimage_Sim2_city"] = Sim2.from_json(sim2_json_fpath)
 
