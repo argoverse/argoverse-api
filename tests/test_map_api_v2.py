@@ -17,7 +17,7 @@ from argoverse.map_representation.map_api_v2 import (
 TEST_DATA_ROOT = Path(__file__).parent.resolve() / "test_data"
 
 
-class TestArgoverseMapV2(unittest.TestCase):
+class TestArgoverseV2StaticMap(unittest.TestCase):
     """Unit test for the multi-view optimizer."""
 
     def setUp(self) -> None:
