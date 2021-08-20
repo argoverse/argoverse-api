@@ -104,6 +104,7 @@ class LaneType(str, Enum):
 
 class LaneMarkType(str, Enum):
     """Color and pattern of a painted lane marking, located on either the left or ride side of a lane segment."""
+
     DASH_SOLID_YELLOW: str = "DASH_SOLID_YELLOW"
     DASH_SOLID_WHITE: str = "DASH_SOLID_WHITE"
     DASHED_WHITE: str = "DASHED_WHITE"
@@ -207,7 +208,7 @@ class VectorLaneSegment:
     predecessors: Optional[List[int]] = None
     right_neighbor_id: Optional[int] = None
     left_neighbor_id: Optional[int] = None
-    
+
     # polygon_boundary: Optional[np.ndarray] = None
 
     # render_l_bound: Optional[bool] = True
@@ -265,15 +266,13 @@ class RasterMapLayer:
 class GroundHeightLayer(RasterMapLayer):
     """Rasterized ground height map layer.
 
-    Stores the "ground_height_matrix" and also the city_Sim2_npyimage: Sim(2) that produces takes point in numpy image to city
-    coordinates, e.g. p_city = city_Transformation_pklimage * p_pklimage
+    Stores the "ground_height_matrix" and also the city_Sim2_npyimage: Sim(2) that produces takes point in numpy
+    image to city coordinates, e.g. p_city = city_Transformation_pklimage * p_pklimage
     """
 
     @classmethod
     def from_file(cls, log_map_dirpath) -> "GroundHeightLayer":
-        """
-
-        """
+        """ """
         # Sim2_json_fpaths = glob.glob(os.path.join(log_map_dirpath, "*driveable_area_npyimage_Sim2_city*.json"))
         # if not len(Sim2_json_fpaths) == 1:
         #     raise RuntimeError("Sim(2) mapping from city to image coords is missing")
@@ -291,7 +290,6 @@ class GroundHeightLayer(RasterMapLayer):
 
         return cls(array=None, city_Sim2_array=None)
 
-
     def get_ground_points_boolean(self, point_cloud: np.ndarray) -> np.ndarray:
         """Check whether each point is likely to be from the ground surface.
 
@@ -299,12 +297,14 @@ class GroundHeightLayer(RasterMapLayer):
             point_cloud: Numpy array of shape (N,3)
 
         Returns:
-            is_ground_boolean_arr: Numpy array of shape (N,) where ith entry is True if the 3d point (e.g. LiDAR return)
-                is likely located on the ground surface.
+            is_ground_boolean_arr: Numpy array of shape (N,) where ith entry is True if the 3d point
+                (e.g. a LiDAR return) is likely located on the ground surface.
         """
         ground_height_values = self.get_ground_height_at_xy(point_cloud)
         z = point_cloud[:, 2]
-        is_ground_boolean_arr = (np.absolute(z - ground_height_values) <= GROUND_HEIGHT_THRESHOLD) | (z < ground_height_values)
+        near_ground = np.absolute(z - ground_height_values) <= GROUND_HEIGHT_THRESHOLD
+        underground = z < ground_height_values
+        is_ground_boolean_arr = near_ground | underground
         return is_ground_boolean_arr
 
     def get_ground_height_at_xy(self, point_cloud: np.ndarray) -> np.ndarray:
@@ -339,7 +339,7 @@ class GroundHeightLayer(RasterMapLayer):
 
 
 class DrivableAreaMapLayer(RasterMapLayer):
-    """Rasterized drivable area map layer. """
+    """Rasterized drivable area map layer."""
 
     @classmethod
     def from_vector_data(cls, drivable_areas: List[DrivableArea]) -> "DrivableAreaMapLayer":
@@ -370,19 +370,21 @@ class DrivableAreaMapLayer(RasterMapLayer):
 
 
 class RoiMapLayer(RasterMapLayer):
-    """Rasterized Region of Interest (RoI) map layer. """
+    """Rasterized Region of Interest (RoI) map layer."""
 
     @classmethod
     def from_drivable_area_layer(cls, drivable_area_layer: DrivableAreaMapLayer) -> "RoiMapLayer":
-        """Rasterize and return 3d vector drivable area as a 2d array, and dilate it by 5 meters, to return a region of interest mask.
+        """Rasterize and return 3d vector drivable area as a 2d array, and dilate it by 5 meters, to return a ROI mask.
 
-        Note: This function provides "drivable area" and "region of interest" as binary segmentation masks in the bird's eye view.
+        Note: This function provides "drivable area" and "region of interest" as binary segmentation masks in the
+        bird's eye view.
 
         Returns:
-            rasterized_da_dict: A dictionary with driveable area info. For example, includes da_matrix: Numpy array of
-                    shape (M,N) representing binary values for driveable area
-                    npyimage_Sim2_city: Sim(2) that produces takes point in city coordinates to numpy image/array coordinates:
-                       p_npyimage  = npyimage_Sim2_city * p_city
+            Driveable area info. includes da_matrix: Numpy array of shape (M,N) representing binary values for
+                driveable area
+                npyimage_Sim2_city: Sim(2) that produces takes point in city coordinates to numpy image/array
+                    coordinates:
+                    p_npyimage  = npyimage_Sim2_city * p_city
         """
         # initialize ROI as zero-level isocontour of drivable area, and the dilate to 5-meter isocontour
         roi_mat_init = copy.deepcopy(drivable_area_layer.array)
@@ -442,7 +444,8 @@ class ArgoverseV2StaticMap:
         """Initialize the Argoverse Map for a specific log from JSON data.
 
         Args:
-           log_map_dirpath: e.g. "log_map_archive_gs1B8ZCv7DMi8cMt5aN5rSYjQidJXvGP__2020-07-21-Z1F0076____city_72406.json"
+           log_map_dirpath: path to directory containing log-scenario-specific maps,
+               e.g. "log_map_archive_gs1B8ZCv7DMi8cMt5aN5rSYjQidJXvGP__2020-07-21-Z1F0076____city_72406.json"
 
         """
         log_id = Path(log_map_dirpath).stem
@@ -468,7 +471,8 @@ class ArgoverseV2StaticMap:
                 PedestrianCrossing.from_json(pc) for pc in vector_data["pedestrian_crossings"]
             ]
 
-        # TODO: check if the ground surface file exists (will not exist for the forecasting data). Group into map dir per log.
+        # TODO: check if the ground surface file exists (will not exist for the forecasting data).
+        # Group into map dir per log.
         da_map_layer = DrivableAreaMapLayer.from_vector_data(vector_drivable_areas)
         raster_ground_height_layer = GroundHeightLayer.from_file(log_map_dirpath)
 
@@ -532,7 +536,7 @@ class ArgoverseV2StaticMap:
         return list(self.vector_lane_segments.keys())
 
     def get_lane_segment_centerline(self, lane_segment_id: int, city_name: str) -> np.ndarray:
-        """We return an inferred 3D centerline for any particular lane segment by forming a ladder of left and right waypoints.
+        """Infer a 3D centerline for any particular lane segment by forming a ladder of left and right waypoints.
 
         Args:
             lane_segment_id: unique identifier for a lane segment within a log scenario map (within a single city).
