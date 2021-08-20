@@ -31,6 +31,7 @@ from argoverse.utils.sim2 import Sim2
 
 _PathLike = Union[str, "os.PathLike[str]"]
 
+GROUND_HEIGHT_THRESHOLD = 0.3  # 30 centimeters
 ROI_ISOCONTOUR: Final[float] = 5.0  # in meters
 
 logger = logging.getLogger(__name__)
@@ -95,10 +96,11 @@ class LaneType(str, Enum):
     VEHICLE: str = "VEHICLE"
     BIKE: str = "BIKE"
     BUS: str = "BUS"
+    NON_VEHICLE: str = "NON_VEHICLE"
 
 
 # TODO: tell will that NON_VEHICLE does not seem to be used in practice anywhere?
-# NON_VEHICLE: str = "NON_VEHICLE"
+# 
 
 
 class LaneMarkType(str, Enum):
@@ -178,17 +180,17 @@ class VectorLaneSegment:
     """
     Args:
         id: unique identifier for this lane segment (guaranteed to be unique only within this local map).
-        lane_type: type of
+        is_intersection: boolean value representing whether or not this lane segment lies within an intersection.
+        lane_type: designation of which vehicle types may legally utilize this lane for travel.
         right_lane_boundary: array of shape (M,3) representing the right lane boundary.
         left_lane_boundary: array of shape (N,3) representing the right lane boundary
         right_mark_type: type of marking that represents the right lane boundary.
         left_mark_type: type of marking that represents the left lane boundary.
-        right_neighbor_id: unique identifier of the lane segment representing this object's right neighbor.
-        left_neighbor_id: unique identifier of the lane segment representing this object's left neighbor.
         predecessors: unique identifiers of lane segments that are predecessors of this object.
         successors: unique identifiers of lane segments that represent successor of this object.
-
-        is_intersection: boolean value representing whether or not this lane segment lies within an intersection.
+            Note: this list will be empty if no successors exist.
+        right_neighbor_id: unique identifier of the lane segment representing this object's right neighbor.
+        left_neighbor_id: unique identifier of the lane segment representing this object's left neighbor.
 
         render_l_bound: boolean flag for visualization, indicating whether to render the left lane boundary.
         render_r_bound: boolean flag for visualization, indicating whether to render the right lane boundary.
@@ -201,11 +203,11 @@ class VectorLaneSegment:
     left_lane_boundary: Polyline
     right_mark_type: LaneMarkType
     left_mark_type: LaneMarkType
+    successors: List[int]
+    predecessors: Optional[List[int]] = None
     right_neighbor_id: Optional[int] = None
     left_neighbor_id: Optional[int] = None
-    predecessors: Optional[List[int]] = None
-    successors: Optional[List[int]] = None
-
+    
     # polygon_boundary: Optional[np.ndarray] = None
 
     # render_l_bound: Optional[bool] = True
@@ -213,7 +215,7 @@ class VectorLaneSegment:
 
     @classmethod
     def from_json(cls, json_data: Dict[str, Any]) -> "VectorLaneSegment":
-        """ """
+        """Convert JSON to a VectorLaneSegment instance."""
         return cls(
             id=json_data["id"],
             lane_type=LaneType(json_data["lane_type"]),
@@ -261,15 +263,16 @@ class RasterMapLayer:
 
 
 class GroundHeightLayer(RasterMapLayer):
-    """Rasterized ground height"""
+    """Rasterized ground height map layer.
+
+    Stores the "ground_height_matrix" and also the city_Sim2_npyimage: Sim(2) that produces takes point in numpy image to city
+    coordinates, e.g. p_city = city_Transformation_pklimage * p_pklimage
+    """
 
     @classmethod
     def from_file(cls, log_map_dirpath) -> "GroundHeightLayer":
         """
-        Returns:
-            city_ground_height_index: a dictionary of dictionaries. A dictionary that stores the "ground_height_matrix" and also the
-                    citySim2_numpy_image: SE(2) that produces takes point in numpy image to city
-                    coordinates, e.g. p_city = city_Transformation_pklimage * p_pklimage
+
         """
         # Sim2_json_fpaths = glob.glob(os.path.join(log_map_dirpath, "*driveable_area_npyimage_Sim2_city*.json"))
         # if not len(Sim2_json_fpaths) == 1:
@@ -289,7 +292,55 @@ class GroundHeightLayer(RasterMapLayer):
         return cls(array=None, city_Sim2_array=None)
 
 
+    def get_ground_points_boolean(self, point_cloud: np.ndarray) -> np.ndarray:
+        """Check whether each point is likely to be from the ground surface.
+
+        Args:
+            point_cloud: Numpy array of shape (N,3)
+
+        Returns:
+            is_ground_boolean_arr: Numpy array of shape (N,) where ith entry is True if the 3d point (e.g. LiDAR return)
+                is likely located on the ground surface.
+        """
+        ground_height_values = self.get_ground_height_at_xy(point_cloud)
+        z = point_cloud[:, 2]
+        is_ground_boolean_arr = (np.absolute(z - ground_height_values) <= GROUND_HEIGHT_THRESHOLD) | (z < ground_height_values)
+        return is_ground_boolean_arr
+
+    def get_ground_height_at_xy(self, point_cloud: np.ndarray) -> np.ndarray:
+        """Get ground height for each of the xy locations for all points {(x,y,z)} in a point cloud.
+
+        Args:
+            point_cloud: Numpy array of shape (K,2) or (K,3)
+
+        Returns:
+            ground_height_values: Numpy array of shape (K,)
+        """
+        ground_height_mat, city_Sim2_array = self.get_rasterized_ground_height(city_name)
+
+        # TODO: should not be rounded here, because we need to enforce scaled discretization.
+        city_coords = np.round(point_cloud[:, :2]).astype(np.int64)
+
+        npyimage_coords = city_Sim2_array.inverse().transform_point_cloud(city_coords)
+        npyimage_coords = npyimage_coords.astype(np.int64)
+
+        # TODO: verify if the code below is still needed.
+
+        ground_height_values = np.full((npyimage_coords.shape[0]), np.nan)
+        ind_valid_pts = (npyimage_coords[:, 1] < ground_height_mat.shape[0]) * (
+            npyimage_coords[:, 0] < ground_height_mat.shape[1]
+        )
+
+        ground_height_values[ind_valid_pts] = ground_height_mat[
+            npyimage_coords[ind_valid_pts, 1], npyimage_coords[ind_valid_pts, 0]
+        ]
+
+        return ground_height_values
+
+
 class DrivableAreaMapLayer(RasterMapLayer):
+    """Rasterized drivable area map layer. """
+
     @classmethod
     def from_vector_data(cls, drivable_areas: List[DrivableArea]) -> "RasterMapLayer":
         """
@@ -319,7 +370,7 @@ class DrivableAreaMapLayer(RasterMapLayer):
 
 
 class RoiMapLayer(RasterMapLayer):
-    """ """
+    """Rasterized Region of Interest (RoI) map layer. """
 
     @classmethod
     def from_drivable_area_layer(cls, drivable_area_layer: DrivableAreaMapLayer) -> "RoiMapLayer":
@@ -363,7 +414,7 @@ class ArgoverseV2StaticMap:
         Note: predecessors are implicit and available by reversing the directed graph dictated by successors.
 
     Args:
-        log_id
+        log_id: unique identifier for log/scenario.
         vector_drivable_areas: drivable area polygons. Each polygon is represented by a Nx3 array of its vertices.
             Note: the first and last polygon vertex are identical (i.e. the first index is repeated).
         vector_lane_segments: lane segments that are local to this log/scenario. Consists of a mapping from
@@ -552,32 +603,31 @@ class ArgoverseV2StaticMap:
         raise NotImplementedError("")
 
     def get_rasterized_driveable_area(self) -> Tuple[np.ndarray, Sim2]:
-        """Get the driveable area.
+        """Get the driveable area along with Sim(2) that maps matrix coordinates to city coordinates.
 
         Returns:
             da_matrix: Numpy array of shape (M,N) representing binary values for driveable area
-            city_se2_pkl_image: SE(2) that produces takes point in pkl image to city coordinates, e.g.
+            city_Sim2_npyimage: Sim(2) that produces takes point in pkl image to city coordinates, e.g.
                     p_city = city_Transformation_pklimage * p_pklimage
         """
         return self.raster_drivable_area_layer.array, self.raster_drivable_area_layer.city_Sim2_array
 
     def get_rasterized_roi(self) -> Tuple[np.ndarray, Sim2]:
-        """Get the driveable area.
+        """Get the driveable area along with Sim(2) that maps matrix coordinates to city coordinates.
 
         Returns:
             da_matrix: Numpy array of shape (M,N) representing binary values for driveable area
-            city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.
+            city_Sim2_npyimage: Sim(2) that produces takes point in pkl image to city coordinates, e.g.
                     p_city = city_Transformation_pklimage * p_pklimage
         """
         return self.raster_roi_layer.array, self.raster_roi_layer.city_Sim2_array
 
     def get_rasterized_ground_height(self) -> Tuple[np.ndarray, Sim2]:
-        """
-        Get ground height matrix along with se2 that convert to city coordinate
+        """Get ground height matrix along with Sim(2) that maps matrix coordinates to city coordinates.
 
         Returns:
             ground_height_matrix
-            city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.
+            city_Sim2_npyimage: Sim(2) that produces takes point in pkl image to city coordinates, e.g.
                     p_city = city_Transformation_pklimage * p_pklimage
         """
         return raster_ground_height_layer.array, raster_ground_height_layer.city_Sim2_array
