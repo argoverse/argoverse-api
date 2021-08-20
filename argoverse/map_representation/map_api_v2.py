@@ -39,6 +39,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Point:
     """Represents a single 3-d point."""
+
     x: float
     y: float
     z: float
@@ -52,6 +53,7 @@ class Point:
 @dataclass
 class Polyline:
     """Represents an ordered point set,"""
+
     waypoints: List[Point]
 
     @property
@@ -70,9 +72,10 @@ class Polyline:
 @dataclass
 class DrivableArea:
     """Represents a single polygon, not a polyline."""
+
     id: int
     area_boundary: List[Point]
-    
+
     @property
     def xyz(self) -> np.ndarray:
         """Return (N,3) vector"""
@@ -80,9 +83,7 @@ class DrivableArea:
 
     @classmethod
     def from_json(cls, json_data: Dict[str, Any]) -> "DrivableArea":
-        """
-
-        """
+        """ """
         point_list = [Point(x=v["x"], y=v["y"], z=v["z"]) for v in json_data["area_boundary"]["points"]]
         # append the first vertex to the end of vertex list
         point_list.append(point_list[0])
@@ -94,6 +95,7 @@ class LaneType(str, Enum):
     VEHICLE: str = "VEHICLE"
     BIKE: str = "BIKE"
     BUS: str = "BUS"
+
 
 # TODO: tell will that NON_VEHICLE does not seem to be used in practice anywhere?
 # NON_VEHICLE: str = "NON_VEHICLE"
@@ -124,6 +126,7 @@ class PedestrianCrossing:
         edge1: array of shape (N,3) representing one edge of the crosswalk.
         edge2: array of shape (N,3) representing the other edge of the crosswalk.
     """
+
     id: int
     edge1: Polyline
     edge2: Polyline
@@ -139,7 +142,7 @@ class PedestrianCrossing:
     @classmethod
     def from_json(cls, json_data: Dict[str, Any]) -> "PedestrianCrossing":
         """Converts JSON data to a PedestrianCrossing object."""
- 
+
         edge1 = Polyline.from_json(json_data["edge1"]["points"])
         edge2 = Polyline.from_json(json_data["edge2"]["points"])
 
@@ -169,12 +172,13 @@ class LocalLaneMarking(NamedTuple):
 # TODO: add in lane turn direction attribute when re-dump the maps.
 # TODO: decide if we want to retain the `predecessors` field.
 
+
 @dataclass(frozen=False)
 class VectorLaneSegment:
     """
     Args:
         id: unique identifier for this lane segment (guaranteed to be unique only within this local map).
-        lane_type: type of 
+        lane_type: type of
         right_lane_boundary: array of shape (M,3) representing the right lane boundary.
         left_lane_boundary: array of shape (N,3) representing the right lane boundary
         right_mark_type: type of marking that represents the right lane boundary.
@@ -183,12 +187,13 @@ class VectorLaneSegment:
         left_neighbor_id: unique identifier of the lane segment representing this object's left neighbor.
         predecessors: unique identifiers of lane segments that are predecessors of this object.
         successors: unique identifiers of lane segments that represent successor of this object.
-        
+
         is_intersection: boolean value representing whether or not this lane segment lies within an intersection.
 
         render_l_bound: boolean flag for visualization, indicating whether to render the left lane boundary.
         render_r_bound: boolean flag for visualization, indicating whether to render the right lane boundary.
     """
+
     id: int
     is_intersection: bool
     lane_type: LaneType
@@ -200,9 +205,9 @@ class VectorLaneSegment:
     left_neighbor_id: Optional[int] = None
     predecessors: Optional[List[int]] = None
     successors: Optional[List[int]] = None
-    
-    #polygon_boundary: Optional[np.ndarray] = None
-    
+
+    # polygon_boundary: Optional[np.ndarray] = None
+
     # render_l_bound: Optional[bool] = True
     # render_r_bound: Optional[bool] = True
 
@@ -214,13 +219,10 @@ class VectorLaneSegment:
             lane_type=LaneType(json_data["lane_type"]),
             right_lane_boundary=Polyline.from_json(json_data["right_lane_boundary"]["points"]),
             left_lane_boundary=Polyline.from_json(json_data["left_lane_boundary"]["points"]),
-
             right_mark_type=LaneMarkType(json_data["right_lane_mark_type"]),
             left_mark_type=LaneMarkType(json_data["left_lane_mark_type"]),
-
             right_neighbor_id=json_data["right_neighbor"],
             left_neighbor_id=json_data["left_neighbor"],
-
             successors=json_data["successors"],
             is_intersection=json_data["is_intersection"],
         )
@@ -242,6 +244,7 @@ class VectorLaneSegment:
         """
         return convert_lane_boundaries_to_polygon(self.right_lane_boundary.xyz, self.left_lane_boundary.xyz)
 
+
 # TODO (willqi) should it be named ArgoverseV2StaticMap or ArgoverseMapV2 or StaticMap?
 # TODO: (willqi) should be dictionaries for lane_segments, not lists, so we can do O(1) lookup
 # TODO: (willqi) typoe on work LaneSement
@@ -252,12 +255,13 @@ class VectorLaneSegment:
 @dataclass
 class RasterMapLayer:
     """Data sampled at points along a regular grid, and a mapping from grid array coordinates to city coordinates."""
+
     array: np.ndarray
     city_Sim2_array: Sim2
 
 
 class GroundHeightLayer(RasterMapLayer):
-    """Rasterized ground height """
+    """Rasterized ground height"""
 
     @classmethod
     def from_file(cls, log_map_dirpath) -> "GroundHeightLayer":
@@ -286,7 +290,6 @@ class GroundHeightLayer(RasterMapLayer):
 
 
 class DrivableAreaMapLayer(RasterMapLayer):
-
     @classmethod
     def from_vector_data(cls, drivable_areas: List[DrivableArea]) -> "RasterMapLayer":
         """
@@ -310,13 +313,14 @@ class DrivableAreaMapLayer(RasterMapLayer):
             da_polygon_img = np.round(da_polygon_img).astype(np.int32)
             da_polygons_img.append(da_polygon_img)
 
-        da_mask =get_mask_from_polygons(da_polygons_img, img_h, img_w)
+        da_mask = get_mask_from_polygons(da_polygons_img, img_h, img_w)
 
         return cls(array=da_mask, city_Sim2_array=npyimg_Sim2_city.inverse())
 
 
 class RoiMapLayer(RasterMapLayer):
     """ """
+
     @classmethod
     def from_drivable_area_layer(cls, drivable_area_layer: DrivableAreaMapLayer) -> "RoiMapLayer":
         """Rasterize and return 3d vector drivable area as a 2d array, and dilate it by 5 meters, to return a region of interest mask.
@@ -333,10 +337,7 @@ class RoiMapLayer(RasterMapLayer):
         roi_mat_init = copy.deepcopy(drivable_area_layer.array)
         roi_mask = dilate_by_l2(roi_mat_init, dilation_thresh=ROI_ISOCONTOUR)
 
-        return cls(
-            array=roi_mask,
-            city_Sim2_array=drivable_area_layer.city_Sim2_array
-        )
+        return cls(array=roi_mask, city_Sim2_array=drivable_area_layer.city_Sim2_array)
 
 
 def compute_data_bounds(drivable_areas: List[DrivableArea]) -> Tuple[int, int, int, int]:
@@ -349,6 +350,7 @@ def compute_data_bounds(drivable_areas: List[DrivableArea]) -> Tuple[int, int, i
     ymax = math.ceil(max([da.xyz[:, 1].max() for da in drivable_areas]))
 
     return xmin, ymin, xmax, ymax
+
 
 @dataclass
 class ArgoverseV2StaticMap:
@@ -369,10 +371,11 @@ class ArgoverseV2StaticMap:
         vector_pedestrian_crossings: all pedestrian crossings (i.e. crosswalks) that are local to this log/scenario.
             Note: the lookup index is simply a list, rather than a dictionary-based mapping, since pedestrian crossings
             are not part of a larger graph.
-        raster_drivable_area_layer: raster representation pf 
+        raster_drivable_area_layer: raster representation pf
         raster_roi_layer:
         raster_ground_height_layer: not provided for Motion Forecasting-specific scenarios/logs.
     """
+
     log_id: str
     vector_drivable_areas: List[DrivableArea]
     vector_lane_segments: Dict[int, VectorLaneSegment]
@@ -404,13 +407,15 @@ class ArgoverseV2StaticMap:
         vector_data = read_json_file(log_vector_map_fpath)
 
         vector_drivable_areas = [DrivableArea.from_json(da) for da in vector_data["drivable_areas"]]
-        vector_lane_segments = { ls["id"]: VectorLaneSegment.from_json(ls) for ls in vector_data["lane_segments"] }
-        
+        vector_lane_segments = {ls["id"]: VectorLaneSegment.from_json(ls) for ls in vector_data["lane_segments"]}
+
         if "pedestrian_crossings" not in vector_data:
             logger.error("Missing Pedestrian crossings!")
             vector_pedestrian_crossings = None
         else:
-            vector_pedestrian_crossings = [PedestrianCrossing.from_json(pc) for pc in vector_data["pedestrian_crossings"]]
+            vector_pedestrian_crossings = [
+                PedestrianCrossing.from_json(pc) for pc in vector_data["pedestrian_crossings"]
+            ]
 
         # TODO: check if the ground surface file exists (will not exist for the forecasting data). Group into map dir per log.
         da_map_layer = DrivableAreaMapLayer.from_vector_data(vector_drivable_areas)
@@ -423,9 +428,8 @@ class ArgoverseV2StaticMap:
             vector_pedestrian_crossings=vector_pedestrian_crossings,
             raster_drivable_area_layer=da_map_layer,
             raster_roi_layer=RoiMapLayer.from_drivable_area_layer(da_map_layer),
-            raster_ground_height_layer=raster_ground_height_layer
+            raster_ground_height_layer=raster_ground_height_layer,
         )
-
 
     def get_scenario_vector_drivable_areas(self) -> List[np.ndarray]:
         """Fetch a list of polygons, whose union represents the drivable area for the log/scenario.
@@ -531,7 +535,6 @@ class ArgoverseV2StaticMap:
         """
         return list(self.vector_lane_segments.values())
 
-
     def remove_ground_surface(self) -> np.ndarray:
         """ """
         raise NotImplementedError("")
@@ -578,5 +581,3 @@ class ArgoverseV2StaticMap:
                     p_city = city_Transformation_pklimage * p_pklimage
         """
         return raster_ground_height_layer.array, raster_ground_height_layer.city_Sim2_array
-
-
