@@ -432,7 +432,7 @@ class ArgoverseV2StaticMap:
 
         Note: this function provides drivable areas in vector, not raster, format).
         """
-        return self._drivable_areas_list
+        return self.vector_drivable_areas
 
     def get_lane_segment_successor_ids(self, lane_segment_id: int) -> Optional[List[int]]:
         """Get lane id for the lane sucessor of the specified lane_segment_id.
@@ -443,7 +443,7 @@ class ArgoverseV2StaticMap:
         Returns:
             successor_ids: list of integers, representing lane segment IDs of successors
         """
-        successor_ids = self._lane_segments_dict[lane_segment_id].successors
+        successor_ids = self.vector_lane_segments[lane_segment_id].successors
         return successor_ids
 
     def get_lane_segment_left_neighbor_id(self, lane_segment_id: int) -> Optional[int]:
@@ -455,7 +455,7 @@ class ArgoverseV2StaticMap:
         Returns:
             integer representing id of left neighbor to the query lane segment id, or None if no such neighbor exists.
         """
-        return self._lane_segments_dict[lane_segment_id].l_neighbor_id
+        return self.vector_lane_segments[lane_segment_id].left_neighbor_id
 
     def get_lane_segment_right_neighbor_id(self, lane_segment_id: int) -> Optional[int]:
         """Get id of lane segment that is the right neighbor (if any exists) to the query lane segment id.
@@ -466,7 +466,7 @@ class ArgoverseV2StaticMap:
         Returns:
             integer representing id of right neighbor to the query lane segment id, or None if no such neighbor exists.
         """
-        return self._lane_segments_dict[lane_segment_id].r_neighbor_id
+        return self.vector_lane_segments[lane_segment_id].right_neighbor_id
 
     def get_scenario_lane_segment_ids(self) -> List[int]:
         """Get ids of all lane segments that are local to this log/scenario (according to l-infinity norm).
@@ -474,7 +474,7 @@ class ArgoverseV2StaticMap:
         Returns:
             list containing ids of local lane segments
         """
-        return list(self._lane_segments_dict.keys())
+        return list(self.vector_lane_segments.keys())
 
     def get_lane_segment_centerline(self, lane_segment_id: int, city_name: str) -> np.ndarray:
         """We return an inferred 3D centerline for any particular lane segment by forming a ladder of left and right waypoints.
@@ -501,7 +501,7 @@ class ArgoverseV2StaticMap:
         Returns:
             lane_polygon: Array of polygon boundary (K,3), with identical and last boundary points
         """
-        return self._lane_segments_dict[lane_segment_id].polygon_boundary
+        return self.vector_lane_segments[lane_segment_id].polygon_boundary
 
     def lane_is_in_intersection(self, lane_segment_id: int) -> bool:
         """
@@ -513,7 +513,7 @@ class ArgoverseV2StaticMap:
         Returns:
             is_intersection: boolean indicating if the lane segment falls within an intersection
         """
-        return self._lane_segments_dict[lane_segment_id].is_intersection
+        return self.vector_lane_segments[lane_segment_id].is_intersection
 
     def get_scenario_ped_crossings(self) -> List[PedestrianCrossing]:
         """Return a list of all pedestrian crossing objects that are local to this log/scenario (by l-infity norm).
@@ -521,7 +521,7 @@ class ArgoverseV2StaticMap:
         Returns:
             lpcs: local pedestrian crossings
         """
-        return self._ped_crossings_list
+        return self.vector_pedestrian_crossings
 
     def get_scenario_lane_segments(self) -> List[VectorLaneSegment]:
         """Return a list of all lane segments objects that are local to this log/scenario.
@@ -529,7 +529,7 @@ class ArgoverseV2StaticMap:
         Returns:
             vls_list: local lane segments
         """
-        return list(self._lane_segments_dict.values())
+        return list(self.vector_lane_segments.values())
 
 
     def remove_ground_surface(self) -> np.ndarray:
@@ -556,8 +556,7 @@ class ArgoverseV2StaticMap:
             city_se2_pkl_image: SE(2) that produces takes point in pkl image to city coordinates, e.g.
                     p_city = city_Transformation_pklimage * p_pklimage
         """
-        da_mat = self.city_rasterized_da_roi_dict["da_mat"]
-        return (da_mat, self.city_rasterized_da_roi_dict["npyimage_Sim2_city"])
+        return self.raster_drivable_area_layer.array, self.raster_drivable_area_layer.city_Sim2_array
 
     def get_rasterized_roi(self) -> Tuple[np.ndarray, Sim2]:
         """Get the driveable area.
@@ -567,8 +566,7 @@ class ArgoverseV2StaticMap:
             city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.
                     p_city = city_Transformation_pklimage * p_pklimage
         """
-        roi_mat = self.city_rasterized_da_roi_dict["roi_mat"]
-        return (roi_mat, self.city_rasterized_da_roi_dict["npyimage_Sim2_city"])
+        return self.raster_roi_layer.array, self.raster_roi_layer.city_Sim2_array
 
     def get_rasterized_ground_height(self) -> Tuple[np.ndarray, Sim2]:
         """
@@ -579,7 +577,6 @@ class ArgoverseV2StaticMap:
             city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.
                     p_city = city_Transformation_pklimage * p_pklimage
         """
-        ground_height_mat = self.city_rasterized_ground_height_dict["ground_height"]
-        return (ground_height_mat, self.city_rasterized_ground_height_dict["npyimage_Sim2_city"])
+        return raster_ground_height_layer.array, raster_ground_height_layer.city_Sim2_array
 
 
