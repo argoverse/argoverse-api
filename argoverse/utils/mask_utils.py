@@ -6,12 +6,14 @@ from PIL import Image, ImageDraw
 
 
 def get_mask_from_polygons(polygons: List[np.ndarray], img_h: int, img_w: int) -> np.ndarray:
-    """Rasterize multiple polygons onto a single 2d array.
+    """Rasterize multiple polygons onto a single 2d grid/array.
 
     Args:
         polygons: list of (N,2) numpy float arrays, where N is variable per polygon.
-        img_h: height of the image to generate, in pixels
-        img_w: width of the image to generate, in pixels
+           Note: Pillow can gracefully handle the scenario when a polygon has coordinates outside of the grid,
+           and also when the first and last vertex of a polygon's coordinates is repeated.
+        img_h: height of the image grid to generate, in pixels
+        img_w: width of the image grid to generate, in pixels
 
     Returns:
         mask: 2d array with 0/1 values representing a binary segmentation mask
