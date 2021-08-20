@@ -5,7 +5,7 @@ from numpy.testing import assert_almost_equal
 
 from argoverse.utils.centerline_utils import (
     centerline_to_polygon,
-    convert_lane_boundaries3d_to_polygon3d,
+    convert_lane_boundaries_to_polygon,
     filter_candidate_centerlines,
     get_normal_and_tangential_distance_point,
     get_nt_distance,
@@ -13,7 +13,7 @@ from argoverse.utils.centerline_utils import (
 )
 
 
-def test_convert_lane_boundaries3d_to_polygon3d() -> None:
+def test_convert_lane_boundaries_to_polygon3d() -> None:
     """Ensure 3d lane polygon is  created correctly from 3d left and right lane boundaries."""
     right_ln_bnd = np.array(
         [
@@ -25,7 +25,7 @@ def test_convert_lane_boundaries3d_to_polygon3d() -> None:
             [10, 3, 7],
             [14,-1, 8]
         ])
-    polygon = convert_lane_boundaries3d_to_polygon3d(right_ln_bnd, left_ln_bnd)
+    polygon = convert_lane_boundaries_to_polygon(right_ln_bnd, left_ln_bnd)
 
     gt_polygon = np.array(
     [

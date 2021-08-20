@@ -118,7 +118,7 @@ def convert_lane_boundaries_to_polygon(right_lane_bounds: np.ndarray, left_lane_
     Returns:
        polygon: Numpy array of shape (K+M+1,2) or (K+M+1,3)
     """
-    assert right_lane_bounds.shape[0] == left_lane_bounds.shape[0]
+    # assert right_lane_bounds.shape[0] == left_lane_bounds.shape[0]
     polygon = np.vstack([right_lane_bounds, left_lane_bounds[::-1]])
     polygon = np.vstack([polygon, right_lane_bounds[0]])
     if not polygon.ndim == 2 or polygon.shape[1] not in [2,3]:
