@@ -21,7 +21,6 @@ from typing_extensions import Final
 import numpy as np
 from dataclasses import dataclass
 
-from argoverse.data_loading.vector_map_v2_loader import point_arr_from_points_list_dict
 from argoverse.utils.centerline_utils import convert_lane_boundaries_to_polygon
 from argoverse.utils.dilation_utils import dilate_by_l2
 from argoverse.utils.interpolate import interp_arc
@@ -53,7 +52,7 @@ class Point:
 
 @dataclass
 class Polyline:
-    """Represents an ordered point set,"""
+    """Represents an ordered point set with consecutive adjacency."""
 
     waypoints: List[Point]
 
@@ -63,8 +62,9 @@ class Polyline:
         return np.vstack([wpt.xyz for wpt in self.waypoints])
 
     @classmethod
-    def from_json(cls, points_dict: Dict[str, float]) -> "Polyline":
-        """
+    def from_json(cls, points_dict: List[Dict[str, float]]) -> "Polyline":
+        """Generate object instance from JSON data.
+
         TODO: should we rename this as from_points_list_dict() ?
         """
         return cls(waypoints=[Point(x=v["x"], y=v["y"], z=v["z"]) for v in points_dict])
@@ -79,12 +79,12 @@ class DrivableArea:
 
     @property
     def xyz(self) -> np.ndarray:
-        """Return (N,3) vector"""
+        """Return (N,3) array representing the ordred 3d coordinates of the polygon vertices."""
         return np.vstack([wpt.xyz for wpt in self.area_boundary])
 
     @classmethod
     def from_json(cls, json_data: Dict[str, Any]) -> "DrivableArea":
-        """ """
+        """Generate object instance from JSON data."""
         point_list = [Point(x=v["x"], y=v["y"], z=v["z"]) for v in json_data["area_boundary"]["points"]]
         # append the first vertex to the end of vertex list
         point_list.append(point_list[0])
@@ -99,11 +99,11 @@ class LaneType(str, Enum):
     NON_VEHICLE: str = "NON_VEHICLE"
 
 
-# TODO: tell will that NON_VEHICLE does not seem to be used in practice anywhere?
-# 
+# TODO: determine clearer definition for `NON_VEHICLE` lane type.
 
 
 class LaneMarkType(str, Enum):
+    """Color and pattern of a painted lane marking, located on either the left or ride side of a lane segment."""
     DASH_SOLID_YELLOW: str = "DASH_SOLID_YELLOW"
     DASH_SOLID_WHITE: str = "DASH_SOLID_WHITE"
     DASHED_WHITE: str = "DASHED_WHITE"
@@ -112,12 +112,12 @@ class LaneMarkType(str, Enum):
     DOUBLE_SOLID_WHITE: str = "DOUBLE_SOLID_WHITE"
     DOUBLE_DASH_YELLOW: str = "DOUBLE_DASH_YELLOW"
     DOUBLE_DASH_WHITE: str = "DOUBLE_DASH_WHITE"
-    NONE: str = "NONE"
     SOLID_YELLOW: str = "SOLID_YELLOW"
     SOLID_WHITE: str = "SOLID_WHITE"
     SOLID_DASH_WHITE: str = "SOLID_DASH_WHITE"
     SOLID_DASH_YELLOW: str = "SOLID_DASH_YELLOW"
     SOLID_BLUE: str = "SOLID_BLUE"
+    NONE: str = "NONE"
 
 
 @dataclass
@@ -316,7 +316,7 @@ class GroundHeightLayer(RasterMapLayer):
         Returns:
             ground_height_values: Numpy array of shape (K,)
         """
-        ground_height_mat, city_Sim2_array = self.get_rasterized_ground_height(city_name)
+        ground_height_mat, city_Sim2_array = self.get_rasterized_ground_height()
 
         # TODO: should not be rounded here, because we need to enforce scaled discretization.
         city_coords = np.round(point_cloud[:, :2]).astype(np.int64)
@@ -342,7 +342,7 @@ class DrivableAreaMapLayer(RasterMapLayer):
     """Rasterized drivable area map layer. """
 
     @classmethod
-    def from_vector_data(cls, drivable_areas: List[DrivableArea]) -> "RasterMapLayer":
+    def from_vector_data(cls, drivable_areas: List[DrivableArea]) -> "DrivableAreaMapLayer":
         """
         TODO: should it accept Polygon instead?
         """
@@ -540,8 +540,8 @@ class ArgoverseV2StaticMap:
         Returns:
             lane_centerline: Numpy array of shape (N,3)
         """
-        left_ln_bound = self._lane_segments_dict[lane_segment_id].left_ln_bound
-        right_ln_bound = self._lane_segments_dict[lane_segment_id].right_ln_bound
+        left_ln_bound = self.vector_lane_segments[lane_segment_id].left_lane_boundary
+        right_ln_bound = self.vector_lane_segments[lane_segment_id].right_lane_boundary
 
         lane_centerline = ""  # TODO: add 3d linear interpolation fn
 
@@ -630,4 +630,4 @@ class ArgoverseV2StaticMap:
             city_Sim2_npyimage: Sim(2) that produces takes point in pkl image to city coordinates, e.g.
                     p_city = city_Transformation_pklimage * p_pklimage
         """
-        return raster_ground_height_layer.array, raster_ground_height_layer.city_Sim2_array
+        return self.raster_ground_height_layer.array, self.raster_ground_height_layer.city_Sim2_array
