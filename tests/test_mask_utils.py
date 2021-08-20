@@ -1,11 +1,10 @@
-
-
 import numpy as np
 
 from argoverse.utils.mask_utils import get_mask_from_polygons
 
+
 def test_get_mask_from_polygon() -> None:
-    """ Ensure that a triangle and skinny-column-like rectangle can be correctly rasterized onto a square grid."""
+    """Ensure that a triangle and skinny-column-like rectangle can be correctly rasterized onto a square grid."""
     # fmt: off
     triangle = np.array(
         [
@@ -43,7 +42,7 @@ def test_get_mask_from_polygon() -> None:
 
 def test_get_mask_from_polygon_repeated_coords() -> None:
     """Verify polygon rasterization works correctly when the first coordinate is repeated (as last coordinate).
-    
+
     Note: same scenario as above, a square grid with 2 polygons: a triangle and skinny-column-like rectangle.
     """
     # fmt: off
@@ -83,10 +82,9 @@ def test_get_mask_from_polygon_repeated_coords() -> None:
     assert np.allclose(mask, expected_mask)
 
 
-
 def test_get_mask_from_polygon_coords_out_of_bounds() -> None:
     """Test rasterization with polygon coordinates outside of the boundaries."""
-    
+
     # fmt: off
     rectangle = np.array(
         [
@@ -113,9 +111,7 @@ def test_get_mask_from_polygon_coords_out_of_bounds() -> None:
     assert np.allclose(mask, expected_mask)
 
 
-
 if __name__ == "__main__":
     test_get_mask_from_polygon()
     test_get_mask_from_polygon_repeated_coords()
     test_get_mask_from_polygon_coords_out_of_bounds()
-
