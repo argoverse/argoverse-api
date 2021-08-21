@@ -126,8 +126,8 @@ class PedestrianCrossing:
     """Represents a pedestrian crossing (i.e. crosswalk) as two edges along its principal axis.
 
     Args:
-        edge1: array of shape (N,3) representing one edge of the crosswalk.
-        edge2: array of shape (N,3) representing the other edge of the crosswalk.
+        edge1: 3d polyline representing one edge of the crosswalk, with 2 waypoints.
+        edge2: 3d polyline representing the other edge of the crosswalk, with 2 waypoints.
     """
 
     id: int
@@ -135,7 +135,12 @@ class PedestrianCrossing:
     edge2: Polyline
 
     def get_edges(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Retrieve the two principal edges of the crosswalk, in 2d."""
+        """Retrieve the two principal edges of the crosswalk, in 2d.
+
+        Returns:
+            edge1: array of shape (2,2)
+            edge2: array of shape (2,2)
+        """
         return (self.edge1.xyz[:, :2], self.edge2.xyz[:, :2])
 
     def __eq__(self, other: "PedestrianCrossing") -> bool:
@@ -144,11 +149,11 @@ class PedestrianCrossing:
 
     @classmethod
     def from_dict(cls, json_data: Dict[str, Any]) -> "PedestrianCrossing":
-        """Converts JSON data to a PedestrianCrossing object."""
+        """Generate a PedestrianCrossing object from a dictionary read from JSON data."""
 
         edge1 = Polyline.from_dict(json_data["edge1"]["points"])
         edge2 = Polyline.from_dict(json_data["edge2"]["points"])
-
+    
         return PedestrianCrossing(id=json_data["id"], edge1=edge1, edge2=edge2)
 
 
@@ -169,14 +174,12 @@ class LocalLaneMarking(NamedTuple):
 
 
 # TODO: (willqi) we should not name it left_lane_mark_type, just _left_mark_type. implicit it is a about a lane
-# TODO: (willqi) re-dump maps, with pedestrian crossings as empty dict or list, instead of missing key
-# TODO: add in lane turn direction attribute when re-dump the maps.
 # TODO: decide if we want to retain the `predecessors` field.
 
 
 @dataclass(frozen=False)
 class LaneSegment:
-    """Represents a singe lane segments within the Argoverse 2.0 maps.
+    """Represents a single lane segment within a log-specific Argoverse 2.0 map.
 
     Args:
         id: unique identifier for this lane segment (guaranteed to be unique only within this local map).
