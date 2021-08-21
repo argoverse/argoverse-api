@@ -169,7 +169,6 @@ class LocalLaneMarking(NamedTuple):
 
 
 # TODO: (willqi) we should not name it left_lane_mark_type, just _left_mark_type. implicit it is a about a lane
-# TODO: (willqi) DOUBLE_DASH_YELLOW was missing, SOLID_BLUE
 # TODO: (willqi) re-dump maps, with pedestrian crossings as empty dict or list, instead of missing key
 # TODO: add in lane turn direction attribute when re-dump the maps.
 # TODO: decide if we want to retain the `predecessors` field.
@@ -246,9 +245,6 @@ class LaneSegment:
             polygon_boundary: array of shape (N,3)
         """
         return convert_lane_boundaries_to_polygon(self.right_lane_boundary.xyz, self.left_lane_boundary.xyz)
-
-
-# TODO: (willqi) should be dictionaries for lane_segments, not lists, so we can do O(1) lookup
 
 
 @dataclass
@@ -421,8 +417,8 @@ class ArgoverseStaticMapV2:
         vector_pedestrian_crossings: all pedestrian crossings (i.e. crosswalks) that are local to this log/scenario.
             Note: the lookup index is simply a list, rather than a dictionary-based mapping, since pedestrian crossings
             are not part of a larger graph.
-        raster_drivable_area_layer: raster representation pf
-        raster_roi_layer:
+        raster_drivable_area_layer: 2d raster representation of drivable area segmentation.
+        raster_roi_layer: 2d raster representation of region of interest segmentation.
         raster_ground_height_layer: not provided for Motion Forecasting-specific scenarios/logs.
     """
 
@@ -508,7 +504,8 @@ class ArgoverseStaticMapV2:
             lane_segment_id: unique identifier for a lane segment within a log scenario map (within a single city).
 
         Returns:
-            successor_ids: list of integers, representing lane segment IDs of successors
+            successor_ids: list of integers, representing lane segment IDs of successors. If there are no
+                successor lane segments, then the list will be empty.
         """
         successor_ids = self.vector_lane_segments[lane_segment_id].successors
         return successor_ids

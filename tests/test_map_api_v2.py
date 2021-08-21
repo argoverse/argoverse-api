@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 
 from argoverse.map_representation.map_api_v2 import (
-    ArgoverseV2StaticMap,
+    ArgoverseStaticMapV2,
     PedestrianCrossing,
     VectorLaneSegment,
 )
