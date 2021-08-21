@@ -262,7 +262,7 @@ class LaneSegment:
 
 @dataclass
 class RasterMapLayer:
-    """Data sampled at points along a regular grid, and a mapping from grid array coordinates to city coordinates."""
+    """Data sampled at points along a regular grid, and a mapping from city coordinates to grid array coordinates."""
 
     array: np.ndarray
     array_Sim2_city: Sim2
@@ -271,8 +271,8 @@ class RasterMapLayer:
 class GroundHeightLayer(RasterMapLayer):
     """Rasterized ground height map layer.
 
-    Stores the "ground_height_matrix" and also the array_Sim2_city: Sim(2) that produces takes point in numpy
-    image to city coordinates, e.g. p_npyimage = array_Transformation_city * p_city
+    Stores the "ground_height_matrix" and also the array_Sim2_city: Sim(2) that produces takes point in city
+    coordinates to numpy image/matrix coordinates, e.g. p_npyimage = array_Transformation_city * p_city
     """
 
     @classmethod
@@ -302,7 +302,7 @@ class GroundHeightLayer(RasterMapLayer):
         return cls(array=ground_height_array.astype(np.float32), array_Sim2_city=array_Sim2_city)
 
     def get_ground_points_boolean(self, point_cloud: np.ndarray) -> np.ndarray:
-        """Check whether each point is likely to be from the ground surface.
+        """Check whether each 3d point is likely to be from the ground surface.
 
         Args:
             point_cloud: Numpy array of shape (N,3)
@@ -355,7 +355,7 @@ class DrivableAreaMapLayer(RasterMapLayer):
     @classmethod
     def from_vector_data(cls, drivable_areas: List[DrivableArea]) -> "DrivableAreaMapLayer":
         """
-        TODO: should it accept Polygon instead?
+        TODO: should it accept List[Polygon] instead?
         """
 
         # TODO: just load this from disk, instead of having to compute on the fly.
@@ -378,7 +378,7 @@ class DrivableAreaMapLayer(RasterMapLayer):
 
         da_mask = get_mask_from_polygons(da_polygons_img, img_h, img_w)
 
-        return cls(array=da_mask, array_Sim2_city=npyimg_Sim2_city.inverse())
+        return cls(array=da_mask, array_Sim2_city=npyimg_Sim2_city)
 
 
 class RoiMapLayer(RasterMapLayer):
@@ -441,7 +441,7 @@ class ArgoverseStaticMapV2:
         raster_ground_height_layer: not provided for Motion Forecasting-specific scenarios/logs.
     """
 
-    # TODO: make them all Dict[]
+    # TODO: make them all Dict[], instead of List[], for consistency?
     # handle out-of-bounds lane segment ids with ValueError
 
     log_id: str
@@ -466,7 +466,7 @@ class ArgoverseStaticMapV2:
            log_map_dirpath: path to directory containing log-scenario-specific maps,
                e.g. "log_map_archive_gs1B8ZCv7DMi8cMt5aN5rSYjQidJXvGP__2020-07-21-Z1F0076____city_72406.json"
             build_raster: whether to rasterize drivable areas, compute region of interest BEV binary segmentation,
-                and to load raster ground height (when available).
+                and to load raster ground height from disk (when available).
         """
         log_id = Path(log_map_dirpath).stem
 
@@ -491,7 +491,7 @@ class ArgoverseStaticMapV2:
                 PedestrianCrossing.from_dict(pc) for pc in vector_data["pedestrian_crossings"]
             ]
 
-        # avoids file I/O and polygon rasterization when not needed
+        # avoid file I/O and polygon rasterization when not needed
         raster_da_map_layer = DrivableAreaMapLayer.from_vector_data(vector_drivable_areas) if build_raster else None
         raster_roi_layer = RoiMapLayer.from_drivable_area_layer(raster_da_map_layer) if build_raster else None
         raster_ground_height_layer = GroundHeightLayer.from_file(log_map_dirpath) if build_raster else None
@@ -642,8 +642,8 @@ class ArgoverseStaticMapV2:
 
         Returns:
             da_matrix: Numpy array of shape (M,N) representing binary values for driveable area
-            array_Sim2_city: Sim(2) that produces takes point in pkl image to city coordinates, e.g.
-                    p_city = city_Transformation_pklimage * p_pklimage
+            array_Sim2_city: Sim(2) that produces takes point in city coordinates to numpy image, e.g.
+                    p_npyimage = npyimage_Transformation_city * p_city
         """
         return self.raster_roi_layer.array, self.raster_roi_layer.array_Sim2_city
 
