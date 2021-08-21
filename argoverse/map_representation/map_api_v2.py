@@ -264,35 +264,41 @@ class RasterMapLayer:
     """Data sampled at points along a regular grid, and a mapping from grid array coordinates to city coordinates."""
 
     array: np.ndarray
-    city_Sim2_array: Sim2
+    array_Sim2_city: Sim2
 
 
 class GroundHeightLayer(RasterMapLayer):
     """Rasterized ground height map layer.
 
-    Stores the "ground_height_matrix" and also the city_Sim2_npyimage: Sim(2) that produces takes point in numpy
-    image to city coordinates, e.g. p_city = city_Transformation_pklimage * p_pklimage
+    Stores the "ground_height_matrix" and also the array_Sim2_city: Sim(2) that produces takes point in numpy
+    image to city coordinates, e.g. p_npyimage = array_Transformation_city * p_city
     """
 
     @classmethod
-    def from_file(cls, log_map_dirpath) -> "GroundHeightLayer":
-        """ """
-        # Sim2_json_fpaths = glob.glob(os.path.join(log_map_dirpath, "*driveable_area_npyimage_Sim2_city*.json"))
-        # if not len(Sim2_json_fpaths) == 1:
-        #     raise RuntimeError("Sim(2) mapping from city to image coords is missing")
-        # # city_rasterized_da_roi_dict["npyimage_Sim2_city"] = Sim2.from_json(sim2_json_fpath)
+    def from_file(cls, log_map_dirpath: _PathLike) -> "GroundHeightLayer":
+        """Load ground height values (w/ values at 30 cm resolution) from .npy file, and associated Sim(2) mapping.
 
-        # npy_fpath = f"{self.extracted_map_dir}/{self.city_name}_{self.city_id}_ground_surface_mat_2020_07_13.npy"
+        Note: ground height values are stored on disk as a float16 2d-array, but cast to float32 once loaded for
+        compatibility with matplotlib.
 
-        # # load the file with rasterized values
-        # city_rasterized_ground_height_dict["ground_height"] = np.load(npy_fpath)
+        Args:
+            log_map_dirpath: path to directory which contains map files associated with one specific log/scenario.
+        """
+        ground_height_npy_fpaths = glob.glob(os.path.join(log_map_dirpath, "*_ground_height_surface____*.npy"))
+        if not len(ground_height_npy_fpaths) == 1:
+            raise RuntimeError("Raster ground height layer file is missing")
 
-        # sim2_json_fpath = (
-        #     f"{log_map_dirpath}/{self.city_name}_{self.city_id}_ground_surface_npyimage_Sim2_city_2020_07_13.json"
-        # )
-        # npyimage_Sim2_city = Sim2.from_json(sim2_json_fpath)
+        Sim2_json_fpaths = glob.glob(os.path.join(log_map_dirpath, "*___img_Sim2_city.json"))
+        if not len(Sim2_json_fpaths) == 1:
+            raise RuntimeError("Sim(2) mapping from city to image coordinates is missing")
 
-        return cls(array=None, city_Sim2_array=None)
+        # load the file with rasterized values
+        ground_height_array = np.load(ground_height_npy_fpaths[0])
+
+        # TODO: do we prefer name `npyimage_Sim2_city` ?
+        array_Sim2_city = Sim2.from_json(Sim2_json_fpaths[0])
+
+        return cls(array=ground_height_array.astype(np.float32), array_Sim2_city=array_Sim2_city)
 
     def get_ground_points_boolean(self, point_cloud: np.ndarray) -> np.ndarray:
         """Check whether each point is likely to be from the ground surface.
@@ -320,12 +326,12 @@ class GroundHeightLayer(RasterMapLayer):
         Returns:
             ground_height_values: Numpy array of shape (K,)
         """
-        ground_height_mat, city_Sim2_array = self.get_rasterized_ground_height()
+        ground_height_mat, array_Sim2_city = self.get_rasterized_ground_height()
 
         # TODO: should not be rounded here, because we need to enforce scaled discretization.
         city_coords = np.round(point_cloud[:, :2]).astype(np.int64)
 
-        npyimage_coords = city_Sim2_array.inverse().transform_point_cloud(city_coords)
+        npyimage_coords = array_Sim2_city.transform_point_cloud(city_coords)
         npyimage_coords = npyimage_coords.astype(np.int64)
 
         # TODO: verify if the code below is still needed.
@@ -371,7 +377,7 @@ class DrivableAreaMapLayer(RasterMapLayer):
 
         da_mask = get_mask_from_polygons(da_polygons_img, img_h, img_w)
 
-        return cls(array=da_mask, city_Sim2_array=npyimg_Sim2_city.inverse())
+        return cls(array=da_mask, array_Sim2_city=npyimg_Sim2_city.inverse())
 
 
 class RoiMapLayer(RasterMapLayer):
@@ -395,7 +401,7 @@ class RoiMapLayer(RasterMapLayer):
         roi_mat_init = copy.deepcopy(drivable_area_layer.array)
         roi_mask = dilate_by_l2(roi_mat_init, dilation_thresh=ROI_ISOCONTOUR)
 
-        return cls(array=roi_mask, city_Sim2_array=drivable_area_layer.city_Sim2_array)
+        return cls(array=roi_mask, array_Sim2_city=drivable_area_layer.array_Sim2_city)
 
 
 def compute_data_bounds(drivable_areas: List[DrivableArea]) -> Tuple[int, int, int, int]:
@@ -484,7 +490,7 @@ class ArgoverseStaticMapV2:
             # TODO: check if the ground surface file exists (will not exist for the forecasting data).
             # Group into map dir per log.
             raster_da_map_layer = DrivableAreaMapLayer.from_vector_data(vector_drivable_areas)
-            raster_roi_layer = RoiMapLayer.from_drivable_area_layer(da_map_layer)
+            raster_roi_layer = RoiMapLayer.from_drivable_area_layer(raster_da_map_layer)
             raster_ground_height_layer = GroundHeightLayer.from_file(log_map_dirpath)
 
         else:
@@ -628,27 +634,27 @@ class ArgoverseStaticMapV2:
 
         Returns:
             da_matrix: Numpy array of shape (M,N) representing binary values for driveable area
-            city_Sim2_npyimage: Sim(2) that produces takes point in pkl image to city coordinates, e.g.
-                    p_city = city_Transformation_pklimage * p_pklimage
+            npyimage_Sim2_city: Sim(2) that produces takes point in city coordinates to image coordinates, e.g.
+                    p_pklimage = pklimage_Transformation_city * p_city 
         """
-        return self.raster_drivable_area_layer.array, self.raster_drivable_area_layer.city_Sim2_array
+        return self.raster_drivable_area_layer.array, self.raster_drivable_area_layer.array_Sim2_city
 
     def get_rasterized_roi(self) -> Tuple[np.ndarray, Sim2]:
         """Get the driveable area along with Sim(2) that maps matrix coordinates to city coordinates.
 
         Returns:
             da_matrix: Numpy array of shape (M,N) representing binary values for driveable area
-            city_Sim2_npyimage: Sim(2) that produces takes point in pkl image to city coordinates, e.g.
+            array_Sim2_city: Sim(2) that produces takes point in pkl image to city coordinates, e.g.
                     p_city = city_Transformation_pklimage * p_pklimage
         """
-        return self.raster_roi_layer.array, self.raster_roi_layer.city_Sim2_array
+        return self.raster_roi_layer.array, self.raster_roi_layer.array_Sim2_city
 
     def get_rasterized_ground_height(self) -> Tuple[np.ndarray, Sim2]:
         """Get ground height matrix along with Sim(2) that maps matrix coordinates to city coordinates.
 
         Returns:
-            ground_height_matrix
-            city_Sim2_npyimage: Sim(2) that produces takes point in pkl image to city coordinates, e.g.
-                    p_city = city_Transformation_pklimage * p_pklimage
+            ground_height_matrix: 
+            array_Sim2_city: Sim(2) that produces takes point in city coordinates to image coordinates, e.g.
+                    p_image = image_Transformation_city * p_city
         """
-        return self.raster_ground_height_layer.array, self.raster_ground_height_layer.city_Sim2_array
+        return self.raster_ground_height_layer.array, self.raster_ground_height_layer.array_Sim2_city
