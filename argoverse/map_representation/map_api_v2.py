@@ -53,6 +53,7 @@ class Point:
         """Check for equality with another Point object."""
         return self.x == other.x and self.y == other.y and self.z == other.z
 
+
 @dataclass
 class Polyline:
     """Represents an ordered point set with consecutive adjacency."""
@@ -78,7 +79,7 @@ class Polyline:
             return False
 
         return all([wpt == wpt_ for wpt, wpt_ in zip(self.waypoints, other.waypoints)])
- 
+
 
 @dataclass
 class DrivableArea:
@@ -162,7 +163,7 @@ class PedestrianCrossing:
         """Generate a PedestrianCrossing object from a dictionary read from JSON data."""
         edge1 = Polyline.from_dict_list(json_data["edge1"]["points"])
         edge2 = Polyline.from_dict_list(json_data["edge2"]["points"])
-    
+
         return PedestrianCrossing(id=json_data["id"], edge1=edge1, edge2=edge2)
 
 
@@ -457,6 +458,10 @@ class ArgoverseStaticMapV2:
     def from_json(cls, log_map_dirpath: _PathLike, build_raster: bool = False) -> "ArgoverseV2StaticMap":
         """Initialize the Argoverse Map for a specific log from JSON data.
 
+        Note: the ground height surface file and associated coordinate mapping is not provided for the
+        2.0 Motion Forecasting dataset, so `build_raster` defaults to False. If raster functionality is
+        desired, users should pass `build_raster` to True (e.g. for the Sensor Datasets and Map Change Datasets).
+
         Args:
            log_map_dirpath: path to directory containing log-scenario-specific maps,
                e.g. "log_map_archive_gs1B8ZCv7DMi8cMt5aN5rSYjQidJXvGP__2020-07-21-Z1F0076____city_72406.json"
@@ -486,17 +491,10 @@ class ArgoverseStaticMapV2:
                 PedestrianCrossing.from_dict(pc) for pc in vector_data["pedestrian_crossings"]
             ]
 
-        if build_raster:
-            # TODO: check if the ground surface file exists (will not exist for the forecasting data).
-            # Group into map dir per log.
-            raster_da_map_layer = DrivableAreaMapLayer.from_vector_data(vector_drivable_areas)
-            raster_roi_layer = RoiMapLayer.from_drivable_area_layer(raster_da_map_layer)
-            raster_ground_height_layer = GroundHeightLayer.from_file(log_map_dirpath)
-
-        else:
-            raster_da_map_layer = None
-            raster_roi_layer = None
-            raster_ground_height_layer = None
+        # avoids file I/O and polygon rasterization when not needed
+        raster_da_map_layer = DrivableAreaMapLayer.from_vector_data(vector_drivable_areas) if build_raster else None
+        raster_roi_layer = RoiMapLayer.from_drivable_area_layer(raster_da_map_layer) if build_raster else None
+        raster_ground_height_layer = GroundHeightLayer.from_file(log_map_dirpath) if build_raster else None
 
         return cls(
             log_id=log_id,
@@ -635,7 +633,7 @@ class ArgoverseStaticMapV2:
         Returns:
             da_matrix: Numpy array of shape (M,N) representing binary values for driveable area
             npyimage_Sim2_city: Sim(2) that produces takes point in city coordinates to image coordinates, e.g.
-                    p_pklimage = pklimage_Transformation_city * p_city 
+                    p_pklimage = pklimage_Transformation_city * p_city
         """
         return self.raster_drivable_area_layer.array, self.raster_drivable_area_layer.array_Sim2_city
 
@@ -653,7 +651,7 @@ class ArgoverseStaticMapV2:
         """Get ground height matrix along with Sim(2) that maps matrix coordinates to city coordinates.
 
         Returns:
-            ground_height_matrix: 
+            ground_height_matrix:
             array_Sim2_city: Sim(2) that produces takes point in city coordinates to image coordinates, e.g.
                     p_image = image_Transformation_city * p_city
         """
