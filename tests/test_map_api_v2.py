@@ -10,14 +10,121 @@ import numpy as np
 
 from argoverse.map_representation.map_api_v2 import (
     ArgoverseStaticMapV2,
+    DrivableArea,
+    LaneMarkType,
+    LaneSegment,
+    LaneType,
     PedestrianCrossing,
-    VectorLaneSegment,
+    Point,
+    Polyline,
 )
 
 TEST_DATA_ROOT = Path(__file__).parent.resolve() / "test_data"
 
 
-class TestArgoverseV2StaticMap(unittest.TestCase):
+class TestPolyline(unittest.TestCase):
+    def test_from_list(self) -> None:
+        """Ensure object is generated correctly from a list of dictionaries."""
+        points_dict_list = [{"x": 874.01, "y": -105.15, "z": -19.58}, {"x": 890.58, "y": -104.26, "z": -19.58}]
+        polyline = Polyline.from_dict_list(points_dict_list)
+
+        assert isinstance(polyline, Polyline)
+
+        assert len(polyline.waypoints) == 2
+        assert polyline.waypoints[0] == Point(874.01, -105.15, -19.58)
+        assert polyline.waypoints[1] == Point(890.58, -104.26, -19.58)
+
+
+class TestDrivableArea(unittest.TestCase):
+    def test_from_dict(self) -> None:
+        """Ensure object is generated correctly from a dictionary.
+
+        Note: 3 arbitrary waypoints taken from the dummy log map file.
+        """
+        json_data = {
+            "area_boundary": {
+                "points": [
+                    {"x": 905.09, "y": -148.95, "z": -19.19},
+                    {"x": 919.48, "y": -150.0, "z": -18.86},
+                    {"x": 905.14, "y": -150.0, "z": -19.18},
+                ]
+            },
+            "id": 4499430,
+        }
+
+        drivable_area = DrivableArea.from_dict(json_data)
+
+        assert isinstance(drivable_area, DrivableArea)
+        assert drivable_area.id == 4499430
+        assert len(drivable_area.area_boundary) == 4  # first vertex is repeated as the last vertex
+
+
+class TestPedestrianCrossing(unittest.TestCase):
+    def test_from_dict(self) -> None:
+        """Ensure object is generated correctly from a dictionary."""
+        json_data = {
+            "id": 6310421,
+            "edge1": {"points": [{"x": 899.17, "y": -91.52, "z": -19.58}, {"x": 915.68, "y": -93.93, "z": -19.53}]},
+            "edge2": {"points": [{"x": 899.44, "y": -95.37, "z": -19.48}, {"x": 918.25, "y": -98.05, "z": -19.4}]},
+        }
+        pedestrian_crossing = PedestrianCrossing.from_dict(json_data)
+
+        isinstance(pedestrian_crossing, PedestrianCrossing)
+
+
+class TestLaneSegment(unittest.TestCase):
+    def test_from_dict(self) -> None:
+        """Ensure object is generated correctly from a dictionary."""
+        json_data = {
+            "id": 93269421,
+            "is_intersection": False,
+            "lane_type": "VEHICLE",
+            "left_lane_boundary": {
+                "points": [
+                    {"x": 873.97, "y": -101.75, "z": -19.7},
+                    {"x": 880.31, "y": -101.44, "z": -19.7},
+                    {"x": 890.29, "y": -100.56, "z": -19.66},
+                ]
+            },
+            "left_lane_mark_type": "SOLID_YELLOW",
+            "left_neighbor": None,
+            "right_lane_boundary": {
+                "points": [{"x": 874.01, "y": -105.15, "z": -19.58}, {"x": 890.58, "y": -104.26, "z": -19.58}]
+            },
+            "right_lane_mark_type": "SOLID_WHITE",
+            "right_neighbor": 93269520,
+            "successors": [93269500],
+        }
+        lane_segment = LaneSegment.from_dict(json_data)
+
+        assert isinstance(lane_segment, LaneSegment)
+
+        assert lane_segment.id == 93269421
+        assert lane_segment.is_intersection == False
+        assert lane_segment.lane_type == LaneType("VEHICLE")
+        # fmt: off
+        assert lane_segment.right_lane_boundary == Polyline(
+            waypoints=[
+                Point(874.01, -105.15, -19.58),
+                Point(890.58, -104.26, -19.58)
+            ]
+        )
+        assert lane_segment.left_lane_boundary == Polyline(
+            waypoints=[
+                Point(873.97, -101.75, -19.7),
+                Point(880.31, -101.44, -19.7),
+                Point(890.29, -100.56, -19.66)
+            ]
+        )
+        # fmt: on
+        assert lane_segment.right_mark_type == LaneMarkType("SOLID_WHITE")
+        assert lane_segment.left_mark_type == LaneMarkType("SOLID_YELLOW")
+        assert lane_segment.successors == [93269500]
+        assert lane_segment.right_neighbor_id == 93269520
+        assert lane_segment.left_neighbor_id is None
+
+
+class TestArgoverseStaticMapV2(unittest.TestCase):
     """Unit test for the multi-view optimizer."""
 
     def setUp(self) -> None:
@@ -26,7 +133,7 @@ class TestArgoverseV2StaticMap(unittest.TestCase):
         log_map_dirpath = (
             TEST_DATA_ROOT / "v2_maps" / "dummy_log_map_v2_gs1B8ZCv7DMi8cMt5aN5rSYjQidJXvGP__2020-07-21-Z1F0076"
         )
-        self.v2_map = ArgoverseV2StaticMap.from_json(log_map_dirpath)
+        self.v2_map = ArgoverseStaticMapV2.from_json(log_map_dirpath)
 
     def test_get_lane_segment_successor_ids(self) -> None:
         """Ensure lane segment successors are fetched properly."""
@@ -146,10 +253,10 @@ class TestArgoverseV2StaticMap(unittest.TestCase):
     #     np.testing.assert_allclose(centerline, expected_centerline)
 
     def test_get_scenario_lane_segments(self) -> None:
-        """Ensure that all VectorLaneSegment objects in the local map can be returned as a list."""
+        """Ensure that all LaneSegment objects in the local map can be returned as a list."""
         vector_lane_segments = self.v2_map.get_scenario_lane_segments()
         assert isinstance(vector_lane_segments, list)
-        assert all([isinstance(vls, VectorLaneSegment) for vls in vector_lane_segments])
+        assert all([isinstance(vls, LaneSegment) for vls in vector_lane_segments])
         assert len(vector_lane_segments) == 3
 
     # def test_get_scenario_ped_crossings(self) -> None:
@@ -191,7 +298,6 @@ class TestArgoverseV2StaticMap(unittest.TestCase):
     #     assert len(ped_crossings) == len(expected_ped_crossings)
     #     assert all([pc == expected_pc for pc, expected_pc in zip(ped_crossings, expected_ped_crossings)])
 
-
     def test_get_scenario_vector_drivable_areas(self) -> None:
         """ """
         vector_das = self.v2_map.get_scenario_vector_drivable_areas()
@@ -200,7 +306,7 @@ class TestArgoverseV2StaticMap(unittest.TestCase):
 
         # examine just one sample
         vector_da = vector_das[0]
-        assert vector_da.xyz.shape == (172,3)
+        assert vector_da.xyz.shape == (172, 3)
 
         # compare first and last vertex, for equality
         np.testing.assert_allclose(vector_da.xyz[0], vector_da.xyz[171])
@@ -217,4 +323,3 @@ class TestArgoverseV2StaticMap(unittest.TestCase):
         )
         # fmt: on
         np.testing.assert_allclose(vector_da.xyz[:4], expected_first4_vertices)
-

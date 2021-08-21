@@ -49,6 +49,9 @@ class Point:
         """Return (3,) vector"""
         return np.array([self.x, self.y, self.z])
 
+    def __eq__(self, other: "Point") -> bool:
+        """Check for equality with another Point object."""
+        return self.x == other.x and self.y == other.y and self.z == other.z
 
 @dataclass
 class Polyline:
@@ -62,13 +65,20 @@ class Polyline:
         return np.vstack([wpt.xyz for wpt in self.waypoints])
 
     @classmethod
-    def from_dict(cls, points_dict: List[Dict[str, float]]) -> "Polyline":
-        """Generate object instance from dictionary read from JSON data.
+    def from_dict_list(cls, json_data: List[Dict[str, float]]) -> "Polyline":
+        """Generate object instance from list of dictionaries, read from JSON data.
 
         TODO: should we rename this as from_points_list_dict() ?
         """
-        return cls(waypoints=[Point(x=v["x"], y=v["y"], z=v["z"]) for v in points_dict])
+        return cls(waypoints=[Point(x=v["x"], y=v["y"], z=v["z"]) for v in json_data])
 
+    def __eq__(self, other: "Polyline") -> bool:
+        """Check for equality with another Polyline object."""
+        if len(self.waypoints) != len(other.waypoints):
+            return False
+
+        return all([wpt == wpt_ for wpt, wpt_ in zip(self.waypoints, other.waypoints)])
+ 
 
 @dataclass
 class DrivableArea:
@@ -150,9 +160,8 @@ class PedestrianCrossing:
     @classmethod
     def from_dict(cls, json_data: Dict[str, Any]) -> "PedestrianCrossing":
         """Generate a PedestrianCrossing object from a dictionary read from JSON data."""
-
-        edge1 = Polyline.from_dict(json_data["edge1"]["points"])
-        edge2 = Polyline.from_dict(json_data["edge2"]["points"])
+        edge1 = Polyline.from_dict_list(json_data["edge1"]["points"])
+        edge2 = Polyline.from_dict_list(json_data["edge2"]["points"])
     
         return PedestrianCrossing(id=json_data["id"], edge1=edge1, edge2=edge2)
 
@@ -222,8 +231,8 @@ class LaneSegment:
         return cls(
             id=json_data["id"],
             lane_type=LaneType(json_data["lane_type"]),
-            right_lane_boundary=Polyline.from_dict(json_data["right_lane_boundary"]["points"]),
-            left_lane_boundary=Polyline.from_dict(json_data["left_lane_boundary"]["points"]),
+            right_lane_boundary=Polyline.from_dict_list(json_data["right_lane_boundary"]["points"]),
+            left_lane_boundary=Polyline.from_dict_list(json_data["left_lane_boundary"]["points"]),
             right_mark_type=LaneMarkType(json_data["right_lane_mark_type"]),
             left_mark_type=LaneMarkType(json_data["left_lane_mark_type"]),
             right_neighbor_id=json_data["right_neighbor"],
