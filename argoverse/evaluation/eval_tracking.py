@@ -159,7 +159,7 @@ def eval_tracks(
         path_track_data = sorted(
             glob.glob(os.path.join(os.fspath(path_tracker_output), "per_sweep_annotations_amodal", "*"))
         )
-        all_uuids: Dict[str, int] = {}
+        all_uuids: Dict[str, int] = {}  # stores all uuids attached to unique integers
         logger.info("log_id = %s", log_id)
 
         for ind_frame in range(len(path_track_data)):
@@ -181,7 +181,7 @@ def eval_tracks(
 
             gt: Dict[int, Dict[str, Any]] = {}
             id_gts = []
-            track_label_uuids: Dict[str, int] = {}
+            track_label_uuids: Dict[str, int] = {}  # stores uuids in frame with unique ints
             for i in range(len(gt_data)):
                 if gt_data[i]["label_class"] != category:
                     continue
@@ -202,6 +202,7 @@ def eval_tracks(
                 )
 
                 if bbox[3] > 0 and in_distance_range_pose(np.zeros(3), center, d_min, d_max):
+                    # assign a unique int value to each uuid in the frame
                     if gt_data[i]["track_label_uuid"] not in track_label_uuids:
                         track_label_uuids[gt_data[i]["track_label_uuid"]] = i
                         track_label_uuid = i
