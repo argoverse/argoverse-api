@@ -25,6 +25,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Polygon
+from numpy.typing import NDArray
 
 from argoverse.visualization.colormap import colormap
 
@@ -37,7 +38,9 @@ _WHITE = (255, 255, 255)
 Segment = Tuple[float, float, float, float]
 
 
-def vis_mask(image: np.ndarray, mask: np.ndarray, color: Union[float, np.ndarray], alpha: float = 0.4) -> np.ndarray:
+def vis_mask(
+    image: NDArray[np.float64], mask: NDArray[np.float64], color: Union[float, NDArray[np.float64]], alpha: float = 0.4
+) -> NDArray[np.float64]:
     """Visualize a single binary mask by blending a colored mask with image.
 
     Args:
@@ -63,11 +66,11 @@ def vis_mask(image: np.ndarray, mask: np.ndarray, color: Union[float, np.ndarray
 
 
 def vis_class(
-    image: np.ndarray,
+    image: NDArray[np.float64],
     pos: Tuple[float, float],
     class_str: str,
     font_scale: float = 50.0,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Visualizes a class.
 
     Args:
@@ -93,7 +96,7 @@ def vis_class(
     return image
 
 
-def vis_bbox(image: np.ndarray, bbox: Tuple[int, int, int, int], thickness: int = 1) -> np.ndarray:
+def vis_bbox(image: NDArray[np.float64], bbox: Tuple[int, int, int, int], thickness: int = 1) -> NDArray[np.float64]:
     """Visualize a bounding box.
     Args:
         image: The input image
@@ -112,7 +115,7 @@ def vis_bbox(image: np.ndarray, bbox: Tuple[int, int, int, int], thickness: int 
     return image
 
 
-def decode_segment_to_mask(segm: Segment, image: np.ndarray) -> np.ndarray:
+def decode_segment_to_mask(segm: Segment, image: NDArray[np.float64]) -> NDArray[np.float64]:
     """Create a mask from a segment
 
     Args:
@@ -130,12 +133,12 @@ def decode_segment_to_mask(segm: Segment, image: np.ndarray) -> np.ndarray:
 
 
 def vis_one_image_opencv(
-    image: np.ndarray,
-    boxes: np.ndarray,
+    image: NDArray[np.float64],
+    boxes: NDArray[np.float64],
     segms: Optional[Sequence[Segment]] = None,
     show_box: bool = False,
     show_class: bool = True,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Constructs a numpy array with the detections visualized.
 
     Args:
@@ -185,10 +188,10 @@ def vis_one_image_opencv(
 
 
 def vis_one_image(
-    image: np.ndarray,
+    image: NDArray[np.float64],
     image_name: str,
     output_dir: str,
-    boxes: np.ndarray,
+    boxes: NDArray[np.float64],
     segms: Optional[Sequence[Segment]] = None,
     dpi: int = 200,
     box_alpha: float = 0.0,
@@ -214,7 +217,7 @@ def vis_one_image(
     if boxes is None or boxes.shape[0] == 0:
         return
 
-    color_list = colormap(rgb=True) / 255
+    color_list: NDArray[np.float64] = colormap(rgb=True) / 255
     plt.get_cmap("rainbow")
 
     fig = plt.figure(frameon=False)
@@ -224,7 +227,7 @@ def vis_one_image(
     fig.add_axes(ax)
     ax.imshow(image)
 
-    sorted_inds: Union[List[Any], np.ndarray]
+    sorted_inds: Union[List[Any], NDArray[np.float64]]
     if boxes is None:
         sorted_inds = []  # avoid crash when 'boxes' is None
     else:

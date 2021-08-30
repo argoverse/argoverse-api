@@ -2,20 +2,21 @@
 
 """A simple python script template."""
 from collections import defaultdict
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy.interpolate as interp
+from numpy.typing import NDArray
 
 from argoverse.map_representation.map_api import ArgoverseMap
 
 _ZORDER = {"AGENT": 15, "AV": 10, "OTHERS": 5}
 
 
-def interpolate_polyline(polyline: np.ndarray, num_points: int) -> np.ndarray:
+def interpolate_polyline(polyline: NDArray[np.float64], num_points: int) -> Any:
     duplicates = []
     for i in range(1, len(polyline)):
         if np.allclose(polyline[i], polyline[i - 1]):
@@ -31,7 +32,7 @@ def interpolate_polyline(polyline: np.ndarray, num_points: int) -> np.ndarray:
 
 def viz_sequence(
     df: pd.DataFrame,
-    lane_centerlines: Optional[List[np.ndarray]] = None,
+    lane_centerlines: Optional[List[NDArray[np.float64]]] = None,
     show: bool = True,
     smoothen: bool = False,
 ) -> None:

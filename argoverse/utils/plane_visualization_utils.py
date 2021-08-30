@@ -3,6 +3,7 @@
 from typing import List, Optional
 
 import numpy as np
+from numpy.typing import NDArray
 
 from argoverse.utils import mayavi_wrapper
 from argoverse.utils.mesh_grid import get_mesh_grid_as_point_cloud
@@ -14,7 +15,7 @@ from argoverse.visualization.mayavi_utils import (
 )
 
 
-def populate_frustum_voxels(planes: List[np.ndarray], fig: Figure, axis_pair: str) -> Figure:
+def populate_frustum_voxels(planes: List[NDArray[np.float64]], fig: Figure, axis_pair: str) -> Figure:
     """
     Generate grid in xy plane, and then treat it as grid in xz (ground) plane
     in camera coordinate system.
@@ -50,8 +51,8 @@ def populate_frustum_voxels(planes: List[np.ndarray], fig: Figure, axis_pair: st
 
 
 def plot_frustum_planes_and_normals(
-    planes: List[np.ndarray],
-    cuboid_verts: Optional[np.ndarray] = None,
+    planes: List[NDArray[np.float64]],
+    cuboid_verts: Optional[NDArray[np.float64]] = None,
     near_clip_dist: float = 0.5,
 ) -> None:
     """
@@ -127,7 +128,7 @@ def plot_frustum_planes_and_normals(
     mayavi_wrapper.mlab.show()  # type: ignore
 
 
-def get_perpendicular(n: np.ndarray) -> np.ndarray:
+def get_perpendicular(n: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     n guarantees that dot(n, getPerpendicular(n)) is zero, which is the
     orthogonality condition, while also keeping the magnitude of the vector
@@ -155,7 +156,9 @@ def get_perpendicular(n: np.ndarray) -> np.ndarray:
     return result
 
 
-def generate_grid_on_plane(a: float, b: float, c: float, d: float, P: np.ndarray, radius: float = 15) -> np.ndarray:
+def generate_grid_on_plane(
+    a: float, b: float, c: float, d: float, P: NDArray[np.float64], radius: float = 15
+) -> NDArray[np.float64]:
     """
     Args:
         a,b,c,d: Coefficients of ``ax + by + cz = d`` defining plane

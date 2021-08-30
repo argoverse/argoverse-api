@@ -9,6 +9,7 @@ import open3d as o3d
 import scipy.interpolate as interpolate
 import torch
 import torch.nn.functional as F
+from numpy.typing import NDArray
 
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.utils.json_utils import read_json_file
@@ -45,7 +46,7 @@ def save_bev_img(
     dataset_name: str,
     log_id: str,
     lidar_timestamp: int,
-    pc: np.ndarray,
+    pc: NDArray[np.float64],
 ) -> None:
     """
     Plot results on bev images and save
@@ -147,7 +148,7 @@ def save_bev_img(
     )
 
 
-def bspline_1d(x: np.ndarray, y: np.ndarray, s: float = 20.0, k: int = 3) -> np.ndarray:
+def bspline_1d(x: NDArray[np.float64], y: NDArray[np.float64], s: float = 20.0, k: int = 3) -> Any:
     """Perform B-Spline smoothing of trajectories for temporal noise reduction
 
     Args:
@@ -168,7 +169,7 @@ def bspline_1d(x: np.ndarray, y: np.ndarray, s: float = 20.0, k: int = 3) -> np.
     return interpolate.splev(np.arange(y.shape[0]), tck)
 
 
-def derivative(x: np.ndarray) -> np.ndarray:
+def derivative(x: NDArray[np.float64]) -> Any:
     """Compute time derivatives for velocity and acceleration
 
     Args:
@@ -190,7 +191,7 @@ def derivative(x: np.ndarray) -> np.ndarray:
     return F.conv1d(x_padded, filters)[0, 0].numpy()
 
 
-def compute_v_a(traj: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def compute_v_a(traj: NDArray[np.float64]) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
     """
     Compute velocity and acceleration
 

@@ -8,6 +8,7 @@ from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union, overload
 
 import imageio
 import numpy as np
+from numpy.typing import NDArray
 from typing_extensions import Literal
 
 from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
@@ -27,11 +28,11 @@ class CameraConfig(NamedTuple):
         img_height: image height
     """
 
-    extrinsic: np.ndarray
-    intrinsic: np.ndarray
+    extrinsic: NDArray[np.float64]
+    intrinsic: NDArray[np.float64]
     img_width: int
     img_height: int
-    distortion_coeffs: np.ndarray
+    distortion_coeffs: NDArray[np.float64]
 
 
 class Calibration:
@@ -86,7 +87,7 @@ class Calibration:
 
         self.camera = calib["key"][10:]
 
-    def cart2hom(self, pts_3d: np.ndarray) -> np.ndarray:
+    def cart2hom(self, pts_3d: NDArray[np.float64]) -> NDArray[np.float64]:
         """Convert Cartesian coordinates to Homogeneous.
 
         Args:
@@ -99,7 +100,7 @@ class Calibration:
         pts_3d_hom = np.hstack((pts_3d, np.ones((n, 1))))
         return pts_3d_hom
 
-    def project_ego_to_image(self, pts_3d_ego: np.ndarray) -> np.ndarray:
+    def project_ego_to_image(self, pts_3d_ego: NDArray[np.float64]) -> NDArray[np.float64]:
         """Project egovehicle coordinate to image.
 
         Args:
@@ -112,7 +113,7 @@ class Calibration:
         uv_cam = self.project_ego_to_cam(pts_3d_ego)
         return self.project_cam_to_image(uv_cam)
 
-    def project_ego_to_cam(self, pts_3d_ego: np.ndarray) -> np.ndarray:
+    def project_ego_to_cam(self, pts_3d_ego: NDArray[np.float64]) -> Any:
         """Project egovehicle point onto camera frame.
 
         Args:
@@ -126,7 +127,7 @@ class Calibration:
 
         return uv_cam.transpose()[:, 0:3]
 
-    def project_cam_to_ego(self, pts_3d_rect: np.ndarray) -> np.ndarray:
+    def project_cam_to_ego(self, pts_3d_rect: NDArray[np.float64]) -> Any:
         """Project point in camera frame to egovehicle frame.
 
         Args:
@@ -137,7 +138,7 @@ class Calibration:
         """
         return np.linalg.inv((self.extrinsic)).dot(self.cart2hom(pts_3d_rect).transpose()).transpose()[:, 0:3]
 
-    def project_image_to_ego(self, uv_depth: np.ndarray) -> np.ndarray:
+    def project_image_to_ego(self, uv_depth: NDArray[np.float64]) -> Any:
         """Project 2D image with depth to egovehicle coordinate.
 
         Args:
@@ -150,7 +151,7 @@ class Calibration:
         uv_cam = self.project_image_to_cam(uv_depth)
         return self.project_cam_to_ego(uv_cam)
 
-    def project_image_to_cam(self, uv_depth: np.ndarray) -> np.ndarray:
+    def project_image_to_cam(self, uv_depth: NDArray[np.float64]) -> NDArray[np.float64]:
         """Project 2D image with depth to camera coordinate.
 
         Args:
@@ -172,7 +173,7 @@ class Calibration:
         pts_3d_cam[:, 2] = uv_depth[:, 2]
         return pts_3d_cam
 
-    def project_cam_to_image(self, pts_3d_rect: np.ndarray) -> np.ndarray:
+    def project_cam_to_image(self, pts_3d_rect: NDArray[np.float64]) -> NDArray[np.float64]:
         """Project camera coordinate to image.
 
         Args:
@@ -187,7 +188,7 @@ class Calibration:
         return uv.transpose()
 
 
-def load_image(img_filename: Union[str, Path]) -> np.ndarray:
+def load_image(img_filename: Union[str, Path]) -> Any:
     """Load image.
 
     Args:
@@ -255,7 +256,7 @@ def load_stereo_calib(calib_filepath: Union[str, Path]) -> Dict[Any, Calibration
     return calib_list
 
 
-def get_camera_extrinsic_matrix(config: Dict[str, Any]) -> np.ndarray:
+def get_camera_extrinsic_matrix(config: Dict[str, Any]) -> NDArray[np.float64]:
     """Load camera calibration rotation and translation.
 
     Note that the camera calibration file contains the SE3 for sensor frame to the vehicle frame, i.e.
@@ -279,7 +280,7 @@ def get_camera_extrinsic_matrix(config: Dict[str, Any]) -> np.ndarray:
     return egovehicle_T_camera.inverse().transform_matrix
 
 
-def get_camera_intrinsic_matrix(camera_config: Dict[str, Any]) -> np.ndarray:
+def get_camera_intrinsic_matrix(camera_config: Dict[str, Any]) -> NDArray[np.float64]:
     """Load camera calibration data and constructs intrinsic matrix.
 
     Args:
@@ -333,7 +334,7 @@ def get_calibration_config(calibration: Dict[str, Any], camera_name: str) -> Cam
     )
 
 
-def point_cloud_to_homogeneous(points: np.ndarray) -> np.ndarray:
+def point_cloud_to_homogeneous(points: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     Args:
         points: Numpy array of shape (N,3)
@@ -345,7 +346,9 @@ def point_cloud_to_homogeneous(points: np.ndarray) -> np.ndarray:
     return np.hstack([points, np.ones((num_pts, 1))])
 
 
-def remove_nan_values(uv: np.ndarray, uv_cam: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def remove_nan_values(
+    uv: NDArray[np.float64], uv_cam: NDArray[np.float64]
+) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Accept corrupt array"""
 
     uv = uv.T
@@ -359,7 +362,9 @@ def remove_nan_values(uv: np.ndarray, uv_cam: np.ndarray) -> Tuple[np.ndarray, n
     return uv.T, uv_cam.T
 
 
-def determine_valid_cam_coords(uv: np.ndarray, uv_cam: np.ndarray, camera_config: CameraConfig) -> np.ndarray:
+def determine_valid_cam_coords(
+    uv: NDArray[np.float64], uv_cam: NDArray[np.float64], camera_config: CameraConfig
+) -> Any:
     """
     Given a set of coordinates in the image plane and corresponding points
     in the camera coordinate reference frame, determine those points
@@ -392,13 +397,13 @@ def determine_valid_cam_coords(uv: np.ndarray, uv_cam: np.ndarray, camera_config
 # uv_cam: Numpy array of shape (N,3) with dtype np.float32
 # valid_pts_bool: Numpy array of shape (N,) with dtype bool
 # camera configuration : (only if you asked for it).
-_ReturnWithConfig = Tuple[np.ndarray, np.ndarray, np.ndarray, CameraConfig]
-_ReturnWithoutConfig = Tuple[np.ndarray, np.ndarray, np.ndarray]
+_ReturnWithConfig = Tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], CameraConfig]
+_ReturnWithoutConfig = Tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]
 
 
 @overload
 def project_lidar_to_img(
-    lidar_points_h: np.ndarray,
+    lidar_points_h: NDArray[np.float64],
     calib_data: Dict[str, Any],
     camera_name: str,
     return_camera_config: Literal[True],
@@ -409,7 +414,7 @@ def project_lidar_to_img(
 
 @overload
 def project_lidar_to_img(
-    lidar_points_h: np.ndarray,
+    lidar_points_h: NDArray[np.float64],
     calib_data: Dict[str, Any],
     camera_name: str,
     return_camera_config: Literal[False],
@@ -420,7 +425,7 @@ def project_lidar_to_img(
 
 @overload
 def project_lidar_to_img(
-    lidar_points_h: np.ndarray,
+    lidar_points_h: NDArray[np.float64],
     calib_data: Dict[str, Any],
     camera_name: str,
     return_camera_config: bool = False,
@@ -430,7 +435,7 @@ def project_lidar_to_img(
 
 
 def project_lidar_to_img(
-    lidar_points_h: np.ndarray,
+    lidar_points_h: NDArray[np.float64],
     calib_data: Dict[str, Any],
     camera_name: str,
     return_camera_config: bool = False,
@@ -471,8 +476,8 @@ SMALL_VALUE_THRESHOLD = 1e-9
 
 
 def proj_cam_to_uv(
-    uv_cam: np.ndarray, camera_config: CameraConfig
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, CameraConfig]:
+    uv_cam: NDArray[np.float64], camera_config: CameraConfig
+) -> Tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], CameraConfig]:
     num_points = uv_cam.shape[0]
     uvh = np.zeros((num_points, 3))
     # (x_transformed_m, y_transformed_m, z_transformed_m)
@@ -529,11 +534,11 @@ def distort_single(radius_undist: float, distort_coeffs: List[float]) -> float:
 
 
 def project_lidar_to_undistorted_img(
-    lidar_points_h: np.ndarray,
+    lidar_points_h: NDArray[np.float64],
     calib_data: Dict[str, Any],
     camera_name: str,
     remove_nan: bool = False,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, CameraConfig]:
+) -> Tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], CameraConfig]:
     camera_config = get_calibration_config(calib_data, camera_name)
 
     R = camera_config.extrinsic[:3, :3]
@@ -556,17 +561,19 @@ def project_lidar_to_undistorted_img(
 # valid_pts_bool: Numpy array of shape (N,) with dtype bool
 # camera configuration : (only if you asked for it).
 _ReturnWithOptConfig = Tuple[
-    Optional[np.ndarray],
-    Optional[np.ndarray],
-    Optional[np.ndarray],
+    Optional[NDArray[np.float64]],
+    Optional[NDArray[np.float64]],
+    Optional[NDArray[np.float64]],
     Optional[CameraConfig],
 ]
-_ReturnWithoutOptConfig = Tuple[Optional[np.ndarray], Optional[np.ndarray], Optional[np.ndarray]]
+_ReturnWithoutOptConfig = Tuple[
+    Optional[NDArray[np.float64]], Optional[NDArray[np.float64]], Optional[NDArray[np.float64]]
+]
 
 
 @overload
 def project_lidar_to_img_motion_compensated(
-    pts_h_lidar_time: np.ndarray,
+    pts_h_lidar_time: NDArray[np.float64],
     calib_data: Dict[str, Any],
     camera_name: str,
     cam_timestamp: int,
@@ -580,7 +587,7 @@ def project_lidar_to_img_motion_compensated(
 
 @overload
 def project_lidar_to_img_motion_compensated(
-    pts_h_lidar_time: np.ndarray,
+    pts_h_lidar_time: NDArray[np.float64],
     calib_data: Dict[str, Any],
     camera_name: str,
     cam_timestamp: int,
@@ -594,7 +601,7 @@ def project_lidar_to_img_motion_compensated(
 
 @overload
 def project_lidar_to_img_motion_compensated(
-    pts_h_lidar_time: np.ndarray,
+    pts_h_lidar_time: NDArray[np.float64],
     calib_data: Dict[str, Any],
     camera_name: str,
     cam_timestamp: int,
@@ -607,7 +614,7 @@ def project_lidar_to_img_motion_compensated(
 
 
 def project_lidar_to_img_motion_compensated(
-    pts_h_lidar_time: np.ndarray,
+    pts_h_lidar_time: NDArray[np.float64],
     calib_data: Dict[str, Any],
     camera_name: str,
     cam_timestamp: int,

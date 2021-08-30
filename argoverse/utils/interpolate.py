@@ -1,14 +1,15 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
-from typing import Tuple, cast
+from typing import Any, Tuple, cast
 
 import numpy as np
+from numpy.typing import NDArray
 
 # For a single line segment
 NUM_CENTERLINE_INTERP_PTS = 10
 
 
-def compute_lane_width(left_even_pts: np.ndarray, right_even_pts: np.ndarray) -> float:
+def compute_lane_width(left_even_pts: NDArray[np.float64], right_even_pts: NDArray[np.float64]) -> float:
     """
     Compute the width of a lane, given an explicit left and right boundary.
     Requires an equal number of waypoints on each boundary.
@@ -25,7 +26,9 @@ def compute_lane_width(left_even_pts: np.ndarray, right_even_pts: np.ndarray) ->
     return lane_width
 
 
-def compute_mid_pivot_arc(single_pt: np.ndarray, arc_pts: np.ndarray) -> Tuple[np.ndarray, float]:
+def compute_mid_pivot_arc(
+    single_pt: NDArray[np.float64], arc_pts: NDArray[np.float64]
+) -> Tuple[NDArray[np.float64], float]:
     """
     Given a line of points on one boundary, and a single point on the other side,
     produce the middle arc we get by pivoting around the single point.
@@ -47,10 +50,10 @@ def compute_mid_pivot_arc(single_pt: np.ndarray, arc_pts: np.ndarray) -> Tuple[n
 
 
 def compute_midpoint_line(
-    left_ln_bnds: np.ndarray,
-    right_ln_bnds: np.ndarray,
+    left_ln_bnds: NDArray[np.float64],
+    right_ln_bnds: NDArray[np.float64],
     num_interp_pts: int = NUM_CENTERLINE_INTERP_PTS,
-) -> Tuple[np.ndarray, float]:
+) -> Tuple[NDArray[np.float64], float]:
     """
     Compute the lane segment centerline by interpolating n points along each
     boundary, and then averaging left and right waypoints.
@@ -91,7 +94,7 @@ def compute_midpoint_line(
     return centerline_pts, lane_width
 
 
-def get_duplicate_indices_1d(coords_1d: np.ndarray) -> np.ndarray:
+def get_duplicate_indices_1d(coords_1d: NDArray[np.float64]) -> Any:
     """
     Given a 1D polyline, remove consecutive duplicate coordinates.
 
@@ -111,7 +114,7 @@ def get_duplicate_indices_1d(coords_1d: np.ndarray) -> np.ndarray:
     return dup_inds
 
 
-def assert_consecutive(shared_dup_inds: int, num_pts: int, coords_1d: np.ndarray) -> None:
+def assert_consecutive(shared_dup_inds: int, num_pts: int, coords_1d: NDArray[np.float64]) -> None:
     """
     Args:
         shared_dup_inds
@@ -131,7 +134,9 @@ def assert_consecutive(shared_dup_inds: int, num_pts: int, coords_1d: np.ndarray
     assert left_dup or right_dup
 
 
-def eliminate_duplicates_2d(px: np.ndarray, py: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def eliminate_duplicates_2d(
+    px: NDArray[np.float64], py: NDArray[np.float64]
+) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
     """
     We compare indices to ensure that deleted values are exactly
     adjacent to each other in the polyline sequence.
@@ -155,7 +160,7 @@ def eliminate_duplicates_2d(px: np.ndarray, py: np.ndarray) -> Tuple[np.ndarray,
     return px, py
 
 
-def interp_arc(t: int, px: np.ndarray, py: np.ndarray) -> np.ndarray:
+def interp_arc(t: int, px: NDArray[np.float64], py: NDArray[np.float64]) -> Any:
     """Linearly interpolate equally-spaced points along a polyline.
 
     We use a chordal parameterization so that interpolated arc-lengths

@@ -1,14 +1,16 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
 """Module for `SE2`."""
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from argoverse.utils.helpers import assert_np_array_shape
 
 
 class SE2:
-    def __init__(self, rotation: np.ndarray, translation: np.ndarray) -> None:
+    def __init__(self, rotation: NDArray[np.float64], translation: NDArray[np.float64]) -> None:
         """Initialize.
 
         Args:
@@ -26,7 +28,7 @@ class SE2:
         self.transform_matrix[:2, :2] = self.rotation
         self.transform_matrix[:2, 2] = self.translation
 
-    def transform_point_cloud(self, point_cloud: np.ndarray) -> np.ndarray:
+    def transform_point_cloud(self, point_cloud: NDArray[np.float64]) -> Any:
         """Apply the SE(2) transformation to point_cloud.
 
         Args:
@@ -54,7 +56,7 @@ class SE2:
         """
         return SE2(rotation=self.rotation.T, translation=self.rotation.T.dot(-self.translation))
 
-    def inverse_transform_point_cloud(self, point_cloud: np.ndarray) -> np.ndarray:
+    def inverse_transform_point_cloud(self, point_cloud: NDArray[np.float64]) -> Any:
         """Transform the point_cloud by the inverse of this SE2.
 
         Args:

@@ -1,11 +1,14 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 """Utility functions for dilation."""
 
+from typing import Any
+
 import cv2
 import numpy as np
+from numpy.typing import NDArray
 
 
-def dilate_by_l2(img: np.ndarray, dilation_thresh: float = 5.0) -> np.ndarray:
+def dilate_by_l2(img: NDArray[np.float64], dilation_thresh: float = 5.0) -> Any:
     """Dilate a mask using the L2 distance from a zero pixel.
 
     OpenCV's distance transform calculates the DISTANCE TO THE CLOSEST ZERO PIXEL for each
@@ -23,7 +26,7 @@ def dilate_by_l2(img: np.ndarray, dilation_thresh: float = 5.0) -> np.ndarray:
     Returns:
         An image with the same size with the dilated mask
     """
-    mask_diff = np.ones_like(img).astype(np.uint8) - img
+    mask_diff: int = np.ones_like(img).astype(np.uint8) - img
     distance_mask = cv2.distanceTransform(mask_diff, distanceType=cv2.DIST_L2, maskSize=cv2.DIST_MASK_PRECISE)
     distance_mask = distance_mask.astype(np.float32)
     return (distance_mask <= dilation_thresh).astype(np.uint8)

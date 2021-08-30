@@ -6,13 +6,14 @@ import math
 from typing import Dict, List, Optional
 
 import numpy as np
+from numpy.typing import NDArray
 
 from argoverse.map_representation.map_api import ArgoverseMap
 
 LOW_PROB_THRESHOLD_FOR_METRICS = 0.05
 
 
-def get_ade(forecasted_trajectory: np.ndarray, gt_trajectory: np.ndarray) -> float:
+def get_ade(forecasted_trajectory: NDArray[np.float64], gt_trajectory: NDArray[np.float64]) -> float:
     """Compute Average Displacement Error.
 
     Args:
@@ -37,7 +38,7 @@ def get_ade(forecasted_trajectory: np.ndarray, gt_trajectory: np.ndarray) -> flo
     return ade
 
 
-def get_fde(forecasted_trajectory: np.ndarray, gt_trajectory: np.ndarray) -> float:
+def get_fde(forecasted_trajectory: NDArray[np.float64], gt_trajectory: NDArray[np.float64]) -> float:
     """Compute Final Displacement Error.
 
     Args:
@@ -56,8 +57,8 @@ def get_fde(forecasted_trajectory: np.ndarray, gt_trajectory: np.ndarray) -> flo
 
 
 def get_displacement_errors_and_miss_rate(
-    forecasted_trajectories: Dict[int, List[np.ndarray]],
-    gt_trajectories: Dict[int, np.ndarray],
+    forecasted_trajectories: Dict[int, List[NDArray[np.float64]]],
+    gt_trajectories: Dict[int, NDArray[np.float64]],
     max_guesses: int,
     horizon: int,
     miss_threshold: float,
@@ -147,7 +148,7 @@ def get_displacement_errors_and_miss_rate(
 
 
 def get_drivable_area_compliance(
-    forecasted_trajectories: Dict[int, List[np.ndarray]],
+    forecasted_trajectories: Dict[int, List[NDArray[np.float64]]],
     city_names: Dict[int, str],
     max_n_guesses: int,
 ) -> float:
@@ -182,8 +183,8 @@ def get_drivable_area_compliance(
 
 
 def compute_forecasting_metrics(
-    forecasted_trajectories: Dict[int, List[np.ndarray]],
-    gt_trajectories: Dict[int, np.ndarray],
+    forecasted_trajectories: Dict[int, List[NDArray[np.float64]]],
+    gt_trajectories: Dict[int, NDArray[np.float64]],
     city_names: Dict[int, str],
     max_n_guesses: int,
     horizon: int,

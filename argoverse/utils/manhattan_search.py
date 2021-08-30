@@ -3,14 +3,15 @@
 """Fast search functions of nearest neighbor based on Manhattan distance."""
 
 import logging
-from typing import List, Tuple
+from typing import Any, List, Tuple
 
 import numpy as np
+from numpy.typing import NDArray
 
 logger = logging.getLogger(__name__)
 
 
-def compute_polygon_bboxes(polygons: np.ndarray) -> np.ndarray:
+def compute_polygon_bboxes(polygons: NDArray[np.float64]) -> NDArray[np.float64]:
     """Compute the minimum size enclosing xy bounding box for each polygon that is provided as input.
     Args:
         polygons: an array of type 'O' (object) with shape (n,). Each object has shape (m, 3+).
@@ -18,7 +19,7 @@ def compute_polygon_bboxes(polygons: np.ndarray) -> np.ndarray:
     Returns:
         polygon_bboxes: a float array with shape (n, 4).
     """
-    bboxes: List[np.ndarray] = []
+    bboxes: List[NDArray[np.float64]] = []
 
     for polygon in polygons:
         bbox = compute_point_cloud_bbox(polygon)
@@ -28,7 +29,7 @@ def compute_polygon_bboxes(polygons: np.ndarray) -> np.ndarray:
     return polygon_bboxes
 
 
-def compute_point_cloud_bbox(point_cloud: np.ndarray, verbose: bool = False) -> np.ndarray:
+def compute_point_cloud_bbox(point_cloud: NDArray[np.float64], verbose: bool = False) -> NDArray[np.float64]:
     """Given a set of 2D or 3D points, find the minimum size axis-aligned bounding box in the xy plane (ground plane).
 
     Args:
@@ -54,7 +55,9 @@ def compute_point_cloud_bbox(point_cloud: np.ndarray, verbose: bool = False) -> 
     return bbox
 
 
-def find_all_polygon_bboxes_overlapping_query_bbox(polygon_bboxes: np.ndarray, query_bbox: np.ndarray) -> np.ndarray:
+def find_all_polygon_bboxes_overlapping_query_bbox(
+    polygon_bboxes: NDArray[np.float64], query_bbox: NDArray[np.float64]
+) -> Any:
     """Find all the overlapping polygon bounding boxes.
 
     Each bounding box has the following structure:
@@ -111,13 +114,13 @@ def find_all_polygon_bboxes_overlapping_query_bbox(polygon_bboxes: np.ndarray, q
 
 
 def find_local_polygons(
-    lane_polygons: np.ndarray,
-    lane_bboxes: np.ndarray,
+    lane_polygons: NDArray[np.float64],
+    lane_bboxes: NDArray[NDArray[np.float64]],
     query_min_x: float,
     query_max_x: float,
     query_min_y: float,
     query_max_y: float,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[NDArray[np.float64], NDArray[NDArray[np.float64]]]:
     """Find local polygons. We always also return indices.
 
     Take a collection of precomputed polygon bounding boxes, and compare with a query bounding box then returns the
@@ -146,10 +149,10 @@ def find_local_polygons(
 
 
 def prune_polygons_manhattan_dist(
-    query_pt: np.ndarray,
-    points_xyz: np.ndarray,
+    query_pt: NDArray[np.float64],
+    points_xyz: NDArray[np.float64],
     query_search_range_manhattan: float = 200.0,
-) -> np.ndarray:
+) -> Any:
     """Prune polygon points based on a search area defined by the manhattan distance.
 
     Take a collection of small point clouds and return only point clouds that fall within a manhattan search radius of

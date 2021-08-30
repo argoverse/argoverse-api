@@ -2,11 +2,12 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.typing import NDArray
 
 
 def clip_point_cloud_to_visible_region(
-    egovehicle_pts: np.ndarray, lidar_pts: np.ndarray, n_polar_bins: int = 100
-) -> np.ndarray:
+    egovehicle_pts: NDArray[np.float64], lidar_pts: NDArray[np.float64], n_polar_bins: int = 100
+) -> NDArray[np.float64]:
     """
     LiDAR points provide visibility information for a map point cloud in city coordinates.
     We bin the world into polar bins, and then if you've gone past the farthest LiDAR point
@@ -65,7 +66,9 @@ def clip_point_cloud_to_visible_region(
     return egovehicle_pts
 
 
-def viz_polar_bin_contents(bin_lidar_pts: np.ndarray, invalid_egovehicle_pts: np.ndarray, filename: str) -> None:
+def viz_polar_bin_contents(
+    bin_lidar_pts: NDArray[np.float64], invalid_egovehicle_pts: NDArray[np.float64], filename: str
+) -> None:
     """
     Visualize what the utility is doing within each polar bin.
 

@@ -3,11 +3,12 @@
 import copy
 import math
 import warnings
-from typing import Mapping, Tuple
+from typing import Any, Mapping, Tuple
 
 import cv2
 import numpy as np
 from colour import Color
+from numpy.typing import NDArray
 from typing_extensions import Protocol
 
 from argoverse.utils.cv2_plotting_utils import draw_polygon_cv2, draw_polyline_cv2
@@ -23,7 +24,7 @@ LaneCenterline = Mapping[int, LaneSegment]
 
 
 def _find_min_coords_das(
-    driveable_areas: np.ndarray, xmin: float, ymin: float, xmax: float, ymax: float
+    driveable_areas: NDArray[np.float64], xmin: float, ymin: float, xmax: float, ymax: float
 ) -> Tuple[float, float, float, float]:
     for da in driveable_areas:
         xmin = min(da[:, 0].min(), xmin)
@@ -47,7 +48,7 @@ def _find_min_coords_centerlines(
     return xmin, ymin, xmax, ymax
 
 
-def _get_opencv_green_to_red_colormap(num_color_bins: int) -> np.ndarray:
+def _get_opencv_green_to_red_colormap(num_color_bins: int) -> Any:
     """Create a red to green BGR colormap with a finite number of steps.
 
     Args:
@@ -63,7 +64,7 @@ def _get_opencv_green_to_red_colormap(num_color_bins: int) -> np.ndarray:
 
 
 def _get_int_image_bounds_from_city_coords(
-    driveable_areas: np.ndarray, lane_centerlines: LaneCenterline
+    driveable_areas: NDArray[np.float64], lane_centerlines: LaneCenterline
 ) -> Tuple[int, int, int, int, int, int]:
     """Get the internal iamge bounds based on the city coordinates
 
@@ -93,13 +94,13 @@ def _get_int_image_bounds_from_city_coords(
 
 
 class MapProtocol(Protocol):
-    def remove_non_driveable_area_points(self, point_cloud: np.ndarray, city_name: str) -> np.ndarray:
+    def remove_non_driveable_area_points(self, point_cloud: NDArray[np.float64], city_name: str) -> NDArray[np.float64]:
         ...
 
 
 def render_global_city_map_bev(
     lane_centerlines: LaneCenterline,
-    driveable_areas: np.ndarray,
+    driveable_areas: NDArray[np.float64],
     city_name: str,
     avm: MapProtocol,
     plot_rasterized_roi: bool = True,

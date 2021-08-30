@@ -1,16 +1,19 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 """OpenCV plotting utility functions."""
 
-from typing import List, Tuple
+from typing import Any, List, Tuple
 
 import cv2
 import numpy as np
+from numpy.typing import NDArray
 
 from .calibration import CameraConfig, proj_cam_to_uv
 from .frustum_clipping import clip_segment_v3_plane_n
 
 
-def add_text_cv2(img: np.ndarray, text: str, x: int, y: int, color: Tuple[int, int, int], thickness: int = 3) -> None:
+def add_text_cv2(
+    img: NDArray[np.float64], text: str, x: int, y: int, color: Tuple[int, int, int], thickness: int = 3
+) -> None:
     """Add text to image using OpenCV. Color should be BGR order"""
     img = cv2.putText(
         img,
@@ -25,12 +28,14 @@ def add_text_cv2(img: np.ndarray, text: str, x: int, y: int, color: Tuple[int, i
 
 
 def draw_clipped_line_segment(
-    img: np.ndarray,
-    vert_a: np.ndarray,
-    vert_b: np.ndarray,
+    img: NDArray[np.float64],
+    vert_a: NDArray[np.float64],
+    vert_b: NDArray[np.float64],
     camera_config: CameraConfig,
     linewidth: int,
-    planes: List[Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]],
+    planes: List[
+        Tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]
+    ],
     color: Tuple[int, int, int],
 ) -> None:
     """Plot the portion of a line segment that lives within a parameterized 3D camera frustum.
@@ -62,7 +67,9 @@ def draw_clipped_line_segment(
     )
 
 
-def draw_point_cloud_in_img_cv2(img: np.ndarray, xy: np.ndarray, colors: np.ndarray, radius: int = 5) -> np.ndarray:
+def draw_point_cloud_in_img_cv2(
+    img: NDArray[np.float64], xy: NDArray[np.float64], colors: NDArray[np.float64], radius: int = 5
+) -> NDArray[np.float64]:
     """Plot a point cloud in an image by drawing small circles centered at (x,y) locations.
 
     Note these are not (u,v) but rather (v,u) coordinate pairs.
@@ -84,8 +91,8 @@ def draw_point_cloud_in_img_cv2(img: np.ndarray, xy: np.ndarray, colors: np.ndar
 
 
 def draw_polyline_cv2(
-    line_segments_arr: np.ndarray,
-    image: np.ndarray,
+    line_segments_arr: NDArray[np.float64],
+    image: NDArray[np.float64],
     color: Tuple[int, int, int],
     im_h: int,
     im_w: int,
@@ -113,7 +120,9 @@ def draw_polyline_cv2(
             image = cv2.line(image, (x1, y1), (x2, y2), color, 2, cv2.LINE_AA)
 
 
-def draw_polygon_cv2(points: np.ndarray, image: np.ndarray, color: Tuple[int, int, int]) -> np.ndarray:
+def draw_polygon_cv2(
+    points: NDArray[np.float64], image: NDArray[np.float64], color: Tuple[int, int, int]
+) -> NDArray[np.float64]:
     """Draw a polygon onto an image using the given points and fill color.
 
     These polygons are often non-convex, so we cannot use cv2.fillConvexPoly().
@@ -135,7 +144,9 @@ def draw_polygon_cv2(points: np.ndarray, image: np.ndarray, color: Tuple[int, in
     return image
 
 
-def plot_bbox_polygon_cv2(img: np.ndarray, track_id: str, color: np.ndarray, bbox: np.ndarray) -> np.ndarray:
+def plot_bbox_polygon_cv2(
+    img: NDArray[np.float64], track_id: str, color: NDArray[np.float64], bbox: NDArray[np.float64]
+) -> NDArray[np.float64]:
     """Draw a colored bounding box with a red border.
 
     We use OpenCV's rectangle rendering to draw the thin red border.
@@ -176,7 +187,7 @@ def plot_bbox_polygon_cv2(img: np.ndarray, track_id: str, color: np.ndarray, bbo
     return img
 
 
-def get_img_contours(img: np.ndarray) -> np.ndarray:
+def get_img_contours(img: NDArray[np.float64]) -> Any:
     """
     Uses
 

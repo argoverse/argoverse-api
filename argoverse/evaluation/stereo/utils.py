@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from numba import njit
+from numpy.typing import NDArray
 
 from argoverse.evaluation.stereo.constants import (
     DEFAULT_ABS_ERROR_THRESHOLDS,
@@ -129,7 +130,7 @@ def accumulate_stereo_metrics(abs_error_thresholds: List[int]) -> pd.DataFrame:
 
 
 @njit(nogil=True)  # type: ignore
-def interpolate_disparity(disparity: np.ndarray) -> np.ndarray:
+def interpolate_disparity(disparity: NDArray[np.float64]) -> NDArray[np.float64]:
     """Interpolate disparity image to inpaint holes.
 
     The predicted disparity map might contain holes which need to be interpolated for a dense result.
@@ -202,8 +203,8 @@ def interpolate_disparity(disparity: np.ndarray) -> np.ndarray:
 
 
 def write_disparity_error_image(
-    pred_disparity: np.ndarray,
-    gt_disparity: np.ndarray,
+    pred_disparity: NDArray[np.float64],
+    gt_disparity: NDArray[np.float64],
     timestamp: int,
     write_dir_path: Path,
     abs_error_thresholds: List[int] = DEFAULT_ABS_ERROR_THRESHOLDS,
@@ -233,11 +234,11 @@ def write_disparity_error_image(
 
 
 def compute_disparity_error_image(
-    pred_disparity: np.ndarray,
-    gt_disparity: np.ndarray,
+    pred_disparity: NDArray[np.float64],
+    gt_disparity: NDArray[np.float64],
     abs_error_thresholds: List[int] = DEFAULT_ABS_ERROR_THRESHOLDS,
     rel_error_thresholds: List[float] = DEFAULT_REL_ERROR_THRESHOLDS,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Compute the disparity error image as in the KITTI Stereo 2015 benchmark.
     The disparity error map uses a log colormap depicting correct estimates in blue and wrong estimates in red color
     tones. We define correct disparity estimates when the absolute disparity error is less than 10 pixels and the

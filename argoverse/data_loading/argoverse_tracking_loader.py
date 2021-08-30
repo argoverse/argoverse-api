@@ -6,6 +6,7 @@ import os
 from typing import Dict, Iterator, List, Optional, Union, cast
 
 import numpy as np
+from numpy.typing import NDArray
 
 import argoverse.data_loading.object_label_record as object_label
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
@@ -25,7 +26,7 @@ class ArgoverseTrackingLoader:
         self.CAMERA_LIST = CAMERA_LIST
         self._log_list: Optional[List[str]] = None
         self._image_list: Optional[Dict[str, Dict[str, List[str]]]] = None
-        self._image_list_sync: Optional[Dict[str, Dict[str, List[np.ndarray]]]] = None
+        self._image_list_sync: Optional[Dict[str, Dict[str, List[NDArray[np.float64]]]]] = None
         self._lidar_list: Optional[Dict[str, List[str]]] = None
         self._image_timestamp_list: Optional[Dict[str, Dict[str, List[int]]]] = None
         self._timestamp_image_dict: Optional[Dict[str, Dict[str, Dict[int, str]]]] = None
@@ -128,7 +129,7 @@ class ArgoverseTrackingLoader:
         return self._image_list[self.current_log]
 
     @property
-    def image_list_sync(self) -> Dict[str, List[np.ndarray]]:
+    def image_list_sync(self) -> Dict[str, List[NDArray[np.float64]]]:
         """return list of image path (str) for all cameras for the current log.
 
         The different between image_list and image_list_sync is that image_list_sync
@@ -429,7 +430,7 @@ Total bounding box: {sum(num_annotations)}
         camera: str,
         log_id: Optional[str] = None,
         load: bool = True,
-    ) -> Optional[Union[str, np.ndarray]]:
+    ) -> Optional[Union[str, NDArray[np.float64]]]:
         """get image or image path at a specific timestamp
 
         Args:
@@ -459,7 +460,7 @@ Total bounding box: {sum(num_annotations)}
 
     def get_image(
         self, idx: int, camera: str, log_id: Optional[str] = None, load: bool = True
-    ) -> Union[str, np.ndarray]:
+    ) -> Union[str, NDArray[np.float64]]:
         """get image or image path at a specific index (in image index)
 
         Args:
@@ -488,7 +489,7 @@ Total bounding box: {sum(num_annotations)}
 
     def get_image_sync(
         self, idx: int, camera: str, log_id: Optional[str] = None, load: bool = True
-    ) -> Union[str, np.ndarray]:
+    ) -> Union[str, NDArray[np.float64]]:
         """get image or image path at a specific index (in lidar index)
 
         Args:
@@ -515,7 +516,7 @@ Total bounding box: {sum(num_annotations)}
             return load_image(image_path)
         return image_path
 
-    def get_lidar(self, idx: int, log_id: Optional[str] = None, load: bool = True) -> Union[str, np.ndarray]:
+    def get_lidar(self, idx: int, log_id: Optional[str] = None, load: bool = True) -> Union[str, NDArray[np.float64]]:
         """Get lidar corresponding to frame index idx (in lidar frame).
 
         Args:

@@ -45,6 +45,7 @@ import xml.etree.ElementTree as ET
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union, cast
 
 import numpy as np
+from numpy.typing import NDArray
 
 from argoverse.map_representation.lane_segment import LaneSegment
 
@@ -189,7 +190,7 @@ def get_lane_identifier(child: ET.Element) -> int:
     return int(child.attrib["lane_id"])
 
 
-def convert_node_id_list_to_xy(node_id_list: List[int], all_graph_nodes: Mapping[int, Node]) -> np.ndarray:
+def convert_node_id_list_to_xy(node_id_list: List[int], all_graph_nodes: Mapping[int, Node]) -> NDArray[np.float64]:
     """
     convert node id list to centerline xy coordinate
 

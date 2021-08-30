@@ -1,9 +1,12 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
+from typing import Any, Optional
+
 import numpy as np
+from numpy.typing import NDArray
 
 
-def compute_summed_distance_point_cloud2D(points_a: np.ndarray, points_b: np.ndarray) -> np.ndarray:
+def compute_summed_distance_point_cloud2D(points_a: NDArray[np.float64], points_b: NDArray[np.float64]) -> Any:
     """
     Args:
         points_a: numpy n-d array with dims (N x 2)
@@ -16,10 +19,10 @@ def compute_summed_distance_point_cloud2D(points_a: np.ndarray, points_b: np.nda
 
 
 def evaluate_prediction(
-    pred_traj: np.ndarray,
-    ground_truth_traj: np.ndarray,
+    pred_traj: NDArray[np.float64],
+    ground_truth_traj: NDArray[np.float64],
     eval_method: str = "EVAL_DESTINATION_ONLY",
-) -> np.ndarray:
+) -> Optional[Any]:
     """Compute the error as L2 norm in trajectories
 
     Args:

@@ -9,12 +9,13 @@ import copy
 from typing import Any, List, Optional, Tuple
 
 import numpy as np
+from numpy.typing import NDArray
 
 from argoverse.utils.camera_stats import get_image_dims_for_camera
 from argoverse.utils.manhattan_search import compute_point_cloud_bbox
 
 
-def fit_plane_to_point_cloud(pc: np.ndarray) -> Tuple[Any, Any, Any, Any]:
+def fit_plane_to_point_cloud(pc: NDArray[np.float64]) -> Tuple[Any, Any, Any, Any]:
     """Use SVD with at least 3 points to fit a plane.
 
     Args:
@@ -33,7 +34,7 @@ def fit_plane_to_point_cloud(pc: np.ndarray) -> Tuple[Any, Any, Any, Any]:
     return a, b, c, d
 
 
-def form_right_clipping_plane(fx: float, img_width: int) -> np.ndarray:
+def form_right_clipping_plane(fx: float, img_width: int) -> NDArray[np.float64]:
     """Form the right clipping plane for a camera view frustum.
 
     In the camera coordinate frame, y is down the imager, x is across the imager,
@@ -71,7 +72,7 @@ def form_right_clipping_plane(fx: float, img_width: int) -> np.ndarray:
     return right_plane
 
 
-def form_left_clipping_plane(fx: float, img_width: int) -> np.ndarray:
+def form_left_clipping_plane(fx: float, img_width: int) -> NDArray[np.float64]:
     r"""Form the left clipping plane for a camera view frustum.
 
     In the camera coordinate frame, y is down the imager, x is across the imager,
@@ -107,7 +108,7 @@ def form_left_clipping_plane(fx: float, img_width: int) -> np.ndarray:
     return left_plane
 
 
-def form_top_clipping_plane(fx: float, img_height: int) -> np.ndarray:
+def form_top_clipping_plane(fx: float, img_height: int) -> NDArray[np.float64]:
     r"""Form the top clipping plane for a camera view frustum.
 
     In the camera coordinate frame, y is down the imager, x is across the imager,
@@ -143,7 +144,7 @@ def form_top_clipping_plane(fx: float, img_height: int) -> np.ndarray:
     return top_plane
 
 
-def form_low_clipping_plane(fx: float, img_height: int) -> np.ndarray:
+def form_low_clipping_plane(fx: float, img_height: int) -> NDArray[np.float64]:
     r"""Form the low clipping plane for a camera view frustum.
 
     Use 3 points to fit the low clipping plane. In the camera coordinate frame,
@@ -183,7 +184,7 @@ def form_low_clipping_plane(fx: float, img_height: int) -> np.ndarray:
     return low_plane
 
 
-def form_near_clipping_plane(near_clip_dist: float) -> np.ndarray:
+def form_near_clipping_plane(near_clip_dist: float) -> NDArray[np.float64]:
     """Form the near clipping plane for a camera view frustum.
 
     In the camera coordinate frame, y is down the imager, x is across the imager,
@@ -201,7 +202,9 @@ def form_near_clipping_plane(near_clip_dist: float) -> np.ndarray:
     return np.array([0.0, 0.0, 1.0, -near_clip_dist])
 
 
-def generate_frustum_planes(K: np.ndarray, camera_name: str, near_clip_dist: float = 0.5) -> Optional[List[np.ndarray]]:
+def generate_frustum_planes(
+    K: NDArray[np.float64], camera_name: str, near_clip_dist: float = 0.5
+) -> Optional[List[NDArray[np.float64]]]:
     """Compute the planes enclosing the field of view (viewing frustum) for a single camera.
 
     We do this using similar triangles.
@@ -251,8 +254,8 @@ def generate_frustum_planes(K: np.ndarray, camera_name: str, near_clip_dist: flo
 
 
 def clip_segment_v3_plane_n(
-    p1: np.ndarray, p2: np.ndarray, planes: List[np.ndarray]
-) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+    p1: NDArray[np.float64], p2: NDArray[np.float64], planes: List[NDArray[np.float64]]
+) -> Tuple[Optional[NDArray[np.float64]], Optional[NDArray[np.float64]]]:
     """Iterate over the frustum planes and intersect them with the segment.
 
     This  updating the min/max, bailing out early if the min > max.
@@ -275,7 +278,7 @@ def clip_segment_v3_plane_n(
     Returns:
         2 vector triplets (the clipped segment) or (None, None) meaning the segment is entirely outside the frustum.
     """
-    dp = p2 - p1
+    dp: NDArray[np.float64] = p2 - p1
 
     p1_fac = 0.0
     p2_fac = 1.0
@@ -308,12 +311,12 @@ def clip_segment_v3_plane_n(
                         if p1_fac > p2_fac:
                             return None, None
 
-    p1_clip = p1 + (dp * p1_fac)
-    p2_clip = p1 + (dp * p2_fac)
+    p1_clip: NDArray[np.float64] = p1 + (dp * p1_fac)
+    p2_clip: NDArray[np.float64] = p1 + (dp * p2_fac)
     return p1_clip, p2_clip
 
 
-def plane_point_side_v3(p: np.ndarray, v: np.ndarray) -> Any:
+def plane_point_side_v3(p: NDArray[np.float64], v: NDArray[np.float64]) -> Any:
     """Get sign of point to plane distance.
 
     This function does not compute the actual distance.
@@ -331,7 +334,9 @@ def plane_point_side_v3(p: np.ndarray, v: np.ndarray) -> Any:
     return p[:3].dot(v) + p[3]
 
 
-def cuboid_to_2d_frustum_bbox(corners: np.ndarray, planes: List[np.ndarray], K: np.ndarray) -> Optional[np.ndarray]:
+def cuboid_to_2d_frustum_bbox(
+    corners: NDArray[np.float64], planes: List[NDArray[np.float64]], K: NDArray[np.float64]
+) -> Optional[NDArray[np.float64]]:
     """Convert a 3D cuboid to a 2D frustum bounding box.
 
     We bring the 3D points into each camera, and do the clipping there.
@@ -345,7 +350,9 @@ def cuboid_to_2d_frustum_bbox(corners: np.ndarray, planes: List[np.ndarray], K: 
         bbox_2d: Numpy array of shape (4,) with entries [x_min,y_min,x_max,y_max]
     """
 
-    def clip_line_segment(pt_a: np.ndarray, pt_b: np.ndarray, K: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def clip_line_segment(
+        pt_a: NDArray[np.float64], pt_b: NDArray[np.float64], K: NDArray[np.float64]
+    ) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
         """Clip a line segment based on two points and the camera instrinc matrix.
 
         Args:
@@ -364,7 +371,7 @@ def cuboid_to_2d_frustum_bbox(corners: np.ndarray, planes: List[np.ndarray], K: 
 
         return np.round(pt_a).astype(np.int32), np.round(pt_b).astype(np.int32)
 
-    def clip_rect(selected_corners: np.ndarray, clipped_uv_verts: np.ndarray) -> np.ndarray:
+    def clip_rect(selected_corners: NDArray[np.float64], clipped_uv_verts: NDArray[np.float64]) -> NDArray[np.float64]:
         """Clip a rectangle based on the selected corners and clipped vertices coordinates.
 
         Args:

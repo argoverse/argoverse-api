@@ -5,6 +5,7 @@ from typing import Optional
 
 import numpy as np
 from matplotlib.axes import Axes
+from numpy.typing import NDArray
 
 __all__ = ["draw_point_cloud_bev"]
 
@@ -19,7 +20,7 @@ AXIS_NAME = ["X", "Y", "Z"]
 
 def draw_point_cloud_bev(
     axes: Axes,
-    pointcloud: np.ndarray,
+    pointcloud: NDArray[np.float64],
     color: str = "w",
     x_lim_3d: Optional[float] = None,
     y_lim_3d: Optional[float] = None,

@@ -11,6 +11,7 @@ import os
 from typing import Union
 
 import numpy as np
+from numpy.typing import NDArray
 
 from argoverse.utils.helpers import assert_np_array_shape
 from argoverse.utils.json_utils import save_json_dict
@@ -21,7 +22,7 @@ _PathLike = Union[str, "os.PathLike[str]"]
 class Sim2:
     """Implements the Similarity(2) class."""
 
-    def __init__(self, R: np.ndarray, t: np.ndarray, s: Union[int, float]) -> None:
+    def __init__(self, R: NDArray[np.float64], t: "Sim2", s: Union[int, float]) -> None:
         """Initialize from rotation R, translation t, and scale s.
 
         Args:
@@ -75,12 +76,12 @@ class Sim2:
         return True
 
     @property
-    def rotation(self) -> np.ndarray:
+    def rotation(self) -> NDArray[np.float64]:
         """Return the 2x2 rotation matrix."""
         return self.R_
 
     @property
-    def translation(self) -> np.ndarray:
+    def translation(self) -> NDArray[np.float64]:
         """Return the (2,) translation vector."""
         return self.t_
 
@@ -90,7 +91,7 @@ class Sim2:
         return self.s_
 
     @property
-    def matrix(self) -> np.ndarray:
+    def matrix(self) -> NDArray[np.float64]:
         """Calculate 3*3 matrix group equivalent."""
         T = np.zeros((3, 3))
         T[:2, :2] = self.R_
@@ -118,10 +119,10 @@ class Sim2:
     def inverse(self) -> "Sim2":
         """Return the inverse."""
         Rt = self.R_.T
-        sRt = -Rt @ (self.s_ * self.t_)
+        sRt: "Sim2" = -Rt @ (self.s_ * self.t_)
         return Sim2(Rt, sRt, 1.0 / self.s_)
 
-    def transform_from(self, point_cloud: np.ndarray) -> np.ndarray:
+    def transform_from(self, point_cloud: NDArray[np.float64]) -> float:
         """Transform point cloud such that if they are in frame A,
         and our Sim(3) transform is defines as bSa, then we get points
         back in frame B:
@@ -138,12 +139,12 @@ class Sim2:
             raise ValueError("Input point cloud is not 2-dimensional.")
         assert_np_array_shape(point_cloud, (None, 2))
         # (2,2) x (2,N) + (2,1) = (2,N) -> transpose
-        transformed_point_cloud = (point_cloud @ self.R_.T) + self.t_
+        transformed_point_cloud: NDArray[np.float64] = (point_cloud @ self.R_.T) + self.t_
 
         # now scale points
         return transformed_point_cloud * self.s_
 
-    def transform_point_cloud(self, point_cloud: np.ndarray) -> np.ndarray:
+    def transform_point_cloud(self, point_cloud: NDArray[np.float64]) -> float:
         """Alias for `transform_from()`, for synchrony w/ API provided by SE(2) and SE(3) classes."""
         return self.transform_from(point_cloud)
 
@@ -172,7 +173,7 @@ class Sim2:
         return cls(R, t, s)
 
     @classmethod
-    def from_matrix(cls, T: np.ndarray) -> "Sim2":
+    def from_matrix(cls, T: NDArray[np.float64]) -> "Sim2":
         """Generate class instance from a 3x3 Numpy matrix."""
         if np.isclose(T[2, 2], 0.0):
             raise ZeroDivisionError("Sim(2) scale calculation would lead to division by zero.")

@@ -52,7 +52,7 @@ Evaluation:
 Results:
 
     The results are represented as a (C + 1, P) table, where C + 1 represents the number of evaluation classes
-    in addition to the mean statistics average across all classes, and P refers to the number of included statistics, 
+    in addition to the mean statistics average across all classes, and P refers to the number of included statistics,
     e.g. AP, ATE, ASE, AOE, CDS by default.
 
     Note: The `evaluate` function will use all available logical cores on the machine.
@@ -68,6 +68,7 @@ from typing import DefaultDict, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 from tqdm.contrib.concurrent import process_map
 
 from argoverse.evaluation.detection.constants import N_TP_ERRORS, SIGNIFICANT_DIGITS, STATISTIC_NAMES
@@ -117,7 +118,7 @@ class DetectionEvaluator:
         gt_fpaths = list(self.gt_root_fpath.glob("*/per_sweep_annotations_amodal/*.json"))
 
         assert len(dt_fpaths) == len(gt_fpaths)
-        data: DefaultDict[str, List[np.ndarray]] = defaultdict(list)
+        data: DefaultDict[str, List[NDArray[np.float64]]] = defaultdict(list)
         cls_to_ninst: DefaultDict[str, int] = defaultdict(int)
 
         jobs = [AccumulateJob(self.dt_root_fpath, gt_fpath, self.cfg, self.avm) for gt_fpath in gt_fpaths]
@@ -149,7 +150,7 @@ class DetectionEvaluator:
         return summary
 
     def summarize(
-        self, data: Dict[str, np.ndarray], cls_to_ninst: DefaultDict[str, int]
+        self, data: Dict[str, NDArray[np.float64]], cls_to_ninst: DefaultDict[str, int]
     ) -> DefaultDict[str, List[float]]:
         """Calculate and print the detection metrics.
 

@@ -15,13 +15,14 @@
 # <Modifications copyright (C) 2019, Argo AI, LLC>
 
 import copy
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.spatial import Delaunay
 
 
-def filter_point_cloud_to_bbox(bbox: np.ndarray, velodyne_pts: np.ndarray) -> Optional[np.ndarray]:
+def filter_point_cloud_to_bbox(bbox: NDArray[np.float64], velodyne_pts: NDArray[np.float64]) -> Any:
     """
     Given 2 orthogonal directions "u", "v" defined by 3 bbox vertices, s.t.::
 
@@ -74,7 +75,9 @@ def filter_point_cloud_to_bbox(bbox: np.ndarray, velodyne_pts: np.ndarray) -> Op
         return interior_pts
 
 
-def filter_point_cloud_to_bbox_2D_vectorized(bbox: np.ndarray, pc_raw: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def filter_point_cloud_to_bbox_2D_vectorized(
+    bbox: NDArray[np.float64], pc_raw: NDArray[np.float64]
+) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
     """
     Args:
        bbox: NumPy array of shape (4,2) representing 2D bbox
@@ -98,6 +101,7 @@ def filter_point_cloud_to_bbox_2D_vectorized(bbox: np.ndarray, pc_raw: np.ndarra
     P1 = np.array([bbox[0][0:2]])
     P2 = np.array([bbox[1][0:2]])
     P4 = np.array([bbox[2][0:2]])
+    P5 = np.array([])
 
     dot1 = np.matmul(U, pc_2d.transpose(1, 0))
     dot2 = np.matmul(V, pc_2d.transpose(1, 0))
@@ -112,7 +116,7 @@ def filter_point_cloud_to_bbox_2D_vectorized(bbox: np.ndarray, pc_raw: np.ndarra
     return pc_seg, flag
 
 
-def filter_point_cloud_to_bbox_3D(bbox: np.ndarray, pc_raw: np.ndarray) -> np.ndarray:
+def filter_point_cloud_to_bbox_3D(bbox: NDArray[np.float64], pc_raw: NDArray[np.float64]) -> Any:
     """
     Args:
        bbox has shape object array: [(3,), (3,), (3,), height]
@@ -152,11 +156,11 @@ def filter_point_cloud_to_bbox_3D(bbox: np.ndarray, pc_raw: np.ndarray) -> np.nd
     return pc_seg
 
 
-def in_between_matrix(x: np.ndarray, v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
+def in_between_matrix(x: NDArray[np.float64], v1: NDArray[np.float64], v2: NDArray[np.float64]) -> Any:
     return np.logical_or(np.logical_and(x <= v1, x >= v2), np.logical_and(x <= v2, x >= v1))
 
 
-def filter_point_cloud_to_bbox_3D_single_pt(bbox: np.ndarray, x: np.ndarray) -> np.ndarray:  # pc_raw):
+def filter_point_cloud_to_bbox_3D_single_pt(bbox: NDArray[np.float64], x: NDArray[np.float64]) -> Any:  # pc_raw):
     r"""
 
     Args:
@@ -208,7 +212,9 @@ def filter_point_cloud_to_bbox_3D_single_pt(bbox: np.ndarray, x: np.ndarray) -> 
     return valid
 
 
-def filter_point_cloud_to_bbox_3D_vectorized(bbox: np.ndarray, pc_raw: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def filter_point_cloud_to_bbox_3D_vectorized(
+    bbox: NDArray[np.float64], pc_raw: NDArray[np.float64]
+) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
     r"""
 
     Args:
@@ -266,7 +272,9 @@ def filter_point_cloud_to_bbox_3D_vectorized(bbox: np.ndarray, pc_raw: np.ndarra
     return segment_pc, is_valid
 
 
-def extract_pc_in_box3d_hull(pc: np.ndarray, bbox_3d: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def extract_pc_in_box3d_hull(
+    pc: NDArray[np.float64], bbox_3d: NDArray[np.float64]
+) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
     """
     Find points that fall within a 3d cuboid, by treating the 3d cuboid as a hull.
     Scipy.spatial's Delaunay class performs tesselation in N dimensions. By finding
