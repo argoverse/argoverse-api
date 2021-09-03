@@ -1,6 +1,6 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
-from typing import Tuple, cast
+from typing import Optional, Tuple, cast
 
 import numpy as np
 
@@ -155,7 +155,7 @@ def eliminate_duplicates_2d(px: np.ndarray, py: np.ndarray) -> Tuple[np.ndarray,
     return px, py
 
 
-def interp_arc(t: int, px: np.ndarray, py: np.ndarray, pz: np.ndarray = None) -> np.ndarray:
+def interp_arc(t: int, px: np.ndarray, py: np.ndarray, pz: Optional[np.ndarray] = None) -> np.ndarray:
     """Linearly interpolate equally-spaced points along a polyline, either in 2d or 3d.
 
     We use a chordal parameterization so that interpolated arc-lengths
