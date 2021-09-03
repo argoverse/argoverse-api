@@ -118,6 +118,9 @@ def convert_lane_boundaries_to_polygon(right_lane_bounds: np.ndarray, left_lane_
     Returns:
        polygon: Numpy array of shape (K+M+1,2) or (K+M+1,3)
     """
+    if not right_lane_bounds.shape[-1] == left_lane_bounds.shape[-1]:
+        raise RuntimeError("Last dimension of left and right boundary polylines must match.")
+
     # assert right_lane_bounds.shape[0] == left_lane_bounds.shape[0]
     polygon = np.vstack([right_lane_bounds, left_lane_bounds[::-1]])
     polygon = np.vstack([polygon, right_lane_bounds[0]])
