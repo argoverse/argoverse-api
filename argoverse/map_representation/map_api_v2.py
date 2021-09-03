@@ -30,8 +30,8 @@ from argoverse.utils.sim2 import Sim2
 
 _PathLike = Union[str, "os.PathLike[str]"]
 
-GROUND_HEIGHT_THRESHOLD = 0.3  # 30 centimeters
-ROI_ISOCONTOUR: Final[float] = 5.0  # in meters
+GROUND_HEIGHT_THRESHOLD_M: Final[float] = 0.3  # 30 centimeters
+ROI_ISOCONTOUR_M: Final[float] = 5.0  # in meters
 
 logger = logging.getLogger(__name__)
 
@@ -104,6 +104,7 @@ class DrivableArea:
 
 
 class LaneType(str, Enum):
+    """Describes the sorts of objects that may use the lane for transportation."""
     VEHICLE: str = "VEHICLE"
     BIKE: str = "BIKE"
     BUS: str = "BUS"
@@ -166,6 +167,12 @@ class PedestrianCrossing:
 
         return PedestrianCrossing(id=json_data["id"], edge1=edge1, edge2=edge2)
 
+    @property
+    def polygon(self) -> np.ndarray:
+        """ """
+        v0, v1 = self.edge1.xyz
+        v2, v3 = self.edge2.xyz
+        return np.array([v0, v1, v3, v2, v0])
 
 class LocalLaneMarking(NamedTuple):
     """Information about a lane marking, representing either the left or right boundary of a lane segment.
@@ -400,7 +407,7 @@ class RoiMapLayer(RasterMapLayer):
         """
         # initialize ROI as zero-level isocontour of drivable area, and the dilate to 5-meter isocontour
         roi_mat_init = copy.deepcopy(drivable_area_layer.array)
-        roi_mask = dilate_by_l2(roi_mat_init, dilation_thresh=ROI_ISOCONTOUR)
+        roi_mask = dilate_by_l2(roi_mat_init, dilation_thresh=ROI_ISOCONTOUR_M)
 
         return cls(array=roi_mask, array_Sim2_city=drivable_area_layer.array_Sim2_city)
 
@@ -485,7 +492,7 @@ class ArgoverseStaticMapV2:
 
         if "pedestrian_crossings" not in vector_data:
             logger.error("Missing Pedestrian crossings!")
-            vector_pedestrian_crossings = None
+            vector_pedestrian_crossings = []
         else:
             vector_pedestrian_crossings = [
                 PedestrianCrossing.from_dict(pc) for pc in vector_data["pedestrian_crossings"]
