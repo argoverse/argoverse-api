@@ -1,32 +1,29 @@
 """I/O for manipulating the Argoverse 2.0 dataset."""
 from pathlib import Path
 from typing import Optional, Tuple
-
 import numpy as np
 import pandas as pd
 
 
-def load_calibration(
-    fpath: Path, columns: Optional[Tuple[str, ...]] = None
-) -> pd.DataFrame:
+def load_calibration(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.DataFrame:
     """Loads the calibration metadata for the Argoverse 2.0 sensor dataset.
 
     Schema/DataType:
         Sensor name
-        Focal length (x): np.float64
-        Focal length (y): np.float64
+        Focal Length (x): np.float64
+        Focal Length (y): np.float64
         Focal Center (x): np.float64
         Focal Center (y): np.float64
-        Skew: np.float64
-        Sensor width: np.uint16
-        Sensor height: np.uin16
-        Translation (x): np.float64
-        Trans. (y): np.float64
-        Trans. (z): np.float64
-        Quaternion coeff. (w): np.float64
-        Quaternion coeff. (x): np.float64
-        Quaternion coeff. (y): np.float64
-        Quaternion coeff. (z): np.float64
+        Skew (s): np.float64
+        Sensor Width (width): np.uint16
+        Sensor Height (height): np.uin16
+        Translation (tx): np.float64
+        Translation (ty): np.float64
+        Translation (tz): np.float64
+        Quaternion coefficient (qw): np.float64
+        Quaternion coefficient (qx): np.float64
+        Quaternion coefficient (qy): np.float64
+        Quaternion coefficient (qz): np.float64
 
     Args:
         fpath (Path): [description]
@@ -45,14 +42,14 @@ def load_labels(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.Da
     The Argoverse 2.0 track labels consist of 3D cuboids with 6-DOF pose.
 
     Schema/DataType:
-        Translation (x): np.float64
-        Translation (y): np.float64
-        Translation (z): np.float64
-        Quaternion coefficient (w): np.float64
-        Quaternion coefficient (x): np.float64
-        Quaternion coefficient (y): np.float64
-        Quaternion coefficient (z): np.float64
-        Time of Validity: np.int64
+        Translation (tx): np.float64
+        Translation (ty): np.float64
+        Translation (tz): np.float64
+        Quaternion coefficient (qw): np.float64
+        Quaternion coefficient (qx): np.float64
+        Quaternion coefficient (qy): np.float64
+        Quaternion coefficient (qz): np.float64
+        Time of Validity (tov): np.int64
 
     Args:
         fpath (Path): Source file path.
@@ -69,12 +66,12 @@ def load_lidar(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.Dat
     """[summary]
 
     Schema/DataType:
-        x: np.float16
-        y: np.float16
-        z: np.float16
-        i: np.uint8
-        s: np.uint8
-        tov: np.int64
+        X-Coordinate (x): np.float16
+        Y-Coordinate (y): np.float16
+        Z-Coordinate (z): np.float16
+        Intensity (i): np.uint8
+        Sensor (s): np.uint8
+        Time of Validity (tov): np.int64
 
     Args:
         fpath (Path): [description]
@@ -88,5 +85,24 @@ def load_lidar(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.Dat
 
 
 def load_poses(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.DataFrame:
+    """[summary]
+
+    Schema/DataType:
+        Translation (tx): np.float64
+        Translation (ty): np.float64
+        Translation (tz): np.float64
+        Quaternion coefficient (qw): np.float64
+        Quaternion coefficient (qx): np.float64
+        Quaternion coefficient (qy): np.float64
+        Quaternion coefficient (qz): np.float64
+        Time of Validity (tov): np.int64
+
+    Args:
+        fpath (Path): [description]
+        columns (Optional[Tuple[str, ...]], optional): [description]. Defaults to None.
+
+    Returns:
+        pd.DataFrame: [description]
+    """
     poses = pd.read_feather(fpath)
     return poses
