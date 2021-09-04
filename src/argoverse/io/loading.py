@@ -5,7 +5,9 @@ import numpy as np
 import pandas as pd
 
 
-def load_calibration(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.DataFrame:
+def load_calibration(
+    fpath: Path, columns: Optional[Tuple[str, ...]] = None
+) -> pd.DataFrame:
     """Loads the calibration metadata for the Argoverse 2.0 sensor dataset.
 
     Schema/DataType:
@@ -35,7 +37,7 @@ def load_calibration(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> 
     Returns:
         pd.DataFrame: (N,15) Dataframe of calibration metadata.
     """
-    calibration = pd.read_feather(fpath)
+    calibration = load_schema(fpath, columns=columns)
     return calibration
 
 
@@ -69,7 +71,7 @@ def load_labels(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.Da
     Returns:
         pd.DataFrame: (N,13) Dataframe of .
     """
-    labels = pd.read_feather(fpath)
+    labels = load_schema(fpath, columns=columns)
     return labels
 
 
@@ -93,7 +95,7 @@ def load_lidar(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.Dat
         pd.DataFrame: (N,6) DataFrame containing Cartesian coordinates, intensity,
             sensor name, and time of validity.
     """
-    lidar = pd.read_feather(fpath)
+    lidar = load_schema(fpath, columns=columns)
     return lidar
 
 
@@ -118,5 +120,9 @@ def load_poses(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.Dat
     Returns:
         pd.DataFrame: (N,8) DataFrame containing SE(3) pose and time of validity.
     """
-    poses = pd.read_feather(fpath)
+    poses = load_schema(fpath, columns=columns)
     return poses
+
+
+def load_schema(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.DataFrame:
+    return pd.read_feather(fpath, columns=columns)
