@@ -70,3 +70,41 @@ class ArgoverseConfig(SensorDatasetConfig):
         stereo_front_left=SensorConfig(STEREO_CAMERA_HEIGHT, STEREO_CAMERA_WIDTH, "stereo_front_left"),
         stereo_front_right=SensorConfig(STEREO_CAMERA_HEIGHT, STEREO_CAMERA_WIDTH, "stereo_front_right"),
     )
+
+# # For TbV
+# @dataclass(frozen=True)
+# class ArgoverseConfig(SensorDatasetConfig):
+#     """For the Trust but Verify (TbV) dataset."""
+#     RING_CAMERA_HEIGHT: int = 2048
+#     RING_CAMERA_WIDTH: int = 1550
+
+#     STEREO_CAMERA_HEIGHT: int = 2056
+#     STEREO_CAMERA_WIDTH: int = 2464
+
+#     dataset_name: str = "tbv-v1.0"
+#     ring_cam_fps: int = 20
+
+#     stereo_cam_fps = float('inf') # or should we change the check in synchronization_database.py", line 32
+
+#     camera_sensors: SensorSuiteConfig = SensorSuiteConfig(
+#         ring_front_center=SensorConfig(2048, 1550, "ring_front_center"),
+#         ring_front_left= SensorConfig(1550, 2048, "ring_front_left"),
+#         ring_front_right=SensorConfig(1550, 2048, "ring_front_right"),
+#         ring_side_left=  SensorConfig(1550, 2048, "ring_side_left"),
+#         ring_side_right= SensorConfig(1550, 2048, "ring_side_right"),
+#         ring_rear_left=  SensorConfig(1550, 2048, "ring_rear_left"),
+#         ring_rear_right= SensorConfig(1550, 2048, "ring_rear_right"),
+#     )
+
+
+
+
+
+
+
+
+
+
+
+
+
