@@ -1,0 +1,5 @@
+name: argoverse
+channels:
+  - conda-forge
+dependencies:
+  - pandas

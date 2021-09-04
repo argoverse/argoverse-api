@@ -1,7 +1,6 @@
 """I/O for manipulating the Argoverse 2.0 dataset."""
 from pathlib import Path
 from typing import Optional, Tuple
-import numpy as np
 import pandas as pd
 
 
