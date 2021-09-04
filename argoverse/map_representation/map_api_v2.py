@@ -146,7 +146,7 @@ class PedestrianCrossing:
     edge1: Polyline
     edge2: Polyline
 
-    def get_edges(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_edges_2d(self) -> Tuple[np.ndarray, np.ndarray]:
         """Retrieve the two principal edges of the crosswalk, in 2d.
 
         Returns:
@@ -169,7 +169,11 @@ class PedestrianCrossing:
 
     @property
     def polygon(self) -> np.ndarray:
-        """ """
+        """Return the vertices of the polygon representing the pedestrian crossing.
+        
+        Returns:
+            array of shape (N,3) representing vertices. The first and last vertex that are provided are identical.
+        """
         v0, v1 = self.edge1.xyz
         v2, v3 = self.edge2.xyz
         return np.array([v0, v1, v3, v2, v0])
@@ -196,7 +200,7 @@ class LocalLaneMarking(NamedTuple):
 
 @dataclass(frozen=False)
 class LaneSegment:
-    """Represents a single lane segment within a log-specific Argoverse 2.0 map.
+    """Vector representation of a single lane segment within a log-specific Argoverse 2.0 map.
 
     Args:
         id: unique identifier for this lane segment (guaranteed to be unique only within this local map).
@@ -249,11 +253,11 @@ class LaneSegment:
             is_intersection=json_data["is_intersection"],
         )
 
-    def get_left_lane_marking(self):
+    def get_left_lane_marking(self) -> LocalLaneMarking:
         """ """
         return LocalLaneMarking(self.left_mark_type, self.id, "left", self.left_lane_boundary)
 
-    def get_right_lane_marking(self):
+    def get_right_lane_marking(self) -> LocalLaneMarking:
         """ """
         return LocalLaneMarking(self.right_mark_type, self.id, "right", self.right_lane_boundary)
 
@@ -265,6 +269,44 @@ class LaneSegment:
             polygon_boundary: array of shape (N,3)
         """
         return convert_lane_boundaries_to_polygon(self.right_lane_boundary.xyz, self.left_lane_boundary.xyz)
+
+    def within_l_infinity_norm_radius(self, query_center: np.ndarray, search_radius: float) -> bool:
+        """Whether any waypoint of lane boundaries falls within search_radius meters of query center, by l-infty norm.
+
+        Could have very long segment, with endpoints and all waypoints outside of radius, therefore cannot check just
+        its endpoints.
+
+        Args:
+            center: array of shape (3,) representing 3d coordinates of query center.
+            search_radius:
+
+        Returns:
+            whether the lane segment has any waypoint within search_radius meters of the query center.
+        """
+        from argoverse.utils.infinity_norm_utils import has_pts_in_infty_norm_radius
+        WPT_INFTY_NORM_INTERP_NUM = 50
+
+        try:
+            right_ln_bnd_interp = interp_arc(
+                t=WPT_INFTY_NORM_INTERP_NUM,
+                px=self.right_lane_boundary.xyz[:,0],
+                py=self.right_lane_boundary.xyz[:,1]
+            )
+            left_ln_bnd_interp = interp_arc(
+                t=WPT_INFTY_NORM_INTERP_NUM,
+                px=self.left_lane_boundary.xyz[:,0],
+                py=self.left_lane_boundary.xyz[:,1]
+            )
+        except Exception as e:
+            print("Interpolation attempt failed!")
+            logging.exception(f"Interpolation failed")
+            # 1-point line segments will cause trouble later
+            right_ln_bnd_interp = self.right_lane_boundary.xyz[:,:2]
+            left_ln_bnd_interp = self.left_lane_boundary.xyz[:,:2]
+
+        left_in_bounds = has_pts_in_infty_norm_radius(right_ln_bnd_interp, query_center, search_radius)
+        right_in_bounds = has_pts_in_infty_norm_radius(left_ln_bnd_interp, query_center, search_radius)
+        return left_in_bounds or right_in_bounds
 
 
 @dataclass
@@ -610,13 +652,31 @@ class ArgoverseStaticMapV2:
         """
         return self.vector_pedestrian_crossings
 
+    def get_nearby_ped_crossings(self, search_radius: float, norm_type) -> List[PedestrianCrossing]:
+        """
+        Search radius defined in l-infinity norm or l2 norm
+        """
+        raise NotImplementedError("Yet to implement...")
+
     def get_scenario_lane_segments(self) -> List[LaneSegment]:
         """Return a list of all lane segments objects that are local to this log/scenario.
 
         Returns:
-            vls_list: local lane segments
+            vls_list: lane segments local to this scenario (any waypoint within 100m by L2 distance)
         """
         return list(self.vector_lane_segments.values())
+
+    def get_nearby_lane_segments(self, query_center: np.ndarray, search_radius: float) -> List[LaneSegment]:
+        """
+        Args:
+            query_center: numpy array of shape (2,) representing query_center
+
+        Returns:
+            vls_list: lane segments
+        """
+        scenario_lane_segments = self.get_scenario_lane_segments()
+        return [ls for ls in scenario_lane_segments if ls.within_l_infinity_norm_radius(query_center, search_radius)]
+
 
     def remove_ground_surface(self) -> np.ndarray:
         """ """
