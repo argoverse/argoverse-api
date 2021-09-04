@@ -111,7 +111,7 @@ class SimpleArgoverseTrackingDataLoader:
         if lidar_timestamp is None:
             return None
         lidar_dir = f"{self.data_dir}/{log_id}/lidar"
-        ply_fname = f"PC_{lidar_timestamp}.ply"
+        ply_fname = f"PC_{lidar_timestamp}.pt"
         ply_fpath = f"{lidar_dir}/{ply_fname}"
         return ply_fpath
 
@@ -124,7 +124,7 @@ class SimpleArgoverseTrackingDataLoader:
                 File paths are strings are of the same length ending with a nanosecond timestamp, thus
                 sorted() will place them in numerical order.
         """
-        ply_fpaths = sorted(glob.glob(f"{self.data_dir}/{log_id}/lidar/PC_*.ply"))
+        ply_fpaths = sorted(glob.glob(f"{self.data_dir}/{log_id}/lidar/PC_*.pt"))
         return ply_fpaths
 
     def get_ordered_log_cam_fpaths(self, log_id: str, camera_name: str) -> List[str]:

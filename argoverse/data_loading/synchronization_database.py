@@ -135,7 +135,7 @@ class SynchronizationDB:
 
                 self.per_log_camtimestamps_index[log_id][camera_name] = cam_timestamps
 
-            sensor_folder_wildcard = f"{dataset_dir}/{log_id}/lidar/PC_*.ply"
+            sensor_folder_wildcard = f"{dataset_dir}/{log_id}/lidar/PC_*.pt"
             lidar_timestamps = get_timestamps_from_sensor_folder(sensor_folder_wildcard)
             self.per_log_lidartimestamps_index[log_id] = lidar_timestamps
 
