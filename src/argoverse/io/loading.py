@@ -9,21 +9,24 @@ def load_calibration(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> 
     """Loads the calibration metadata for the Argoverse 2.0 sensor dataset.
 
     Schema/DataType:
-        Sensor name
+        Sensor Name (name): [TODO]
         Focal Length (x): np.float64
         Focal Length (y): np.float64
         Focal Center (x): np.float64
         Focal Center (y): np.float64
+
         Skew (s): np.float64
         Sensor Width (width): np.uint16
         Sensor Height (height): np.uin16
+
         Translation (tx): np.float64
         Translation (ty): np.float64
         Translation (tz): np.float64
-        Quaternion coefficient (qw): np.float64
-        Quaternion coefficient (qx): np.float64
-        Quaternion coefficient (qy): np.float64
-        Quaternion coefficient (qz): np.float64
+
+        Quaternion Coefficient (qw): np.float64
+        Quaternion Coefficient (qx): np.float64
+        Quaternion Coefficient (qy): np.float64
+        Quaternion Coefficient (qz): np.float64
 
     Args:
         fpath (Path): [description]
@@ -45,10 +48,18 @@ def load_labels(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.Da
         Translation (tx): np.float64
         Translation (ty): np.float64
         Translation (tz): np.float64
-        Quaternion coefficient (qw): np.float64
-        Quaternion coefficient (qx): np.float64
-        Quaternion coefficient (qy): np.float64
-        Quaternion coefficient (qz): np.float64
+
+        Length (length): np.float64
+        Width (width): np.float64
+        Height (height): np.float64
+
+        Quaternion Coefficient (qw): np.float64
+        Quaternion Coefficient (qx): np.float64
+        Quaternion Coefficient (qy): np.float64
+        Quaternion Coefficient (qz): np.float64
+
+        Label Class (label_class): [TODO]
+        Track UUID (track_uuid): [TODO]
         Time of Validity (tov): np.int64
 
     Args:
@@ -69,6 +80,7 @@ def load_lidar(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.Dat
         X-Coordinate (x): np.float16
         Y-Coordinate (y): np.float16
         Z-Coordinate (z): np.float16
+
         Intensity (i): np.uint8
         Sensor (s): np.uint8
         Time of Validity (tov): np.int64
@@ -78,7 +90,8 @@ def load_lidar(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.Dat
         columns (Optional[Tuple[str, ...]], optional): [description]. Defaults to None.
 
     Returns:
-        pd.DataFrame: [description]
+        pd.DataFrame: (N,6) DataFrame containing Cartesian coordinates, intensity,
+            sensor name, and time of validity.
     """
     lidar = pd.read_feather(fpath)
     return lidar
@@ -91,10 +104,11 @@ def load_poses(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.Dat
         Translation (tx): np.float64
         Translation (ty): np.float64
         Translation (tz): np.float64
-        Quaternion coefficient (qw): np.float64
-        Quaternion coefficient (qx): np.float64
-        Quaternion coefficient (qy): np.float64
-        Quaternion coefficient (qz): np.float64
+
+        Quaternion Coefficient (qw): np.float64
+        Quaternion Coefficient (qx): np.float64
+        Quaternion Coefficient (qy): np.float64
+        Quaternion Coefficient (qz): np.float64
         Time of Validity (tov): np.int64
 
     Args:
@@ -102,7 +116,7 @@ def load_poses(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.Dat
         columns (Optional[Tuple[str, ...]], optional): [description]. Defaults to None.
 
     Returns:
-        pd.DataFrame: [description]
+        pd.DataFrame: (N,8) DataFrame containing SE(3) pose and time of validity.
     """
     poses = pd.read_feather(fpath)
     return poses
