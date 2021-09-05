@@ -2,6 +2,7 @@
 from pathlib import Path
 from typing import Optional, Tuple
 import pandas as pd
+import pyarrow as pa
 
 
 def load_calibration(
@@ -124,4 +125,5 @@ def load_poses(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.Dat
 
 
 def load_schema(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.DataFrame:
-    return pd.read_feather(fpath, columns=columns)
+    table = pa.feather.read_feather(fpath, columns=columns)
+    return table.as_pandas()
