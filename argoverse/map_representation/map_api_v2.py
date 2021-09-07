@@ -367,6 +367,16 @@ class GroundHeightLayer(RasterMapLayer):
         is_ground_boolean_arr = near_ground | underground
         return is_ground_boolean_arr
 
+    def get_rasterized_ground_height(self) -> Tuple[np.ndarray, Sim2]:
+        """Get ground height matrix along with Sim(2) that maps matrix coordinates to city coordinates.
+
+        Returns:
+            ground_height_matrix:
+            array_Sim2_city: Sim(2) that produces takes point in city coordinates to image coordinates, e.g.
+                    p_image = image_Transformation_city * p_city
+        """
+        return self.array, self.array_Sim2_city
+
     def get_ground_height_at_xy(self, point_cloud: np.ndarray) -> np.ndarray:
         """Get ground height for each of the xy locations for all points {(x,y,z)} in a point cloud.
 
@@ -713,13 +723,3 @@ class ArgoverseStaticMapV2:
                     p_npyimage = npyimage_Transformation_city * p_city
         """
         return self.raster_roi_layer.array, self.raster_roi_layer.array_Sim2_city
-
-    def get_rasterized_ground_height(self) -> Tuple[np.ndarray, Sim2]:
-        """Get ground height matrix along with Sim(2) that maps matrix coordinates to city coordinates.
-
-        Returns:
-            ground_height_matrix:
-            array_Sim2_city: Sim(2) that produces takes point in city coordinates to image coordinates, e.g.
-                    p_image = image_Transformation_city * p_city
-        """
-        return self.raster_ground_height_layer.array, self.raster_ground_height_layer.array_Sim2_city
