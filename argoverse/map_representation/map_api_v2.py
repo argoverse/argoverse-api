@@ -700,10 +700,6 @@ class ArgoverseStaticMapV2:
         """ """
         raise NotImplementedError("")
 
-    def get_ground_points_boolean(self) -> np.ndarray:
-        """ """
-        raise NotImplementedError("")
-
     def get_rasterized_driveable_area(self) -> Tuple[np.ndarray, Sim2]:
         """Get the driveable area along with Sim(2) that maps matrix coordinates to city coordinates.
 
