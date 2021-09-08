@@ -362,7 +362,7 @@ class GroundHeightLayer(RasterMapLayer):
         """
         ground_height_values = self.get_ground_height_at_xy(point_cloud)
         z = point_cloud[:, 2]
-        near_ground = np.absolute(z - ground_height_values) <= GROUND_HEIGHT_THRESHOLD
+        near_ground = np.absolute(z - ground_height_values) <= GROUND_HEIGHT_THRESHOLD_M
         underground = z < ground_height_values
         is_ground_boolean_arr = near_ground | underground
         return is_ground_boolean_arr
