@@ -116,7 +116,10 @@ class LaneType(str, Enum):
 
 
 class LaneMarkType(str, Enum):
-    """Color and pattern of a painted lane marking, located on either the left or ride side of a lane segment."""
+    """Color and pattern of a painted lane marking, located on either the left or ride side of a lane segment.
+
+    The `NONE` type indicates that lane boundary is not marked by any paint; its extent should be implicitly inferred.
+    """
 
     DASH_SOLID_YELLOW: str = "DASH_SOLID_YELLOW"
     DASH_SOLID_WHITE: str = "DASH_SOLID_WHITE"
