@@ -21,10 +21,10 @@ from typing_extensions import Final
 import numpy as np
 from dataclasses import dataclass
 
+import argoverse.utils.dilation_utils as dilation_utils
+import argoverse.utils.json_utils as json_utils
 from argoverse.utils.centerline_utils import convert_lane_boundaries_to_polygon
-from argoverse.utils.dilation_utils import dilate_by_l2
 from argoverse.utils.interpolate import interp_arc
-from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.mask_utils import get_mask_from_polygons
 from argoverse.utils.sim2 import Sim2
 
@@ -326,6 +326,40 @@ class RasterMapLayer:
     array_Sim2_city: Sim2
 
 
+    def get_raster_values_at_coords(self, point_cloud: np.ndarray, fill_value: float) -> np.ndarray:
+        """Index into a raster grid and extract values corresponding to city coordinates.
+
+        Note: a conversion is required between city coordinates and raster grid coordinates, via Sim(2).
+
+        Args:
+            point_cloud:
+            fill_value: float representing default "raster" return value for out-of-bounds queries.
+
+        Returns:
+            raster_values: array of shape ()
+        """
+        # Note: we do NOT round here, because we need to enforce scaled discretization.
+        city_coords = point_cloud[:, :2]
+
+        npyimage_coords = self.array_Sim2_city.transform_point_cloud(city_coords)
+        npyimage_coords = npyimage_coords.astype(np.int64)
+
+        # TODO: verify if the code below is still needed.
+        # out of bounds values will default to the fill value, and will not be indexed into the array.
+        # index in at (x,y) locations, which are (y,x) in the image
+        raster_values = np.full((npyimage_coords.shape[0]), fill_value)
+        # generate boolean array indicating whether the value at each index represents a valid coordinate.
+        ind_valid_pts = (
+            (npyimage_coords[:, 1] >= 0) * 
+            (npyimage_coords[:, 1] < self.array.shape[0]) *
+            (npyimage_coords[:, 0] >= 0) *
+            (npyimage_coords[:, 0] < self.array.shape[1])
+        )
+        raster_values[ind_valid_pts] = self.array[
+            npyimage_coords[ind_valid_pts, 1], npyimage_coords[ind_valid_pts, 0]
+        ]
+        return raster_values
+
 class GroundHeightLayer(RasterMapLayer):
     """Rasterized ground height map layer.
 
@@ -369,6 +403,9 @@ class GroundHeightLayer(RasterMapLayer):
             is_ground_boolean_arr: Numpy array of shape (N,) where ith entry is True if the 3d point
                 (e.g. a LiDAR return) is likely located on the ground surface.
         """
+        if point_cloud.shape[1] != 3:
+            raise ValueError("3-dimensional points must be provided to classify them as `ground` with the map.")
+
         ground_height_values = self.get_ground_height_at_xy(point_cloud)
         z = point_cloud[:, 2]
         near_ground = np.absolute(z - ground_height_values) <= GROUND_HEIGHT_THRESHOLD_M
@@ -395,25 +432,7 @@ class GroundHeightLayer(RasterMapLayer):
         Returns:
             ground_height_values: Numpy array of shape (K,)
         """
-        ground_height_mat, array_Sim2_city = self.get_rasterized_ground_height()
-
-        # TODO: should not be rounded here, because we need to enforce scaled discretization.
-        city_coords = np.round(point_cloud[:, :2]).astype(np.int64)
-
-        npyimage_coords = array_Sim2_city.transform_point_cloud(city_coords)
-        npyimage_coords = npyimage_coords.astype(np.int64)
-
-        # TODO: verify if the code below is still needed.
-
-        ground_height_values = np.full((npyimage_coords.shape[0]), np.nan)
-        ind_valid_pts = (npyimage_coords[:, 1] < ground_height_mat.shape[0]) * (
-            npyimage_coords[:, 0] < ground_height_mat.shape[1]
-        )
-
-        ground_height_values[ind_valid_pts] = ground_height_mat[
-            npyimage_coords[ind_valid_pts, 1], npyimage_coords[ind_valid_pts, 0]
-        ]
-
+        ground_height_values = self.get_raster_values_at_coords(point_cloud, fill_value=np.nan)
         return ground_height_values
 
 
@@ -468,7 +487,7 @@ class RoiMapLayer(RasterMapLayer):
         """
         # initialize ROI as zero-level isocontour of drivable area, and the dilate to 5-meter isocontour
         roi_mat_init = copy.deepcopy(drivable_area_layer.array)
-        roi_mask = dilate_by_l2(roi_mat_init, dilation_thresh=ROI_ISOCONTOUR_M)
+        roi_mask = dilation_utils.dilate_by_l2(roi_mat_init, dilation_thresh=ROI_ISOCONTOUR_M)
 
         return cls(array=roi_mask, array_Sim2_city=drivable_area_layer.array_Sim2_city)
 
@@ -546,7 +565,7 @@ class ArgoverseStaticMapV2:
 
         log_vector_map_fpath = os.path.join(log_map_dirpath, vector_data_fname)
 
-        vector_data = read_json_file(log_vector_map_fpath)
+        vector_data = json_utils.read_json_file(log_vector_map_fpath)
 
         vector_drivable_areas = [DrivableArea.from_dict(da) for da in vector_data["drivable_areas"]]
         vector_lane_segments = {ls["id"]: LaneSegment.from_dict(ls) for ls in vector_data["lane_segments"]}
@@ -727,3 +746,28 @@ class ArgoverseStaticMapV2:
                     p_npyimage = npyimage_Transformation_city * p_city
         """
         return self.raster_roi_layer.array, self.raster_roi_layer.array_Sim2_city
+
+    def get_raster_layer_points_boolean(self, point_cloud: np.ndarray, layer_name: str) -> np.ndarray:
+        """Query the binary segmentation layers (driveable area and ROI) at specific coordinates, to check values.
+        
+        Note:
+
+        Args:
+            point_cloud: Numpy array of shape (N,3)
+            layer_name: indicating layer name, either "roi" or "driveable area"
+
+        Returns:
+            is_layer_boolean_arr: Numpy array of shape (N,) where i'th entry is True if binary segmentation is
+                equal to 1 at the i'th point coordinate (i.e. is within the ROI, or within the driveable area,
+                depending upon `layer_name` argument).
+        """
+        if layer_name == "roi":
+            layer_values = self.raster_roi_layer.get_raster_values_at_coords(point_cloud, fill_value=0)
+        elif layer_name == "driveable_area":
+            layer_values = self.raster_drivable_area_layer.get_raster_values_at_coords(point_cloud, fill_value=0)
+        else:
+            raise ValueError("layer_name should be either `roi` or `driveable_area`.")
+
+        is_layer_boolean_arr = layer_values == 1.0
+        return is_layer_boolean_arr
+
