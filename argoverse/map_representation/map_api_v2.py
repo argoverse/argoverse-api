@@ -105,6 +105,7 @@ class DrivableArea:
 
 class LaneType(str, Enum):
     """Describes the sorts of objects that may use the lane for transportation."""
+
     VEHICLE: str = "VEHICLE"
     BIKE: str = "BIKE"
     BUS: str = "BUS"
@@ -170,7 +171,7 @@ class PedestrianCrossing:
     @property
     def polygon(self) -> np.ndarray:
         """Return the vertices of the polygon representing the pedestrian crossing.
-        
+
         Returns:
             array of shape (N,3) representing vertices. The first and last vertex that are provided are identical.
         """
@@ -178,17 +179,18 @@ class PedestrianCrossing:
         v2, v3 = self.edge2.xyz
         return np.array([v0, v1, v3, v2, v0])
 
+
 class LocalLaneMarking(NamedTuple):
     """Information about a lane marking, representing either the left or right boundary of a lane segment.
 
     Args:
-        bound_type: type of marking that represents the lane boundary, e.g. "SOLID_WHITE" or "DASHED_YELLOW".
+        mark_type: type of marking that represents the lane boundary, e.g. "SOLID_WHITE" or "DASHED_YELLOW".
         src_lane_id: id of lane segment to which this lane marking belongs.
         bound_side: string representing which side of a lane segment this marking represents, i.e. "left" or "right".
         polyline: array of shape (N,3) representing the waypoints of the lane segment's marked boundary.
     """
 
-    bound_type: LaneMarkType
+    mark_type: LaneMarkType
     src_lane_id: int
     bound_side: str
     polyline: np.ndarray
@@ -232,10 +234,11 @@ class LaneSegment:
     right_neighbor_id: Optional[int] = None
     left_neighbor_id: Optional[int] = None
 
-    # polygon_boundary: Optional[np.ndarray] = None
+    # for rendering
+    render_l_bound: Optional[bool] = True
+    render_r_bound: Optional[bool] = True
 
-    # render_l_bound: Optional[bool] = True
-    # render_r_bound: Optional[bool] = True
+    # polygon_boundary: Optional[np.ndarray] = None
 
     @classmethod
     def from_dict(cls, json_data: Dict[str, Any]) -> "LaneSegment":
@@ -255,11 +258,18 @@ class LaneSegment:
 
     def get_left_lane_marking(self) -> LocalLaneMarking:
         """ """
-        return LocalLaneMarking(self.left_mark_type, self.id, "left", self.left_lane_boundary)
+        return LocalLaneMarking(
+            mark_type=self.left_mark_type, src_lane_id=self.id, bound_side="left", polyline=self.left_lane_boundary.xyz
+        )
 
     def get_right_lane_marking(self) -> LocalLaneMarking:
         """ """
-        return LocalLaneMarking(self.right_mark_type, self.id, "right", self.right_lane_boundary)
+        return LocalLaneMarking(
+            mark_type=self.right_mark_type,
+            src_lane_id=self.id,
+            bound_side="right",
+            polyline=self.right_lane_boundary.xyz,
+        )
 
     @property
     def polygon_boundary(self) -> np.ndarray:
@@ -284,25 +294,24 @@ class LaneSegment:
             whether the lane segment has any waypoint within search_radius meters of the query center.
         """
         from argoverse.utils.infinity_norm_utils import has_pts_in_infty_norm_radius
+
         WPT_INFTY_NORM_INTERP_NUM = 50
 
         try:
             right_ln_bnd_interp = interp_arc(
                 t=WPT_INFTY_NORM_INTERP_NUM,
-                px=self.right_lane_boundary.xyz[:,0],
-                py=self.right_lane_boundary.xyz[:,1]
+                px=self.right_lane_boundary.xyz[:, 0],
+                py=self.right_lane_boundary.xyz[:, 1],
             )
             left_ln_bnd_interp = interp_arc(
-                t=WPT_INFTY_NORM_INTERP_NUM,
-                px=self.left_lane_boundary.xyz[:,0],
-                py=self.left_lane_boundary.xyz[:,1]
+                t=WPT_INFTY_NORM_INTERP_NUM, px=self.left_lane_boundary.xyz[:, 0], py=self.left_lane_boundary.xyz[:, 1]
             )
         except Exception as e:
             print("Interpolation attempt failed!")
             logging.exception(f"Interpolation failed")
             # 1-point line segments will cause trouble later
-            right_ln_bnd_interp = self.right_lane_boundary.xyz[:,:2]
-            left_ln_bnd_interp = self.left_lane_boundary.xyz[:,:2]
+            right_ln_bnd_interp = self.right_lane_boundary.xyz[:, :2]
+            left_ln_bnd_interp = self.left_lane_boundary.xyz[:, :2]
 
         left_in_bounds = has_pts_in_infty_norm_radius(right_ln_bnd_interp, query_center, search_radius)
         right_in_bounds = has_pts_in_infty_norm_radius(left_ln_bnd_interp, query_center, search_radius)
@@ -686,7 +695,6 @@ class ArgoverseStaticMapV2:
         """
         scenario_lane_segments = self.get_scenario_lane_segments()
         return [ls for ls in scenario_lane_segments if ls.within_l_infinity_norm_radius(query_center, search_radius)]
-
 
     def remove_ground_surface(self) -> np.ndarray:
         """ """
