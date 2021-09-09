@@ -74,7 +74,7 @@ def compute_midpoint_line(
         centerline_pts:
     """
     if left_ln_bnds.ndim != 2 or right_ln_bnds.ndim != 2:
-        raise ValueError("Left and right lane boundaries must consistent of a sequence of 2d or 3d waypoints.")
+        raise ValueError("Left and right lane boundaries must consist of a sequence of 2d or 3d waypoints.")
 
     dim = left_ln_bnds.shape[1]
     if dim not in [2, 3]:
