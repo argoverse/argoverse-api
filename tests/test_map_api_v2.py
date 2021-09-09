@@ -324,22 +324,6 @@ class TestArgoverseStaticMapV2(unittest.TestCase):
         # fmt: on
         np.testing.assert_allclose(vector_da.xyz[:4], expected_first4_vertices)
 
-    def test_get_raster_layer_points_boolean(self) -> None:
-        """Ensure that region-of-interest (ROI) binary segmentation at (x,y) locations can be retrieved properly."""
-        point_cloud = np.array(
-            [
-                [770.6398, -105.8351, -19.4105], # ego-vehicle pose at one timestamp
-                [943.5386,  -49.6295, -19.3291], # ego-vehicle pose at one timestamp
-                [918.0960,   82.5588, -20.5742], # ego-vehicle pose at one timestamp
-                [9999999, 999999, 0], # obviously out of bounds value for city coordinate system
-                [-999999, -999999, 0], # obviously out of bounds value for city coordinate system
-            ])
-
-        import pdb; pdb.set_trace()
-        is_roi = self.v2_map.get_raster_layer_points_boolean(point_cloud, layer_name="roi")
-        
-        assert point_cloud.shape[0] == is_roi.shape[0]
-        assert is_roi.dtype == bool
 
     def test_get_ground_height_at_xy(self) -> None:
         """Ensure that ground height at (x,y) locations can be retrieved properly.
@@ -360,9 +344,9 @@ class TestArgoverseStaticMapV2(unittest.TestCase):
         # last 2 indices should be filled with dummy values (NaN) because obviously out of bounds.
         assert np.all(np.isnan(ground_height_z[-2:]))
 
-        # based on grid resolution, ground should be within 10 centimeters of 30cm under back axle.
+        # based on grid resolution, ground should be within 7 centimeters of 30cm under back axle.
         expected_ground = point_cloud[:3,2] - 0.30
-        assert np.allclose(np.absolute(expected_ground - ground_height_z[:3]), 0, atol=0.1)
+        assert np.allclose(np.absolute(expected_ground - ground_height_z[:3]), 0, atol=0.07)
 
 
     def test_get_ground_points_boolean(self) -> None:
@@ -384,4 +368,45 @@ class TestArgoverseStaticMapV2(unittest.TestCase):
         is_ground_pt = self.v2_map.raster_ground_height_layer.get_ground_points_boolean(point_cloud)
         expected_is_ground_pt = np.array([True, True, True, False, False])
         assert is_ground_pt.dtype == bool
+
+
+
+class TestArgoverseStaticMapV2_FullROI(unittest.TestCase):
+    """Unit test for the Argoverse 2.0 per-log map.
+
+    Uses a full scenario vector map, to generate rasterized ROI.
+    """
+
+    def setUp(self) -> None:
+        super().setUp()
+
+        log_map_dirpath = (
+            TEST_DATA_ROOT / "v2_maps" / "full_log_map_v2_gs1B8ZCv7DMi8cMt5aN5rSYjQidJXvGP__2020-07-21-Z1F0076"
+        )
+        self.v2_map = ArgoverseStaticMapV2.from_json(log_map_dirpath, build_raster=True)
+
+    # def test_get_raster_layer_points_boolean(self) -> None:
+    #     """Ensure that region-of-interest (ROI) binary segmentation at (x,y) locations can be retrieved properly.
+    
+    #     Requires full vector map for this scenario, to work properly, and not small section used in other tests.
+    #     """
+    #     point_cloud = np.array(
+    #         [
+    #             [770.6398, -105.8351, -19.4105], # ego-vehicle pose at one timestamp
+    #             [943.5386,  -49.6295, -19.3291], # ego-vehicle pose at one timestamp
+    #             [918.0960,   82.5588, -20.5742], # ego-vehicle pose at one timestamp
+    #             [9999999, 999999, 0], # obviously out of bounds value for city coordinate system
+    #             [-999999, -999999, 0], # obviously out of bounds value for city coordinate system
+    #         ])
+
+    #     import pdb; pdb.set_trace()
+    #     is_roi = self.v2_map.get_raster_layer_points_boolean(point_cloud, layer_name="roi")
+        
+    #     assert point_cloud.shape[0] == is_roi.shape[0]
+    #     assert is_roi.dtype == bool
+
+
+
+
+
 
