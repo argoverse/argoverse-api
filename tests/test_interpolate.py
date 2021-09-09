@@ -127,8 +127,7 @@ def test_compute_lane_width_curved_not_width1() -> None:
 
 
 def test_compute_mid_pivot_arc_3pt_cul_de_sac() -> None:
-    """
-    Make sure we handle the cul-de-sac case correctly.
+    """Make sure we handle the cul-de-sac case correctly, for 2d polylines.
 
     When mapping a cul-de-sac, we get a line of points on one boundary,
     and a single point on the other side. This function produces the middle
@@ -161,9 +160,54 @@ def test_compute_mid_pivot_arc_3pt_cul_de_sac() -> None:
     assert np.isclose(lane_width, gt_lane_width)
 
 
-def test_compute_mid_pivot_arc_5pt_cul_de_sac() -> None:
+def test_compute_mid_pivot_arc_3pt_cul_de_sac_3dpolylines() -> None:
+    """Make sure we handle the cul-de-sac case correctly, for 3d polylines.
+
+    When mapping a cul-de-sac, we get a line of points on one boundary,
+    and a single point on the other side. This function produces the middle
+    arc we get by pivoting around the single point.
+
+    Waypoints are depicted below for the cul-de-sac center, and other boundary.
+    The scenario is a banked turn, where the inside is low, and the outside polyline is higher.
+
+            o @ (0,1)
+              \
+            .   \
+                  \
+            O  .   o  @ (1,0)
+                  /
+            .   /
+              /
+            o @ (0,-1)
     """
-    Make sure we handle the cul-de-sac case correctly.
+    # Numpy array of shape (3,)
+    single_pt = np.array([0, 0, 0])
+
+    # Numpy array of shape (N,3)
+    # fmt: off
+    arc_pts = np.array(
+        [
+            [0, 1, 2],
+            [1, 0, 2],
+            [0, -1, 2]
+        ]
+    )
+    # fmt: on
+
+    # centerline_pts: Numpy array of shape (N,3)
+    centerline_pts, lane_width = compute_mid_pivot_arc(single_pt, arc_pts)
+
+    # z values should be halfway between outer arc and inner arc
+    gt_centerline_pts = np.array([[0, 0.5, 1], [0.5, 0, 1], [0, -0.5, 1]])
+    assert np.allclose(centerline_pts, gt_centerline_pts)
+
+    # compute hypotenuse using height 2 and width 1 -> 2^2 + 1^2 = 5^2
+    gt_lane_width = np.sqrt(5)
+    assert np.isclose(lane_width, gt_lane_width)
+
+
+def test_compute_mid_pivot_arc_5pt_cul_de_sac() -> None:
+    """Make sure we handle the cul-de-sac case correctly, for 2d polylines.
 
     When mapping a cul-de-sac, we get a line of points on one boundary,
     and a single point on the other side. This function produces the middle
@@ -215,7 +259,7 @@ def test_compute_midpoint_line_cul_de_sac_right_onept() -> None:
 
 def test_compute_midpoint_line_cul_de_sac_left_onept() -> None:
     """
-    Make sure that if we provide left and right boundary polylines,
+    Make sure that if we provide left and right boundary polylines in 2d,
     we can get the correct centerline by averaging left and right waypoints.
     """
     right_ln_bnds = np.array([[0, 2], [1, 1], [2, 0], [1, -1], [0, -2]])
@@ -232,7 +276,7 @@ def test_compute_midpoint_line_cul_de_sac_left_onept() -> None:
 
 def test_compute_midpoint_line_straightline_maintain_5_waypts() -> None:
     """
-    Make sure that if we provide left and right boundary polylines,
+    Make sure that if we provide left and right boundary polylines in 2d,
     we can get the correct centerline by averaging left and right waypoints.
     """
     right_ln_bnds = np.array([[-1, 4], [-1, 2], [-1, 0], [-1, -2], [-1, -4]])
@@ -248,7 +292,7 @@ def test_compute_midpoint_line_straightline_maintain_5_waypts() -> None:
 
 def test_compute_midpoint_line_straightline_maintain_4_waypts() -> None:
     """
-    Make sure that if we provide left and right boundary polylines,
+    Make sure that if we provide left and right boundary polylines in 2d,
     we can get the correct centerline by averaging left and right waypoints.
     """
     right_ln_bnds = np.array([[-1, 4], [-1, 2], [-1, 0], [-1, -2], [-1, -4]])
@@ -264,7 +308,7 @@ def test_compute_midpoint_line_straightline_maintain_4_waypts() -> None:
 
 def test_compute_midpoint_line_straightline_maintain_3_waypts() -> None:
     """
-    Make sure that if we provide left and right boundary polylines,
+    Make sure that if we provide left and right boundary polylines in 2d,
     we can get the correct centerline by averaging left and right waypoints.
     """
     right_ln_bnds = np.array([[-1, 4], [-1, 2], [-1, 0], [-1, -2], [-1, -4]])
@@ -280,7 +324,7 @@ def test_compute_midpoint_line_straightline_maintain_3_waypts() -> None:
 
 def test_compute_midpoint_line_straightline_maintain_2_waypts() -> None:
     """
-    Make sure that if we provide left and right boundary polylines,
+    Make sure that if we provide left and right boundary polylines in 2d,
     we can get the correct centerline by averaging left and right waypoints.
     """
     right_ln_bnds = np.array([[-1, 4], [-1, 2], [-1, 0], [-1, -2], [-1, -4]])
@@ -296,7 +340,7 @@ def test_compute_midpoint_line_straightline_maintain_2_waypts() -> None:
 
 def test_compute_midpoint_line_curved_maintain_4_waypts() -> None:
     """
-    Make sure that if we provide left and right boundary polylines,
+    Make sure that if we provide left and right boundary polylines in 2d,
     we can get the correct centerline by averaging left and right waypoints.
 
     Note that because of the curve and the arc interpolation, the land width and centerline in the middle points
@@ -307,19 +351,63 @@ def test_compute_midpoint_line_curved_maintain_4_waypts() -> None:
 
     centerline_pts, lane_width = compute_midpoint_line(left_ln_bnds, right_ln_bnds, num_interp_pts=4)
 
-    from argoverse.utils.mpl_plotting_utils import draw_polygon_mpl
+    # from argoverse.utils.mpl_plotting_utils import draw_polygon_mpl
 
-    fig = plt.figure(figsize=(22.5, 8))
-    ax = fig.add_subplot(111)
+    # fig = plt.figure(figsize=(22.5, 8))
+    # ax = fig.add_subplot(111)
 
-    draw_polygon_mpl(ax, right_ln_bnds, "g")
-    draw_polygon_mpl(ax, left_ln_bnds, "b")
-    draw_polygon_mpl(ax, centerline_pts, "r")
+    # draw_polygon_mpl(ax, right_ln_bnds, "g")
+    # draw_polygon_mpl(ax, left_ln_bnds, "b")
+    # draw_polygon_mpl(ax, centerline_pts, "r")
 
     gt_centerline_pts = np.array([[-1, 2], [1, 2], [3, 0], [3, -2]])
 
     assert np.allclose(centerline_pts[0], gt_centerline_pts[0])
     assert np.allclose(centerline_pts[-1], gt_centerline_pts[-1])
+
+
+def test_compute_midpoint_line_straightline_maintain_3_waypts_3dpolylines():
+    """
+    Make sure that if we provide left and right boundary polylines in 3d,
+    we can get the correct centerline by averaging left and right waypoints.
+    """
+    # fmt: off
+    # right side is lower, at z = 0
+    right_ln_bnds = np.array(
+        [
+            [-1, 4, 0],
+            [-1, 2, 0],
+            [-1, 0, 0],
+            [-1, -2, 0],
+            [-1, -4, 0]
+        ]
+    )
+    # left side is higher, at z = 2
+    # fewer waypoint on left side, but shouldn't affect anything for a straight line
+    left_ln_bnds = np.array(
+        [
+            [2, 4, 2],
+            [2, -2, 2],
+            [2, -4, 2]
+        ]
+    )
+
+    # fmt: on
+    centerline_pts, lane_width = compute_midpoint_line(left_ln_bnds, right_ln_bnds, num_interp_pts=3)
+    # fmt: off
+    gt_centerline_pts = np.array(
+        [
+            [0.5, 4, 1],
+            [0.5, 0, 1],
+            [0.5, -4, 1]
+        ]
+    )
+    # fmt: on
+    assert np.allclose(centerline_pts, gt_centerline_pts)
+
+    # hypotenuse from width=3 on xy plane and z height diff of 3 -> 3**2 + 2**2 = 13
+    gt_lane_width = np.sqrt(13)
+    assert np.isclose(lane_width, gt_lane_width)
 
 
 def test_interp_arc_straight_line() -> None:
