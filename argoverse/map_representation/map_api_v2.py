@@ -74,12 +74,25 @@ class Polyline:
         """
         return cls(waypoints=[Point(x=v["x"], y=v["y"], z=v["z"]) for v in json_data])
 
+    @classmethod
+    def from_array(cls, array: np.ndarray) -> "Polyline":
+        """Generate object instance from a (N,3) Numpy array.
+
+        Args:
+            array: array of shape (N,3) representing N ordered three-dimensional points.
+        """
+        return cls(waypoints=[Point(*pt.tolist()) for pt in array])
+
     def __eq__(self, other: "Polyline") -> bool:
         """Check for equality with another Polyline object."""
         if len(self.waypoints) != len(other.waypoints):
             return False
 
         return all([wpt == wpt_ for wpt, wpt_ in zip(self.waypoints, other.waypoints)])
+
+    def __len__(self) -> int:
+        """Returns the number of waypoints in the polyline."""
+        return len(self.waypoints)
 
 
 @dataclass
@@ -328,7 +341,6 @@ class RasterMapLayer:
     array: np.ndarray
     array_Sim2_city: Sim2
 
-
     def get_raster_values_at_coords(self, point_cloud: np.ndarray, fill_value: float) -> np.ndarray:
         """Index into a raster grid and extract values corresponding to city coordinates.
 
@@ -352,15 +364,14 @@ class RasterMapLayer:
         raster_values = np.full((npyimage_coords.shape[0]), fill_value)
         # generate boolean array indicating whether the value at each index represents a valid coordinate.
         ind_valid_pts = (
-            (npyimage_coords[:, 1] >= 0) * 
-            (npyimage_coords[:, 1] < self.array.shape[0]) *
-            (npyimage_coords[:, 0] >= 0) *
-            (npyimage_coords[:, 0] < self.array.shape[1])
+            (npyimage_coords[:, 1] >= 0)
+            * (npyimage_coords[:, 1] < self.array.shape[0])
+            * (npyimage_coords[:, 0] >= 0)
+            * (npyimage_coords[:, 0] < self.array.shape[1])
         )
-        raster_values[ind_valid_pts] = self.array[
-            npyimage_coords[ind_valid_pts, 1], npyimage_coords[ind_valid_pts, 0]
-        ]
+        raster_values[ind_valid_pts] = self.array[npyimage_coords[ind_valid_pts, 1], npyimage_coords[ind_valid_pts, 0]]
         return raster_values
+
 
 class GroundHeightLayer(RasterMapLayer):
     """Rasterized ground height map layer.
@@ -669,7 +680,7 @@ class ArgoverseStaticMapV2:
         lane_centerline = interp_utils.compute_midpoint_line(
             left_ln_bnds=left_ln_bound,
             right_ln_bnds=right_ln_bound,
-            num_interp_pts = interp_utils.NUM_CENTERLINE_INTERP_PTS
+            num_interp_pts=interp_utils.NUM_CENTERLINE_INTERP_PTS,
         )
         return lane_centerline
 
@@ -763,7 +774,7 @@ class ArgoverseStaticMapV2:
 
     def get_raster_layer_points_boolean(self, point_cloud: np.ndarray, layer_name: str) -> np.ndarray:
         """Query the binary segmentation layers (driveable area and ROI) at specific coordinates, to check values.
-        
+
         Note:
 
         Args:
@@ -784,4 +795,3 @@ class ArgoverseStaticMapV2:
 
         is_layer_boolean_arr = layer_values == 1.0
         return is_layer_boolean_arr
-
