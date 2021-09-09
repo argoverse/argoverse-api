@@ -9,13 +9,15 @@ NUM_CENTERLINE_INTERP_PTS = 10
 
 
 def compute_lane_width(left_even_pts: np.ndarray, right_even_pts: np.ndarray) -> float:
-    """
-    Compute the width of a lane, given an explicit left and right boundary.
-    Requires an equal number of waypoints on each boundary.
+    """Compute the width of a lane, given an explicit left and right boundary.
+    
+    Requires an equal number of waypoints on each boundary. For 3d polylines, this incorporates
+    the height difference between the left and right polyline into the lane width as a hypotenuse
+    of triangle formed by lane width in a flat plane, and the height difference.
 
     Args:
-        left_even_pts: Numpy array of shape (N,2)
-        right_even_pts: Numpy array of shape (N,2)
+        left_even_pts: Numpy array of shape (N,2) or (N,3)
+        right_even_pts: Numpy array of shape (N,2) or (N,3)
 
     Returns:
         lane_width: float representing average width of a lane
@@ -30,17 +32,20 @@ def compute_mid_pivot_arc(single_pt: np.ndarray, arc_pts: np.ndarray) -> Tuple[n
     Given a line of points on one boundary, and a single point on the other side,
     produce the middle arc we get by pivoting around the single point.
 
-    Occurs when mapping cul-de-sacs:
+    Occurs when mapping cul-de-sacs.
 
     Args:
-        single_pt: Numpy array of shape (2,)
-        arc_pts: Numpy array of shape (N,2)
+        single_pt: Numpy array of shape (2,) representing a single 2d coordinate.
+        arc_pts: Numpy array of shape (N,2) representing a 2d polyline.
 
     Returns:
         centerline_pts: Numpy array of shape (N,3)
+        lane_width: average width of the lane.
     """
     num_pts = len(arc_pts)
+    # form ladder with equal number of vertices on each side
     single_pt_tiled = np.tile(single_pt, (num_pts, 1))
+    # compute midpoint for each rung of the ladder
     centerline_pts = (single_pt_tiled + arc_pts) / 2.0
     lane_width = compute_lane_width(single_pt_tiled, arc_pts)
     return centerline_pts, lane_width
@@ -68,11 +73,22 @@ def compute_midpoint_line(
     Returns:
         centerline_pts:
     """
-    # first, remove duplicates (might only be left with a single pt afterwards)
-    px, py = eliminate_duplicates_2d(left_ln_bnds[:, 0], left_ln_bnds[:, 1])
-    left_ln_bnds = np.hstack([px[:, np.newaxis], py[:, np.newaxis]])
-    px, py = eliminate_duplicates_2d(right_ln_bnds[:, 0], right_ln_bnds[:, 1])
-    right_ln_bnds = np.hstack([px[:, np.newaxis], py[:, np.newaxis]])
+    if left_ln_bnds.ndim != 2 or right_ln_bnds.ndim != 2:
+        raise ValueError("Left and right lane boundaries must consistent of a sequence of 2d or 3d waypoints.")
+
+    dim = left_ln_bnds.shape[1]
+    if dim not in [2,3]:
+        raise ValueError("Left and right lane boundaries must be 2d or 3d.")
+
+    if left_ln_bnds.shape[1] != right_ln_bnds.shape[1]:
+        raise ValueError("Left ")
+
+    if dim == 2:
+        # first, remove duplicates (might only be left with a single pt afterwards)
+        px, py = eliminate_duplicates_2d(left_ln_bnds[:, 0], left_ln_bnds[:, 1])
+        left_ln_bnds = np.hstack([px[:, np.newaxis], py[:, np.newaxis]])
+        px, py = eliminate_duplicates_2d(right_ln_bnds[:, 0], right_ln_bnds[:, 1])
+        right_ln_bnds = np.hstack([px[:, np.newaxis], py[:, np.newaxis]])
 
     if len(left_ln_bnds) == 1:
         centerline_pts, lane_width = compute_mid_pivot_arc(single_pt=left_ln_bnds, arc_pts=right_ln_bnds)
@@ -81,9 +97,11 @@ def compute_midpoint_line(
     if len(right_ln_bnds) == 1:
         centerline_pts, lane_width = compute_mid_pivot_arc(single_pt=right_ln_bnds, arc_pts=left_ln_bnds)
         return centerline_pts[:, :2], lane_width
-
-    left_even_pts = interp_arc(num_interp_pts, left_ln_bnds[:, 0], left_ln_bnds[:, 1])
-    right_even_pts = interp_arc(num_interp_pts, right_ln_bnds[:, 0], right_ln_bnds[:, 1])
+    
+    pz_left = left_ln_bnds[:, 2] if dim == 3 else None
+    left_even_pts = interp_arc(num_interp_pts, px=left_ln_bnds[:, 0], py=left_ln_bnds[:, 1], pz=pz_left)
+    pz_right = right_ln_bnds[:, 2] if dim == 3 else None
+    right_even_pts = interp_arc(num_interp_pts, px=right_ln_bnds[:, 0], py=right_ln_bnds[:, 1], pz=pz_right)
 
     centerline_pts = (left_even_pts + right_even_pts) / 2.0
 
