@@ -795,3 +795,16 @@ class ArgoverseStaticMapV2:
 
         is_layer_boolean_arr = layer_values == 1.0
         return is_layer_boolean_arr
+
+    def append_height_to_2d_city_pt_cloud(self, pt_cloud_xy: np.ndarray) -> np.ndarray:
+        """Accept 2d point cloud in xy plane and returns a 3d point cloud (xyz) by querying map for ground height.
+
+        Args:
+            pt_cloud_xy: Numpy array of shape (N,2) representing 2d coordinates of N query locations.
+
+        Returns:
+            pt_cloud_xyz: Numpy array of shape (N,3) representing 3d coordinates on the ground surface at
+               N (x,y) query locations.
+        """
+        pts_z = self.raster_ground_height_layer.get_ground_height_at_xy(pt_cloud_xy)
+        return np.hstack([pt_cloud_xy, pts_z[:, np.newaxis]])
