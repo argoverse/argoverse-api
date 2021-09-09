@@ -104,6 +104,235 @@ def get_distance(x1: Dict[str, np.ndarray], x2: Dict[str, np.ndarray], name: str
         raise NotImplementedError("Not implemented..")
 
 
+def get_frame_data(
+    path_tracker_output_root: _PathLike,
+    log_id: str,
+    path_track_data,
+    path_dataset,
+    category: str,
+    diffatt: Optional[str],
+    d_min: float,
+    d_max: float,
+    ID_gt_all: List[str],
+    num_total_gt: int,
+    count_all: int,
+    acc_c,
+    acc_i,
+    acc_o,
+):
+
+    for ind_frame in range(len(path_track_data)):
+        if ind_frame % 50 == 0:
+            logger.info("%d/%d" % (ind_frame, len(path_track_data)))
+
+        timestamp_lidar = int(Path(path_track_data[ind_frame]).stem.split("_")[-1])
+        path_gt = os.path.join(
+            path_dataset,
+            "per_sweep_annotations_amodal",
+            f"tracked_object_labels_{timestamp_lidar}.json",
+        )
+
+        if not os.path.exists(path_gt):
+            logger.warning("Missing ", path_gt)
+            continue
+
+        gt_data = read_json_file(path_gt)
+
+        gt: Dict[int, Dict[str, Any]] = {}
+        id_gts = []
+        track_label_uuids: Dict[str, int] = {}
+        for i in range(len(gt_data)):
+            if gt_data[i]["label_class"] != category:
+                continue
+
+            if diffatt is not None:
+
+                if diffatt not in dict_att_all["test"][log_id][gt_data[i]["track_label_uuid"]]["difficult_att"]:
+                    continue
+
+            bbox, orientation = label_to_bbox(gt_data[i])
+
+            center = np.array(
+                [
+                    gt_data[i]["center"]["x"],
+                    gt_data[i]["center"]["y"],
+                    gt_data[i]["center"]["z"],
+                ]
+            )
+
+            if bbox[3] > 0 and in_distance_range_pose(np.zeros(3), center, d_min, d_max):
+                track_label_uuid = gt_data[i]["track_label_uuid"]
+                gt[track_label_uuid] = {}
+                gt[track_label_uuid]["centroid"] = center
+                gt[track_label_uuid]["bbox"] = bbox
+                gt[track_label_uuid]["orientation"] = orientation
+                gt[track_label_uuid]["width"] = gt_data[i]["width"]
+                gt[track_label_uuid]["length"] = gt_data[i]["length"]
+                gt[track_label_uuid]["height"] = gt_data[i]["height"]
+
+                if track_label_uuid not in ID_gt_all:
+                    ID_gt_all.append(track_label_uuid)
+
+                id_gts.append(track_label_uuid)
+                num_total_gt += 1
+
+            tracks: Dict[int, Dict[str, Any]] = {}
+            id_tracks: List[int] = []
+
+            track_data = read_json_file(path_track_data[ind_frame])
+            for track in track_data:
+                key = track["track_label_uuid"]
+
+                if track["label_class"] != category or track["height"] == 0:
+                    continue
+                get_track_data(track, tracks, d_min, d_max, key, id_tracks)
+
+            append_distances(gt, tracks, count_all, acc_c, acc_i, acc_o, id_tracks, id_gts)
+
+    if count_all == 0:
+        # fix for when all hypothesis is empty,
+        # pymotmetric currently doesn't support this, see https://github.com/cheind/py-motmetrics/issues/49
+        acc_c.update(id_gts, ["dummy_id"], np.ones(np.shape(id_gts)) * np.inf)
+        acc_i.update(id_gts, ["dummy_id"], np.ones(np.shape(id_gts)) * np.inf)
+        acc_o.update(id_gts, ["dummy_id"], np.ones(np.shape(id_gts)) * np.inf)
+
+
+def get_track_data(
+    track: Dict[str, Any], tracks: Dict[int, Dict[str, Any]], d_min: float, d_max: float, key: str, id_tracks: List[int]
+):
+
+    center = np.array([track["center"]["x"], track["center"]["y"], track["center"]["z"]])
+    bbox, orientation = label_to_bbox(track)
+    if in_distance_range_pose(np.zeros(3), center, d_min, d_max):
+        tracks[key] = {}
+        tracks[key]["centroid"] = center
+        tracks[key]["bbox"] = bbox
+        tracks[key]["orientation"] = orientation
+        tracks[key]["width"] = track["width"]
+        tracks[key]["length"] = track["length"]
+        tracks[key]["height"] = track["height"]
+
+        id_tracks.append(key)
+
+
+def append_distances(
+    gt: Dict[int, Dict[str, Any]],
+    tracks: Dict[int, Dict[str, Any]],
+    count_all: int,
+    acc_c,
+    acc_i,
+    acc_o,
+    id_tracks: List[int],
+    id_gts: List[str],
+):
+    dists_c: List[List[float]] = []
+    dists_i: List[List[float]] = []
+    dists_o: List[List[float]] = []
+    for gt_key, gt_value in gt.items():
+        gt_track_data_c: List[float] = []
+        gt_track_data_i: List[float] = []
+        gt_track_data_o: List[float] = []
+        dists_c.append(gt_track_data_c)
+        dists_i.append(gt_track_data_i)
+        dists_o.append(gt_track_data_o)
+        for track_key, track_value in tracks.items():
+            count_all += 1
+            gt_track_data_c.append(get_distance(gt_value, track_value, "centroid"))
+            gt_track_data_i.append(get_distance(gt_value, track_value, "iou"))
+            gt_track_data_o.append(get_distance(gt_value, track_value, "orientation"))
+
+    acc_c.update(id_gts, id_tracks, dists_c)
+    acc_i.update(id_gts, id_tracks, dists_i)
+    acc_o.update(id_gts, id_tracks, dists_o)
+
+
+def get_summary_data(acc_c, acc_o, ID_gt_all: List[str], path_tracker_output: _PathLike):
+    summary = mh.compute(
+        acc_c,
+        metrics=[
+            "num_frames",
+            "mota",
+            "motp",
+            "idf1",
+            "mostly_tracked",
+            "mostly_lost",
+            "num_false_positives",
+            "num_misses",
+            "num_switches",
+            "num_fragmentations",
+        ],
+        name="acc",
+    )
+    logger.info("summary = %s", summary)
+    num_tracks = len(ID_gt_all)
+
+    fn = os.path.basename(path_tracker_output)
+    num_frames = summary["num_frames"][0]
+    mota = summary["mota"][0] * 100
+    motp_c = summary["motp"][0]
+    idf1 = summary["idf1"][0]
+    most_track = summary["mostly_tracked"][0] / num_tracks
+    most_lost = summary["mostly_lost"][0] / num_tracks
+    num_fp = summary["num_false_positives"][0]
+    num_miss = summary["num_misses"][0]
+    num_switch = summary["num_switches"][0]
+    num_frag = summary["num_fragmentations"][0]
+    write_summary_to_file(
+        acc_c,
+        acc_o,
+        ID_gt_all,
+        path_tracker_output,
+        num_frames,
+        mota,
+        motp_c,
+        idf1,
+        most_track,
+        most_lost,
+        num_fp,
+        num_miss,
+        num_switch,
+        num_frag,
+    )
+
+
+def write_summary_to_file(
+    acc_c,
+    acc_o,
+    ID_gt_all: List[str],
+    path_tracker_output: _PathLike,
+    num_frames: int,
+    mota: float,
+    motp_c: float,
+    idf1: float,
+    most_track: float,
+    most_lost: float,
+    num_fp: float,
+    num_miss: float,
+    num_switch: float,
+    num_frag: float,
+):
+    sum_motp_i = mh.compute(acc_c, metrics=["motp"], name="acc")
+    logger.info("MOTP-I = %s", sum_motp_i)
+    num_tracks = len(ID_gt_all)
+
+    fn = os.path.basename(path_tracker_output)
+    motp_i = sum_motp_i["motp"][0]
+
+    acc_c.events.loc[acc_c.events.Type != "RAW", "D"] = acc_o.events.loc[acc_c.events.Type != "RAW", "D"]
+    sum_motp_o = mh.compute(acc_c, metrics=["motp"], name="acc")
+    logger.info("MOTP-O = %s", sum_motp_o)
+    num_tracks = len(ID_gt_all)
+
+    fn = os.path.basename(path_tracker_output)
+    motp_o = sum_motp_o["motp"][0]
+
+    out_string = (
+        f"{fn} {num_frames} {mota:.2f} {motp_c:.2f} {motp_o:.2f} {motp_i:.2f} {idf1:.2f} {most_track:.2f} "
+        f"{most_lost:.2f} {num_fp} {num_miss} {num_switch} {num_frag} \n"
+    )
+    out_file.write(out_string)
+
+
 def eval_tracks(
     path_tracker_output_root: _PathLike,
     path_dataset_root: _PathLike,
@@ -155,180 +384,38 @@ def eval_tracks(
     num_total_gt = 0
 
     for path_dataset in path_datasets:
-
         log_id = pathlib.Path(path_dataset).name
         if len(log_id) == 0 or log_id.startswith("_"):
             continue
-
         path_tracker_output = os.path.join(path_tracker_output_root, log_id)
 
         path_track_data = sorted(
             glob.glob(os.path.join(os.fspath(path_tracker_output), "per_sweep_annotations_amodal", "*"))
         )
-
+        all_uuids: Dict[str, int] = {}
         logger.info("log_id = %s", log_id)
 
-        for ind_frame in range(len(path_track_data)):
-            if ind_frame % 50 == 0:
-                logger.info("%d/%d" % (ind_frame, len(path_track_data)))
+        get_frame_data(
+            path_tracker_output_root,
+            log_id,
+            path_track_data,
+            all_uuids,
+            path_dataset,
+            category,
+            diffatt,
+            d_min,
+            d_max,
+            ID_gt_all,
+            num_total_gt,
+            count_all,
+            acc_c,
+            acc_i,
+            acc_o,
+        )
 
-            timestamp_lidar = int(Path(path_track_data[ind_frame]).stem.split("_")[-1])
-            path_gt = os.path.join(
-                path_dataset,
-                "per_sweep_annotations_amodal",
-                f"tracked_object_labels_{timestamp_lidar}.json",
-            )
-
-            if not os.path.exists(path_gt):
-                logger.warning("Missing ", path_gt)
-                continue
-
-            gt_data = read_json_file(path_gt)
-
-            gt: Dict[str, Dict[str, Any]] = {}
-            id_gts = []
-            for i in range(len(gt_data)):
-
-                if gt_data[i]["label_class"] != category:
-                    continue
-
-                if diffatt is not None:
-
-                    if diffatt not in dict_att_all["test"][log_id][gt_data[i]["track_label_uuid"]]["difficult_att"]:
-                        continue
-
-                bbox, orientation = label_to_bbox(gt_data[i])
-
-                center = np.array(
-                    [
-                        gt_data[i]["center"]["x"],
-                        gt_data[i]["center"]["y"],
-                        gt_data[i]["center"]["z"],
-                    ]
-                )
-                if bbox[3] > 0 and in_distance_range_pose(np.zeros(3), center, d_min, d_max):
-                    track_label_uuid = gt_data[i]["track_label_uuid"]
-                    gt[track_label_uuid] = {}
-                    gt[track_label_uuid]["centroid"] = center
-
-                    gt[track_label_uuid]["bbox"] = bbox
-                    gt[track_label_uuid]["orientation"] = orientation
-                    gt[track_label_uuid]["width"] = gt_data[i]["width"]
-                    gt[track_label_uuid]["length"] = gt_data[i]["length"]
-                    gt[track_label_uuid]["height"] = gt_data[i]["height"]
-
-                    if track_label_uuid not in ID_gt_all:
-                        ID_gt_all.append(track_label_uuid)
-
-                    id_gts.append(track_label_uuid)
-                    num_total_gt += 1
-
-            tracks: Dict[str, Dict[str, Any]] = {}
-            id_tracks: List[str] = []
-
-            track_data = read_json_file(path_track_data[ind_frame])
-
-            for track in track_data:
-                key = track["track_label_uuid"]
-
-                if track["label_class"] != category or track["height"] == 0:
-                    continue
-
-                center = np.array([track["center"]["x"], track["center"]["y"], track["center"]["z"]])
-                bbox, orientation = label_to_bbox(track)
-                if in_distance_range_pose(np.zeros(3), center, d_min, d_max):
-                    tracks[key] = {}
-                    tracks[key]["centroid"] = center
-                    tracks[key]["bbox"] = bbox
-                    tracks[key]["orientation"] = orientation
-                    tracks[key]["width"] = track["width"]
-                    tracks[key]["length"] = track["length"]
-                    tracks[key]["height"] = track["height"]
-
-                    id_tracks.append(key)
-
-            dists_c: List[List[float]] = []
-            dists_i: List[List[float]] = []
-            dists_o: List[List[float]] = []
-            for gt_key, gt_value in gt.items():
-                gt_track_data_c: List[float] = []
-                gt_track_data_i: List[float] = []
-                gt_track_data_o: List[float] = []
-                dists_c.append(gt_track_data_c)
-                dists_i.append(gt_track_data_i)
-                dists_o.append(gt_track_data_o)
-                for track_key, track_value in tracks.items():
-                    count_all += 1
-                    gt_track_data_c.append(get_distance(gt_value, track_value, "centroid"))
-                    gt_track_data_i.append(get_distance(gt_value, track_value, "iou"))
-                    gt_track_data_o.append(get_distance(gt_value, track_value, "orientation"))
-
-            acc_c.update(id_gts, id_tracks, dists_c)
-            acc_i.update(id_gts, id_tracks, dists_i)
-            acc_o.update(id_gts, id_tracks, dists_o)
-    # print(count_all)
-    if count_all == 0:
-        # fix for when all hypothesis is empty,
-        # pymotmetric currently doesn't support this, see https://github.com/cheind/py-motmetrics/issues/49
-        acc_c.update(id_gts, ["dummy_id"], np.ones(np.shape(id_gts)) * np.inf)
-        acc_i.update(id_gts, ["dummy_id"], np.ones(np.shape(id_gts)) * np.inf)
-        acc_o.update(id_gts, ["dummy_id"], np.ones(np.shape(id_gts)) * np.inf)
-
-    summary = mh.compute(
-        acc_c,
-        metrics=[
-            "num_frames",
-            "mota",
-            "motp",
-            "idf1",
-            "mostly_tracked",
-            "mostly_lost",
-            "num_false_positives",
-            "num_misses",
-            "num_switches",
-            "num_fragmentations",
-        ],
-        name="acc",
-    )
-    logger.info("summary = %s", summary)
-    num_tracks = len(ID_gt_all)
-
-    fn = os.path.basename(path_tracker_output)
-    num_frames = summary["num_frames"][0]
-    mota = summary["mota"][0] * 100
-    motp_c = summary["motp"][0]
-    idf1 = summary["idf1"][0]
-    most_track = summary["mostly_tracked"][0] / num_tracks
-    most_lost = summary["mostly_lost"][0] / num_tracks
-    num_fp = summary["num_false_positives"][0]
-    num_miss = summary["num_misses"][0]
-    num_switch = summary["num_switches"][0]
-    num_frag = summary["num_fragmentations"][0]
+    get_summary_data(acc_c, acc_o, ID_gt_all, path_tracker_output)
 
     acc_c.events.loc[acc_c.events.Type != "RAW", "D"] = acc_i.events.loc[acc_c.events.Type != "RAW", "D"]
-
-    sum_motp_i = mh.compute(acc_c, metrics=["motp"], name="acc")
-    logger.info("MOTP-I = %s", sum_motp_i)
-    num_tracks = len(ID_gt_all)
-
-    fn = os.path.basename(path_tracker_output)
-    motp_i = sum_motp_i["motp"][0]
-
-    acc_c.events.loc[acc_c.events.Type != "RAW", "D"] = acc_o.events.loc[acc_c.events.Type != "RAW", "D"]
-    sum_motp_o = mh.compute(acc_c, metrics=["motp"], name="acc")
-    logger.info("MOTP-O = %s", sum_motp_o)
-    num_tracks = len(ID_gt_all)
-
-    fn = os.path.basename(path_tracker_output)
-    motp_o = sum_motp_o["motp"][0]
-
-    out_string = (
-        f"{fn} {num_frames} {mota:.2f} {motp_c:.2f} {motp_o:.2f} {motp_i:.2f} {idf1:.2f} {most_track:.2f} "
-        f"{most_lost:.2f} {num_fp} {num_miss} {num_switch} {num_frag} \n"
-    )
-    out_file.write(out_string)
-    # out_file.write("total gt num = %d" %  num_total_gt)
-    # print(out_string)
 
 
 if __name__ == "__main__":
