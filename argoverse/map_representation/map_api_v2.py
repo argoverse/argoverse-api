@@ -12,6 +12,7 @@ of the egovehicle (AV).
 import copy
 import glob
 import logging
+import math
 import os
 from enum import Enum
 from pathlib import Path
@@ -22,9 +23,9 @@ import numpy as np
 from dataclasses import dataclass
 
 import argoverse.utils.dilation_utils as dilation_utils
+import argoverse.utils.interpolate as interp_utils
 import argoverse.utils.json_utils as json_utils
 from argoverse.utils.centerline_utils import convert_lane_boundaries_to_polygon
-from argoverse.utils.interpolate import interp_arc
 from argoverse.utils.mask_utils import get_mask_from_polygons
 from argoverse.utils.sim2 import Sim2
 
@@ -104,7 +105,7 @@ class DrivableArea:
 
 
 class LaneType(str, Enum):
-    """Describes the sorts of objects that may use the lane for transportation."""
+    """Describes the sorts of objects that may use the lane for travel."""
 
     VEHICLE: str = "VEHICLE"
     BIKE: str = "BIKE"
@@ -199,7 +200,6 @@ class LocalLaneMarking(NamedTuple):
     polyline: np.ndarray
 
 
-# TODO: (willqi) we should not name it left_lane_mark_type, just _left_mark_type. implicit it is a about a lane
 # TODO: decide if we want to retain the `predecessors` field.
 
 
@@ -301,12 +301,12 @@ class LaneSegment:
         WPT_INFTY_NORM_INTERP_NUM = 50
 
         try:
-            right_ln_bnd_interp = interp_arc(
+            right_ln_bnd_interp = interp_utils.interp_arc(
                 t=WPT_INFTY_NORM_INTERP_NUM,
                 px=self.right_lane_boundary.xyz[:, 0],
                 py=self.right_lane_boundary.xyz[:, 1],
             )
-            left_ln_bnd_interp = interp_arc(
+            left_ln_bnd_interp = interp_utils.interp_arc(
                 t=WPT_INFTY_NORM_INTERP_NUM, px=self.left_lane_boundary.xyz[:, 0], py=self.left_lane_boundary.xyz[:, 1]
             )
         except Exception as e:
@@ -335,11 +335,11 @@ class RasterMapLayer:
         Note: a conversion is required between city coordinates and raster grid coordinates, via Sim(2).
 
         Args:
-            point_cloud:
+            point_cloud: array of shape (N,2) or (N,3) representing coordinates in the city coordinate frame.
             fill_value: float representing default "raster" return value for out-of-bounds queries.
 
         Returns:
-            raster_values: array of shape ()
+            raster_values: array of shape (N,) representing raster values at the N query coordinates.
         """
         # Note: we do NOT round here, because we need to enforce scaled discretization.
         city_coords = point_cloud[:, :2]
@@ -347,7 +347,6 @@ class RasterMapLayer:
         npyimage_coords = self.array_Sim2_city.transform_point_cloud(city_coords)
         npyimage_coords = npyimage_coords.astype(np.int64)
 
-        # TODO: verify if the code below is still needed.
         # out of bounds values will default to the fill value, and will not be indexed into the array.
         # index in at (x,y) locations, which are (y,x) in the image
         raster_values = np.full((npyimage_coords.shape[0]), fill_value)
@@ -496,9 +495,17 @@ class RoiMapLayer(RasterMapLayer):
 
 
 def compute_data_bounds(drivable_areas: List[DrivableArea]) -> Tuple[int, int, int, int]:
-    """ """
-    import math
+    """Find the minimum and maximum coordinates along the x and y axes for a set of drivable areas.
 
+    Args:
+        drivable_areas: list of drivable area objects, defined in the city coordinate frame.
+
+    Returns:
+        xmin: float representing minimum x-coordinate of any vertex of any provided drivable area.
+        ymin: float representing minimum y-coordinate, as above.
+        xmax: float representing maximum x-coordinate, as above.
+        ymax: float representing maximum y-coordinate, as above.
+    """
     xmin = math.floor(min([da.xyz[:, 0].min() for da in drivable_areas]))
     ymin = math.floor(min([da.xyz[:, 1].min() for da in drivable_areas]))
     xmax = math.ceil(max([da.xyz[:, 0].max() for da in drivable_areas]))
@@ -655,11 +662,15 @@ class ArgoverseStaticMapV2:
         Returns:
             lane_centerline: Numpy array of shape (N,3)
         """
-        left_ln_bound = self.vector_lane_segments[lane_segment_id].left_lane_boundary
-        right_ln_bound = self.vector_lane_segments[lane_segment_id].right_lane_boundary
+        left_ln_bound = self.vector_lane_segments[lane_segment_id].left_lane_boundary.xyz
+        right_ln_bound = self.vector_lane_segments[lane_segment_id].right_lane_boundary.xyz
 
-        lane_centerline = ""  # TODO: add 3d linear interpolation fn
-
+        # TODO (willqi): determine if we would like to use a fixed distance-based resolution for waypoint spacing.
+        lane_centerline = interp_utils.compute_midpoint_line(
+            left_ln_bnds=left_ln_bound,
+            right_ln_bnds=right_ln_bound,
+            num_interp_pts = interp_utils.NUM_CENTERLINE_INTERP_PTS
+        )
         return lane_centerline
 
     def get_lane_segment_polygon(self, lane_segment_id: int) -> np.ndarray:
