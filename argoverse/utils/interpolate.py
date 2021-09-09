@@ -10,7 +10,7 @@ NUM_CENTERLINE_INTERP_PTS = 10
 
 def compute_lane_width(left_even_pts: np.ndarray, right_even_pts: np.ndarray) -> float:
     """Compute the width of a lane, given an explicit left and right boundary.
-    
+
     Requires an equal number of waypoints on each boundary. For 3d polylines, this incorporates
     the height difference between the left and right polyline into the lane width as a hypotenuse
     of triangle formed by lane width in a flat plane, and the height difference.
@@ -77,7 +77,7 @@ def compute_midpoint_line(
         raise ValueError("Left and right lane boundaries must consistent of a sequence of 2d or 3d waypoints.")
 
     dim = left_ln_bnds.shape[1]
-    if dim not in [2,3]:
+    if dim not in [2, 3]:
         raise ValueError("Left and right lane boundaries must be 2d or 3d.")
 
     if left_ln_bnds.shape[1] != right_ln_bnds.shape[1]:
@@ -97,7 +97,7 @@ def compute_midpoint_line(
     if len(right_ln_bnds) == 1:
         centerline_pts, lane_width = compute_mid_pivot_arc(single_pt=right_ln_bnds, arc_pts=left_ln_bnds)
         return centerline_pts[:, :2], lane_width
-    
+
     pz_left = left_ln_bnds[:, 2] if dim == 3 else None
     left_even_pts = interp_arc(num_interp_pts, px=left_ln_bnds[:, 0], py=left_ln_bnds[:, 1], pz=pz_left)
     pz_right = right_ln_bnds[:, 2] if dim == 3 else None
@@ -234,7 +234,7 @@ def interp_arc(t: int, px: np.ndarray, py: np.ndarray, pz: Optional[np.ndarray] 
     s = np.divide((eq_spaced_points - cumarc[tbins - 1]), chordlen[tbins - 1])
     anchors = pxy[tbins - 1, :]
     # broadcast to scale each row of pxy by a different row of s
-    offsets = (pxy[tbins, :] - pxy[tbins - 1, :]) * s.reshape(-1,1)
+    offsets = (pxy[tbins, :] - pxy[tbins - 1, :]) * s.reshape(-1, 1)
     pt = anchors + offsets
 
     return pt
