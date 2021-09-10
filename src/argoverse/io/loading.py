@@ -132,6 +132,16 @@ def load_schema(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.Da
 
 
 def load_dataset(fpath: Path) -> ds.Dataset:
+    """Load Apache Arrow dataset.
+
+    Args:
+        fpath (Path): Dataset file path.
+
+    Returns:
+        ds.Dataset: Apache Arrow dataset.
+    """
     # TODO Is there a native way to remove the dot?
+
+    # Dataset format (e.g., "csv", "ipc/feather", "parquet").
     format = fpath.suffix[1:]
     return ds.dataset(fpath, format=format)
