@@ -2,17 +2,18 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
-from argoverse.io.loading import load_dataset
 
 import pyarrow.dataset as ds
+
+from argoverse.io.loading import load_dataset
 
 
 @dataclass
 class SensorDataset:
     rootdir: Path
 
-    lidar: Optional[ds.Dataset]
-    poses: Optional[ds.Dataset]
+    lidar: Optional[ds.Dataset] = None
+    poses: Optional[ds.Dataset] = None
 
     calibration: Optional[ds.Dataset] = None
     labels: Optional[ds.Dataset] = None
@@ -20,7 +21,8 @@ class SensorDataset:
     def __post_init__(self, format: str = "feather") -> None:
         dtypes = ("lidar", "poses", "calibration", "labels")
         for dtype in dtypes:
-            src = (self.rootdir / dtype).with_suffix(format)
+            src = (self.rootdir / dtype).with_suffix(f".{format}")
+            breakpoint()
             setattr(self, dtype, load_dataset(src))
 
     def __len__(self) -> int:

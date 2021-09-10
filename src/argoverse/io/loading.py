@@ -1,6 +1,7 @@
 """I/O for manipulating the Argoverse 2.0 dataset."""
 from pathlib import Path
 from typing import Optional, Tuple
+
 import pandas as pd
 import pyarrow as pa
 import pyarrow.dataset as ds
@@ -131,5 +132,6 @@ def load_schema(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.Da
 
 
 def load_dataset(fpath: Path) -> ds.Dataset:
-    format = fpath.suffix
-    return ds.Dataset(fpath, format=format)
+    # TODO Is there a native way to remove the dot?
+    format = fpath.suffix[1:]
+    return ds.dataset(fpath, format=format)
