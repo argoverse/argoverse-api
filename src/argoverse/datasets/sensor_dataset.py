@@ -1,6 +1,8 @@
+"""Dataloading class for a sensor-based dataset."""
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
+from argoverse.io.loading import load_dataset
 
 import pyarrow.dataset as ds
 
@@ -16,15 +18,12 @@ class SensorDataset:
     labels: Optional[ds.Dataset] = None
 
     def __post_init__(self, format: str = "feather") -> None:
-        lidar_fpath = self.rootdir / "lidar.feather"
-        poses_fpath = self.rootdir / "poses.feather"
-        calibration_fpath = self.rootdir / "calibration.feather"
-        labels_fpath = self.rootdir / "labels.feather"
-
-        self.lidar = ds.dataset(lidar_fpath, format=format)
-        self.poses = ds.dataset(poses_fpath, format=format)
-        self.calibration = ds.dataset(calibration_fpath, format=format)
-        self.labels = ds.dataset(labels_fpath, format=format)
+        dtypes = ("lidar", "poses", "calibration", "labels")
+        for dtype in dtypes:
+            src = (self.rootdir / dtype).with_suffix(format)
+            setattr(self, dtype, load_dataset(src))
 
     def __len__(self) -> int:
+        if self.lidar is None:
+            return 0
         return len(self.lidar)

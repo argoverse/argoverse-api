@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Optional, Tuple
 import pandas as pd
 import pyarrow as pa
+import pyarrow.dataset as ds
 
 
 def load_calibration(
@@ -127,3 +128,8 @@ def load_poses(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.Dat
 def load_schema(fpath: Path, columns: Optional[Tuple[str, ...]] = None) -> pd.DataFrame:
     table = pa.feather.read_feather(fpath, columns=columns)
     return table.as_pandas()
+
+
+def load_dataset(fpath: Path) -> ds.Dataset:
+    format = fpath.suffix
+    return ds.Dataset(fpath, format=format)
