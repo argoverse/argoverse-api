@@ -75,6 +75,9 @@ Make sure that you can run `python -c "import argoverse"` in python, and you are
 ### (optional) Install mayavi
 * Some visualizations may require `mayavi`. See instructions on how to install Mayavi [here](https://docs.enthought.com/mayavi/mayavi/installation.html).
 
+### (optional) Install ffmpeg
+* Some visualizations may require `ffmpeg`. See instructions on how to install ffmpeg [here](https://ffmpeg.org/download.html).
+
 ### (optional) Stereo tutorial dependencies
 * You will need to install three dependencies to run the [stereo tutorial](https://github.com/argoai/argoverse-api/blob/master/demo_usage/competition_stereo_tutorial.ipynb):
 
