@@ -11,10 +11,9 @@ increased interpretability of the error modes in a set of detections.
 
 import logging
 import os
-from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
-from typing import Dict, Final, List, NamedTuple, Optional, Tuple, Union
+from typing import Dict, Final, List, NamedTuple, Tuple, Union
 
 import matplotlib
 import numpy as np

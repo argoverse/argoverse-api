@@ -61,7 +61,7 @@ Results:
 import logging
 import multiprocessing as mp
 from collections import defaultdict
-from typing import DefaultDict, Dict, List, Optional
+from typing import DefaultDict, Dict, List
 
 import numpy as np
 import pandas as pd
