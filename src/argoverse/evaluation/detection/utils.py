@@ -117,9 +117,9 @@ def accumulate(
     dts = dts.sort_values("tov_ns").reset_index(drop=True)
     gts = gts.sort_values("tov_ns").reset_index(drop=True)
     poses = poses.sort_values("tov_ns").reset_index(drop=True)
-    if cfg.eval_only_roi_instances and avm is not None:
-        dts = filter_objs_to_roi(dts, poses, avm)
-        gts = filter_objs_to_roi(gts, poses, avm)
+    # if cfg.eval_only_roi_instances and avm is not None:
+    #     dts = filter_objs_to_roi(dts, poses, avm)
+    #     gts = filter_objs_to_roi(gts, poses, avm)
 
     dts_filtered = filter_instances(dts, cfg)
     gts_filtered = filter_instances(gts, cfg)
@@ -447,43 +447,43 @@ def plot(
     return dst_fpath
 
 
-def filter_objs_to_roi(
-    cuboids: DataFrame, poses: DataFrame, avm: ArgoverseMap
-) -> DataFrame:
-    cuboids = cuboids.sort_values("tov_ns").reset_index(drop=True)
-    poses = poses.sort_values("tov_ns").reset_index(drop=True)
+# def filter_objs_to_roi(
+#     cuboids: DataFrame, poses: DataFrame, avm: ArgoverseMap
+# ) -> DataFrame:
+#     cuboids = cuboids.sort_values("tov_ns").reset_index(drop=True)
+#     poses = poses.sort_values("tov_ns").reset_index(drop=True)
 
-    cuboids_with_poses = pd.merge_asof(
-        cuboids, poses, by="uuid", on="tov_ns", direction="nearest"
-    )
-    ego_SO3_gts = cuboids_with_poses[["qx_x", "qy_x", "qz_x", "qw_x"]]
-    ego_SO3_gts = R.from_quat(ego_SO3_gts.to_numpy().repeat(4, axis=0))
+#     cuboids_with_poses = pd.merge_asof(
+#         cuboids, poses, by="uuid", on="tov_ns", direction="nearest"
+#     )
+#     ego_SO3_gts = cuboids_with_poses[["qx_x", "qy_x", "qz_x", "qw_x"]]
+#     ego_SO3_gts = R.from_quat(ego_SO3_gts.to_numpy().repeat(4, axis=0))
 
-    city_SO3_ego = cuboids_with_poses[["qx_y", "qy_y", "qz_y", "qw_y"]]
-    city_SO3_ego = R.from_quat(city_SO3_ego.to_numpy().repeat(4, axis=0))
+#     city_SO3_ego = cuboids_with_poses[["qx_y", "qy_y", "qz_y", "qw_y"]]
+#     city_SO3_ego = R.from_quat(city_SO3_ego.to_numpy().repeat(4, axis=0))
 
-    unit_box = np.array(
-        [[+1.0, +1.0, +1.0], [+1.0, -1.0, +1.0], [-1.0, +1.0, +1.0], [-1.0, -1.0, +1.0]]
-    )
+#     unit_box = np.array(
+#         [[+1.0, +1.0, +1.0], [+1.0, -1.0, +1.0], [-1.0, +1.0, +1.0], [-1.0, -1.0, +1.0]]
+#     )
 
-    xyz_obj = cuboids_with_poses[["x", "y", "z"]].to_numpy()
-    pts_obj = (
-        unit_box[:, None] * cuboids_with_poses[["length", "width", "height"]].to_numpy()
-    )
-    pts_ego = ego_SO3_gts.apply(pts_obj.reshape(-1, 3)) + xyz_obj.repeat(
-        unit_box.shape[0], axis=0
-    ).reshape(-1, 3)
+#     xyz_obj = cuboids_with_poses[["x", "y", "z"]].to_numpy()
+#     pts_obj = (
+#         unit_box[:, None] * cuboids_with_poses[["length", "width", "height"]].to_numpy()
+#     )
+#     pts_ego = ego_SO3_gts.apply(pts_obj.reshape(-1, 3)) + xyz_obj.repeat(
+#         unit_box.shape[0], axis=0
+#     ).reshape(-1, 3)
 
-    pts_city = city_SO3_ego.apply(pts_ego) + cuboids_with_poses[
-        ["tx", "ty", "tz"]
-    ].to_numpy().repeat(unit_box.shape[0], axis=0).reshape(-1, 3)
-    corner_within_roi = avm.get_raster_layer_points_boolean(
-        pts_city[..., :2], "MIA", "roi"
-    )
+#     pts_city = city_SO3_ego.apply(pts_ego) + cuboids_with_poses[
+#         ["tx", "ty", "tz"]
+#     ].to_numpy().repeat(unit_box.shape[0], axis=0).reshape(-1, 3)
+#     corner_within_roi = avm.get_raster_layer_points_boolean(
+#         pts_city[..., :2], "MIA", "roi"
+#     )
 
-    corner_within_roi = corner_within_roi.reshape(-1, 4)
-    is_within_roi = corner_within_roi.any(axis=1)
-    return cuboids_with_poses[is_within_roi]
+#     corner_within_roi = corner_within_roi.reshape(-1, 4)
+#     is_within_roi = corner_within_roi.any(axis=1)
+#     return cuboids_with_poses[is_within_roi]
 
 
 def filter_instances(cuboids: DataFrame, cfg: DetectionCfg) -> DataFrame:
