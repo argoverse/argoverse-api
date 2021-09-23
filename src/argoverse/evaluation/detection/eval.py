@@ -70,7 +70,6 @@ from argoverse.evaluation.detection.constants import (N_TP_ERRORS,
                                                       STATISTIC_NAMES)
 from argoverse.evaluation.detection.utils import (DetectionCfg, accumulate,
                                                   calc_ap)
-from argoverse.map_representation.map_api import ArgoverseMap
 from pandas import DataFrame
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
@@ -91,10 +90,6 @@ def evaluate(
         plus a row for their means. K refers to the number of evaluation metrics.
     """
 
-    avm: Optional[ArgoverseMap] = None
-    if cfg.eval_only_roi_instances:
-        avm = ArgoverseMap()
-
     stats = []
     dts["uuid"] = dts["log_id"] + "_" + dts["tov_ns"].astype(str)
     gts["uuid"] = gts["log_id"] + "_" + gts["tov_ns"].astype(str)
@@ -109,7 +104,7 @@ def evaluate(
 
         if log_gts.shape[0] == 0:
             continue
-        jobs.append((log_dts, log_gts, poses, cfg, avm))
+        jobs.append((log_dts, log_gts, poses, cfg))
 
     ncpus = mp.cpu_count()
     chunksize = max(len(jobs) // ncpus, 1)

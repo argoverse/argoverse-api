@@ -26,7 +26,6 @@ from argoverse.evaluation.detection.constants import (COMPETITION_CLASSES,
                                                       MAX_SCALE_ERROR,
                                                       MAX_YAW_ERROR, MIN_AP,
                                                       MIN_CDS)
-from argoverse.map_representation.map_api import ArgoverseMap
 from pandas import DataFrame
 from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation as R
@@ -99,25 +98,8 @@ class DetectionCfg(NamedTuple):
     splits: Tuple[str, ...] = ("val",)
 
 
-@dataclass
-class AccumulateJob:
-    """Dataclass args for running `accumulate`.
-
-    Args:
-        dt_root_fpath: Detections root folder file path.
-        gt_fpath: Ground truth file path.
-        cfg: Detection configuration.
-        avm: Argoverse map object.
-    """
-
-    dt_root_fpath: Path
-    gt_fpath: Path
-    cfg: DetectionCfg
-    avm: Optional[ArgoverseMap]
-
-
 def accumulate(
-    job: Tuple[DataFrame, DataFrame, DataFrame, DetectionCfg, ArgoverseMap]
+    job: Tuple[DataFrame, DataFrame, DataFrame, DetectionCfg]
 ) -> Tuple[DataFrame, Dict[str, int]]:
     """Accumulate the true/false positives (boolean flags) and true positive errors for each class.
 
