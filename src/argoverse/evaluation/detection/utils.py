@@ -117,7 +117,7 @@ def accumulate(
 
     dts = dts.sort_values("tov_ns").reset_index(drop=True)
     gts = gts.sort_values("tov_ns").reset_index(drop=True)
-    poses = poses.sort_values("tov_ns").reset_index(drop=True)
+    # poses = poses.sort_values("tov_ns").reset_index(drop=True)
     # if cfg.eval_only_roi_instances and avm is not None:
     #     dts = filter_objs_to_roi(dts, poses, avm)
     #     gts = filter_objs_to_roi(gts, poses, avm)
