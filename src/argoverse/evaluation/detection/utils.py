@@ -112,7 +112,7 @@ def accumulate(
         cls_to_ninst: Mapping of shape |C| -> (1,) the class names to the number of instances in the ground
             truth dataset.
     """
-    dts, gts, poses, cfg, avm = job
+    dts, gts, poses, cfg = job
 
     dts = dts.sort_values("tov_ns").reset_index(drop=True)
     gts = gts.sort_values("tov_ns").reset_index(drop=True)
