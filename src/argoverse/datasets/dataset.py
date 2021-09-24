@@ -56,8 +56,9 @@ class Dataset:
         n = compute_chunksize(len(jobs))
         labels = pl.concat(parallelize(format_label, jobs, n, with_progress_bar=True))
 
-        metrics = evaluate(dts.to_pandas(), labels.to_pandas(), None, cfg)
+        metrics = evaluate(dts, labels, None, cfg)
         metrics = pl.from_pandas(metrics.reset_index())
+        return metrics
 
 
 def format_label(job: Tuple[str, Tuple[str, ...]]) -> DataFrame:

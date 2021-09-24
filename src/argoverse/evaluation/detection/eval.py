@@ -66,6 +66,9 @@ from typing import DefaultDict, Dict, List
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
+# from polars.eager import DataFra
+from polars.lazy import col
+import polars as pl
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 
@@ -92,12 +95,22 @@ def evaluate(
     """
 
     stats = []
-    dts["uuid"] = dts["log_id"] + "_" + dts["tov_ns"].astype(str)
-    gts["uuid"] = gts["log_id"] + "_" + gts["tov_ns"].astype(str)
-
     cls_to_ninst_list: List[Dict[str, int]] = []
 
     jobs = []
+    # dts = pl.eager.DataFrame(dts)
+    # gts = pl.eager.DataFrame(gts)
+    # breakpoint()
+    # col("uuid").is_in(gts["uuid"])
+
+    dts["uuid"] = dts["log_id"] + "_" + dts["tov_ns"]
+    gts["uuid"] = gts["log_id"] + "_" + gts["tov_ns"]
+
+    gts = gts.filter(col("uuid").is_in(dts["uuid"]))
+
+    gts = gts.to_pandas()
+    dts = dts.to_pandas()
+
     for uuid, log_dts in tqdm(dts.groupby("uuid")):
 
         # Grab corresponding ground truth data.
