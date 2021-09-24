@@ -65,14 +65,15 @@ from typing import DefaultDict, Dict, List
 
 import numpy as np
 import pandas as pd
+from pandas import DataFrame
+from tqdm import tqdm
+from tqdm.contrib.concurrent import process_map
+
 from argoverse.evaluation.detection.constants import (N_TP_ERRORS,
                                                       SIGNIFICANT_DIGITS,
                                                       STATISTIC_NAMES)
 from argoverse.evaluation.detection.utils import (DetectionCfg, accumulate,
                                                   calc_ap)
-from pandas import DataFrame
-from tqdm import tqdm
-from tqdm.contrib.concurrent import process_map
 
 logger = logging.getLogger(__name__)
 
