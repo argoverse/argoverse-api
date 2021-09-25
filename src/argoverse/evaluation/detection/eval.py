@@ -104,7 +104,7 @@ def evaluate(
 
         if log_gts.shape[0] == 0:
             continue
-        jobs.append((log_dts.to_pandas(), log_gts.to_pandas(), poses, cfg))
+        jobs.append((log_dts, log_gts, poses, cfg))
 
     ncpus = mp.cpu_count()
     chunksize = max(len(jobs) // ncpus, 1)

@@ -114,6 +114,8 @@ def accumulate(
             truth dataset.
     """
     dts, gts, poses, cfg = job
+    dts = dts.to_pandas()
+    gts = gts.to_pandas()
 
     dts = dts.sort_values("tov_ns").reset_index(drop=True)
     gts = gts.sort_values("tov_ns").reset_index(drop=True)
