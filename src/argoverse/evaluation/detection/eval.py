@@ -92,34 +92,26 @@ def evaluate(
         plus a row for their means. K refers to the number of evaluation metrics.
     """
 
-    stats = []
     cls_to_ninst_list: List[Dict[str, int]] = []
-
-    jobs = []
-
     dts["uuid"] = dts["log_id"] + "_" + dts["tov_ns"]
     gts["uuid"] = gts["log_id"] + "_" + gts["tov_ns"]
 
     gts = gts.filter(col("uuid").is_in(dts["uuid"]))
 
-    gts = gts.to_pandas()
-    dts = dts.to_pandas()
-
-    for uuid, log_dts in tqdm(dts.groupby("uuid")):
-
-        # Grab corresponding ground truth data.
-        log_gts = gts[gts.uuid == uuid]
+    jobs = []
+    for log_dts in dts.groupby("uuid"):
+        log_gts = gts.filter(col("uuid") == log_dts["uuid"].unique())
 
         if log_gts.shape[0] == 0:
             continue
-        jobs.append((log_dts, log_gts, poses, cfg))
+        jobs.append((log_dts.to_pandas(), log_gts.to_pandas(), poses, cfg))
 
     ncpus = mp.cpu_count()
     chunksize = max(len(jobs) // ncpus, 1)
-
     with mp.Pool(ncpus) as p:
         outputs = p.map(accumulate, jobs, chunksize=chunksize)
 
+    stats = []
     for output in outputs:
         accumulation, scene_cls_to_ninst = output
         cls_to_ninst_list.append(scene_cls_to_ninst)
