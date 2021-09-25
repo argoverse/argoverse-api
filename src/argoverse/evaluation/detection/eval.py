@@ -67,10 +67,8 @@ import numpy as np
 import pandas as pd
 import polars as pl
 from pandas import DataFrame
-# from polars.eager import DataFra
 from polars.lazy import col
 from tqdm import tqdm
-from tqdm.contrib.concurrent import process_map
 
 from argoverse.evaluation.detection.constants import (N_TP_ERRORS,
                                                       SIGNIFICANT_DIGITS,
@@ -118,7 +116,10 @@ def evaluate(
 
     ncpus = mp.cpu_count()
     chunksize = max(len(jobs) // ncpus, 1)
-    outputs = process_map(accumulate, jobs, max_workers=ncpus, chunksize=chunksize)
+
+    with mp.Pool(ncpus) as p:
+        outputs = p.map(accumulate, jobs, chunksize=chunksize)
+
     for output in outputs:
         accumulation, scene_cls_to_ninst = output
         cls_to_ninst_list.append(scene_cls_to_ninst)
