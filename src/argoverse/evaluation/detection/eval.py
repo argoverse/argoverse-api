@@ -65,10 +65,10 @@ from typing import DefaultDict, Dict, List
 
 import numpy as np
 import pandas as pd
+import polars as pl
 from pandas import DataFrame
 # from polars.eager import DataFra
 from polars.lazy import col
-import polars as pl
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 
@@ -82,7 +82,7 @@ logger = logging.getLogger(__name__)
 
 
 def evaluate(
-    dts: DataFrame, gts: DataFrame, poses: DataFrame, cfg: DetectionCfg
+    dts: pl.DataFrame, gts: pl.DataFrame, poses: DataFrame, cfg: DetectionCfg
 ) -> DataFrame:
     """Evaluate detection output and return metrics. The multiprocessing
     library is used for parallel processing of sweeps -- each sweep is
@@ -98,10 +98,6 @@ def evaluate(
     cls_to_ninst_list: List[Dict[str, int]] = []
 
     jobs = []
-    # dts = pl.eager.DataFrame(dts)
-    # gts = pl.eager.DataFrame(gts)
-    # breakpoint()
-    # col("uuid").is_in(gts["uuid"])
 
     dts["uuid"] = dts["log_id"] + "_" + dts["tov_ns"]
     gts["uuid"] = gts["log_id"] + "_" + gts["tov_ns"]
