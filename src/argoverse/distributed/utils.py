@@ -1,6 +1,6 @@
+import multiprocessing as mp
 from typing import Any, Callable, Final, List
 
-import torch.multiprocessing as mp
 from tqdm.contrib.concurrent import process_map
 
 NCPUS: Final[int] = mp.cpu_count()
@@ -15,6 +15,7 @@ def parallelize(
     jobs: List[Any],
     chunksize: int = 1,
     with_progress_bar: bool = False,
+    use_starmap: bool = False,
 ) -> List[Any]:
     if with_progress_bar:
         outputs: List[Any] = process_map(
@@ -23,6 +24,9 @@ def parallelize(
             max_workers=NCPUS,
             chunksize=chunksize,
         )
+    elif use_starmap:
+        with mp.Pool(NCPUS) as p:
+            outputs: List[Any] = p.starmap(fn, jobs, chunksize=chunksize)
     else:
         with mp.Pool(NCPUS) as p:
             outputs: List[Any] = p.map(fn, jobs, chunksize=chunksize)

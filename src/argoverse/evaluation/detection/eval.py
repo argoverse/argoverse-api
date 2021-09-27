@@ -68,7 +68,6 @@ import pandas as pd
 import polars as pl
 from pandas import DataFrame
 from polars.lazy import col
-from tqdm import tqdm
 
 from argoverse.evaluation.detection.constants import (N_TP_ERRORS,
                                                       SIGNIFICANT_DIGITS,
