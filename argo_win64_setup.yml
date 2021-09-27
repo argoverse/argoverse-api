@@ -1,0 +1,25 @@
+name: argoverse_win64
+channels:
+- defaults
+- conda-forge
+dependencies:
+- python=3.8
+- colour
+- descartes
+- imageio
+- h5py
+- hydra-core=1.1.0
+- lap
+- matplotlib
+- motmetrics>=1.1
+- numba 
+- numpy
+- omegaconf=2.1
+- opencv>=4.1.0
+- pandas>=0.1.0
+- pillow
+- pyntcloud>=0.1.0
+- scipy>=1.4.0
+- conda-forge::shapely
+- tqdm
+- typing_extensions
