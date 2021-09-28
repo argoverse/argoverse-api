@@ -16,14 +16,12 @@ def pos2range(
     fov_top = np.abs(fov[1])
 
     fov = fov_bottom + fov_top
-    r: NDArray = np.linalg.norm(pos, axis=1)
-
     az, el, r = cart2sph(*pos.transpose())
 
     v = 0.5 * (-az / PI + 1.0)
     u = 1.0 - (el + fov_bottom) / fov
 
-    perm = np.argsort(r)[::-1]
+    perm = np.argsort(r)
     r = r[perm]
 
     uv = np.stack((u, v), axis=-1)[perm] * dims
