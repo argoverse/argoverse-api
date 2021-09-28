@@ -1,24 +1,20 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 import argparse
 import glob
-import json
 import logging
 import os
 import pathlib
 import pickle
-import sys
 from pathlib import Path
-from typing import Any, Dict, List, TextIO, Tuple, Union
+from typing import Any, Dict, List, Optional, TextIO, Union
 
 import motmetrics as mm
 import numpy as np
 from shapely.geometry.polygon import Polygon
 
-from argoverse.evaluation.eval_utils import get_pc_inside_bbox, label_to_bbox
+from argoverse.evaluation.detection.utils import wrap_angle
+from argoverse.evaluation.eval_utils import label_to_bbox
 from argoverse.utils.json_utils import read_json_file
-from argoverse.utils.ply_loader import load_ply
-from argoverse.utils.se3 import SE3
-from argoverse.utils.transform import quat2rotmat
 
 mh = mm.metrics.create()
 logger = logging.getLogger(__name__)
@@ -59,7 +55,7 @@ def iou_polygon(poly1: Polygon, poly2: Polygon) -> float:
     return float(1 - inter / union)
 
 
-def get_distance_iou_3d(x1: np.ndarray, x2: np.ndarray, name: str = "bbox") -> float:
+def get_distance_iou_3d(x1: Dict[str, np.ndarray], x2: Dict[str, np.ndarray], name: str = "bbox") -> float:
     """
     Note this is not traditional 2d or 3d iou, but rather we align two cuboids
     along their x-axes, and compare 3d volume differences.
@@ -82,44 +78,7 @@ def get_distance_iou_3d(x1: np.ndarray, x2: np.ndarray, name: str = "bbox") -> f
     return float(score)
 
 
-def get_orientation_error_deg(yaw1: float, yaw2: float) -> float:
-    """
-    Compute the smallest difference between 2 angles, in magnitude (absolute difference).
-    First, find the difference between the two yaw angles; since
-    each angle is guaranteed to be [-pi,pi] as the output of arctan2, then their 
-    difference is bounded to [-2pi,2pi].
-    
-    If the difference exceeds pi, then its corresponding angle in [-pi,0]
-    would be smaller in magnitude. On the other hand, if the difference is
-    less than -pi degrees, then we are guaranteed its counterpart in [0,pi]
-    would be smaller in magnitude.
-
-    Ref:
-    https://stackoverflow.com/questions/1878907/the-smallest-difference-between-2-angles
-
-        Args:
-        -   yaw1: angle around unit circle, in radians in [-pi,pi]
-        -   yaw2: angle around unit circle, in radians in [-pi,pi]
-
-        Returns:
-        -   error: smallest difference between 2 angles, in degrees
-    """
-    EPSILON = 1e-5
-    assert -(np.pi + EPSILON) < yaw1 and yaw1 < (np.pi + EPSILON)
-    assert -(np.pi + EPSILON) < yaw2 and yaw2 < (np.pi + EPSILON)
-
-    error = np.rad2deg(yaw1 - yaw2)
-    if error > 180:
-        error -= 360
-    if error < -180:
-        error += 360
-
-    # get positive angle difference instead of signed angle difference
-    error = np.abs(error)
-    return float(error)
-
-
-def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
+def get_distance(x1: Dict[str, np.ndarray], x2: Dict[str, np.ndarray], name: str) -> float:
     """Get the distance between two poses, returns nan if distance is larger than detection threshold.
 
     Args:
@@ -136,9 +95,13 @@ def get_distance(x1: np.ndarray, x2: np.ndarray, name: str) -> float:
     elif name == "iou":
         return get_distance_iou_3d(x1, x2, name)
     elif name == "orientation":
-        return get_orientation_error_deg(x1["orientation"], x2["orientation"])
+        theta = np.array([x1["orientation"]] - x2["orientation"])
+        dist = wrap_angle(theta).item()
+
+        # Convert to degrees.
+        return float(np.rad2deg(dist))
     else:
-        raise ValueError("Not implemented..")
+        raise NotImplementedError("Not implemented..")
 
 
 def eval_tracks(
@@ -148,7 +111,7 @@ def eval_tracks(
     d_max: float,
     out_file: TextIO,
     centroid_method: str,
-    diffatt: str,
+    diffatt: Optional[str],
     category: str = "VEHICLE",
 ) -> None:
     """Evaluate tracking output.
@@ -211,7 +174,9 @@ def eval_tracks(
 
             timestamp_lidar = int(Path(path_track_data[ind_frame]).stem.split("_")[-1])
             path_gt = os.path.join(
-                path_dataset, "per_sweep_annotations_amodal", f"tracked_object_labels_{timestamp_lidar}.json"
+                path_dataset,
+                "per_sweep_annotations_amodal",
+                f"tracked_object_labels_{timestamp_lidar}.json",
             )
 
             if not os.path.exists(path_gt):
@@ -234,7 +199,13 @@ def eval_tracks(
 
                 bbox, orientation = label_to_bbox(gt_data[i])
 
-                center = np.array([gt_data[i]["center"]["x"], gt_data[i]["center"]["y"], gt_data[i]["center"]["z"]])
+                center = np.array(
+                    [
+                        gt_data[i]["center"]["x"],
+                        gt_data[i]["center"]["y"],
+                        gt_data[i]["center"]["z"],
+                    ]
+                )
                 if bbox[3] > 0 and in_distance_range_pose(np.zeros(3), center, d_min, d_max):
                     track_label_uuid = gt_data[i]["track_label_uuid"]
                     gt[track_label_uuid] = {}
@@ -369,7 +340,12 @@ if __name__ == "__main__":
         default="../../argodataset_30Hz/test_label/028d5cb1-f74d-366c-85ad-84fde69b0fd3",
     )
     parser.add_argument("--path_dataset", type=str, default="../../argodataset_30Hz/cvpr_test_set")
-    parser.add_argument("--centroid_method", type=str, default="average", choices=["label_center", "average"])
+    parser.add_argument(
+        "--centroid_method",
+        type=str,
+        default="average",
+        choices=["label_center", "average"],
+    )
     parser.add_argument("--flag", type=str, default="")
     parser.add_argument("--d_min", type=float, default=0)
     parser.add_argument("--d_max", type=float, default=100, required=True)

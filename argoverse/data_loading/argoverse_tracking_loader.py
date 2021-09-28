@@ -1,17 +1,15 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
 import glob
-import json
 import logging
 import os
-from functools import lru_cache
 from typing import Dict, Iterator, List, Optional, Union, cast
 
 import numpy as np
 
 import argoverse.data_loading.object_label_record as object_label
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
-from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t
+from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t, read_city_name
 from argoverse.data_loading.synchronization_database import SynchronizationDB
 from argoverse.utils.calibration import Calibration, load_calib, load_image
 from argoverse.utils.camera_stats import CAMERA_LIST, RING_CAMERA_LIST, STEREO_CAMERA_LIST
@@ -19,20 +17,6 @@ from argoverse.utils.ply_loader import load_ply
 from argoverse.utils.se3 import SE3
 
 logger = logging.getLogger(__name__)
-
-
-@lru_cache()
-def _read_city_name(path: str) -> str:
-    """read city name from json file in the log folder
-    Args:
-        path: path to the json city_name in the log folder
-    Returns:
-        city_name: city name of the current log, either 'PIT' or 'MIA'
-    """
-    with open(path, "r") as f:
-        city_name = json.load(f)["city_name"]
-        assert isinstance(city_name, str)
-        return city_name
 
 
 class ArgoverseTrackingLoader:
@@ -84,7 +68,7 @@ class ArgoverseTrackingLoader:
         Returns:
             city_name: city name of the current log, either 'PIT' or 'MIA'
         """
-        return _read_city_name(os.path.join(self.root_dir, self.current_log, "city_info.json"))
+        return read_city_name(os.path.join(self.root_dir, self.current_log, "city_info.json"))
 
     @property
     def calib(self) -> Dict[str, Calibration]:
@@ -193,7 +177,7 @@ class ArgoverseTrackingLoader:
         """return list of image timestamp (str) for all cameras for the current log.
 
         The different between image_timestamp and image_timestamp_list_sync is that image_timestamp_list_sync
-        syncronize the image to lidar frame.
+        synchronizes the image to the lidar frame.
 
         Returns:
             image_timestamp_list_sync: dictionary of list of image timestamp, with camera name as key.
@@ -440,7 +424,11 @@ Total bounding box: {sum(num_annotations)}
         return self._image_list_sync[log_id][camera]
 
     def get_image_at_timestamp(
-        self, timestamp: int, camera: str, log_id: Optional[str] = None, load: bool = True
+        self,
+        timestamp: int,
+        camera: str,
+        log_id: Optional[str] = None,
+        load: bool = True,
     ) -> Optional[Union[str, np.ndarray]]:
         """get image or image path at a specific timestamp
 

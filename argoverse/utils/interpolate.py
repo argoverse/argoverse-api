@@ -1,9 +1,7 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
-import pdb
 from typing import Tuple, cast
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 # For a single line segment
@@ -27,7 +25,7 @@ def compute_lane_width(left_even_pts: np.ndarray, right_even_pts: np.ndarray) ->
     return lane_width
 
 
-def compute_mid_pivot_arc(single_pt: np.ndarray, arc_pts: np.ndarray) -> np.ndarray:
+def compute_mid_pivot_arc(single_pt: np.ndarray, arc_pts: np.ndarray) -> Tuple[np.ndarray, float]:
     """
     Given a line of points on one boundary, and a single point on the other side,
     produce the middle arc we get by pivoting around the single point.
@@ -49,8 +47,10 @@ def compute_mid_pivot_arc(single_pt: np.ndarray, arc_pts: np.ndarray) -> np.ndar
 
 
 def compute_midpoint_line(
-    left_ln_bnds: np.ndarray, right_ln_bnds: np.ndarray, num_interp_pts: int = NUM_CENTERLINE_INTERP_PTS
-) -> np.ndarray:
+    left_ln_bnds: np.ndarray,
+    right_ln_bnds: np.ndarray,
+    num_interp_pts: int = NUM_CENTERLINE_INTERP_PTS,
+) -> Tuple[np.ndarray, float]:
     """
     Compute the lane segment centerline by interpolating n points along each
     boundary, and then averaging left and right waypoints.
@@ -155,9 +155,14 @@ def eliminate_duplicates_2d(px: np.ndarray, py: np.ndarray) -> Tuple[np.ndarray,
     return px, py
 
 
-def interp_arc(t: int, px: np.ndarray, py: np.ndarray, interp_method: str = "linear") -> np.ndarray:
-    """
-    Interpolate a polyline using arc-length interpolation.
+def interp_arc(t: int, px: np.ndarray, py: np.ndarray) -> np.ndarray:
+    """Linearly interpolate equally-spaced points along a polyline.
+
+    We use a chordal parameterization so that interpolated arc-lengths
+    will approximate original polyline chord lengths.
+        Ref: M. Floater and T. Surazhsky, Parameterization for curve
+            interpolation. 2005.
+
     We remove duplicate consecutive points, since these have zero
     distance and thus cause division by zero in chord length computation.
 
@@ -171,11 +176,8 @@ def interp_arc(t: int, px: np.ndarray, py: np.ndarray, interp_method: str = "lin
     """
     px, py = eliminate_duplicates_2d(px, py)
 
-    # equally spaced in arclength
-    transposed = np.transpose(np.linspace(0, 1, t))  # should be 15 x 1
-
-    # how many points will be uniformly interpolated?
-    nt = transposed.size
+    # equally spaced in arclength -- the number of points that will be uniformly interpolated
+    eq_spaced_points = np.linspace(0, 1, t)
 
     # the number of points on the curve itself
     n = px.size
@@ -183,26 +185,25 @@ def interp_arc(t: int, px: np.ndarray, py: np.ndarray, interp_method: str = "lin
     # are px and py both vectors of the same length?
     assert px.size == py.size
 
-    pxy = np.array((px, py)).T
-    ndim = 2
+    pxy = np.array((px, py)).T  # 2d polyline
 
     # Compute the chordal arclength of each segment.
     # Compute differences between each x coord, to get the dx's
     # Do the same to get dy's. Then the hypotenuse length is computed as a norm.
-    chordlen = (np.sum(np.diff(pxy, axis=0) ** 2, axis=1)) ** (1 / 2)
+    chordlen = np.linalg.norm(np.diff(pxy, axis=0), axis=1)
     # Normalize the arclengths to a unit total
     chordlen = chordlen / np.sum(chordlen)
     # cumulative arclength
     cumarc = np.append(0, np.cumsum(chordlen))
 
-    # which interval did each point fall in, in terms of transposed? (bin index)
-    tbins = np.digitize(transposed, cumarc)
+    # which interval did each point fall in, in terms of eq_spaced_points? (bin index)
+    tbins = np.digitize(eq_spaced_points, cumarc)
 
     # #catch any problems at the ends
-    tbins[np.where((tbins <= 0) | (transposed <= 0))] = 1
-    tbins[np.where((tbins >= n) | (transposed >= 1))] = n - 1
+    tbins[np.where((tbins <= 0) | (eq_spaced_points <= 0))] = 1
+    tbins[np.where((tbins >= n) | (eq_spaced_points >= 1))] = n - 1
 
-    s = np.divide((transposed - cumarc[tbins - 1]), chordlen[tbins - 1])
+    s = np.divide((eq_spaced_points - cumarc[tbins - 1]), chordlen[tbins - 1])
     pt = pxy[tbins - 1, :] + np.multiply((pxy[tbins, :] - pxy[tbins - 1, :]), (np.vstack([s] * 2)).T)
 
     return pt

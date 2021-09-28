@@ -4,18 +4,13 @@
 
 import argparse
 import os
-import re
 import shutil
 import sys
-from collections import defaultdict
 from typing import List
 
-import matplotlib.animation as anim
-import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.interpolate import interp1d
 
 from argoverse.map_representation.map_api import ArgoverseMap
 from argoverse.visualization.visualize_sequences import viz_sequence
@@ -23,7 +18,10 @@ from argoverse.visualization.visualize_sequences import viz_sequence
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument("--root", help="sequence location ")
 parser.add_argument(
-    "--max_videos", type=int, help="maximum number of sequence to process. -1 to get all sequence", default=10
+    "--max_videos",
+    type=int,
+    help="maximum number of sequence to process. -1 to get all sequence",
+    default=10,
 )
 parser.add_argument("--output_dir", help="output directory", default="vis_video")
 
@@ -46,7 +44,6 @@ def main(arguments: List[str]) -> int:
         # Get API for Argo Dataset map
         avm = ArgoverseMap()
         city_name = df["CITY_NAME"].values[0]
-        seq_lane_bbox = avm.city_halluc_bbox_table[city_name]
         seq_lane_props = avm.city_lane_centerlines_dict[city_name]
 
         x_min = min(df["X"])
@@ -77,14 +74,20 @@ def main(arguments: List[str]) -> int:
 
             df_cur = df.loc[df["TIMESTAMP"] <= time]
 
-            if time == time_list[-1]:
-                viz_sequence(df_cur, lane_centerlines=lane_centerlines, show=False, smoothen=False)
-            else:
-                viz_sequence(df_cur, lane_centerlines=lane_centerlines, show=False, smoothen=False)
+            viz_sequence(
+                df_cur,
+                lane_centerlines=lane_centerlines,
+                show=False,
+                smoothen=False,
+            )
 
             os.makedirs(seq_out_dir, exist_ok=True)
 
-            plt.savefig(os.path.join(seq_out_dir, f"{count}.png"), bbox_inches="tight", pad_inches=0)
+            plt.savefig(
+                os.path.join(seq_out_dir, f"{count}.png"),
+                bbox_inches="tight",
+                pad_inches=0,
+            )
             plt.close()
             count += 1
 

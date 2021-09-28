@@ -4,19 +4,22 @@ import logging
 from collections import defaultdict
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image
 
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
-from argoverse.utils.calibration import Calibration, determine_valid_cam_coords, proj_cam_to_uv
+from argoverse.utils.calibration import Calibration
 from argoverse.utils.frustum_clipping import generate_frustum_planes
-from PIL import Image
 
 point_size = 0.01
-axes_limits = [[-10, 10], [-10, 10], [-3, 10]]  # X axis range  # Y axis range  # Z axis range
+axes_limits = [
+    [-10, 10],
+    [-10, 10],
+    [-3, 10],
+]  # X axis range  # Y axis range  # Z axis range
 axes_str = ["X", "Y", "Z"]
 
 _COLOR_MAP = [
@@ -98,7 +101,11 @@ def draw_point_cloud_trajectory(
         for label in argoverse_data.get_label_object(i):
             unique_id_list.add(label.track_id)
     color_map = {
-        track_id: (float(np.random.rand()), float(np.random.rand()), float(np.random.rand()))
+        track_id: (
+            float(np.random.rand()),
+            float(np.random.rand()),
+            float(np.random.rand()),
+        )
         for track_id in unique_id_list
     }
     pc = argoverse_data.get_lidar(idx)
@@ -162,7 +169,13 @@ def draw_point_cloud_trajectory(
 
     for track_id in traj_by_id.keys():
         traj = np.array(traj_by_id[track_id])
-        ax.plot(traj[:, 0], traj[:, 1], color=color_map[track_id], linestyle="--", linewidth=1)
+        ax.plot(
+            traj[:, 0],
+            traj[:, 1],
+            color=color_map[track_id],
+            linestyle="--",
+            linewidth=1,
+        )
 
 
 def draw_box(
@@ -192,10 +205,8 @@ def draw_box(
 
 
 def show_image_with_boxes(img: np.ndarray, objects: Iterable[ObjectLabelRecord], calib: Calibration) -> np.ndarray:
-    """ Show image with 2D bounding boxes """
+    """Show image with 2D bounding boxes."""
     img1 = np.copy(img)
-    K = calib.K
-    d = calib.d
 
     h, w = np.shape(img1)[0:2]
     planes = generate_frustum_planes(calib.K, calib.camera)
@@ -205,11 +216,14 @@ def show_image_with_boxes(img: np.ndarray, objects: Iterable[ObjectLabelRecord],
         if obj.occlusion == 100:
             continue
         box3d_pts_3d = obj.as_3d_bbox()
-        uv = calib.project_ego_to_image(box3d_pts_3d)
         uv_cam = calib.project_ego_to_cam(box3d_pts_3d)
 
         img1 = obj.render_clip_frustum_cv2(
-            img1, uv_cam[:, :3], planes.copy(), copy.deepcopy(calib.camera_config), linewidth=3
+            img1,
+            uv_cam[:, :3],
+            planes.copy(),
+            copy.deepcopy(calib.camera_config),
+            linewidth=3,
         )
 
     return img1

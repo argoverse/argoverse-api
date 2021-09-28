@@ -11,7 +11,7 @@ from argoverse.visualization.mpl_point_cloud_vis import draw_point_cloud_bev
 _TEST_DIR = pathlib.Path(__file__).parent
 
 
-def test_draw_point_cloud_bev_smokescreen():
+def test_draw_point_cloud_bev_smokescreen() -> None:
     """Test :ref:`draw_point_cloud_bev`"""
     fig3d = plt.figure(figsize=(15, 8))
     ax_bev = fig3d.add_subplot(111)

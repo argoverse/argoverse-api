@@ -5,7 +5,10 @@ from scipy.interpolate import RegularGridInterpolator
 
 
 def interp_square_grid(
-    grid_data: np.ndarray, in_dim: int = 200, out_dim: int = 30, interp_type: str = "linear"
+    grid_data: np.ndarray,
+    in_dim: int = 200,
+    out_dim: int = 30,
+    interp_type: str = "linear",
 ) -> np.ndarray:
     """
     Interpolate a square grid
@@ -24,7 +27,7 @@ def interp_square_grid(
     y = np.linspace(0, in_dim - 1, in_dim)
 
     # define an interpolating function from this data:
-    interpolating_function = RegularGridInterpolator((x, y), grid_data, method=interp_type)
+    interpolating_function = RegularGridInterpolator((y, x), grid_data, method=interp_type)
 
     # Evaluate the interpolating function on a regular grid
     X = np.linspace(0, in_dim - 1, out_dim)
@@ -37,6 +40,6 @@ def interp_square_grid(
     x_grid = x_grid[:, np.newaxis]
     y_grid = y_grid[:, np.newaxis]
 
-    pts = np.hstack([x_grid, y_grid])
+    pts = np.hstack([y_grid, x_grid])
     interpolated_grid = interpolating_function(pts)
     return interpolated_grid.reshape(out_dim, out_dim)

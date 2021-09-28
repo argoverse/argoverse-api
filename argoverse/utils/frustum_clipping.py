@@ -6,8 +6,7 @@ and then to clip line segments to live within the frustum only.
 """
 
 import copy
-import sys
-from typing import Any, Iterable, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 import numpy as np
 
@@ -232,7 +231,7 @@ def generate_frustum_planes(K: np.ndarray, camera_name: str, near_clip_dist: flo
     if img_width is None or img_height is None:
         return None
 
-    P = np.array([0.0, 0.0, 0.0])
+    # frustum starts at optical center [0,0,0]
     fx = K[0, 0]
     fy = K[1, 1]
 
@@ -251,7 +250,9 @@ def generate_frustum_planes(K: np.ndarray, camera_name: str, near_clip_dist: flo
     return planes
 
 
-def clip_segment_v3_plane_n(p1: np.ndarray, p2: np.ndarray, planes: List[np.ndarray]) -> Tuple[np.ndarray, np.ndarray]:
+def clip_segment_v3_plane_n(
+    p1: np.ndarray, p2: np.ndarray, planes: List[np.ndarray]
+) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
     """Iterate over the frustum planes and intersect them with the segment.
 
     This  updating the min/max, bailing out early if the min > max.
@@ -330,7 +331,7 @@ def plane_point_side_v3(p: np.ndarray, v: np.ndarray) -> Any:
     return p[:3].dot(v) + p[3]
 
 
-def cuboid_to_2d_frustum_bbox(corners: np.ndarray, planes: List[np.ndarray], K: np.ndarray) -> np.ndarray:
+def cuboid_to_2d_frustum_bbox(corners: np.ndarray, planes: List[np.ndarray], K: np.ndarray) -> Optional[np.ndarray]:
     """Convert a 3D cuboid to a 2D frustum bounding box.
 
     We bring the 3D points into each camera, and do the clipping there.

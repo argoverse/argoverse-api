@@ -37,3 +37,9 @@ tests/test_data/tmp
 /sphinx/source
 /docs/.buildinfo
 /docs/_sources
+
+.vscode
+tests/test_data/1obj_*.txt
+tests/test_data/mot16_scenario_*.txt
+
+.ipynb_checkpoints

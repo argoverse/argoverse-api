@@ -98,7 +98,6 @@ def filter_point_cloud_to_bbox_2D_vectorized(bbox: np.ndarray, pc_raw: np.ndarra
     P1 = np.array([bbox[0][0:2]])
     P2 = np.array([bbox[1][0:2]])
     P4 = np.array([bbox[2][0:2]])
-    P5 = np.array([])
 
     dot1 = np.matmul(U, pc_2d.transpose(1, 0))
     dot2 = np.matmul(V, pc_2d.transpose(1, 0))
@@ -209,7 +208,7 @@ def filter_point_cloud_to_bbox_3D_single_pt(bbox: np.ndarray, x: np.ndarray) -> 
     return valid
 
 
-def filter_point_cloud_to_bbox_3D_vectorized(bbox: np.ndarray, pc_raw: np.ndarray) -> np.ndarray:
+def filter_point_cloud_to_bbox_3D_vectorized(bbox: np.ndarray, pc_raw: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     r"""
 
     Args:

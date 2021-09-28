@@ -52,7 +52,11 @@ def filter_point_cloud_to_polygon(polygon: np.ndarray, point_cloud: np.ndarray) 
 
 
 def point_inside_polygon(
-    n_vertices: int, poly_x_pts: np.ndarray, poly_y_pts: np.ndarray, test_x: float, test_y: float
+    n_vertices: int,
+    poly_x_pts: np.ndarray,
+    poly_y_pts: np.ndarray,
+    test_x: float,
+    test_y: float,
 ) -> bool:
     """Check whether a point is inside a polygon.
 

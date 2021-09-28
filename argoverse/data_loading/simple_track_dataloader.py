@@ -1,16 +1,14 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
 import glob
-import sys
 from pathlib import Path
-from typing import Any, List, Mapping, Optional, Sequence
+from typing import Any, Dict, List, Mapping, Optional
 
-import numpy as np
-
+from argoverse.data_loading.pose_loader import get_city_SE3_egovehicle_at_sensor_t, read_city_name
 from argoverse.data_loading.synchronization_database import SynchronizationDB
+from argoverse.utils.calibration import CameraConfig, get_calibration_config
 from argoverse.utils.json_utils import read_json_file
 from argoverse.utils.se3 import SE3
-from argoverse.utils.transform import quat2rotmat
 
 
 class SimpleArgoverseTrackingDataLoader:
@@ -22,14 +20,14 @@ class SimpleArgoverseTrackingDataLoader:
         """
         Args:
             data_dir: str, representing path to raw Argoverse data
-            labels_dir: strrepresenting path to Argoverse data labels
+            labels_dir: str representing path to Argoverse data labels (e.g. labels or estimated detections/tracks)
         """
         self.data_dir = data_dir
         self.labels_dir = labels_dir
         self.sdb = SynchronizationDB(data_dir)
 
     def get_city_name(self, log_id: str) -> str:
-        """
+        """Return the name of the city where the log of interest was captured.
         Args:
             log_id: str
 
@@ -37,12 +35,11 @@ class SimpleArgoverseTrackingDataLoader:
             city_name: str
         """
         city_info_fpath = f"{self.data_dir}/{log_id}/city_info.json"
-        city_info = read_json_file(city_info_fpath)
-        city_name = city_info["city_name"]
+        city_name = read_city_name(city_info_fpath)
         assert isinstance(city_name, str)
         return city_name
 
-    def get_log_calibration_data(self, log_id: str) -> Mapping[str, Any]:
+    def get_log_calibration_data(self, log_id: str) -> Dict[str, Any]:
         """
         Args:
             log_id: str
@@ -55,23 +52,33 @@ class SimpleArgoverseTrackingDataLoader:
         assert isinstance(log_calib_data, dict)
         return log_calib_data
 
+    def get_log_camera_config(self, log_id: str, camera_name: str) -> CameraConfig:
+        """Return an object containing camera extrinsics, intrinsics, and image dimensions."""
+        log_calib_data = self.get_log_calibration_data(log_id)
+        camera_config = get_calibration_config(log_calib_data, camera_name)
+        return camera_config
+
     def get_city_to_egovehicle_se3(self, log_id: str, timestamp: int) -> Optional[SE3]:
+        """Deprecated version of get_city_SE3_egovehicle() below, as does not follow standard naming convention
+        Args:
+            log_id: str, unique ID of vehicle log
+            timestamp: int, timestamp of sensor observation, in nanoseconds
+
+        Returns:
+            city_SE3_egovehicle: SE3 transformation to bring points in egovehicle frame into city frame.
+        """
+        return self.get_city_SE3_egovehicle(log_id, timestamp)
+
+    def get_city_SE3_egovehicle(self, log_id: str, timestamp: int) -> Optional[SE3]:
         """
         Args:
             log_id: str, unique ID of vehicle log
             timestamp: int, timestamp of sensor observation, in nanoseconds
 
         Returns:
-            city_to_egovehicle_se3: SE3 transformation to bring egovehicle frame point into city frame.
+            city_SE3_egovehicle: SE3 transformation to bring points in egovehicle frame into city frame.
         """
-        pose_fpath = f"{self.data_dir}/{log_id}/poses/city_SE3_egovehicle_{timestamp}.json"
-        if not Path(pose_fpath).exists():
-            return None
-        pose_data = read_json_file(pose_fpath)
-        rotation = np.array(pose_data["rotation"])
-        translation = np.array(pose_data["translation"])
-        city_to_egovehicle_se3 = SE3(rotation=quat2rotmat(rotation), translation=translation)
-        return city_to_egovehicle_se3
+        return get_city_SE3_egovehicle_at_sensor_t(timestamp, self.data_dir, log_id)
 
     def get_closest_im_fpath(self, log_id: str, camera_name: str, lidar_timestamp: int) -> Optional[str]:
         """
@@ -113,8 +120,10 @@ class SimpleArgoverseTrackingDataLoader:
         Args:
             log_id: str, unique ID of vehicle log
         Returns:
-            ply_fpaths: List of strings, representing paths to ply files in this log
-            """
+            ply_fpaths: List of strings, representing paths to chronologically ordered ply files in this log
+                File paths are strings are of the same length ending with a nanosecond timestamp, thus
+                sorted() will place them in numerical order.
+        """
         ply_fpaths = sorted(glob.glob(f"{self.data_dir}/{log_id}/lidar/PC_*.ply"))
         return ply_fpaths
 
@@ -124,7 +133,7 @@ class SimpleArgoverseTrackingDataLoader:
             log_id: str, unique ID of vehicle log
 
         Returns
-            cam_img_fpaths: List of strings, representing paths to JPEG files in this log,
+            cam_img_fpaths: List of strings, representing paths to ordered JPEG files in this log,
                 for a specific camera
         """
         cam_img_fpaths = sorted(glob.glob(f"{self.data_dir}/{log_id}/{camera_name}/{camera_name}_*.jpg"))

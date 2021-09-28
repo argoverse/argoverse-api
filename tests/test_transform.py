@@ -6,8 +6,9 @@ utility yields the correct result given the swapped argument order.
 """
 
 import numpy as np
+import pytest
 
-from argoverse.utils.transform import quat2rotmat
+from argoverse.utils.transform import quat2rotmat, rotmat2quat, yaw_to_quaternion3d
 
 EPSILON = 1e-10
 
@@ -57,7 +58,14 @@ def test_quat2rotmat_1() -> None:
 
 def test_quat2rotmat_2() -> None:
     """Test receiving a quaternion in (w, x, y, z) from a camera extrinsic matrix."""
-    q = np.array([0.4962730586309743, -0.503110985154011, 0.4964713836540661, -0.5040918101963521])
+    q = np.array(
+        [
+            0.4962730586309743,
+            -0.503110985154011,
+            0.4964713836540661,
+            -0.5040918101963521,
+        ]
+    )
     R = quat2rotmat(q)
     assert np.allclose(R, quat2rotmat_numpy(q))
 
@@ -73,7 +81,14 @@ def test_quat2rotmat_2() -> None:
 
 def test_quat2rotmat_3() -> None:
     """Test receiving a quaternion in (w, x, y, z) from a camera extrinsic matrix."""
-    q = np.array([0.6115111374269877, -0.6173269265351116, -0.3480540121107544, 0.3518806604959585])
+    q = np.array(
+        [
+            0.6115111374269877,
+            -0.6173269265351116,
+            -0.3480540121107544,
+            0.3518806604959585,
+        ]
+    )
     R = quat2rotmat(q)
     assert np.allclose(R, quat2rotmat_numpy(q))
 
@@ -89,7 +104,14 @@ def test_quat2rotmat_3() -> None:
 
 def test_quat2rotmat_4() -> None:
     """Test receiving a quaternion in (w, x, y, z) from an object trajectory."""
-    q = np.array([0.0036672729619914197, -1.3748614058859026e-05, -0.00023389080405946338, 0.9999932480847505])
+    q = np.array(
+        [
+            0.0036672729619914197,
+            -1.3748614058859026e-05,
+            -0.00023389080405946338,
+            0.9999932480847505,
+        ]
+    )
     R = quat2rotmat(q)
     assert np.allclose(R, quat2rotmat_numpy(q))
 
@@ -105,7 +127,14 @@ def test_quat2rotmat_4() -> None:
 
 def test_quat2rotmat_5() -> None:
     """Test receiving a quaternion in (w, x, y, z) from an object trajectory."""
-    q = np.array([0.9998886199825181, -0.002544078377693514, -0.0028621717588219564, -0.01442509159370476])
+    q = np.array(
+        [
+            0.9998886199825181,
+            -0.002544078377693514,
+            -0.0028621717588219564,
+            -0.01442509159370476,
+        ]
+    )
     R = quat2rotmat(q)
     assert np.allclose(R, quat2rotmat_numpy(q))
 
@@ -117,3 +146,83 @@ def test_quat2rotmat_5() -> None:
         ]
     )
     assert np.allclose(R_gt, R)
+
+
+def test_invalid_quaternion_zero_norm() -> None:
+    """Ensure that passing a zero-norm quaternion raises an error, as normalization would divide by 0."""
+    q = np.array([0.0, 0.0, 0.0, 0.0])
+
+    with pytest.raises(ZeroDivisionError) as e_info:
+        quat2rotmat(q)
+
+
+def test_quaternion_renormalized() -> None:
+    """Make sure that a quaternion is correctly re-normalized.
+
+    Normalized and unnormalized quaternion variants should generate the same 3d rotation matrix.
+    """
+    q1 = np.array([0.0, 0.0, 0.0, 1.0])
+    R1 = quat2rotmat(q1)
+
+    q2 = np.array([0.0, 0.0, 0.0, 2.0])
+    R2 = quat2rotmat(q2)
+
+    assert np.allclose(R1, R2)
+
+
+def test_rotmat2quat() -> None:
+    """Ensure `rotmat2quat()` correctly converts rotation matrices to scalar-first quaternions."""
+    num_trials = 1000
+    for trial in range(num_trials):
+
+        # generate random rotation matrices by sampling quaternion elements from normal distribution
+        # https://en.wikipedia.org/wiki/Rotation_matrix#Uniform_random_rotation_matrices
+
+        q = np.random.randn(4)
+        q /= np.linalg.norm(q)
+
+        R = quat2rotmat(q)
+        q_ = rotmat2quat(R)
+
+        # Note: A unit quaternion multiplied by 1 or -1 represents the same 3d rotation
+        # https://math.stackexchange.com/questions/2016282/negative-quaternion
+        # https://math.stackexchange.com/questions/1790521/unit-quaternion-multiplied-by-1
+        assert np.allclose(q, q_) or np.allclose(-q, q_)
+
+
+def test_yaw_to_quaternion3d() -> None:
+    """Ensure yaw_to_quaternion3d() outputs correct values.
+
+    Compare `yaw_to_quaternion3d()` output (which relies upon Scipy) to manual
+    computation of the 3d rotation matrix, followed by a rotation matrix -> quaternion conversion.
+    """
+
+    def rot3d_z(angle_rad: float) -> np.ndarray:
+        """Generate 3d rotation matrix about the z-axis, from a rotation angle in radians."""
+        c = np.cos(angle_rad)
+        s = np.sin(angle_rad)
+        R = np.array(
+            [
+                [c, -s, 0],
+                [s, c, 0],
+                [0, 0, 1],
+            ]
+        )
+        return R
+
+    num_trials = 1000
+    angle_samples_rad = np.random.rand(num_trials) * 2 * np.pi
+    for angle_rad in angle_samples_rad:
+
+        R = rot3d_z(angle_rad)
+        q = rotmat2quat(R)
+
+        q_ = yaw_to_quaternion3d(angle_rad)
+
+        assert isinstance(q_, np.ndarray)
+        assert q_.size == 4
+
+        # Note: A unit quaternion multiplied by 1 or -1 represents the same 3d rotation
+        # https://math.stackexchange.com/questions/2016282/negative-quaternion
+        # https://math.stackexchange.com/questions/1790521/unit-quaternion-multiplied-by-1
+        assert np.allclose(q, q_) or np.allclose(q, -q_)

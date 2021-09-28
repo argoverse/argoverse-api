@@ -6,19 +6,18 @@ import os
 import shutil
 import tempfile
 import uuid
-import zipfile
 from typing import Dict, List, Optional, Tuple, Union
 
+import h5py
 import numpy as np
 from scipy.spatial import ConvexHull
 from shapely.geometry import Polygon
-from sklearn.cluster.dbscan_ import DBSCAN
+from sklearn.cluster import DBSCAN
 
-import h5py
-import quaternion
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
 from argoverse.utils.se3 import SE3
+from argoverse.utils.transform import yaw_to_quaternion3d
 
 TYPE_LIST = Union[List[np.ndarray], np.ndarray]
 
@@ -33,14 +32,15 @@ def generate_forecasting_h5(
     Helper function to generate the result h5 file for argoverse forecasting challenge
 
     Args:
-        data: a dictionary of trajectory, with the key being the sequence ID. For each sequence, the
-              trajectory should be stored in a (9,30,2) np.ndarray
+        data: a dictionary of trajectories, with the key being the sequence ID, and value being
+              predicted trajectories for the sequence, stored in a (n,30,2) np.ndarray.
+              "n" can be any number >=1. If probabilities are provided, the evaluation server
+              will use the top-K most likely forecasts for any top-K metric. If probabilities
+              are unavailable, the first-K trajectories will be evaluated instead. Each
+              predicted trajectory should consist of 30 waypoints.
         output_path: path to the output directory to store the output h5 file
         filename: to be used as the name of the file
         probabilities (optional) : normalized probability for each trajectory
-
-    Returns:
-
     """
 
     if not os.path.exists(output_path):
@@ -71,7 +71,12 @@ def generate_forecasting_h5(
 
             d = np.array(
                 [
-                    [key, np.float32(x), np.float32(y), probabilities[key][int(np.floor(i / future_frames))]]
+                    [
+                        key,
+                        np.float32(x),
+                        np.float32(y),
+                        probabilities[key][int(np.floor(i / future_frames))],
+                    ]
                     for i, (x, y) in enumerate(value)
                 ]
             )
@@ -94,8 +99,6 @@ def generate_tracking_zip(input_path: str, output_path: str, filename: str = "ar
         input path: path to the input directory which contain per_sweep_annotations_amodal/
         output_path: path to the output directory to store the output zip file
         filename: to be used as the name of the file
-
-    Returns:
 
     """
 
@@ -166,7 +169,15 @@ def dist(p1: Tuple[float, float], p2: Tuple[float, float]) -> float:
 
 
 def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") -> ObjectLabelRecord:
-    # poly in polygon format
+    """Convert a Shapely Polygon to a 3d cuboid by estimating the minimum-bounding rectangle.
+
+    Args:
+        poly: Shapely polygon object representing a convex hull of an object
+        category: object category to which object belongs, e.g. VEHICLE, PEDESTRIAN, etc
+        track_id: unique identifier
+    Returns:
+        object representing a 3d cuboid
+    """
 
     bbox = poly.minimum_rotated_rectangle
 
@@ -179,6 +190,7 @@ def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") 
     d1 = dist((x[0], y[0]), (x[1], y[1]))
     d2 = dist((x[1], y[1]), (x[2], y[2]))
 
+    # assign orientation so that the rectangle's longest side represents the object's length
     width = min(d1, d2)
     length = max(d1, d2)
 
@@ -187,19 +199,26 @@ def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") 
     else:
         unit_v = unit_vector((x[0], y[0]), (x[1], y[1]))
 
-    angle = math.atan2(unit_v[1], unit_v[0])
+    angle_rad = np.arctan2(unit_v[1], unit_v[0])
+    q = yaw_to_quaternion3d(angle_rad)
 
     height = max(z) - min(z)
 
-    # translation = center
+    # location of object in egovehicle coordinates
     center = np.array([bbox.centroid.xy[0][0], bbox.centroid.xy[1][0], min(z) + height / 2])
 
-    R = np.array([[np.cos(angle), -np.sin(angle), 0], [np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
-
-    q = quaternion.from_rotation_matrix(R)
+    c = np.cos(angle_rad)
+    s = np.sin(angle_rad)
+    R = np.array(
+        [
+            [c, -s, 0],
+            [s, c, 0],
+            [0, 0, 1],
+        ]
+    )
 
     return ObjectLabelRecord(
-        quaternion=quaternion.as_float_array(q),
+        quaternion=q,
         translation=center,
         length=length,
         width=width,
@@ -257,14 +276,14 @@ def save_label(argoverse_data: ArgoverseTrackingLoader, labels: List[ObjectLabel
     timestamp = argoverse_data.lidar_timestamp_list[idx]
 
     for label in labels:
+        qw, qx, qy, qz = label.quaternion
         json_data = {
-            "center": {"x": label.translation[0], "y": label.translation[1], "z": label.translation[2]},
-            "rotation": {
-                "x": label.quaternion[0],
-                "y": label.quaternion[1],
-                "z": label.quaternion[2],
-                "w": label.quaternion[3],
+            "center": {
+                "x": label.translation[0],
+                "y": label.translation[1],
+                "z": label.translation[2],
             },
+            "rotation": {"x": qx, "y": qy, "z": qz, "w": qw},
             "length": label.length,
             "width": label.width,
             "height": label.height,

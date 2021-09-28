@@ -1,7 +1,6 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 """Utilities used in evaluation of performance."""
 
-import copy
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
@@ -98,9 +97,16 @@ def label_to_bbox(label: _LabelType) -> Tuple[np.ndarray, float]:
     p1 = np.array([+length / 2, -width / 2, -height / 2])[:, np.newaxis]
     p2 = np.array([-length / 2, +width / 2, -height / 2])[:, np.newaxis]
 
-    bbox = np.array([p0, p1, p2, height])
+    bbox = np.array([p0, p1, p2, height], dtype=object)
 
-    R = quat2rotmat((label["rotation"]["w"], label["rotation"]["x"], label["rotation"]["y"], label["rotation"]["z"]))
+    R = quat2rotmat(
+        (
+            label["rotation"]["w"],
+            label["rotation"]["x"],
+            label["rotation"]["y"],
+            label["rotation"]["z"],
+        )
+    )
     t = np.array([label["center"]["x"], label["center"]["y"], label["center"]["z"]])[:, np.newaxis]
 
     v = np.array([1, 0, 0])[:, np.newaxis]

@@ -1,0 +1,76 @@
+SensorDatasetConfig:
+  _target_: argoverse.sensor_dataset_config.SensorDatasetConfig
+  dataset_name: argoverse-v1.1
+  ring_cam_fps: 30
+  stereo_cam_fps: 5
+
+  # all ring cameras are `landscape` aspect ratio
+  camera_sensors:
+    _target_: argoverse.sensor_dataset_config.SensorSuiteConfig
+    
+    ring_front_center: 
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 1200
+      img_width: 1920
+      name: ring_front_center
+
+    ring_front_left:
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 1200
+      img_width: 1920
+      name: ring_front_left
+
+    ring_front_right:
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 1200
+      img_width: 1920
+      name: ring_front_right
+
+    ring_side_left:
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 1200
+      img_width: 1920
+      name: ring_side_left
+
+    ring_side_right:
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 1200
+      img_width: 1920
+      name: ring_side_right
+
+    ring_rear_left:
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 1200
+      img_width: 1920
+      name: ring_rear_left
+
+    ring_rear_right:
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 1200
+      img_width: 1920
+      name: ring_rear_right
+
+    stereo_front_right:
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 2056
+      img_width: 2464
+      name: stereo_front_right
+
+    stereo_front_left:
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 2056
+      img_width: 2464
+      name: stereo_front_left
+
+    # Rectified stereo images
+    stereo_front_left_rect:
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 2056
+      img_width: 2464
+      name: stereo_front_left_rect
+
+    stereo_front_right_rect:
+      _target_: argoverse.sensor_dataset_config.SensorConfig
+      img_height: 2056
+      img_width: 2464
+      name: stereo_front_right_rect
