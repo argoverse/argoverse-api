@@ -12,14 +12,12 @@ def pos2range(
     fov: NDArray,
     dims: NDArrayInt = np.array([64, 1024]),
 ) -> Tuple[NDArray, NDArray]:
-    fov_bottom = np.abs(fov[0])
-    fov_top = np.abs(fov[1])
+    fov_bottom, fov_top = np.abs(fov).transpose()
 
-    fov = fov_bottom + fov_top
     az, el, r = cart2sph(*pos.transpose())
 
     v = 0.5 * (-az / PI + 1.0)
-    u = 1.0 - (el + fov_bottom) / fov
+    u = 1.0 - (el + fov_bottom) / (fov_bottom + fov_top)
 
     perm = np.argsort(r)
     r = r[perm]
