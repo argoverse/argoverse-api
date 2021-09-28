@@ -24,27 +24,52 @@ def main(dirname: Path) -> None:
     Args:
         dirname (Path): Directory name.
     """
+    
+    # Initialize sensor dataset.
     dataset = SensorDataset(dirname)
+
+    # Range image dimensions.
     dims: NDArrayInt = np.array([64, 1024])
+
+    # Iterate over lidar paths.
     for path in dataset.get_lidar_paths():
+
+        # Test labels are hidden!
         if "test" in path:
             continue
+
+        # Load feather file.
         datum: NDArray = read_feather(path, dataset.index_names).to_numpy()
 
+        # (x,y,z) in ego frame -> (x,y,z) in lidar frame.
         pos_lidar = ego2lidar(datum[:, :3])
+
+        # Construct range image.
         range_im, _ = pos2range(pos_lidar, fov=FOV, dims=dims)
 
+        # Get labels path.
         labels_path = Path(path.replace("lidar", "labels"))
+
+        # Ensure that labels exist for this sweep.
         if not labels_path.exists():
             continue
+
+        # Read labels.
         labels = read_feather(labels_path, INDEX_KEYS)
+
+        # Filter labels for REGULAR VEHICLEs.
         labels = labels.filter(col("label_class") == "REGULAR_VEHICLE")
 
+        # Get translation + pose.
         cuboids = labels[CUBOID_COLS].to_numpy()
 
-        polys = cuboid2poly(cuboids)
-        polys = ego2lidar(polys.reshape(-1, 3)).reshape(-1, 8, 3)
+        # Transform cuboid into polygons.
+        polys_ego = cuboid2poly(cuboids)
 
+        # Move polygons from ego frame to lidar frame.
+        polys = ego2lidar(polys_ego.reshape(-1, 3)).reshape(-1, 8, 3)
+
+        # Compute polygon interior points.
         interior_pts = np.concatenate(
             [
                 filter_point_cloud_to_bbox_3D_vectorized(poly, pos_lidar)[0]
