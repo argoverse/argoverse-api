@@ -1,4 +1,4 @@
-from typing import Final, Tuple
+from typing import Final, List, Tuple
 
 import numpy as np
 import numpy.typing as npt
@@ -9,6 +9,19 @@ INDEX_KEYS: Final[Tuple[str, str, str, str]] = (
     "record_type",
     "tov_ns",
 )
+
+CUBOID_COLS: Final[List[str]] = [
+    "x",
+    "y",
+    "z",
+    "length",
+    "width",
+    "height",
+    "qw",
+    "qx",
+    "qy",
+    "qz",
+]
 
 FOV: Final[npt.NDArray[float]] = np.array([-25.0 / 180.0 * np.pi, 15 / 180.0 * np.pi])
 
