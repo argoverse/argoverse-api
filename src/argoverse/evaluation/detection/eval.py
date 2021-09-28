@@ -69,11 +69,12 @@ import polars as pl
 from pandas import DataFrame
 from polars.lazy import col
 
-from argoverse.evaluation.detection.constants import (N_TP_ERRORS,
-                                                      SIGNIFICANT_DIGITS,
-                                                      STATISTIC_NAMES)
-from argoverse.evaluation.detection.utils import (DetectionCfg, accumulate,
-                                                  calc_ap)
+from argoverse.evaluation.detection.constants import (
+    N_TP_ERRORS,
+    SIGNIFICANT_DIGITS,
+    STATISTIC_NAMES,
+)
+from argoverse.evaluation.detection.utils import DetectionCfg, accumulate, calc_ap
 
 logger = logging.getLogger(__name__)
 

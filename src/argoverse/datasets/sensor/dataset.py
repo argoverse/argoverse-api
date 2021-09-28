@@ -2,10 +2,12 @@
 import logging
 from dataclasses import dataclass
 from typing import Tuple
-from argoverse.datasets.dataset import Dataset
-from argoverse.datasets.sensor.constants import INDEX_KEYS
+
+from polars import col
 from polars.eager import DataFrame
 
+from argoverse.datasets.dataset import Dataset
+from argoverse.datasets.sensor.constants import INDEX_KEYS
 
 logger = logging.Logger(__name__)
 
@@ -26,3 +28,5 @@ class SensorDataset(Dataset):
     def get_log_ids(self) -> DataFrame:
         return self.metadata["log_id"].unique().sort().to_frame()
 
+    def get_lidar_paths(self) -> DataFrame:
+        return self.get_paths(col("record_type") == "lidar")

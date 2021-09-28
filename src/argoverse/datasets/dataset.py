@@ -6,9 +6,9 @@ from pathlib import Path
 from typing import Any, List, Tuple
 
 from polars.eager import DataFrame
-import os.path as osp
 from polars.io import read_ipc
 from polars.lazy import col
+from polars.lazy.expr import Expr
 
 from argoverse.distributed.utils import compute_chunksize, parallelize
 from argoverse.io.loading import read_feather
@@ -19,7 +19,7 @@ logger = logging.Logger(__name__)
 @dataclass
 class Dataset:
 
-    rootdir: Path 
+    rootdir: Path
     index_names: Tuple[str, ...]
     metadata: DataFrame = field(init=False)
     paths: List[Path] = field(init=False)
@@ -27,8 +27,7 @@ class Dataset:
     def __post_init__(self):
         """Post initialization."""
         self.crawl()
-        self.paths = self.get_paths(self.metadata)
-
+        # self.paths = self.get_paths(self.metadata)
 
     def crawl(self):
         """Crawl the metadata files.
@@ -42,9 +41,15 @@ class Dataset:
     def get_records(self, col_name: str) -> DataFrame:
         return self.metadata.filter(col("record_type") == col_name)
 
-    def get_paths(self, metadata: DataFrame) -> List[Path]:
+    def get_paths(self, expr: Expr = None) -> List[Path]:
+        metadata = self.metadata.select(self.index_names)
+        if expr is not None:
+            metadata = metadata.filter(expr)
+
         keys = metadata.select(self.index_names)
-        keys = keys.fold(lambda x, y: x + "/" + y).apply(lambda x: osp.join(self.rootdir, x, "part.feather"))
+        keys = keys.fold(lambda x, y: x + "/" + y).apply(
+            lambda x: osp.join(self.rootdir, x, "part.feather")
+        )
         return keys
 
     def load_data(self, metadata: DataFrame) -> List[DataFrame]:

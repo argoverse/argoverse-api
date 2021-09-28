@@ -22,12 +22,15 @@ from pandas import DataFrame
 from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation as R
 
-from argoverse.evaluation.detection.constants import (COMPETITION_CLASSES,
-                                                      MAX_NORMALIZED_ASE,
-                                                      MAX_NUM_BOXES,
-                                                      MAX_SCALE_ERROR,
-                                                      MAX_YAW_ERROR,
-                                                      MIN_AP, MIN_CDS)
+from argoverse.evaluation.detection.constants import (
+    COMPETITION_CLASSES,
+    MAX_NORMALIZED_ASE,
+    MAX_NUM_BOXES,
+    MAX_SCALE_ERROR,
+    MAX_YAW_ERROR,
+    MIN_AP,
+    MIN_CDS,
+)
 
 matplotlib.use("Agg")  # isort:skip
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
