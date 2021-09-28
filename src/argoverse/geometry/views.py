@@ -20,7 +20,6 @@ def pos2range(
     u = 1.0 - (el + fov_bottom) / (fov_bottom + fov_top)
 
     perm = np.argsort(r)
-    r = r[perm]
 
     uv = np.stack((u, v), axis=-1)[perm] * dims
     uv = np.clip(uv, 0, dims - 1).astype(int)
@@ -29,6 +28,6 @@ def pos2range(
     pos_im = np.full((dims.tolist() + [3]), NAN)
 
     u, v = uv.transpose()
-    range_im[u, v] = r
+    range_im[u, v] = r[perm]
     pos_im[u, v] = pos[perm]
     return range_im, pos_im
