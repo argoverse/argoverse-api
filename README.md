@@ -126,8 +126,8 @@ Once it's running, just navigate to the `demo_usage` folder and open any tutoria
 [![](images/forecasting_tutorial.png)](./demo_usage/argoverse_forecasting_tutorial.ipynb)
 
 ### **Argoverse-Depth_Map Tutorial**
-Follow the instructions in the notebook to generate depth maps from lidar ground truth points corresponding to the ring camera frames and use it for monocular depth estimation model training.
-[![](images/lidar_to_depth_map_tutorial.png)](./demo_usage/argoverse_monocular_depth_map_tutorial.ipynb)
+Follow the instructions in the notebook to generate depth maps from lidar ground truth points corresponding to the ring camera frames and use it for supervised monocular depth estimation model training.
+[![](images/lidar_to_depth_map_tutorial.png)](./demo_usage/monocular_depth_dataset_tutorial.ipynb)
 
 ### Rendering birds-eye-view
 Run the following script to render cuboids from a birds-eye-view on the map.
