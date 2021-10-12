@@ -54,7 +54,6 @@ setup(
         "h5py",
         "hydra-core==1.1.0",
         "imageio",
-        "imageio",
         "lap",
         "matplotlib",
         "motmetrics==1.1.3",
