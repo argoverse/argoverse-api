@@ -27,7 +27,7 @@ if platform.system() == "Windows":
 
 setup(
     name="argoverse",
-    version="1.0.1",
+    version="1.1.0",
     description="",
     long_description=long_description,
     url="https://www.argoverse.org",
@@ -51,9 +51,10 @@ setup(
     install_requires=[
         "colour",
         "descartes",
-        "imageio",
         "h5py",
         "hydra-core==1.1.0",
+        "imageio",
+        "imageio",
         "lap",
         "matplotlib",
         "motmetrics==1.1.3",
@@ -63,7 +64,7 @@ setup(
         "opencv-python>=4.1.0.25",
         "pandas>=0.23.1",
         "pillow",
-        "imageio",
+        "polars",
         "pyntcloud>=0.1.0",
         "scipy>=1.4.0",
         "shapely",
