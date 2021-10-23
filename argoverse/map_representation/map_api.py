@@ -7,6 +7,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.typing import NDArray
 from shapely.geometry import LineString
 
 from argoverse.data_loading.vector_map_loader import load_lane_segments_from_xml
@@ -72,10 +73,10 @@ class ArgoverseMap:
         self.city_rasterized_ground_height_dict = self.build_city_ground_height_index()
 
         # get hallucinated lane extends and driveable area from binary img
-        self.city_to_lane_polygons_dict: Mapping[str, np.ndarray] = {}
-        self.city_to_driveable_areas_dict: Mapping[str, np.ndarray] = {}
-        self.city_to_lane_bboxes_dict: Mapping[str, np.ndarray] = {}
-        self.city_to_da_bboxes_dict: Mapping[str, np.ndarray] = {}
+        self.city_to_lane_polygons_dict: Mapping[str, NDArray[np.float64]] = {}
+        self.city_to_driveable_areas_dict: Mapping[str, NDArray[np.float64]] = {}
+        self.city_to_lane_bboxes_dict: Mapping[str, NDArray[np.float64]] = {}
+        self.city_to_da_bboxes_dict: Mapping[str, NDArray[np.float64]] = {}
 
         for city_name in self.city_name_to_city_id_dict.keys():
             lane_polygons = np.array(self.get_vector_map_lane_polygons(city_name), dtype=object)
@@ -94,7 +95,7 @@ class ArgoverseMap:
             raise ValueError("Map root directory cannot be None!")
         return Path(self.root).resolve()
 
-    def get_vector_map_lane_polygons(self, city_name: str) -> List[np.ndarray]:
+    def get_vector_map_lane_polygons(self, city_name: str) -> List[NDArray[np.float64]]:
         """
         Get list of lane polygons for a specified city
 
@@ -112,7 +113,7 @@ class ArgoverseMap:
 
         return lane_polygons
 
-    def get_vector_map_driveable_areas(self, city_name: str) -> List[np.ndarray]:
+    def get_vector_map_driveable_areas(self, city_name: str) -> List[NDArray[np.float64]]:
         """
         Get driveable area for a specified city
 
@@ -127,7 +128,7 @@ class ArgoverseMap:
         """
         return self.get_da_contours(city_name)
 
-    def get_da_contours(self, city_name: str) -> List[np.ndarray]:
+    def get_da_contours(self, city_name: str) -> List[NDArray[np.float64]]:
         """
         We threshold the binary driveable area or ROI image and obtain contour lines. These
         contour lines represent the boundary.
@@ -148,7 +149,7 @@ class ArgoverseMap:
         npyimage_SE2_city = SE2(rotation=R, translation=t)
         city_SE2_npyimage = npyimage_SE2_city.inverse()
 
-        city_contours: List[np.ndarray] = []
+        city_contours: List[NDArray[np.float64]] = []
         for i, contour_im_coords in enumerate(contours):
             contour_im_coords = contour_im_coords.squeeze()
             contour_im_coords = contour_im_coords.astype(np.float64)
@@ -175,7 +176,7 @@ class ArgoverseMap:
 
     def build_city_driveable_area_roi_index(
         self,
-    ) -> Mapping[str, Mapping[str, np.ndarray]]:
+    ) -> Mapping[str, Mapping[str, NDArray[np.float64]]]:
         """
         Load driveable area files from disk. Dilate driveable area to get ROI (takes about 1/2 second).
 
@@ -186,7 +187,7 @@ class ArgoverseMap:
                     city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city coordinates, e.g.
                     p_city = city_Transformation_pklimage * p_pklimage
         """
-        city_rasterized_da_roi_dict: Dict[str, Dict[str, np.ndarray]] = {}
+        city_rasterized_da_roi_dict: Dict[str, Dict[str, NDArray[np.float64]]] = {}
         for city_name, city_id in self.city_name_to_city_id_dict.items():
             city_id = self.city_name_to_city_id_dict[city_name]
             city_rasterized_da_roi_dict[city_name] = {}
@@ -200,7 +201,7 @@ class ArgoverseMap:
 
         return city_rasterized_da_roi_dict
 
-    def build_city_ground_height_index(self) -> Mapping[str, Mapping[str, np.ndarray]]:
+    def build_city_ground_height_index(self) -> Mapping[str, Mapping[str, NDArray[np.float64]]]:
         """
         Build index of rasterized ground height.
 
@@ -210,7 +211,7 @@ class ArgoverseMap:
                     city_to_pkl_image_se2: SE(2) that produces takes point in pkl image to city
                     coordinates, e.g. p_city = city_Transformation_pklimage * p_pklimage
         """
-        city_rasterized_ground_height_dict: Dict[str, Dict[str, np.ndarray]] = {}
+        city_rasterized_ground_height_dict: Dict[str, Dict[str, NDArray[np.float64]]] = {}
         for city_name, city_id in self.city_name_to_city_id_dict.items():
             city_rasterized_ground_height_dict[city_name] = {}
             npy_fpath = self.map_files_root / f"{city_name}_{city_id}_ground_height_mat_2019_05_28.npy"
@@ -223,7 +224,7 @@ class ArgoverseMap:
 
         return city_rasterized_ground_height_dict
 
-    def get_rasterized_driveable_area(self, city_name: str) -> Tuple[np.ndarray, np.ndarray]:
+    def get_rasterized_driveable_area(self, city_name: str) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
         """
         Get the driveable area.
 
@@ -241,7 +242,7 @@ class ArgoverseMap:
             self.city_rasterized_da_roi_dict[city_name]["npyimage_to_city_se2"],
         )
 
-    def get_rasterized_roi(self, city_name: str) -> Tuple[np.ndarray, np.ndarray]:
+    def get_rasterized_roi(self, city_name: str) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
         """
         Get the region of interest (5 meter dilation of driveable area).
 
@@ -294,7 +295,7 @@ class ArgoverseMap:
         das = self.city_to_driveable_areas_dict[city_name]
         render_global_city_map_bev(lane_centerlines, das, city_name, self, centerline_color_scheme="indegree")
 
-    def get_rasterized_ground_height(self, city_name: str) -> Tuple[np.ndarray, np.ndarray]:
+    def get_rasterized_ground_height(self, city_name: str) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
         """
         Get ground height matrix along with se2 that convert to city coordinate
 
@@ -313,8 +314,8 @@ class ArgoverseMap:
         )
 
     def remove_ground_surface(
-        self, point_cloud: np.ndarray, city_name: str, return_logicals: bool = False
-    ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+        self, point_cloud: NDArray[np.float64], city_name: str, return_logicals: bool = False
+    ) -> Any:
         """
         Get a lidar point, snap it to the grid, perform the O(1) raster map query.
         If our z-height is within THRESHOLD of that grid's z-height, then we keep it; otherwise, discard it
@@ -336,7 +337,7 @@ class ArgoverseMap:
 
         return point_cloud[not_ground_indxs]
 
-    def remove_non_driveable_area_points(self, point_cloud: np.ndarray, city_name: str) -> np.ndarray:
+    def remove_non_driveable_area_points(self, point_cloud: NDArray[np.float64], city_name: str) -> Any:
         """
         Get a lidar point, snap it to the grid, perform the O(1) raster map query.
         If our z-height is within THRESHOLD of that grid's z-height, then we keep it; otherwise, discard it
@@ -352,7 +353,7 @@ class ArgoverseMap:
         is_da_boolean_arr = self.get_raster_layer_points_boolean(point_cloud, city_name, "driveable_area")
         return point_cloud[is_da_boolean_arr]
 
-    def remove_non_roi_points(self, point_cloud: np.ndarray, city_name: str) -> np.ndarray:
+    def remove_non_roi_points(self, point_cloud: NDArray[np.float64], city_name: str) -> NDArray[np.float64]:
         """
         Remove any points that does't fall within the region of interest (ROI)
 
@@ -366,7 +367,7 @@ class ArgoverseMap:
         is_roi_boolean_arr = self.get_raster_layer_points_boolean(point_cloud, city_name, "roi")
         return point_cloud[is_roi_boolean_arr]
 
-    def get_ground_points_boolean(self, point_cloud: np.ndarray, city_name: str) -> np.ndarray:
+    def get_ground_points_boolean(self, point_cloud: NDArray[np.float64], city_name: str) -> Any:
         """
         Check whether each point is likely to be from the ground surface
 
@@ -384,7 +385,7 @@ class ArgoverseMap:
         )
         return is_ground_boolean_arr
 
-    def get_ground_height_at_xy(self, point_cloud: np.ndarray, city_name: str) -> np.ndarray:
+    def get_ground_height_at_xy(self, point_cloud: NDArray[np.float64], city_name: str) -> NDArray[np.float64]:
         """
         Get ground height for each of the xy location in point_cloud
 
@@ -416,7 +417,9 @@ class ArgoverseMap:
 
         return ground_height_values
 
-    def append_height_to_2d_city_pt_cloud(self, pt_cloud_xy: np.ndarray, city_name: str) -> np.ndarray:
+    def append_height_to_2d_city_pt_cloud(
+        self, pt_cloud_xy: NDArray[np.float64], city_name: str
+    ) -> NDArray[np.float64]:
         """
         Accept 2d point cloud in xy plane and return 3d point cloud (xyz)
 
@@ -430,7 +433,7 @@ class ArgoverseMap:
         pts_z = self.get_ground_height_at_xy(pt_cloud_xy, city_name)
         return np.hstack([pt_cloud_xy, pts_z[:, np.newaxis]])
 
-    def get_raster_layer_points_boolean(self, point_cloud: np.ndarray, city_name: str, layer_name: str) -> np.ndarray:
+    def get_raster_layer_points_boolean(self, point_cloud: NDArray[np.float64], city_name: str, layer_name: str) -> Any:
         """
         driveable area is "da"
 
@@ -477,8 +480,8 @@ class ArgoverseMap:
         return is_layer_boolean_arr
 
     def get_nearest_centerline(
-        self, query_xy_city_coords: np.ndarray, city_name: str, visualize: bool = False
-    ) -> Tuple[LaneSegment, float, np.ndarray]:
+        self, query_xy_city_coords: NDArray[np.float64], city_name: str, visualize: bool = False
+    ) -> Tuple[LaneSegment, float, NDArray[np.float64]]:
         """
         KD Tree with k-closest neighbors or a fixed radius search on the lane centroids
         is unreliable since (1) there is highly variable density throughout the map and (2)
@@ -555,8 +558,8 @@ class ArgoverseMap:
         return closest_lane_obj, conf, dense_centerline
 
     def get_lane_direction(
-        self, query_xy_city_coords: np.ndarray, city_name: str, visualize: bool = False
-    ) -> Tuple[np.ndarray, float]:
+        self, query_xy_city_coords: NDArray[np.float64], city_name: str, visualize: bool = False
+    ) -> Tuple[NDArray[np.float64], float]:
         """
         Get vector direction of the lane you're in.
         We ignore the sparse version of the centerline that we could
@@ -712,7 +715,7 @@ class ArgoverseMap:
         adjacent_ids = [r_neighbor, l_neighbor]
         return adjacent_ids
 
-    def get_lane_segment_centerline(self, lane_segment_id: int, city_name: str) -> np.ndarray:
+    def get_lane_segment_centerline(self, lane_segment_id: int, city_name: str) -> NDArray[np.float64]:
         """
         We return a 3D centerline for any particular lane segment.
 
@@ -729,7 +732,7 @@ class ArgoverseMap:
 
         return lane_centerline
 
-    def get_lane_segment_polygon(self, lane_segment_id: int, city_name: str) -> np.ndarray:
+    def get_lane_segment_polygon(self, lane_segment_id: int, city_name: str) -> NDArray[np.float64]:
         """
         Hallucinate a 3d lane polygon based around the centerline. We rely on the average
         lane width within our cities to hallucinate the boundaries. We rely upon the
@@ -788,7 +791,7 @@ class ArgoverseMap:
         return self.city_lane_centerlines_dict[city_name][lane_segment_id].has_traffic_control
 
     def remove_extended_predecessors(
-        self, lane_seqs: List[List[int]], xy: np.ndarray, city_name: str
+        self, lane_seqs: List[List[int]], xy: NDArray[np.float64], city_name: str
     ) -> List[List[int]]:
         """
         Remove lane_ids which are obtained by finding way too many predecessors from lane sequences.
@@ -814,7 +817,7 @@ class ArgoverseMap:
             filtered_lane_seq.append(new_lane_seq)
         return filtered_lane_seq
 
-    def get_cl_from_lane_seq(self, lane_seqs: Iterable[List[int]], city_name: str) -> List[np.ndarray]:
+    def get_cl_from_lane_seq(self, lane_seqs: Iterable[List[int]], city_name: str) -> List[NDArray[np.float64]]:
         """Get centerlines corresponding to each lane sequence in lane_sequences
 
         Args:
@@ -836,11 +839,11 @@ class ArgoverseMap:
 
     def get_candidate_centerlines_for_traj(
         self,
-        xy: np.ndarray,
+        xy: NDArray[np.float64],
         city_name: str,
         viz: bool = False,
         max_search_radius: float = 50.0,
-    ) -> List[np.ndarray]:
+    ) -> List[NDArray[np.float64]]:
         """Get centerline candidates upto a threshold. .
 
         Algorithm:
@@ -1057,7 +1060,9 @@ class ArgoverseMap:
             halluc_lane_polygon = self.get_lane_segment_polygon(nearby_lane_id, city_name)
             plot_lane_segment_patch(halluc_lane_polygon, ax, color=patch_color, alpha=0.3)
 
-    def find_local_lane_polygons(self, query_bbox: Tuple[float, float, float, float], city_name: str) -> np.ndarray:
+    def find_local_lane_polygons(
+        self, query_bbox: Tuple[float, float, float, float], city_name: str
+    ) -> NDArray[np.float64]:
         """
         Find land polygons within specified area
 
@@ -1082,7 +1087,9 @@ class ArgoverseMap:
         )
         return local_lane_polygons
 
-    def find_local_driveable_areas(self, query_bbox: Tuple[float, float, float, float], city_name: str) -> np.ndarray:
+    def find_local_driveable_areas(
+        self, query_bbox: Tuple[float, float, float, float], city_name: str
+    ) -> NDArray[np.float64]:
         """
         Find local driveable areas within specified area
 
@@ -1113,7 +1120,7 @@ class ArgoverseMap:
         query_y: float,
         city_name: str,
         query_search_range_manhattan: float = 80.0,
-    ) -> np.ndarray:
+    ) -> NDArray[np.float64]:
         """
         Find local lane centerline to the specified x,y location
 

@@ -4,13 +4,16 @@
 For filtering to 3D polygons, please see cuboid_interior.py or iou_3d.py instead.
 """
 
-from typing import Optional, cast
+from typing import Any, Optional, cast
 
 import numpy as np
+from numpy.typing import NDArray
 from shapely.geometry import Point, Polygon
 
 
-def rotate_polygon_about_pt(pts: np.ndarray, rotmat: np.ndarray, center_pt: np.ndarray) -> np.ndarray:
+def rotate_polygon_about_pt(
+    pts: NDArray[np.float64], rotmat: NDArray[np.float64], center_pt: NDArray[np.float64]
+) -> Any:
     """Rotate a polygon about a point with a given rotation matrix.
 
     Args:
@@ -27,7 +30,7 @@ def rotate_polygon_about_pt(pts: np.ndarray, rotmat: np.ndarray, center_pt: np.n
     return rot_pts
 
 
-def filter_point_cloud_to_polygon(polygon: np.ndarray, point_cloud: np.ndarray) -> Optional[np.ndarray]:
+def filter_point_cloud_to_polygon(polygon: NDArray[np.float64], point_cloud: NDArray[np.float64]) -> Any:
     """Filter a point cloud to the points within a polygon.
 
     Args:
@@ -53,8 +56,8 @@ def filter_point_cloud_to_polygon(polygon: np.ndarray, point_cloud: np.ndarray) 
 
 def point_inside_polygon(
     n_vertices: int,
-    poly_x_pts: np.ndarray,
-    poly_y_pts: np.ndarray,
+    poly_x_pts: NDArray[np.float64],
+    poly_y_pts: NDArray[np.float64],
     test_x: float,
     test_y: float,
 ) -> bool:

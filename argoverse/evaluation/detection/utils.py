@@ -16,11 +16,12 @@ from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
-from typing import DefaultDict, List, NamedTuple, Optional, Tuple, Union
+from typing import Any, DefaultDict, List, NamedTuple, Optional, Tuple, Union
 
 import matplotlib
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation as R
 
@@ -94,8 +95,10 @@ class DetectionCfg(NamedTuple):
     dt_metric: FilterMetric = FilterMetric.EUCLIDEAN
     max_dt_range: float = 100.0  # Meters
     save_figs: bool = False
-    tp_normalization_terms: np.ndarray = np.array([tp_thresh, MAX_SCALE_ERROR, MAX_YAW_ERROR])
-    summary_default_vals: np.ndarray = np.array([MIN_AP, tp_thresh, MAX_NORMALIZED_ASE, MAX_NORMALIZED_AOE, MIN_CDS])
+    tp_normalization_terms: NDArray[np.float64] = np.array([tp_thresh, MAX_SCALE_ERROR, MAX_YAW_ERROR])
+    summary_default_vals: NDArray[np.float64] = np.array(
+        [MIN_AP, tp_thresh, MAX_NORMALIZED_ASE, MAX_NORMALIZED_AOE, MIN_CDS]
+    )
     eval_only_roi_instances: bool = True
     map_root: _PathLike = Path(__file__).parent.parent.parent.parent / "map_files"  # argoverse-api/map_files
 
@@ -117,7 +120,7 @@ class AccumulateJob:
     avm: Optional[ArgoverseMap]
 
 
-def accumulate(job: AccumulateJob) -> Tuple[DefaultDict[str, np.ndarray], DefaultDict[str, int]]:
+def accumulate(job: AccumulateJob) -> Tuple[DefaultDict[str, NDArray[np.float64]], DefaultDict[str, int]]:
     """Accumulate the true/false positives (boolean flags) and true positive errors for each class.
 
     Args:
@@ -182,7 +185,7 @@ def accumulate(job: AccumulateJob) -> Tuple[DefaultDict[str, np.ndarray], Defaul
     return cls_to_accum, cls_to_ninst
 
 
-def remove_duplicate_instances(instances: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
+def remove_duplicate_instances(instances: NDArray[np.float64], cfg: DetectionCfg) -> Any:
     """Remove any duplicate cuboids in ground truth.
 
     Any ground truth cuboid of the same object class that shares the same centroid
@@ -216,7 +219,7 @@ def remove_duplicate_instances(instances: np.ndarray, cfg: DetectionCfg) -> np.n
     return instances[unique_ids]
 
 
-def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
+def assign(dts: NDArray[np.float64], gts: NDArray[np.float64], cfg: DetectionCfg) -> NDArray[np.float64]:
     """Attempt assignment of each detection to a ground truth label.
 
     Args:
@@ -279,8 +282,8 @@ def assign(dts: np.ndarray, gts: np.ndarray, cfg: DetectionCfg) -> np.ndarray:
 
 
 def filter_objs_to_roi(
-    instances: np.ndarray, avm: ArgoverseMap, city_SE3_egovehicle: SE3, city_name: str
-) -> np.ndarray:
+    instances: NDArray[np.float64], avm: ArgoverseMap, city_SE3_egovehicle: SE3, city_name: str
+) -> Any:
     """Filter objects to the region of interest (5 meter dilation of driveable area).
 
     We ignore instances outside of region of interest (ROI) during evaluation.
@@ -309,7 +312,7 @@ def filter_instances(
     target_class_name: str,
     filter_metric: FilterMetric,
     max_detection_range: float,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Filter object instances based on a set of conditions (class name and distance from egovehicle).
 
     Args:
@@ -336,7 +339,7 @@ def filter_instances(
     return filtered_instances
 
 
-def rank(dts: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def rank(dts: NDArray[np.float64]) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Rank the detections in descending order according to score (detector confidence).
 
 
@@ -357,7 +360,7 @@ def rank(dts: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     return ranked_dts[:MAX_NUM_BOXES], ranked_scores[:MAX_NUM_BOXES]
 
 
-def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
+def interp(prec: NDArray[np.float64], method: InterpType = InterpType.ALL) -> Any:
     """Interpolate the precision over all recall levels. See equation 2 in
     http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.167.6629&rep=rep1&type=pdf
     for more information.
@@ -376,9 +379,7 @@ def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
     return prec_interp
 
 
-def compute_affinity_matrix(
-    dts: List[ObjectLabelRecord], gts: List[ObjectLabelRecord], metric: AffFnType
-) -> np.ndarray:
+def compute_affinity_matrix(dts: List[ObjectLabelRecord], gts: List[ObjectLabelRecord], metric: AffFnType) -> Any:
     """Calculate the affinity matrix between detections and ground truth labels,
     using a specified affinity function type.
 
@@ -399,7 +400,9 @@ def compute_affinity_matrix(
     return sims
 
 
-def calc_ap(gt_ranked: np.ndarray, recalls_interp: np.ndarray, ninst: int) -> Tuple[float, np.ndarray]:
+def calc_ap(
+    gt_ranked: NDArray[np.float64], recalls_interp: NDArray[np.float64], ninst: int
+) -> Tuple[float, NDArray[np.float64]]:
     """Compute precision and recall, interpolated over n fixed recall points.
 
     Args:
@@ -414,17 +417,17 @@ def calc_ap(gt_ranked: np.ndarray, recalls_interp: np.ndarray, ninst: int) -> Tu
 
     cumulative_tp = np.cumsum(tp, dtype=int)
     cumulative_fp = np.cumsum(~tp, dtype=int)
-    cumulative_fn = ninst - cumulative_tp
+    cumulative_fn: int = ninst - cumulative_tp
 
     precisions = cumulative_tp / (cumulative_tp + cumulative_fp + np.finfo(float).eps)
-    recalls = cumulative_tp / (cumulative_tp + cumulative_fn)
+    recalls: int = cumulative_tp / (cumulative_tp + cumulative_fn)
     precisions = interp(precisions)
     precisions_interp = np.interp(recalls_interp, recalls, precisions, right=0)
     avg_precision = precisions_interp.mean()
     return avg_precision, precisions_interp
 
 
-def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndarray:
+def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> Any:
     """Distance functions between detections and ground truth.
 
     Args:
@@ -459,7 +462,7 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
         raise NotImplementedError("This distance metric is not implemented!")
 
 
-def iou_aligned_3d(dt_dims: pd.DataFrame, gt_dims: pd.DataFrame) -> np.ndarray:
+def iou_aligned_3d(dt_dims: pd.DataFrame, gt_dims: pd.DataFrame) -> Any:
     """Calculate the 3d, axis-aligned (vertical axis alignment) intersection-over-union (IoU)
     between the detections and the ground truth labels. Both objects are aligned to their
     +x axis and their centroids are placed at the origin before computation of the IoU.
@@ -478,7 +481,7 @@ def iou_aligned_3d(dt_dims: pd.DataFrame, gt_dims: pd.DataFrame) -> np.ndarray:
     return (inter / union).values
 
 
-def wrap_angle(angles: np.ndarray, period: float = np.pi) -> np.ndarray:
+def wrap_angle(angles: NDArray[np.float64], period: float = np.pi) -> NDArray[np.float64]:
     """Map angles (in radians) from domain [-∞, ∞] to [0, π). This function is
         the inverse of `np.unwrap`.
 
@@ -501,7 +504,7 @@ def wrap_angle(angles: np.ndarray, period: float = np.pi) -> np.ndarray:
     return angles
 
 
-def plot(rec_interp: np.ndarray, prec_interp: np.ndarray, cls_name: str, figs_fpath: Path) -> Path:
+def plot(rec_interp: NDArray[np.float64], prec_interp: NDArray[np.float64], cls_name: str, figs_fpath: Path) -> Path:
     """Plot and save the precision recall curve.
 
     Args:

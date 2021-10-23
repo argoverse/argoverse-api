@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import List, NamedTuple
 
 import numpy as np
+from numpy.typing import NDArray
 
 from argoverse.data_loading.object_classes import OBJ_CLASS_MAPPING_DICT
 
@@ -36,20 +37,20 @@ class TrajectoryLabel(NamedTuple):
         heights (np.array): Array of heights for trajectory.
     """
 
-    timestamps: np.ndarray
-    quaternions: np.ndarray
-    translations: np.ndarray
+    timestamps: NDArray[np.float64]
+    quaternions: NDArray[np.float64]
+    translations: NDArray[np.float64]
     obj_class: int
     obj_class_str: str
-    occlusion: np.ndarray
+    occlusion: NDArray[np.float64]
     track_uuid: str
     log_id: str
     max_length: float
     max_width: float
     max_height: float
-    lengths: np.ndarray
-    widths: np.ndarray
-    heights: np.ndarray
+    lengths: NDArray[np.float64]
+    widths: NDArray[np.float64]
+    heights: NDArray[np.float64]
 
 
 def load_json_track_labels(log_track_labels_dir: str) -> List[TrajectoryLabel]:

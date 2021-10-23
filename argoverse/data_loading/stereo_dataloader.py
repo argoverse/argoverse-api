@@ -5,6 +5,7 @@ from typing import Any, List, Mapping
 
 import cv2
 import numpy as np
+from numpy.typing import NDArray
 
 from argoverse.utils.json_utils import read_json_file
 
@@ -76,7 +77,7 @@ class ArgoverseStereoDataLoader:
 
         return disparity_map_fpaths
 
-    def get_rectified_stereo_image(self, stereo_img_path: str) -> np.ndarray:
+    def get_rectified_stereo_image(self, stereo_img_path: str) -> Any:
         """Get the rectified stereo image.
 
         Args:
@@ -87,7 +88,7 @@ class ArgoverseStereoDataLoader:
         """
         return cv2.cvtColor(cv2.imread(stereo_img_path), cv2.COLOR_BGR2RGB)
 
-    def get_disparity_map(self, disparity_map_path: str) -> np.ndarray:
+    def get_disparity_map(self, disparity_map_path: str) -> NDArray[np.float64]:
         """Get the disparity map.
 
         The disparity maps are saved as uint16 PNG images. A zero-value ("0") indicates that no ground truth exists

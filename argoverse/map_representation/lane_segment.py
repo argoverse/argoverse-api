@@ -2,6 +2,7 @@
 from typing import List, Optional
 
 import numpy as np
+from numpy.typing import NDArray
 
 
 class LaneSegment:
@@ -15,7 +16,7 @@ class LaneSegment:
         r_neighbor_id: Optional[int],
         predecessors: List[int],
         successors: Optional[List[int]],
-        centerline: np.ndarray,
+        centerline: NDArray[np.float64],
     ) -> None:
         """Initialize the lane segment.
 

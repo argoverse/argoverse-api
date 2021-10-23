@@ -5,6 +5,7 @@
 from typing import Tuple
 
 import numpy as np
+from numpy.typing import NDArray
 
 
 class FrameRecord:
@@ -15,8 +16,8 @@ class FrameRecord:
 
     def __init__(
         self,
-        bbox_city_fr: np.ndarray,
-        bbox_ego_frame: np.ndarray,
+        bbox_city_fr: NDArray[np.float64],
+        bbox_ego_frame: NDArray[np.float64],
         occlusion_val: int,
         color: Tuple[float, float, float],
         track_uuid: str,

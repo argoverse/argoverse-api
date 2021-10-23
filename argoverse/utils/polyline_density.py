@@ -1,15 +1,16 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
-from typing import Tuple
+from typing import Any, Tuple
 
 import numpy as np
+from numpy.typing import NDArray
 
 from argoverse.utils.interpolate import interp_arc
 
 NUM_PTS_PER_TRAJ = 50
 
 
-def get_polyline_length(polyline: np.ndarray) -> float:
+def get_polyline_length(polyline: NDArray[np.float64]) -> float:
     """Calculate the length of a polyline.
 
     Args:
@@ -22,7 +23,9 @@ def get_polyline_length(polyline: np.ndarray) -> float:
     return float(np.linalg.norm(np.diff(polyline, axis=0), axis=1).sum())
 
 
-def interpolate_polyline_to_ref_density(polyline_to_interp: np.ndarray, ref_polyline: np.ndarray) -> np.ndarray:
+def interpolate_polyline_to_ref_density(
+    polyline_to_interp: NDArray[np.float64], ref_polyline: NDArray[np.float64]
+) -> Any:
     """
     Interpolate a polyline so that its density matches the density of a reference polyline.
 
@@ -46,7 +49,9 @@ def interpolate_polyline_to_ref_density(polyline_to_interp: np.ndarray, ref_poly
     return dense_interp_polyline
 
 
-def traverse_polyline_by_specific_dist(polyline_to_walk: np.ndarray, l2_dist_to_walk: float) -> Tuple[np.ndarray, bool]:
+def traverse_polyline_by_specific_dist(
+    polyline_to_walk: NDArray[np.float64], l2_dist_to_walk: float
+) -> Tuple[NDArray[np.float64], bool]:
     """
     Walk a distance along a polyline, and return the points along which you walked.
 

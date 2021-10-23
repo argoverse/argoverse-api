@@ -6,6 +6,7 @@ from typing import Iterable, List, Sequence, Set, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.typing import NDArray
 from shapely.geometry import LinearRing, LineString, Point
 
 from argoverse.map_representation.lane_segment import LaneSegment
@@ -15,8 +16,8 @@ from .interpolate import interp_arc
 
 
 def swap_left_and_right(
-    condition: np.ndarray, left_centerline: np.ndarray, right_centerline: np.ndarray
-) -> Iterable[np.ndarray]:
+    condition: NDArray[np.float64], left_centerline: NDArray[np.float64], right_centerline: NDArray[np.float64]
+) -> Iterable[NDArray[np.float64]]:
     """
     Swap points in left and right centerline according to condition.
 
@@ -40,8 +41,8 @@ def swap_left_and_right(
 
 
 def centerline_to_polygon(
-    centerline: np.ndarray, width_scaling_factor: float = 1.0, visualize: bool = False
-) -> np.ndarray:
+    centerline: NDArray[np.float64], width_scaling_factor: float = 1.0, visualize: bool = False
+) -> NDArray[np.float64]:
     """
     Convert a lane centerline polyline into a rough polygon of the lane's area.
 
@@ -75,8 +76,8 @@ def centerline_to_polygon(
     y_disp = 3.8 * width_scaling_factor / 2.0 * np.sin(thetas)
 
     displacement = np.hstack([x_disp[:, np.newaxis], y_disp[:, np.newaxis]])
-    right_centerline = centerline + displacement
-    left_centerline = centerline - displacement
+    right_centerline: NDArray[np.float64] = centerline + displacement
+    left_centerline: NDArray[np.float64] = centerline - displacement
 
     # right centerline position depends on sign of dx and dy
     subtract_cond1 = np.logical_and(dx > 0, dy < 0)
@@ -100,7 +101,9 @@ def centerline_to_polygon(
     return convert_lane_boundaries_to_polygon(right_centerline, left_centerline)
 
 
-def convert_lane_boundaries_to_polygon(right_lane_bounds: np.ndarray, left_lane_bounds: np.ndarray) -> np.ndarray:
+def convert_lane_boundaries_to_polygon(
+    right_lane_bounds: NDArray[np.float64], left_lane_bounds: NDArray[np.float64]
+) -> NDArray[np.float64]:
     """
     Take a left and right lane boundary and make a polygon of the lane segment, closing both ends of the segment.
 
@@ -120,11 +123,11 @@ def convert_lane_boundaries_to_polygon(right_lane_bounds: np.ndarray, left_lane_
 
 
 def filter_candidate_centerlines(
-    xy: np.ndarray,
-    candidate_cl: List[np.ndarray],
+    xy: NDArray[np.float64],
+    candidate_cl: List[NDArray[np.float64]],
     stationary_threshold: float = 2.0,
     max_dist_margin: float = 2.0,
-) -> List[np.ndarray]:
+) -> List[NDArray[np.float64]]:
     """Filter candidate centerlines based on the distance travelled along the centerline.
 
     Args:
@@ -197,7 +200,7 @@ def is_overlapping_lane_seq(lane_seq1: Sequence[int], lane_seq2: Sequence[int]) 
 
 
 def get_normal_and_tangential_distance_point(
-    x: float, y: float, centerline: np.ndarray, delta: float = 0.01, last: bool = False
+    x: float, y: float, centerline: NDArray[np.float64], delta: float = 0.01, last: bool = False
 ) -> Tuple[float, float]:
     """Get normal (offset from centerline) and tangential (distance along centerline) for the given point,
     along the given centerline
@@ -240,7 +243,7 @@ def get_normal_and_tangential_distance_point(
     return (tang_dist, -norm_dist)
 
 
-def get_nt_distance(xy: np.ndarray, centerline: np.ndarray, viz: bool = False) -> np.ndarray:
+def get_nt_distance(xy: NDArray[np.float64], centerline: NDArray[np.float64], viz: bool = False) -> NDArray[np.float64]:
     """Get normal (offset from centerline) and tangential (distance along centerline) distances for the given xy trajectory,
     along the given centerline.
 
@@ -278,7 +281,9 @@ def get_nt_distance(xy: np.ndarray, centerline: np.ndarray, viz: bool = False) -
     return nt_distance
 
 
-def get_oracle_from_candidate_centerlines(candidate_centerlines: List[np.ndarray], xy: np.ndarray) -> LineString:
+def get_oracle_from_candidate_centerlines(
+    candidate_centerlines: List[NDArray[np.float64]], xy: NDArray[np.float64]
+) -> LineString:
     """Get oracle centerline from candidate centerlines. Chose based on direction of travel and maximum offset.
     First find the centerlines along which the distance travelled is close to maximum.
     If there are multiple candidates, then chose the one which has minimum max offset
@@ -320,7 +325,9 @@ def get_oracle_from_candidate_centerlines(candidate_centerlines: List[np.ndarray
     return oracle_centerline
 
 
-def get_centerlines_most_aligned_with_trajectory(xy: np.ndarray, candidate_cl: List[np.ndarray]) -> List[np.ndarray]:
+def get_centerlines_most_aligned_with_trajectory(
+    xy: NDArray[np.float64], candidate_cl: List[NDArray[np.float64]]
+) -> List[NDArray[np.float64]]:
     """Get the centerline from candidate_cl along which the trajectory travelled maximum distance
 
     Args:
@@ -371,8 +378,8 @@ def remove_overlapping_lane_seq(lane_seqs: List[List[int]]) -> List[List[int]]:
 
 
 def lane_waypt_to_query_dist(
-    query_xy_city_coords: np.ndarray, nearby_lane_objs: List[LaneSegment]
-) -> Tuple[np.ndarray, np.ndarray, List[np.ndarray]]:
+    query_xy_city_coords: NDArray[np.float64], nearby_lane_objs: List[LaneSegment]
+) -> Tuple[NDArray[np.float64], NDArray[np.float64], List[NDArray[np.float64]]]:
     """
     Compute the distance from a query to the closest waypoint in nearby lanes.
 
@@ -386,7 +393,7 @@ def lane_waypt_to_query_dist(
        dense_centerlines: list of arrays, each representing (N,2) centerline
     """
     per_lane_dists: List[float] = []
-    dense_centerlines: List[np.ndarray] = []
+    dense_centerlines: List[NDArray[np.float64]] = []
     for nn_idx, lane_obj in enumerate(nearby_lane_objs):
         centerline = lane_obj.centerline
         # densely sample more points

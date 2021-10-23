@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Dict, Iterable, Optional, Tuple, cast
 
 import numpy as np
+from numpy.typing import NDArray
 from typing_extensions import Final
 
 from argoverse.sensor_dataset_config import ArgoverseConfig
@@ -38,7 +39,7 @@ ALLOWED_TIMESTAMP_BUFFER_MS = 2  # allow 2 ms of buffer
 LIDAR_SWEEP_INTERVAL_W_BUFFER_MS = LIDAR_SWEEP_INTERVAL_MS + ALLOWED_TIMESTAMP_BUFFER_MS
 
 
-def get_timestamps_from_sensor_folder(sensor_folder_wildcard: str) -> np.ndarray:
+def get_timestamps_from_sensor_folder(sensor_folder_wildcard: str) -> NDArray[np.float64]:
     """Timestamp always lies at end of filename
 
     Args:
@@ -55,7 +56,7 @@ def get_timestamps_from_sensor_folder(sensor_folder_wildcard: str) -> np.ndarray
     return np.array([int(Path(jpg_fpath).stem.split("_")[-1]) for jpg_fpath in path_generator])
 
 
-def find_closest_integer_in_ref_arr(query_int: int, ref_arr: np.ndarray) -> Tuple[int, int]:
+def find_closest_integer_in_ref_arr(query_int: int, ref_arr: NDArray[np.float64]) -> Tuple[int, int]:
     """
     Find the closest integer to any integer inside a reference array, and the corresponding
     difference.
@@ -121,8 +122,8 @@ class SynchronizationDB:
         else:
             log_fpaths = [f"{dataset_dir}/{collect_single_log_id}"]
 
-        self.per_log_camtimestamps_index: Dict[str, Dict[str, np.ndarray]] = {}
-        self.per_log_lidartimestamps_index: Dict[str, np.ndarray] = {}
+        self.per_log_camtimestamps_index: Dict[str, Dict[str, NDArray[np.float64]]] = {}
+        self.per_log_lidartimestamps_index: Dict[str, NDArray[np.float64]] = {}
 
         for log_fpath in log_fpaths:
             log_id = Path(log_fpath).name

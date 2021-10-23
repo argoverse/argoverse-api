@@ -6,6 +6,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.typing import NDArray
 from PIL import Image
 
 from argoverse.data_loading.argoverse_tracking_loader import ArgoverseTrackingLoader
@@ -180,7 +181,7 @@ def draw_point_cloud_trajectory(
 
 def draw_box(
     pyplot_axis: plt.Axes,
-    vertices: np.ndarray,
+    vertices: NDArray[np.float64],
     axes: Optional[Any] = None,
     color: Union[str, Tuple[float, float, float]] = "red",
 ) -> None:
@@ -204,7 +205,7 @@ def draw_box(
         pyplot_axis.plot(*vertices[:, connection], c=color, lw=0.5)
 
 
-def show_image_with_boxes(img: np.ndarray, objects: Iterable[ObjectLabelRecord], calib: Calibration) -> np.ndarray:
+def show_image_with_boxes(img: NDArray[np.float64], objects: Iterable[ObjectLabelRecord], calib: Calibration) -> Any:
     """Show image with 2D bounding boxes."""
     img1 = np.copy(img)
 

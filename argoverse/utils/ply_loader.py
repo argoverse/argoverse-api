@@ -2,15 +2,16 @@
 """Point cloud loading utility functions."""
 
 import os
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import numpy as np
 import pyntcloud
+from numpy.typing import NDArray
 
 _PathLike = Union[str, "os.PathLike[str]"]
 
 
-def load_ply(ply_fpath: _PathLike) -> np.ndarray:
+def load_ply(ply_fpath: _PathLike) -> Any:
     """Load a point cloud file from a filepath.
 
     Args:
@@ -28,7 +29,7 @@ def load_ply(ply_fpath: _PathLike) -> np.ndarray:
     return np.concatenate((x, y, z), axis=1)
 
 
-def load_ply_by_attrib(ply_fpath: _PathLike, attrib_spec: str = "xyzil") -> Optional[np.ndarray]:
+def load_ply_by_attrib(ply_fpath: _PathLike, attrib_spec: str = "xyzil") -> Optional[NDArray[np.float64]]:
     """Load a point cloud file from a filepath.
 
     Args:

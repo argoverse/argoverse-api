@@ -4,6 +4,7 @@
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
+from numpy.typing import NDArray
 
 from argoverse.utils.transform import quat2rotmat
 
@@ -13,7 +14,7 @@ from argoverse.utils.transform import quat2rotmat
 _LabelType = Dict[str, Any]
 
 
-def get_pc_inside_bbox(pc_raw: np.ndarray, bbox: np.ndarray) -> np.ndarray:
+def get_pc_inside_bbox(pc_raw: NDArray[np.float64], bbox: NDArray[np.float64]) -> Any:
     """Get part of raw point cloud inside a given bounding box.
 
     Args:
@@ -77,7 +78,7 @@ def get_pc_inside_bbox(pc_raw: np.ndarray, bbox: np.ndarray) -> np.ndarray:
     return pc_raw[flag[0, :]]
 
 
-def label_to_bbox(label: _LabelType) -> Tuple[np.ndarray, float]:
+def label_to_bbox(label: _LabelType) -> Tuple[NDArray[np.float64], float]:
     """Convert a label into a parameterized bounding box that lives in the ego-vehicle
         coordinate frame.
 
@@ -116,7 +117,9 @@ def label_to_bbox(label: _LabelType) -> Tuple[np.ndarray, float]:
     return transform_bounding_box_3d(bbox, R, t), orientation
 
 
-def transform_bounding_box_3d(bbox: np.ndarray, R: np.ndarray, t: np.ndarray) -> List[np.ndarray]:
+def transform_bounding_box_3d(
+    bbox: NDArray[np.float64], R: NDArray[np.float64], t: NDArray[np.float64]
+) -> List[NDArray[np.float64]]:
     """Transform bounding box with rotation and translation.
 
     Args:
@@ -136,7 +139,7 @@ def transform_bounding_box_3d(bbox: np.ndarray, R: np.ndarray, t: np.ndarray) ->
     return [p0, p1, p2, bbox[3]]
 
 
-def in_between_matrix(x: np.ndarray, v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
+def in_between_matrix(x: NDArray[np.float64], v1: NDArray[np.float64], v2: NDArray[np.float64]) -> Any:
     """Element-by-element check to see if x_ij is between v1_ij and v2_ij, without knowing v1 > v2 order.
 
     Args:

@@ -1,13 +1,16 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 """SE3 class for point cloud rotation and translation."""
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 
 
 class SE3:
     """An SE3 class allows point cloud rotation and translation operations."""
 
-    def __init__(self, rotation: np.ndarray, translation: np.ndarray) -> None:
+    def __init__(self, rotation: NDArray[np.float64], translation: NDArray[np.float64]) -> None:
         """Initialize an SE3 instance with its rotation and translation matrices.
 
         Args:
@@ -23,7 +26,7 @@ class SE3:
         self.transform_matrix[:3, :3] = self.rotation
         self.transform_matrix[:3, 3] = self.translation
 
-    def transform_point_cloud(self, point_cloud: np.ndarray) -> np.ndarray:
+    def transform_point_cloud(self, point_cloud: NDArray[np.float64]) -> Any:
         """Apply the SE(3) transformation to this point cloud.
 
         Args:
@@ -35,7 +38,7 @@ class SE3:
         """
         return point_cloud @ self.rotation.T + self.translation
 
-    def inverse_transform_point_cloud(self, point_cloud: np.ndarray) -> np.ndarray:
+    def inverse_transform_point_cloud(self, point_cloud: NDArray[np.float64]) -> Any:
         """Undo the translation and then the rotation (Inverse SE(3) transformation)."""
         return (point_cloud.copy() - self.translation) @ self.rotation
 
@@ -61,7 +64,7 @@ class SE3:
         Returns:
             chained_se3: new instance of SE3 class
         """
-        chained_transform_matrix = self.transform_matrix @ right_se3.transform_matrix
+        chained_transform_matrix: NDArray[np.float64] = self.transform_matrix @ right_se3.transform_matrix
         chained_se3 = SE3(
             rotation=chained_transform_matrix[:3, :3],
             translation=chained_transform_matrix[:3, 3],

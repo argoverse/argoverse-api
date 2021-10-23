@@ -18,10 +18,11 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import numpy as np
+from numpy.typing import NDArray
 
 
-def colormap(rgb: bool = False) -> np.ndarray:
-    color_list = np.array(
+def colormap(rgb: bool = False) -> NDArray[np.float32]:
+    color_list = NDArray(
         [
             0.000,
             0.447,

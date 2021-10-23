@@ -9,14 +9,16 @@ re-normalize it on the fly.
 """
 
 import logging
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.spatial.transform import Rotation
 
 logger = logging.getLogger(__name__)
 
 
-def yaw_to_quaternion3d(yaw: float) -> np.ndarray:
+def yaw_to_quaternion3d(yaw: float) -> NDArray[np.float64]:
     """Convert a rotation angle in the xy plane (i.e. about the z axis) to a quaternion.
 
     Args:
@@ -29,14 +31,14 @@ def yaw_to_quaternion3d(yaw: float) -> np.ndarray:
     return np.array([qw, qx, qy, qz])
 
 
-def rotmat2quat(R: np.ndarray) -> np.ndarray:
+def rotmat2quat(R: NDArray[np.float64]) -> NDArray[np.float64]:
     """Convert a rotation-matrix to a quaternion in Argo's scalar-first notation (w, x, y, z)."""
     quat_xyzw = Rotation.from_matrix(R).as_quat()
     quat_wxyz = quat_scipy2argo(quat_xyzw)
     return quat_wxyz
 
 
-def quat2rotmat(q: np.ndarray) -> np.ndarray:
+def quat2rotmat(q: NDArray[np.float64]) -> Any:
     """Normalizes a quaternion to unit-length, then converts it into a rotation matrix.
 
     Note that libraries such as Scipy expect a quaternion in scalar-last [x, y, z, w] format,
@@ -61,25 +63,25 @@ def quat2rotmat(q: np.ndarray) -> np.ndarray:
     return Rotation.from_quat(quat_xyzw).as_matrix()
 
 
-def quat_argo2scipy(q: np.ndarray) -> np.ndarray:
+def quat_argo2scipy(q: NDArray[np.float64]) -> NDArray[np.float64]:
     """Re-order Argoverse's scalar-first [w,x,y,z] quaternion order to Scipy's scalar-last [x,y,z,w]"""
     w, x, y, z = q
     q_scipy = np.array([x, y, z, w])
     return q_scipy
 
 
-def quat_scipy2argo(q: np.ndarray) -> np.ndarray:
+def quat_scipy2argo(q: NDArray[np.float64]) -> NDArray[np.float64]:
     """Re-order Scipy's scalar-last [x,y,z,w] quaternion order to Argoverse's scalar-first [w,x,y,z]."""
     x, y, z, w = q
     q_argo = np.array([w, x, y, z])
     return q_argo
 
 
-def quat_argo2scipy_vectorized(q: np.ndarray) -> np.ndarray:
+def quat_argo2scipy_vectorized(q: NDArray[np.float64]) -> Any:
     """Re-order Argoverse's scalar-first [w,x,y,z] quaternion order to Scipy's scalar-last [x,y,z,w]"""
     return q[..., [1, 2, 3, 0]]
 
 
-def quat_scipy2argo_vectorized(q: np.ndarray) -> np.ndarray:
+def quat_scipy2argo_vectorized(q: NDArray[np.float64]) -> Any:
     """Re-order Scipy's scalar-last [x,y,z,w] quaternion order to Argoverse's scalar-first [w,x,y,z]."""
     return q[..., [3, 0, 1, 2]]

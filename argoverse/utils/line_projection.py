@@ -3,14 +3,15 @@
 from typing import List, Sequence, Tuple
 
 import numpy as np
+from numpy.typing import NDArray
 
 from argoverse.utils.interpolate import interp_arc
 from argoverse.utils.polyline_density import interpolate_polyline_to_ref_density
 
 
 def project_to_line_seq(
-    trajectory: np.ndarray, lines: Sequence[np.ndarray], interpolate_more: bool = True
-) -> Tuple[float, np.ndarray]:
+    trajectory: NDArray[np.float64], lines: Sequence[NDArray[np.float64]], interpolate_more: bool = True
+) -> Tuple[float, NDArray[np.float64]]:
     """Project a trajectory onto a line sequence.
 
     Args:
@@ -21,7 +22,7 @@ def project_to_line_seq(
     Returns:
         Projected distance along the centerline, Polyline centerline_trajectory.
     """
-    linestrings: List[np.ndarray] = []
+    linestrings: List[NDArray[np.float64]] = []
     for line in lines:
         if interpolate_more:
             linestrings += [interp_arc(100, line[:, 0], line[:, 1])]
@@ -33,10 +34,10 @@ def project_to_line_seq(
 
 
 def project_to_line(
-    trajectory: np.ndarray,
-    center_polyline: np.ndarray,
+    trajectory: NDArray[np.float64],
+    center_polyline: NDArray[np.float64],
     enforce_same_density: bool = False,
-) -> Tuple[float, np.ndarray]:
+) -> Tuple[float, NDArray[np.float64]]:
     """Project a trajectory onto a polyline.
 
     Args:
@@ -51,7 +52,7 @@ def project_to_line(
     if enforce_same_density:
         center_polyline = interpolate_polyline_to_ref_density(center_polyline, trajectory)
 
-    centerline_trajectory: List[np.ndarray] = []
+    centerline_trajectory: List[NDArray[np.float64]] = []
     for i, pt in enumerate(trajectory):
         closest_idx = np.linalg.norm(center_polyline - pt, axis=1).argmin()
         closest_pt = center_polyline[closest_idx]

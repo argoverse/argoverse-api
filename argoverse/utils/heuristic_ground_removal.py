@@ -3,6 +3,7 @@ import math
 from typing import List
 
 import numpy as np
+from numpy.typing import NDArray
 
 LIDAR_RANGE = 250
 GRID_DIST = 0.4
@@ -11,7 +12,7 @@ HEIGHT_MEAN_THRESHOLD = -1
 NUM_ANGLE_BINS = 2000
 
 
-def filter_ground_pts_polar_grid_mean_var(lidar_pts: np.ndarray) -> np.ndarray:
+def filter_ground_pts_polar_grid_mean_var(lidar_pts: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     We divide the world into polar voxels.
     We aggregate the height statistics of all of the points that fall into each polar voxel.
@@ -25,7 +26,7 @@ def filter_ground_pts_polar_grid_mean_var(lidar_pts: np.ndarray) -> np.ndarray:
         non_ground_lidar_pts: NumPy n-d array of shape (n,3)
     """
     print("Total number of points (before filtering): ", lidar_pts.shape)
-    non_ground_lidar_pts: List[List[List[np.ndarray]]] = []
+    non_ground_lidar_pts: List[List[List[NDArray[np.float64]]]] = []
 
     xyz_mean = np.mean(lidar_pts, axis=0)
 
@@ -38,7 +39,9 @@ def filter_ground_pts_polar_grid_mean_var(lidar_pts: np.ndarray) -> np.ndarray:
     ang_voxel_mean = np.zeros((NUM_ANGLE_BINS, num_radial_bins))
     ang_voxel_variance = np.zeros((NUM_ANGLE_BINS, num_radial_bins))
     num_elements_per_bin = np.zeros((NUM_ANGLE_BINS, num_radial_bins))
-    pts_per_bin: List[List[List[np.ndarray]]] = [[[] for _ in range(num_radial_bins)] for _ in range(NUM_ANGLE_BINS)]
+    pts_per_bin: List[List[List[NDArray[np.float64]]]] = [
+        [[] for _ in range(num_radial_bins)] for _ in range(NUM_ANGLE_BINS)
+    ]
 
     for i in range(lidar_pts.shape[0]):
         x = lidar_pts[i, 0]

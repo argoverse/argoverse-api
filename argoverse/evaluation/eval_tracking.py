@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional, TextIO, Union
 
 import motmetrics as mm
 import numpy as np
+from numpy.typing import NDArray
 from shapely.geometry.polygon import Polygon
 
 from argoverse.evaluation.detection.utils import wrap_angle
@@ -31,7 +32,9 @@ MOTA: Bernardin et al. https://link.springer.com/article/10.1155/2008/246309
 """
 
 
-def in_distance_range_pose(ego_center: np.ndarray, pose: np.ndarray, d_min: float, d_max: float) -> bool:
+def in_distance_range_pose(
+    ego_center: NDArray[np.float64], pose: NDArray[np.float64], d_min: float, d_max: float
+) -> bool:
     """Determine whether a pose in the ego-vehicle frame falls within a specified distance range
         of the egovehicle's origin.
 
@@ -55,7 +58,9 @@ def iou_polygon(poly1: Polygon, poly2: Polygon) -> float:
     return float(1 - inter / union)
 
 
-def get_distance_iou_3d(x1: Dict[str, np.ndarray], x2: Dict[str, np.ndarray], name: str = "bbox") -> float:
+def get_distance_iou_3d(
+    x1: Dict[str, NDArray[np.float64]], x2: Dict[str, NDArray[np.float64]], name: str = "bbox"
+) -> float:
     """
     Note this is not traditional 2d or 3d iou, but rather we align two cuboids
     along their x-axes, and compare 3d volume differences.
@@ -78,7 +83,7 @@ def get_distance_iou_3d(x1: Dict[str, np.ndarray], x2: Dict[str, np.ndarray], na
     return float(score)
 
 
-def get_distance(x1: Dict[str, np.ndarray], x2: Dict[str, np.ndarray], name: str) -> float:
+def get_distance(x1: Dict[str, NDArray[np.float64]], x2: Dict[str, NDArray[np.float64]], name: str) -> float:
     """Get the distance between two poses, returns nan if distance is larger than detection threshold.
 
     Args:

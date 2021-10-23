@@ -7,6 +7,7 @@ import os
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
+from numpy.typing import NDArray
 
 from argoverse.utils.calibration import CameraConfig, proj_cam_to_uv
 from argoverse.utils.cv2_plotting_utils import add_text_cv2, draw_clipped_line_segment
@@ -45,8 +46,8 @@ class ObjectLabelRecord:
 
     def __init__(
         self,
-        quaternion: np.ndarray,
-        translation: np.ndarray,
+        quaternion: NDArray[np.float64],
+        translation: NDArray[np.float64],
         length: float,
         width: float,
         height: float,
@@ -77,7 +78,7 @@ class ObjectLabelRecord:
         self.track_id = track_id
         self.score = score
 
-    def as_2d_bbox(self) -> np.ndarray:
+    def as_2d_bbox(self) -> Any:
         """Convert the object cuboid to a 2D bounding box, with vertices provided in the egovehicle's reference frame.
 
         Length is x, width is y, and z is height
@@ -102,7 +103,7 @@ class ObjectLabelRecord:
         bbox_in_egovehicle_frame = egovehicle_SE3_object.transform_point_cloud(bbox_object_frame)
         return bbox_in_egovehicle_frame
 
-    def as_3d_bbox(self) -> np.ndarray:
+    def as_3d_bbox(self) -> Any:
         r"""Calculate the 8 bounding box corners (returned as points inside the egovehicle's frame).
 
         Returns:
@@ -126,9 +127,9 @@ class ObjectLabelRecord:
         The last four are the ones facing backwards.
         """
         # 3D bounding box corners. (Convention: x points forward, y to the left, z up.)
-        x_corners = self.length / 2 * np.array([1, 1, 1, 1, -1, -1, -1, -1])
-        y_corners = self.width / 2 * np.array([1, -1, -1, 1, 1, -1, -1, 1])
-        z_corners = self.height / 2 * np.array([1, 1, -1, -1, 1, 1, -1, -1])
+        x_corners: NDArray[np.float64] = self.length / 2 * np.array([1, 1, 1, 1, -1, -1, -1, -1])
+        y_corners: NDArray[np.float64] = self.width / 2 * np.array([1, -1, -1, 1, 1, -1, -1, 1])
+        z_corners: NDArray[np.float64] = self.height / 2 * np.array([1, 1, -1, -1, 1, 1, -1, -1])
         corners_object_frame = np.vstack((x_corners, y_corners, z_corners)).T
 
         egovehicle_SE3_object = SE3(rotation=quat2rotmat(self.quaternion), translation=self.translation)
@@ -137,9 +138,13 @@ class ObjectLabelRecord:
 
     def render_clip_frustum_cv2(
         self,
-        img: np.ndarray,
-        corners: np.ndarray,
-        planes: List[Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]],
+        img: NDArray[np.float64],
+        corners: NDArray[np.float64],
+        planes: List[
+            Tuple[
+                NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]
+            ]
+        ],
         camera_config: CameraConfig,
         colors: Tuple[Tuple[int, int, int], Tuple[int, int, int], Tuple[int, int, int]] = (
             BLUE_RGB,
@@ -147,7 +152,7 @@ class ObjectLabelRecord:
             GREEN_RGB,
         ),
         linewidth: int = 2,
-    ) -> np.ndarray:
+    ) -> NDArray[np.float64]:
         r"""We bring the 3D points into each camera, and do the clipping there.
 
         Renders box using OpenCV2. Edge coloring and vertex ordering is roughly based on
@@ -182,7 +187,7 @@ class ObjectLabelRecord:
             img: Numpy array of shape (M,N,3), representing updated image
         """
 
-        def draw_rect(selected_corners: np.ndarray, color: Tuple[int, int, int]) -> None:
+        def draw_rect(selected_corners: NDArray[np.float64], color: Tuple[int, int, int]) -> None:
             prev = selected_corners[-1]
             for corner in selected_corners:
                 draw_clipped_line_segment(
@@ -241,13 +246,13 @@ class ObjectLabelRecord:
         return img
 
 
-def uv_coord_is_valid(uv: np.ndarray, img: np.ndarray) -> bool:
+def uv_coord_is_valid(uv: NDArray[np.float64], img: NDArray[np.float64]) -> bool:
     """Check if 2d-point lies within 3-channel color image boundaries"""
     h, w, _ = img.shape
     return bool(uv[0] >= 0 and uv[1] >= 0 and uv[0] < w and uv[1] < h)
 
 
-def label_is_closeby(box_point: np.ndarray) -> bool:
+def label_is_closeby(box_point: NDArray[np.float64]) -> bool:
     """Check if 3d cuboid pt (in egovehicle frame) is within range from
     egovehicle to prevent plot overcrowding.
     """
@@ -255,12 +260,12 @@ def label_is_closeby(box_point: np.ndarray) -> bool:
 
 
 def draw_alpha_rectangle(
-    img: np.ndarray,
+    img: NDArray[np.float64],
     top_left: Tuple[int, int],
     bottom_right: Tuple[int, int],
     color_rgb: Tuple[int, int, int],
     alpha: float,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Alpha blend colored rectangle into image. Corner coords given as (x,y) tuples"""
     img_h, img_w, _ = img.shape
     mask = np.zeros((img_h, img_w), dtype=np.uint8)
@@ -268,7 +273,7 @@ def draw_alpha_rectangle(
     return vis_mask(img, mask, np.array(list(color_rgb[::-1])), alpha)
 
 
-def form_obj_label_from_json(label: Dict[str, Any]) -> Tuple[np.ndarray, str]:
+def form_obj_label_from_json(label: Dict[str, Any]) -> Tuple[NDArray[np.float64], str]:
     """Construct object from loaded json.
 
      The dictionary loaded from saved json file is expected to have the

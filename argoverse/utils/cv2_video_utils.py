@@ -4,6 +4,7 @@ from typing import Optional
 
 import cv2
 import numpy as np
+from numpy.typing import NDArray
 
 """
 Python-based utilities to avoid blowing up the disk with images, as FFMPEG requires.
@@ -42,7 +43,7 @@ class VideoWriter:
             isColor=True,
         )
 
-    def add_frame(self, rgb_frame: np.ndarray) -> None:
+    def add_frame(self, rgb_frame: NDArray[np.float64]) -> None:
         """Append a frame of shape (h,w,3) to the end of the video file."""
         h, w, _ = rgb_frame.shape
         if self.writer is None:

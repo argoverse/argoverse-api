@@ -2,11 +2,12 @@
 """Mesh grid utility functions."""
 
 import numpy as np
+from numpy.typing import NDArray
 
 
 def get_mesh_grid_as_point_cloud(
     min_x: int, max_x: int, min_y: int, max_y: int, downsample_factor: float = 1.0
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Sample regular grid and return the (x, y) coordinates.
 
     Args:

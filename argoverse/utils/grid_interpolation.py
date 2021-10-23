@@ -1,15 +1,18 @@
 # <Copyright 2019, Argo AI, LLC. Released under the MIT license.>
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 from scipy.interpolate import RegularGridInterpolator
 
 
 def interp_square_grid(
-    grid_data: np.ndarray,
+    grid_data: NDArray[np.float64],
     in_dim: int = 200,
     out_dim: int = 30,
     interp_type: str = "linear",
-) -> np.ndarray:
+) -> Any:
     """
     Interpolate a square grid
     Thousands of times faster than scipy.interpolate.interp2d.

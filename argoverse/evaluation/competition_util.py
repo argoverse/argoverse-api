@@ -6,10 +6,11 @@ import os
 import shutil
 import tempfile
 import uuid
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import h5py
 import numpy as np
+from numpy.typing import NDArray
 from scipy.spatial import ConvexHull
 from shapely.geometry import Polygon
 from sklearn.cluster import DBSCAN
@@ -19,7 +20,7 @@ from argoverse.data_loading.object_label_record import ObjectLabelRecord
 from argoverse.utils.se3 import SE3
 from argoverse.utils.transform import yaw_to_quaternion3d
 
-TYPE_LIST = Union[List[np.ndarray], np.ndarray]
+TYPE_LIST = Union[List[NDArray[np.float64]], NDArray[np.float64]]
 
 
 def generate_forecasting_h5(
@@ -47,7 +48,7 @@ def generate_forecasting_h5(
         os.makedirs(output_path)
     hf = h5py.File(os.path.join(output_path, filename + ".h5"), "w")
     future_frames = 30
-    d_all: List[np.ndarray] = []
+    d_all: List[NDArray[np.float64]] = []
     counter = 0
     for key, value in data.items():
         print("\r" + str(counter + 1) + "/" + str(len(data)), end="")
@@ -121,7 +122,7 @@ def generate_tracking_zip(input_path: str, output_path: str, filename: str = "ar
     shutil.rmtree(dirpath)
 
 
-def get_polygon_from_points(points: np.ndarray) -> Polygon:
+def get_polygon_from_points(points: NDArray[np.float64]) -> Polygon:
     """
     function to generate (convex hull) shapely polygon from set of points
 
@@ -145,7 +146,7 @@ def get_polygon_from_points(points: np.ndarray) -> Polygon:
     return Polygon(poly)
 
 
-def get_rotated_bbox_from_points(points: np.ndarray) -> Polygon:
+def get_rotated_bbox_from_points(points: NDArray[np.float64]) -> Polygon:
     """
     function to generate mininum_rotated_rectangle from list of point coordinate
 
@@ -229,7 +230,9 @@ def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") 
     )
 
 
-def get_objects(clustering: DBSCAN, pts: np.ndarray, category: str = "VEHICLE") -> List[Tuple[np.ndarray, uuid.UUID]]:
+def get_objects(
+    clustering: DBSCAN, pts: NDArray[np.float64], category: str = "VEHICLE"
+) -> List[Tuple[NDArray[np.float64], uuid.UUID]]:
 
     core_samples_mask = np.zeros_like(clustering.labels_, dtype=bool)
     core_samples_mask[clustering.core_sample_indices_] = True
@@ -300,7 +303,7 @@ def save_label(argoverse_data: ArgoverseTrackingLoader, labels: List[ObjectLabel
         json.dump(labels_json_data, json_file)
 
 
-def transform_xyz(xyz: np.ndarray, pose1: SE3, pose2: SE3) -> np.ndarray:
+def transform_xyz(xyz: NDArray[np.float64], pose1: SE3, pose2: SE3) -> Any:
     # transform xyz from pose1 to pose2
 
     # convert to city coordinate

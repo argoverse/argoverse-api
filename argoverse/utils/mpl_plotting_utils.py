@@ -8,12 +8,13 @@ import numpy as np
 from descartes.patch import PolygonPatch
 from matplotlib.animation import FuncAnimation
 from matplotlib.lines import Line2D
+from numpy.typing import NDArray
 from shapely.geometry import LineString, Polygon
 
 
 def draw_polygon_mpl(
     ax: plt.Axes,
-    polygon: np.ndarray,
+    polygon: NDArray[np.float64],
     color: Union[Tuple[float, float, float], str],
     linewidth: Optional[float] = None,
 ) -> None:
@@ -51,7 +52,7 @@ def draw_polygonpatch_matplotlib(points: Any, color: Union[Tuple[float, float, f
 
 def draw_lane_polygons(
     ax: plt.Axes,
-    lane_polygons: np.ndarray,
+    lane_polygons: NDArray[np.float64],
     color: Union[Tuple[float, float, float], str] = "y",
 ) -> None:
     """Draw a lane using polygons.
@@ -67,7 +68,7 @@ def draw_lane_polygons(
 
 def plot_bbox_2D(
     ax: plt.Axes,
-    pts: np.ndarray,
+    pts: NDArray[np.float64],
     color: Union[Tuple[float, float, float], str],
     linestyle: str = "-",
 ) -> None:
@@ -93,7 +94,7 @@ def plot_bbox_2D(
     ax.plot(pts[np.array([0, 2]), 0], pts[np.array([0, 2]), 1], c=color, linestyle=linestyle)
 
 
-def animate_polyline(polyline: np.ndarray, axes_margin: int = 5, show_plot: bool = True) -> None:
+def animate_polyline(polyline: NDArray[np.float64], axes_margin: int = 5, show_plot: bool = True) -> None:
     """Draw and animate a polyline on a plot.
 
     Args:
@@ -128,7 +129,7 @@ def animate_polyline(polyline: np.ndarray, axes_margin: int = 5, show_plot: bool
 
 
 def plot_lane_segment_patch(
-    polygon_pts: np.ndarray,
+    polygon_pts: NDArray[np.float64],
     ax: plt.Axes,
     color: Union[Tuple[float, float, float], str] = "y",
     alpha: float = 0.3,

@@ -10,6 +10,7 @@ import cv2
 import imageio
 import numpy as np
 from colour import Color
+from numpy.typing import NDArray
 
 from argoverse.data_loading.synchronization_database import SynchronizationDB
 from argoverse.map_representation.map_api import ArgoverseMap
@@ -30,7 +31,7 @@ NUM_RANGE_BINS = 50
 
 def draw_ground_pts_in_image(
     sdb: SynchronizationDB,
-    lidar_points: np.ndarray,
+    lidar_points: NDArray[np.float64],
     city_SE3_egovehicle: SE3,
     dataset_map: ArgoverseMap,
     log_id: str,
@@ -41,7 +42,7 @@ def draw_ground_pts_in_image(
     plot_ground: bool = True,
     motion_compensate: bool = False,
     camera: Optional[str] = None,
-) -> Union[None, np.ndarray]:
+) -> Union[None, NDArray[np.float64]]:
     """Write an image to disk with rendered ground points for every camera.
 
     Args:

@@ -18,6 +18,7 @@ Mayavi Examples
 from typing import Any, Iterable, List, Optional, Tuple, Union, cast
 
 import numpy as np
+from numpy.typing import NDArray
 
 from argoverse.utils import mayavi_wrapper
 from argoverse.utils.frustum_clipping import clip_segment_v3_plane_n
@@ -41,10 +42,10 @@ __all__ = [
 Figure = Any
 
 #: A 3D Point
-Point = np.ndarray
+Point = NDArray[np.float64]
 
 #: An array of 3D points
-PointCloud = np.ndarray
+PointCloud = NDArray[np.float64]
 
 #: Any numeric type
 Number = Union[int, float]
@@ -55,7 +56,7 @@ Color = Tuple[float, float, float]
 
 def plot_bbox_3d_mayavi(
     fig: Figure,
-    corners: np.ndarray,
+    corners: NDArray[np.float64],
     colors: Tuple[Color, Color, Color] = ((0, 0, 1), (1, 0, 0), (0, 1, 0)),
     line_width: Number = 2,
     draw_text: Optional[str] = None,
@@ -79,7 +80,7 @@ def plot_bbox_3d_mayavi(
         Updated Mayavi figure
     """
 
-    def draw_rect(fig: Figure, selected_corners: np.ndarray, color: Color) -> None:
+    def draw_rect(fig: Figure, selected_corners: NDArray[np.float64], color: Color) -> None:
         prev = selected_corners[-1]
         for corner in selected_corners:
             fig = draw_mayavi_line_segment(fig, [prev, corner], color, line_width)
@@ -115,9 +116,9 @@ def plot_bbox_3d_mayavi(
 
 
 def plot_points_3D_mayavi(
-    points: np.ndarray,
+    points: NDArray[np.float64],
     fig: Figure,
-    per_pt_color_strengths: np.ndarray = None,
+    per_pt_color_strengths: NDArray[np.float64] = None,
     fixed_color: Optional[Color] = (1, 0, 0),
     colormap: str = "spectral",
 ) -> Figure:
@@ -158,8 +159,8 @@ def plot_points_3D_mayavi(
 
 def plot_3d_clipped_bbox_mayavi(
     fig: Figure,
-    planes: np.ndarray,
-    uv_cam: np.ndarray,
+    planes: NDArray[np.float64],
+    uv_cam: NDArray[np.float64],
     colors: Tuple[Color, Color, Color] = ((0, 0, 1), (1, 0, 0), (0, 1, 0)),
 ) -> Figure:
     """
@@ -173,7 +174,7 @@ def plot_3d_clipped_bbox_mayavi(
        Updated Mayavi figure
     """
 
-    def draw_rect(fig: Figure, selected_corners: np.ndarray, color: Color) -> None:
+    def draw_rect(fig: Figure, selected_corners: NDArray[np.float64], color: Color) -> None:
         prev = selected_corners[-1]
         for corner in selected_corners:
             clip_prev, clip_corner = clip_segment_v3_plane_n(prev, corner, planes)
@@ -254,7 +255,7 @@ def draw_coordinate_frame_at_origin(fig: Figure) -> Figure:
 
 
 def draw_lidar(
-    point_cloud: np.ndarray,
+    point_cloud: NDArray[np.float64],
     colormap: str = "spectral",
     fig: Optional[Figure] = None,
     bgcolor: Color = (0, 0, 0),
@@ -306,7 +307,7 @@ def draw_lidar(
     return fig
 
 
-def mayavi_compare_point_clouds(point_cloud_list: Iterable[np.ndarray]) -> None:
+def mayavi_compare_point_clouds(point_cloud_list: Iterable[NDArray[np.float64]]) -> None:
     """
     Useful for visualizing the segmentation of a scene has
     separate objects, each colored differently.
@@ -331,7 +332,7 @@ def mayavi_compare_point_clouds(point_cloud_list: Iterable[np.ndarray]) -> None:
 
 def draw_mayavi_line_segment(
     fig: Figure,
-    points: Iterable[np.ndarray],
+    points: Iterable[NDArray[np.float64]],
     color: Color = (1, 0, 0),
     line_width: Optional[Number] = 1,
     tube_radius: Optional[Number] = None,

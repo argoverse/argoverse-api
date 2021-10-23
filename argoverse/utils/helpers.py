@@ -3,9 +3,10 @@
 from typing import Optional, Sequence
 
 import numpy as np
+from numpy.typing import NDArray
 
 
-def assert_np_array_shape(array: np.ndarray, target_shape: Sequence[Optional[int]]) -> None:
+def assert_np_array_shape(array: NDArray[np.float64], target_shape: Sequence[Optional[int]]) -> None:
     """Check for shape correctness.
 
     Args:

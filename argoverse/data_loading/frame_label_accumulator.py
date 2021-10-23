@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
+from numpy.typing import NDArray
 
 from argoverse.data_loading.frame_record import FrameRecord
 from argoverse.data_loading.object_label_record import ObjectLabelRecord
@@ -64,11 +65,11 @@ class PerFrameLabelAccumulator:
 
         # coordinate system is the map world frame
 
-        self.per_city_traj_dict: Dict[str, List[Tuple[np.ndarray, str]]] = {
+        self.per_city_traj_dict: Dict[str, List[Tuple[NDArray[np.float64], str]]] = {
             "MIA": [],
             "PIT": [],
         }  # all the trajectories for these 2 cities
-        self.log_egopose_dict: Dict[str, Dict[int, Dict[str, np.ndarray]]] = {}
+        self.log_egopose_dict: Dict[str, Dict[int, Dict[str, NDArray[np.float64]]]] = {}
         self.log_timestamp_dict: Dict[str, Dict[int, List[FrameRecord]]] = {}
         self.sdb = SynchronizationDB(self.dataset_dir)
 
@@ -146,7 +147,7 @@ class PerFrameLabelAccumulator:
         else:
             return None
 
-    def place_trajectory_in_city_frame(self, traj_label: TrajectoryLabel, log_id: str) -> np.ndarray:
+    def place_trajectory_in_city_frame(self, traj_label: TrajectoryLabel, log_id: str) -> NDArray[np.float64]:
         """Place trajectory in the city frame
         Args:
             traj_label (TrajectoryLabel): instance of the TrajectoryLabel class.
@@ -218,8 +219,8 @@ class PerFrameLabelAccumulator:
         lidar_timestamp_ns: int,
         dataset_dir: str,
         log_id: str,
-        bbox_ego_frame: np.ndarray,
-    ) -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
+        bbox_ego_frame: NDArray[np.float64],
+    ) -> Tuple[NDArray[np.float64], Dict[str, NDArray[np.float64]]]:
         """Convert bounding box to city frame.
         Args:
             lidar_timestamp_ns (int): Lidar timestamp.
