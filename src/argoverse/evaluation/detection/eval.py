@@ -1,4 +1,4 @@
-# <Copyright 2020, Argo AI, LLC. Released under the MIT license.>
+# <Copyright 2021, Argo AI, LLC. Released under the MIT license.>
 """Detection evaluation for the Argoverse detection leaderboard.
 
 Evaluation:
@@ -61,6 +61,7 @@ Results:
 import logging
 import multiprocessing as mp
 from collections import defaultdict
+from pathlib import Path
 from typing import DefaultDict, Dict, List
 
 import numpy as np
@@ -73,7 +74,7 @@ from argoverse.evaluation.detection.constants import (N_TP_ERRORS,
                                                       SIGNIFICANT_DIGITS,
                                                       STATISTIC_NAMES)
 from argoverse.evaluation.detection.utils import (DetectionCfg, accumulate,
-                                                  calc_ap)
+                                                  calc_ap, plot)
 
 logger = logging.getLogger(__name__)
 
@@ -158,8 +159,9 @@ def summarize(
     recalls_interp = np.linspace(0, 1, cfg.n_rec_samples)
     num_ths = len(cfg.affinity_threshs)
 
-    # if not Path(figs_rootdir).is_dir():
-    #     Path(figs_rootdir).mkdir(parents=True, exist_ok=True)
+    figs_rootdir = "figs"
+    if not Path(figs_rootdir).is_dir():
+        Path(figs_rootdir).mkdir(parents=True, exist_ok=True)
 
     for cls_name, cls_stats in data.groupby("label_class"):
         cls_stats = cls_stats.sort_values(by="score", ascending=False).reset_index(
@@ -171,8 +173,8 @@ def summarize(
             ap_th, precisions_interp = calc_ap(tps, recalls_interp, ninst)
             summary[cls_name] += [ap_th]
 
-            # if cfg.save_figs:
-            #     plot(recalls_interp, precisions_interp, cls_name, figs_rootdir)
+            if cfg.save_figs:
+                plot(recalls_interp, precisions_interp, cls_name, figs_rootdir)
 
         # AP Metric.
         ap = np.array(summary[cls_name][:num_ths]).mean()

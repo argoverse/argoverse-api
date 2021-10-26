@@ -497,3 +497,26 @@ def filter_instances(cuboids: DataFrame, cfg: DetectionCfg) -> DataFrame:
         mask = norm < cfg.max_dt_range
         outputs.append(classes[mask])
     return pd.concat(outputs)
+
+
+def plot(
+    rec_interp: np.ndarray, prec_interp: np.ndarray, cls_name: str, figs_fpath: Path
+) -> Path:
+    """Plot and save the precision recall curve.
+    Args:
+        rec_interp: Interpolated recall data of shape (N,).
+        prec_interp: Interpolated precision data of shape (N,).
+        cls_name: Class name.
+        figs_fpath: Path to the folder which will contain the output figures.
+    Returns:
+        dst_fpath: Plot file path.
+    """
+    plt.plot(rec_interp, prec_interp)
+    plt.title("PR Curve")
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
+
+    dst_fpath = Path(f"{figs_fpath}/{cls_name}.png")
+    plt.savefig(dst_fpath)
+    plt.close()
+    return dst_fpath

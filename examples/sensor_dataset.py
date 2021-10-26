@@ -24,7 +24,7 @@ def main(dirname: Path) -> None:
     Args:
         dirname (Path): Directory name.
     """
-    
+
     # Initialize sensor dataset.
     dataset = SensorDataset(dirname)
 
