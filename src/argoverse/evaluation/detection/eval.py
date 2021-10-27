@@ -159,7 +159,7 @@ def summarize(
     recalls_interp = np.linspace(0, 1, cfg.n_rec_samples)
     num_ths = len(cfg.affinity_threshs)
 
-    figs_rootdir = "figs"
+    figs_rootdir = Path("figs")
     if not Path(figs_rootdir).is_dir():
         Path(figs_rootdir).mkdir(parents=True, exist_ok=True)
 
@@ -174,7 +174,12 @@ def summarize(
             summary[cls_name] += [ap_th]
 
             if cfg.save_figs:
-                plot(recalls_interp, precisions_interp, cls_name, figs_rootdir)
+                plot(
+                    recalls_interp,
+                    precisions_interp,
+                    f"{cls_name}_{thresh}",
+                    figs_rootdir,
+                )
 
         # AP Metric.
         ap = np.array(summary[cls_name][:num_ths]).mean()
