@@ -376,8 +376,8 @@ def determine_valid_cam_coords(uv: np.ndarray, uv_cam: np.ndarray, camera_config
     Returns:
        Numpy array of shape (N,) with dtype bool
     """
-    x_valid = np.logical_and(0 <= uv[:, 0], uv[:, 0] < camera_config.img_width)
-    y_valid = np.logical_and(0 <= uv[:, 1], uv[:, 1] < camera_config.img_height)
+    x_valid = np.logical_and(0 <= uv[:, 0], uv[:, 0] < camera_config.img_width - 1)
+    y_valid = np.logical_and(0 <= uv[:, 1], uv[:, 1] < camera_config.img_height - 1)
     z_valid = uv_cam[2, :] > 0
     valid_pts_bool = np.logical_and(np.logical_and(x_valid, y_valid), z_valid)
     return valid_pts_bool

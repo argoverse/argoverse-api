@@ -54,7 +54,7 @@ def has_pts_in_infty_norm_radius(
 	return dists.min() < window_sz
 
 
-def test_has_pts_in_infty_norm_radius1():
+def test_has_pts_in_infty_norm_radius1() -> None:
 	""" No points within radius"""
 	pts = np.array(
 		[
@@ -66,7 +66,7 @@ def test_has_pts_in_infty_norm_radius1():
 	assert within == False
 
 
-def test_has_pts_in_infty_norm_radius2():
+def test_has_pts_in_infty_norm_radius2() -> None:
 	""" 1 point within radius"""
 	pts = np.array(
 		[
@@ -78,7 +78,7 @@ def test_has_pts_in_infty_norm_radius2():
 	assert within == True
 
 
-def test_has_pts_in_infty_norm_radius3():
+def test_has_pts_in_infty_norm_radius3() -> None:
 	""" All pts within radius"""
 	pts = np.array(
 		[
@@ -90,7 +90,7 @@ def test_has_pts_in_infty_norm_radius3():
 	assert within == True
 
 
-def test_has_pts_in_infty_norm_radius4():
+def test_has_pts_in_infty_norm_radius4() -> None:
 	""" All pts within radius"""
 	pts = np.array(
 		[

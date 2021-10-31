@@ -155,6 +155,9 @@ class LaneMarkType(str, Enum):
 class PedestrianCrossing:
     """Represents a pedestrian crossing (i.e. crosswalk) as two edges along its principal axis.
 
+    Both lines should be pointing in nominally the same direction and a pedestrian is expected to
+    move either roughly parallel to both lines or anti-parallel to both lines.
+
     Args:
         edge1: 3d polyline representing one edge of the crosswalk, with 2 waypoints.
         edge2: 3d polyline representing the other edge of the crosswalk, with 2 waypoints.
