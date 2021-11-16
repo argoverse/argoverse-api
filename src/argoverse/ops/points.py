@@ -1,5 +1,4 @@
 import numpy as np
-
 from argoverse.typing.numpy import NDArray
 
 

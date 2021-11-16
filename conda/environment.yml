@@ -3,5 +3,3 @@ channels:
   - conda-forge
 dependencies:
   - pandas
-  - pip:
-    - polars
