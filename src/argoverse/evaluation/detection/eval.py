@@ -65,15 +65,12 @@ from typing import DefaultDict, Dict, List
 
 import numpy as np
 import pandas as pd
-import polars as pl
-from pandas import DataFrame
-from polars.lazy import col
-
 from argoverse.evaluation.detection.constants import (N_TP_ERRORS,
                                                       SIGNIFICANT_DIGITS,
                                                       STATISTIC_NAMES)
 from argoverse.evaluation.detection.utils import (DetectionCfg, accumulate,
                                                   calc_ap)
+from pandas import DataFrame
 
 logger = logging.getLogger(__name__)
 
