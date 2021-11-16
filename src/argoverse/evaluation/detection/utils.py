@@ -208,11 +208,10 @@ def assign(dts: DataFrame, gts: DataFrame, cfg: DetectionCfg) -> DataFrame:
 
     aff_dtype = {str(x): bool for x in cfg.affinity_threshs}
     metrics = metrics.astype(aff_dtype)
-    metrics.iloc[:, nthreshs : nthreshs + ncols] = np.nan
-    metrics["score"] = dts["score"]
 
     # Set the true positive metrics to np.nan since error is undefined on false positives.
-    # metrics[:, n_threshs : n_threshs + N_TP_ERRORS] = np.nan
+    metrics.iloc[:, nthreshs : nthreshs + ncols] = np.nan
+    metrics["score"] = dts["score"]
     if gts.shape[0] == 0:
         return metrics
 
@@ -305,7 +304,7 @@ def compute_affinity_matrix(
         sims: Affinity scores between detections and ground truth annotations (N, M).
     """
     if metric == AffFnType.CENTER:
-        cols = ["x", "y", "z"]
+        cols = ["x", "y"]
         dt_centers = dts[cols]
         gt_centers = gts[cols]
         sims = -cdist(dt_centers, gt_centers)
@@ -352,7 +351,7 @@ def dist_fn(dts: DataFrame, gts: DataFrame, metric: DistFnType) -> np.ndarray:
         Distance between the detections and ground truth, using the provided metric (N,).
     """
     if metric == DistFnType.TRANSLATION:
-        cols = ["x", "y", "z"]
+        cols = ["x", "y"]
 
         dt_centers = dts[cols].reset_index(drop=True)
         gt_centers = gts[cols].reset_index(drop=True)
@@ -424,30 +423,6 @@ def wrap_angle(angles: np.ndarray, period: float = np.pi) -> np.ndarray:
     return angles
 
 
-def plot(
-    rec_interp: np.ndarray, prec_interp: np.ndarray, cls_name: str, figs_fpath: Path
-) -> Path:
-    """Plot and save the precision recall curve.
-
-    Args:
-        rec_interp: Interpolated recall data of shape (N,).
-        prec_interp: Interpolated precision data of shape (N,).
-        cls_name: Class name.
-        figs_fpath: Path to the folder which will contain the output figures.
-    Returns:
-        dst_fpath: Plot file path.
-    """
-    plt.plot(rec_interp, prec_interp)
-    plt.title("PR Curve")
-    plt.xlabel("Recall")
-    plt.ylabel("Precision")
-
-    dst_fpath = Path(f"{figs_fpath}/{cls_name}.png")
-    plt.savefig(dst_fpath)
-    plt.close()
-    return dst_fpath
-
-
 # def filter_objs_to_roi(
 #     cuboids: DataFrame, poses: DataFrame, avm: ArgoverseMap
 # ) -> DataFrame:
@@ -496,3 +471,26 @@ def filter_instances(cuboids: DataFrame, cfg: DetectionCfg) -> DataFrame:
         mask = norm < cfg.max_dt_range
         outputs.append(classes[mask])
     return pd.concat(outputs)
+
+
+def plot(
+    rec_interp: np.ndarray, prec_interp: np.ndarray, cls_name: str, figs_fpath: Path
+) -> Path:
+    """Plot and save the precision recall curve.
+    Args:
+        rec_interp: Interpolated recall data of shape (N,).
+        prec_interp: Interpolated precision data of shape (N,).
+        cls_name: Class name.
+        figs_fpath: Path to the folder which will contain the output figures.
+    Returns:
+        dst_fpath: Plot file path.
+    """
+    plt.plot(rec_interp, prec_interp)
+    plt.title("Precision / Recall (PR) Curve")
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
+
+    dst_fpath = Path(f"{figs_fpath}/{cls_name.lower()}.jpg")
+    plt.savefig(dst_fpath, dpi=200, bbox_inches="tight")
+    plt.close()
+    return dst_fpath
