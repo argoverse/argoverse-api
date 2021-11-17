@@ -15,6 +15,7 @@ import pandas as pd
 import pytest
 from scipy.spatial.transform import Rotation as R
 
+from argoverse.evaluation.detection.eval import evaluate
 from argoverse.evaluation.detection.utils import (
     AffFnType,
     DetectionCfg,
@@ -36,52 +37,32 @@ logging.getLogger("matplotlib.font_manager").disabled = True
 
 
 @pytest.fixture  # type: ignore
-def evaluator_identity() -> DetectionCfg:
+def metrics_identity() -> pd.DataFrame:
     """Define an evaluator that compares a set of results to itself."""
-    detection_cfg = DetectionCfg(dt_classes=("VEHICLE",), eval_only_roi_instances=False)
-    return detection_cfg
+    detection_cfg = DetectionCfg(dt_classes=("REGULAR_VEHICLE",), eval_only_roi_instances=False)
+
+    dts: pd.DataFrame = pd.read_feather("data/detections_identity.feather")
+    metrics = evaluate(dts, dts, None, detection_cfg)
+    return metrics
 
 
-# @pytest.fixture  # type: ignore
-# def evaluator_assignment() -> DetectionEvaluator:
-#     """Define an evaluator that compares a set of results to one with an extra detection to check assignment."""
-#     detection_cfg = DetectionCfg(dt_classes=["VEHICLE"], eval_only_roi_instances=False)
-#     return DetectionEvaluator(
-#         TEST_DATA_LOC / "detections_assignment",
-#         TEST_DATA_LOC,
-#         TEST_DATA_LOC / "test_figures",
-#         detection_cfg,
-#     )
+@pytest.fixture  # type: ignore
+def metrics_assignment() -> pd.DataFrame:
+    """Define an evaluator that compares a set of results to one with an extra detection to check assignment."""
+    detection_cfg = DetectionCfg(dt_classes=("REGULAR_VEHICLE",), eval_only_roi_instances=False)
+    dts: pd.DataFrame = pd.read_feather("data/detections_assignment.feather")
+    gts: pd.DataFrame = pd.read_feather("data/labels.feather")
+    metrics = evaluate(dts, gts, None, detection_cfg)
+    return metrics
 
 
-# @pytest.fixture  # type: ignore
-# def evaluator() -> DetectionEvaluator:
-#     """Definte an evaluator that compares a set of detections with known error to the ground truth."""
-#     detection_cfg = DetectionCfg(dt_classes=["VEHICLE"], eval_only_roi_instances=False)
-#     return DetectionEvaluator(
-#         TEST_DATA_LOC / "detections",
-#         TEST_DATA_LOC,
-#         TEST_DATA_LOC / "test_figures",
-#         detection_cfg,
-#     )
-
-
-# @pytest.fixture  # type: ignore
-# def metrics_identity(evaluator_identity: DetectionEvaluator) -> pd.DataFrame:
-#     """Get the metrics for an evaluator that compares a set of results to itself."""
-#     return evaluator_identity.evaluate()
-
-
-# @pytest.fixture  # type: ignore
-# def metrics_assignment(evaluator_assignment: DetectionEvaluator) -> pd.DataFrame:
-#     """Get the metrics for an evaluator that has extra detections to test for assignment errors."""
-#     return evaluator_assignment.evaluate()
-
-
-# @pytest.fixture  # type: ignore
-# def metrics(evaluator: DetectionEvaluator) -> pd.DataFrame:
-#     """Get the metrics for an evaluator with known error."""
-#     return evaluator.evaluate()
+@pytest.fixture  # type: ignore
+def metrics() -> pd.DataFrame:
+    detection_cfg = DetectionCfg(dt_classes=("REGULAR_VEHICLE",), eval_only_roi_instances=False)
+    dts: pd.DataFrame = pd.read_feather("data/detections.feather")
+    gts: pd.DataFrame = pd.read_feather("data/labels.feather")
+    metrics = evaluate(dts, gts, None, detection_cfg)
+    return metrics
 
 
 def test_affinity_center() -> None:
@@ -180,10 +161,8 @@ def test_wrap_angle() -> None:
 def test_accumulate() -> None:
     """Verify that the accumulate function matches known output for a self-comparison."""
     cfg = DetectionCfg(eval_only_roi_instances=False)
-
-    # dts = pd.read_feather()
-    dts: pd.DataFrame = pd.read_feather("data/labels_0.feather")
-    gts: pd.DataFrame = pd.read_feather("data/labels_0.feather")
+    dts: pd.DataFrame = pd.read_feather("data/labels.feather")
+    gts: pd.DataFrame = pd.read_feather("data/labels.feather")
     poses = None
 
     job = (dts, gts, poses, cfg)
@@ -289,142 +268,143 @@ def test_iou_aligned_3d() -> None:
 def test_assignment(metrics_assignment: pd.DataFrame) -> None:
     """Verify that assignment works as expected; should have one duplicate in the provided results."""
     expected_result: float = 0.976
-    assert metrics_assignment.AP.loc["Average Metrics"] == expected_result
+    assert metrics_assignment.loc["Average Metrics", "AP"] == expected_result
 
 
 def test_ap(metrics_identity: pd.DataFrame, metrics: pd.DataFrame) -> None:
     """Test that AP is 1 for the self-compared results."""
     expected_result: float = 1.0
-    assert metrics_identity.AP.loc["Average Metrics"] == expected_result
+    assert metrics_identity.loc["Average Metrics", "AP"] == expected_result
 
 
 def test_translation_error(metrics_identity: pd.DataFrame, metrics: pd.DataFrame) -> None:
     """Test that ATE is 0 for the self-compared results."""
     expected_result_identity: float = 0.0
     expected_result_det: float = 0.017  # 0.1 / 6, one of six dets is off by 0.1
-    assert metrics_identity.ATE.loc["Average Metrics"] == expected_result_identity
-    assert metrics.ATE.loc["Average Metrics"] == expected_result_det
+    assert metrics_identity.loc["Average Metrics", "ATE"] == expected_result_identity
+    assert metrics.loc["Average Metrics", "ATE"] == expected_result_det
 
 
 def test_scale_error(metrics_identity: pd.DataFrame, metrics: pd.DataFrame) -> None:
     """Test that ASE is 0 for the self-compared results."""
     expected_result_identity: float = 0.0
     expected_result_det: float = 0.033  # 0.2 / 6, one of six dets is off by 20% in IoU
-    assert metrics_identity.ASE.loc["Average Metrics"] == expected_result_identity
-    assert metrics.ASE.loc["Average Metrics"] == expected_result_det
+    assert metrics_identity.loc["Average Metrics", "ASE"] == expected_result_identity
+    assert metrics.loc["Average Metrics", "ASE"] == expected_result_det
 
 
 def test_orientation_error(metrics_identity: pd.DataFrame, metrics: pd.DataFrame) -> None:
     """Test that AOE is 0 for the self-compared results."""
     expected_result_identity: float = 0.0
     expected_result_det: float = 0.524  # pi / 6, since one of six dets is off by pi
-    assert metrics_identity.AOE.loc["Average Metrics"] == expected_result_identity
-    assert metrics.AOE.loc["Average Metrics"] == expected_result_det
+
+    assert metrics_identity.loc["Average Metrics", "AOE"] == expected_result_identity
+    assert metrics.loc["Average Metrics", "AOE"] == expected_result_det
 
 
-def test_remove_duplicate_instances() -> None:
-    """Ensure a duplicate ground truth cuboid can be filtered out correctly."""
-    instances = [
-        SimpleNamespace(**{"translation": np.array([1, 1, 0])}),
-        SimpleNamespace(**{"translation": np.array([5, 5, 0])}),
-        SimpleNamespace(**{"translation": np.array([2, 2, 0])}),
-        SimpleNamespace(**{"translation": np.array([5, 5, 0])}),
-    ]
-    instances = np.array(instances)
-    cfg = DetectionCfg(eval_only_roi_instances=False)
-    unique_instances = remove_duplicate_instances(instances, cfg)
+# def test_remove_duplicate_instances() -> None:
+#     """Ensure a duplicate ground truth cuboid can be filtered out correctly."""
+#     instances = [
+#         SimpleNamespace(**{"translation": np.array([1, 1, 0])}),
+#         SimpleNamespace(**{"translation": np.array([5, 5, 0])}),
+#         SimpleNamespace(**{"translation": np.array([2, 2, 0])}),
+#         SimpleNamespace(**{"translation": np.array([5, 5, 0])}),
+#     ]
+#     instances = np.array(instances)
+#     cfg = DetectionCfg(eval_only_roi_instances=False)
+#     unique_instances = remove_duplicate_instances(instances, cfg)
 
-    assert len(unique_instances) == 3
-    assert np.allclose(unique_instances[0].translation, np.array([1, 1, 0]))
-    assert np.allclose(unique_instances[1].translation, np.array([5, 5, 0]))
-    assert np.allclose(unique_instances[2].translation, np.array([2, 2, 0]))
-
-
-def test_remove_duplicate_instances_ground_truth() -> None:
-    """Ensure that if an extra duplicate cuboid is present in ground truth, it would be ignored."""
-    dt_fpath = TEST_DATA_LOC / "remove_duplicates_detections"
-    gt_fpath = TEST_DATA_LOC / "remove_duplicates_ground_truth"
-    fig_fpath = TEST_DATA_LOC / "test_figures"
-
-    cfg = DetectionCfg(eval_only_roi_instances=False)
-    evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath, cfg)
-    metrics = evaluator.evaluate()
-    assert metrics.AP.loc["Vehicle"] == 1.0
-    assert metrics.AP.loc["Pedestrian"] == 1.0
+#     assert len(unique_instances) == 3
+#     assert np.allclose(unique_instances[0].translation, np.array([1, 1, 0]))
+#     assert np.allclose(unique_instances[1].translation, np.array([5, 5, 0]))
+#     assert np.allclose(unique_instances[2].translation, np.array([2, 2, 0]))
 
 
-def test_filter_objs_to_roi() -> None:
-    """Use the map to filter out an object that lies outside the ROI in a parking lot."""
-    avm = ArgoverseMap()
+# def test_remove_duplicate_instances_ground_truth() -> None:
+#     """Ensure that if an extra duplicate cuboid is present in ground truth, it would be ignored."""
+#     dt_fpath = TEST_DATA_LOC / "remove_duplicates_detections"
+#     gt_fpath = TEST_DATA_LOC / "remove_duplicates_ground_truth"
+#     fig_fpath = TEST_DATA_LOC / "test_figures"
 
-    # should be outside of ROI
-    outside_obj = {
-        "center": {
-            "x": -14.102872067388489,
-            "y": 19.466695178746022,
-            "z": 0.11740010190455852,
-        },
-        "rotation": {
-            "x": 0.0,
-            "y": 0.0,
-            "z": -0.038991328555453404,
-            "w": 0.9992395490058831,
-        },
-        "length": 4.56126567460171,
-        "width": 1.9370055686754908,
-        "height": 1.5820081349372281,
-        "track_label_uuid": "03a321bf955a4d7781682913884abf06",
-        "timestamp": 315970611820366000,
-        "label_class": "VEHICLE",
-    }
-
-    # should be inside the ROI
-    inside_obj = {
-        "center": {
-            "x": -20.727430239506702,
-            "y": 3.4488006757501353,
-            "z": 0.4036619561689685,
-        },
-        "rotation": {
-            "x": 0.0,
-            "y": 0.0,
-            "z": 0.0013102003738908123,
-            "w": 0.9999991416871218,
-        },
-        "length": 4.507580779458834,
-        "width": 1.9243189627993598,
-        "height": 1.629934978730058,
-        "track_label_uuid": "bb0f40e4f68043e285d64a839f2f092c",
-        "timestamp": 315970611820366000,
-        "label_class": "VEHICLE",
-    }
-
-    log_city_name = "PIT"
-    lidar_ts = 315970611820366000
-    dataset_dir = TEST_DATA_LOC / "roi_based_test"
-    log_id = "21e37598-52d4-345c-8ef9-03ae19615d3d"
-    city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(lidar_ts, dataset_dir, log_id)
-
-    dts = np.array([json_label_dict_to_obj_record(item) for item in [outside_obj, inside_obj]])
-    dts_filtered = filter_objs_to_roi(dts, avm, city_SE3_egovehicle, log_city_name)
-
-    assert dts_filtered.size == 1
-    assert dts_filtered.dtype == "O"  # array of objects
-    assert isinstance(dts_filtered, np.ndarray)
-    assert dts_filtered[0].track_id == "bb0f40e4f68043e285d64a839f2f092c"
+#     cfg = DetectionCfg(eval_only_roi_instances=False)
+#     evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath, cfg)
+#     metrics = evaluator.evaluate()
+#     assert metrics.AP.loc["Vehicle"] == 1.0
+#     assert metrics.AP.loc["Pedestrian"] == 1.0
 
 
-def test_AP_on_filtered_instances() -> None:
-    """Test AP calculation on instances filtered on region-of-interest."""
-    dt_fpath = TEST_DATA_LOC / "remove_nonroi_detections"
-    gt_fpath = TEST_DATA_LOC / "remove_nonroi_ground_truth"
-    fig_fpath = TEST_DATA_LOC / "test_figures"
+# def test_filter_objs_to_roi() -> None:
+#     """Use the map to filter out an object that lies outside the ROI in a parking lot."""
+#     avm = ArgoverseMap()
 
-    cfg = DetectionCfg(eval_only_roi_instances=True)
-    evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath, cfg)
-    metrics = evaluator.evaluate()
+#     # should be outside of ROI
+#     outside_obj = {
+#         "center": {
+#             "x": -14.102872067388489,
+#             "y": 19.466695178746022,
+#             "z": 0.11740010190455852,
+#         },
+#         "rotation": {
+#             "x": 0.0,
+#             "y": 0.0,
+#             "z": -0.038991328555453404,
+#             "w": 0.9992395490058831,
+#         },
+#         "length": 4.56126567460171,
+#         "width": 1.9370055686754908,
+#         "height": 1.5820081349372281,
+#         "track_label_uuid": "03a321bf955a4d7781682913884abf06",
+#         "timestamp": 315970611820366000,
+#         "label_class": "VEHICLE",
+#     }
 
-    assert metrics.AP.loc["Vehicle"] == 1.0
+#     # should be inside the ROI
+#     inside_obj = {
+#         "center": {
+#             "x": -20.727430239506702,
+#             "y": 3.4488006757501353,
+#             "z": 0.4036619561689685,
+#         },
+#         "rotation": {
+#             "x": 0.0,
+#             "y": 0.0,
+#             "z": 0.0013102003738908123,
+#             "w": 0.9999991416871218,
+#         },
+#         "length": 4.507580779458834,
+#         "width": 1.9243189627993598,
+#         "height": 1.629934978730058,
+#         "track_label_uuid": "bb0f40e4f68043e285d64a839f2f092c",
+#         "timestamp": 315970611820366000,
+#         "label_class": "VEHICLE",
+#     }
+
+#     log_city_name = "PIT"
+#     lidar_ts = 315970611820366000
+#     dataset_dir = TEST_DATA_LOC / "roi_based_test"
+#     log_id = "21e37598-52d4-345c-8ef9-03ae19615d3d"
+#     city_SE3_egovehicle = get_city_SE3_egovehicle_at_sensor_t(lidar_ts, dataset_dir, log_id)
+
+#     dts = np.array([json_label_dict_to_obj_record(item) for item in [outside_obj, inside_obj]])
+#     dts_filtered = filter_objs_to_roi(dts, avm, city_SE3_egovehicle, log_city_name)
+
+#     assert dts_filtered.size == 1
+#     assert dts_filtered.dtype == "O"  # array of objects
+#     assert isinstance(dts_filtered, np.ndarray)
+#     assert dts_filtered[0].track_id == "bb0f40e4f68043e285d64a839f2f092c"
+
+
+# def test_AP_on_filtered_instances() -> None:
+#     """Test AP calculation on instances filtered on region-of-interest."""
+#     dt_fpath = TEST_DATA_LOC / "remove_nonroi_detections"
+#     gt_fpath = TEST_DATA_LOC / "remove_nonroi_ground_truth"
+#     fig_fpath = TEST_DATA_LOC / "test_figures"
+
+#     cfg = DetectionCfg(eval_only_roi_instances=True)
+#     evaluator = DetectionEvaluator(dt_fpath, gt_fpath, fig_fpath, cfg)
+#     metrics = evaluator.evaluate()
+
+#     assert metrics.AP.loc["Vehicle"] == 1.0
 
 
 def test_rank() -> None:

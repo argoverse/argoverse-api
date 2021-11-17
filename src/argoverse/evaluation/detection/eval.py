@@ -62,7 +62,7 @@ import logging
 import multiprocessing as mp
 from collections import defaultdict
 from pathlib import Path
-from typing import DefaultDict, Dict, List, Optional, Tuple
+from typing import DefaultDict, Dict, List, Optional, Set, Tuple
 
 import numpy as np
 import pandas as pd
@@ -85,18 +85,14 @@ def evaluate(dts: pd.DataFrame, gts: pd.DataFrame, poses: Optional[pd.DataFrame]
     """
 
     cls_to_ninst_list: List[Dict[str, int]] = []
-    dts["uuid"] = dts["log_id"] + "_" + dts["tov_ns"]
-    gts["uuid"] = gts["log_id"] + "_" + gts["tov_ns"]
-
-    gts = gts.filter(col("uuid").is_in(dts["uuid"]))
+    # included_uuids: Set[Tuple[str, int]] = set(gts[["log_id", "tov_ns"]].to_records(index=False).tolist())
 
     jobs: List[Tuple[pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame], DetectionCfg]] = []
-    for log_dts in dts.groupby("uuid"):
-        log_gts = gts.filter(col("uuid") == log_dts["uuid"].unique())
-
-        if log_gts.shape[0] == 0:
+    for key, group in gts.groupby(["log_id", "tov_ns"]):
+        log_dts = dts[np.all(dts[["log_id", "tov_ns"]] == key, axis=1)]
+        if group.shape[0] == 0:
             continue
-        jobs.append((log_dts, log_gts, poses, cfg))
+        jobs.append((log_dts, group, poses, cfg))
 
     ncpus = mp.cpu_count()
     chunksize = max(len(jobs) // ncpus, 1)
