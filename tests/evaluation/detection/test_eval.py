@@ -11,8 +11,17 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+from scipy.spatial.transform import Rotation as R
 
-from argoverse.evaluation.detection.utils import AffFnType, DetectionCfg, DistFnType, compute_affinity_matrix, dist_fn
+from argoverse.evaluation.detection.utils import (
+    AffFnType,
+    DetectionCfg,
+    DistFnType,
+    accumulate,
+    compute_affinity_matrix,
+    dist_fn,
+    wrap_angle,
+)
 
 TEST_DATA_LOC = Path(__file__).parent.parent / "tests" / "test_data" / "detection"
 logging.getLogger("matplotlib.font_manager").disabled = True
@@ -115,10 +124,17 @@ def test_orientation_quarter_angles() -> None:
     # Check all of the 90 degree angles
     expected_result: float = (2 * np.pi) / 4
     quarter_angles = [np.array([0, 0, angle]) for angle in np.arange(0, 2 * np.pi, expected_result)]
+
     for i in range(len(quarter_angles) - 1):
-        breakpoint()
-        dts = pd.DataFrame([{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(quarter_angles[i]).as_quat())}])
-        gts = pd.DataFrame([{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(quarter_angles[i + 1]).as_quat())}])
+        quat_xyzw_dts = R.from_rotvec(quarter_angles[i : i + 1]).as_quat()
+        quat_xyzw_gts = R.from_rotvec(quarter_angles[i + 1 : i + 2]).as_quat()
+
+        quat_wxyz_dts = quat_xyzw_dts[..., [3, 0, 1, 2]]
+        quat_wxyz_gts = quat_xyzw_gts[..., [3, 0, 1, 2]]
+
+        columns = ["qw", "qx", "qy", "qz"]
+        dts = pd.DataFrame(quat_wxyz_dts, columns=columns)
+        gts = pd.DataFrame(quat_wxyz_gts, columns=columns)
 
         assert np.isclose(dist_fn(dts, gts, DistFnType.ORIENTATION), expected_result)
         assert np.isclose(dist_fn(gts, dts, DistFnType.ORIENTATION), expected_result)
@@ -130,14 +146,18 @@ def test_orientation_eighth_angles() -> None:
     smallest angle ((2 * np.pi) / 8) between the detection and ground truth label.
     """
     expected_result: float = (2 * np.pi) / 8
-    eigth_angle = [np.array([0, 0, angle]) for angle in np.arange(0, 2 * np.pi, expected_result)]
-    for i in range(len(eigth_angle) - 1):
-        dts: pd.DataFrame = pd.DataFrame(
-            [{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(eigth_angle[i]).as_quat())}]
-        )
-        gts: pd.DataFrame = pd.DataFrame(
-            [{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(eigth_angle[i + 1]).as_quat())}]
-        )
+    eigth_angles = [np.array([0, 0, angle]) for angle in np.arange(0, 2 * np.pi, expected_result)]
+
+    for i in range(len(eigth_angles) - 1):
+        quat_xyzw_dts = R.from_rotvec(eigth_angles[i : i + 1]).as_quat()
+        quat_xyzw_gts = R.from_rotvec(eigth_angles[i + 1 : i + 2]).as_quat()
+
+        quat_wxyz_dts = quat_xyzw_dts[..., [3, 0, 1, 2]]
+        quat_wxyz_gts = quat_xyzw_gts[..., [3, 0, 1, 2]]
+
+        columns = ["qw", "qx", "qy", "qz"]
+        dts = pd.DataFrame(quat_wxyz_dts, columns=columns)
+        gts = pd.DataFrame(quat_wxyz_gts, columns=columns)
 
         assert np.isclose(dist_fn(dts, gts, DistFnType.ORIENTATION), expected_result)
         assert np.isclose(dist_fn(gts, dts, DistFnType.ORIENTATION), expected_result)
@@ -147,7 +167,7 @@ def test_wrap_angle() -> None:
     theta: np.ndarray = np.array([-3 * np.pi / 2])
 
     expected_result: float = np.array([np.pi / 2])
-    assert wrap_angle(theta) == expected_result
+    assert np.isclose(wrap_angle(theta), expected_result)
 
 
 def test_accumulate() -> None:
