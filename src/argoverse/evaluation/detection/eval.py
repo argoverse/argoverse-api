@@ -62,11 +62,10 @@ import logging
 import multiprocessing as mp
 from collections import defaultdict
 from pathlib import Path
-from typing import DefaultDict, Dict, List
+from typing import DefaultDict, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-from pandas import DataFrame
 
 from argoverse.evaluation.detection.constants import N_TP_ERRORS, SIGNIFICANT_DIGITS, STATISTIC_NAMES
 from argoverse.evaluation.detection.utils import DetectionCfg, accumulate, calc_ap, plot
@@ -74,7 +73,7 @@ from argoverse.evaluation.detection.utils import DetectionCfg, accumulate, calc_
 logger = logging.getLogger(__name__)
 
 
-def evaluate(dts: pd.DataFrame, gts: pd.DataFrame, poses: DataFrame, cfg: DetectionCfg) -> DataFrame:
+def evaluate(dts: pd.DataFrame, gts: pd.DataFrame, poses: Optional[pd.DataFrame], cfg: DetectionCfg) -> pd.DataFrame:
     """Evaluate detection output and return metrics. The multiprocessing
     library is used for parallel processing of sweeps -- each sweep is
     processed independently, computing assignment between detections and
@@ -91,7 +90,7 @@ def evaluate(dts: pd.DataFrame, gts: pd.DataFrame, poses: DataFrame, cfg: Detect
 
     gts = gts.filter(col("uuid").is_in(dts["uuid"]))
 
-    jobs = []
+    jobs: List[Tuple[pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame], DetectionCfg]] = []
     for log_dts in dts.groupby("uuid"):
         log_gts = gts.filter(col("uuid") == log_dts["uuid"].unique())
 
@@ -104,25 +103,25 @@ def evaluate(dts: pd.DataFrame, gts: pd.DataFrame, poses: DataFrame, cfg: Detect
     with mp.Pool(ncpus) as p:
         outputs = p.map(accumulate, jobs, chunksize=chunksize)
 
-    stats = []
+    stats: List[pd.DataFrame] = []
     for output in outputs:
         accumulation, scene_cls_to_ninst = output
         cls_to_ninst_list.append(scene_cls_to_ninst)
         if accumulation.shape[0] > 0:
             stats.append(accumulation)
 
-    cls_to_ninst = defaultdict(int)
+    cls_to_ninst: DefaultDict[str, int] = defaultdict(int)
     for item in cls_to_ninst_list:
         for k, v in item.items():
             cls_to_ninst[k] += v
 
     stats = pd.concat(stats).reset_index(drop=True)
     init_data = {dt_cls: cfg.summary_default_vals for dt_cls in cfg.dt_classes}
-    summary = DataFrame.from_dict(init_data, orient="index", columns=STATISTIC_NAMES)
+    summary = pd.DataFrame.from_dict(init_data, orient="index", columns=STATISTIC_NAMES)
     if len(stats) == 0:
         logger.warning("No matches ...")
         return summary
-    summary_update = DataFrame.from_dict(summarize(stats, cfg, cls_to_ninst), orient="index", columns=STATISTIC_NAMES)
+    summary_update = pd.DataFrame.from_dict(summarize(stats, cfg, cls_to_ninst), orient="index", columns=STATISTIC_NAMES)
 
     summary.update(summary_update)
     summary = summary.round(SIGNIFICANT_DIGITS)
@@ -132,7 +131,7 @@ def evaluate(dts: pd.DataFrame, gts: pd.DataFrame, poses: DataFrame, cfg: Detect
 
 
 def summarize(
-    data: DataFrame,
+    data: pd.DataFrame,
     cfg: DetectionCfg,
     cls_to_ninst: DefaultDict[str, int],
 ) -> DefaultDict[str, List[float]]:
@@ -154,7 +153,7 @@ def summarize(
     if not Path(figs_rootdir).is_dir():
         Path(figs_rootdir).mkdir(parents=True, exist_ok=True)
 
-    for cls_name, cls_stats in data.groupby("label_class"):
+    for cls_name, cls_stats in data.groupby("category"):
         cls_stats = cls_stats.sort_values(by="score", ascending=False).reset_index(drop=True)
         ninst = cls_to_ninst[cls_name]
         for _, thresh in enumerate(cfg.affinity_threshs):
