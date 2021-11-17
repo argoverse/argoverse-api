@@ -6,8 +6,7 @@ from argoverse.datasets.sensor_dataset import SensorDataset
 
 def test_sensor_dataset() -> None:
     rootdir = Path("data")
-    sensor_dataset = SensorDataset(rootdir)
-    pass
+    SensorDataset(rootdir)
 
 
 if __name__ == "__main__":
