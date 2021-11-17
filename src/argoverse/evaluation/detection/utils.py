@@ -18,7 +18,6 @@ from typing import Dict, Final, List, NamedTuple, Tuple, Union
 import matplotlib
 import numpy as np
 import pandas as pd
-from pandas import DataFrame
 from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation as R
 
@@ -79,11 +78,11 @@ class DetectionCfg(NamedTuple):
         map_root: Root directory for map files.
     """
 
-    affinity_threshs: List[float] = [0.5, 1.0, 2.0, 4.0]  # Meters
+    affinity_threshs: Tuple[float, ...] = (0.5, 1.0, 2.0, 4.0)  # Meters
     affinity_fn_type: AffFnType = AffFnType.CENTER
     n_rec_samples: int = 101
     tp_thresh: float = 2.0  # Meters
-    dt_classes: List[str] = COMPETITION_CLASSES
+    dt_classes: Tuple[str, ...] = COMPETITION_CLASSES
     dt_metric: FilterMetric = FilterMetric.EUCLIDEAN
     max_dt_range: float = 100.0  # Meters
     save_figs: bool = False
@@ -94,7 +93,7 @@ class DetectionCfg(NamedTuple):
     splits: Tuple[str, ...] = ("val",)
 
 
-def accumulate(job: Tuple[DataFrame, DataFrame, DataFrame, DetectionCfg]) -> Tuple[DataFrame, Dict[str, int]]:
+def accumulate(job: Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, DetectionCfg]) -> Tuple[pd.DataFrame, Dict[str, int]]:
     """Accumulate the true/false positives (boolean flags) and true positive errors for each class.
 
     Args:
@@ -121,7 +120,7 @@ def accumulate(job: Tuple[DataFrame, DataFrame, DataFrame, DetectionCfg]) -> Tup
     dts_filtered = filter_instances(dts, cfg)
     gts_filtered = filter_instances(gts, cfg)
 
-    metrics: List[DataFrame] = []
+    metrics: List[pd.DataFrame] = []
     cls_to_ninst: Dict[str, int] = {}
     for label_class in cfg.dt_classes:
         label_dts = dts_filtered[dts_filtered["label_class"] == label_class]
@@ -139,10 +138,10 @@ def accumulate(job: Tuple[DataFrame, DataFrame, DataFrame, DetectionCfg]) -> Tup
 
     if len(metrics) > 0:
         return pd.concat(metrics), cls_to_ninst
-    return DataFrame(metrics), cls_to_ninst
+    return pd.DataFrame(metrics), cls_to_ninst
 
 
-def remove_duplicate_instances(instances: DataFrame, cfg: DetectionCfg) -> DataFrame:
+def remove_duplicate_instances(instances: pd.DataFrame, cfg: DetectionCfg) -> pd.DataFrame:
     """Remove any duplicate cuboids in ground truth.
 
     Any ground truth cuboid of the same object class that shares the same centroid
@@ -179,7 +178,7 @@ def remove_duplicate_instances(instances: DataFrame, cfg: DetectionCfg) -> DataF
     return instances.iloc[unique_ids].reset_index(drop=True)
 
 
-def assign(dts: DataFrame, gts: DataFrame, cfg: DetectionCfg) -> DataFrame:
+def assign(dts: pd.DataFrame, gts: pd.DataFrame, cfg: DetectionCfg) -> pd.DataFrame:
     """Attempt assignment of each detection to a ground truth label.
 
     Args:
@@ -198,7 +197,7 @@ def assign(dts: DataFrame, gts: DataFrame, cfg: DetectionCfg) -> DataFrame:
 
     data = np.zeros((dts.shape[0], ncols))
 
-    metrics = DataFrame(data, columns=cols)
+    metrics = pd.DataFrame(data, columns=cols)
 
     aff_dtype = {str(x): bool for x in cfg.affinity_threshs}
     metrics = metrics.astype(aff_dtype)
@@ -248,7 +247,7 @@ def assign(dts: DataFrame, gts: DataFrame, cfg: DetectionCfg) -> DataFrame:
     return metrics
 
 
-def rank(dts: DataFrame) -> DataFrame:
+def rank(dts: pd.DataFrame) -> pd.DataFrame:
     """Rank the detections in descending order according to score (detector confidence).
 
 
@@ -283,7 +282,7 @@ def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
     return prec_interp
 
 
-def compute_affinity_matrix(dts: DataFrame, gts: DataFrame, metric: AffFnType) -> np.ndarray:
+def compute_affinity_matrix(dts: pd.DataFrame, gts: pd.DataFrame, metric: AffFnType) -> np.ndarray:
     """Calculate the affinity matrix between detections and ground truth labels,
     using a specified affinity function type.
 
@@ -296,7 +295,7 @@ def compute_affinity_matrix(dts: DataFrame, gts: DataFrame, metric: AffFnType) -
         sims: Affinity scores between detections and ground truth annotations (N, M).
     """
     if metric == AffFnType.CENTER:
-        cols = ["x", "y"]
+        cols = ["tx", "ty"]
         dt_centers = dts[cols]
         gt_centers = gts[cols]
         sims = -cdist(dt_centers, gt_centers)
@@ -329,7 +328,7 @@ def calc_ap(tps: np.ndarray, recalls_interp: np.ndarray, ninst: int) -> Tuple[fl
     return avg_precision, precisions_interp
 
 
-def dist_fn(dts: DataFrame, gts: DataFrame, metric: DistFnType) -> np.ndarray:
+def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndarray:
     """Distance functions between detections and ground truth.
 
     Args:
@@ -341,7 +340,7 @@ def dist_fn(dts: DataFrame, gts: DataFrame, metric: DistFnType) -> np.ndarray:
         Distance between the detections and ground truth, using the provided metric (N,).
     """
     if metric == DistFnType.TRANSLATION:
-        cols = ["x", "y"]
+        cols = ["tx", "ty"]
 
         dt_centers = dts[cols].reset_index(drop=True)
         gt_centers = gts[cols].reset_index(drop=True)
@@ -350,8 +349,8 @@ def dist_fn(dts: DataFrame, gts: DataFrame, metric: DistFnType) -> np.ndarray:
         return trans_errors
     elif metric == DistFnType.SCALE:
         cols = ["length", "width", "height"]
-        dt_dims = dts[cols].reset_index(drop=True)
-        gt_dims = gts[cols].reset_index(drop=True)
+        dt_dims = dts[cols].reset_index(drop=True).to_numpy()
+        gt_dims = gts[cols].reset_index(drop=True).to_numpy()
 
         scale_errors = 1 - iou_aligned_3d(dt_dims, gt_dims)
         return scale_errors
@@ -370,7 +369,7 @@ def dist_fn(dts: DataFrame, gts: DataFrame, metric: DistFnType) -> np.ndarray:
         raise NotImplementedError("This distance metric is not implemented!")
 
 
-def iou_aligned_3d(dt_dims: DataFrame, gt_dims: DataFrame) -> DataFrame:
+def iou_aligned_3d(dt_dims: np.ndarray, gt_dims: np.ndarray) -> np.ndarray:
     """Calculate the 3d, axis-aligned (vertical axis alignment) intersection-over-union (IoU)
     between the detections and the ground truth labels. Both objects are aligned to their
     +x axis and their centroids are placed at the origin before computation of the IoU.
@@ -414,8 +413,8 @@ def wrap_angle(angles: np.ndarray, period: float = np.pi) -> np.ndarray:
 
 
 # def filter_objs_to_roi(
-#     cuboids: DataFrame, poses: DataFrame, avm: ArgoverseMap
-# ) -> DataFrame:
+#     cuboids: pd.DataFrame, poses: pd.DataFrame, avm: ArgoverseMap
+# ) -> pd.DataFrame:
 #     cuboids = cuboids.sort_values("tov_ns").reset_index(drop=True)
 #     poses = poses.sort_values("tov_ns").reset_index(drop=True)
 
@@ -452,7 +451,7 @@ def wrap_angle(angles: np.ndarray, period: float = np.pi) -> np.ndarray:
 #     return cuboids_with_poses[is_within_roi]
 
 
-def filter_instances(cuboids: DataFrame, cfg: DetectionCfg) -> DataFrame:
+def filter_instances(cuboids: pd.DataFrame, cfg: DetectionCfg) -> pd.DataFrame:
     outputs = []
     for class_name in cfg.dt_classes:
         class_mask = cuboids.label_class == class_name

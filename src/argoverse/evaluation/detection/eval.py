@@ -74,7 +74,7 @@ from argoverse.evaluation.detection.utils import DetectionCfg, accumulate, calc_
 logger = logging.getLogger(__name__)
 
 
-def evaluate(dts: pl.DataFrame, gts: pl.DataFrame, poses: DataFrame, cfg: DetectionCfg) -> DataFrame:
+def evaluate(dts: pd.DataFrame, gts: pd.DataFrame, poses: DataFrame, cfg: DetectionCfg) -> DataFrame:
     """Evaluate detection output and return metrics. The multiprocessing
     library is used for parallel processing of sweeps -- each sweep is
     processed independently, computing assignment between detections and
