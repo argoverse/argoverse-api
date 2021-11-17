@@ -93,7 +93,9 @@ class DetectionCfg(NamedTuple):
     splits: Tuple[str, ...] = ("val",)
 
 
-def accumulate(job: Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, DetectionCfg]) -> Tuple[pd.DataFrame, Dict[str, int]]:
+def accumulate(
+    job: Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, DetectionCfg]
+) -> Tuple[pd.DataFrame, Dict[str, int]]:
     """Accumulate the true/false positives (boolean flags) and true positive errors for each class.
 
     Args:

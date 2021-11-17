@@ -8,11 +8,11 @@ The rest apply no filtering to objects that have their corners located outside o
 import logging
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
-import numpy as np
 
-from argoverse.evaluation.detection.utils import AffFnType, DetectionCfg, compute_affinity_matrix, dist_fn, DistFnType
+from argoverse.evaluation.detection.utils import AffFnType, DetectionCfg, DistFnType, compute_affinity_matrix, dist_fn
 
 TEST_DATA_LOC = Path(__file__).parent.parent / "tests" / "test_data" / "detection"
 logging.getLogger("matplotlib.font_manager").disabled = True
@@ -23,12 +23,6 @@ def evaluator_identity() -> DetectionCfg:
     """Define an evaluator that compares a set of results to itself."""
     detection_cfg = DetectionCfg(dt_classes=("VEHICLE",), eval_only_roi_instances=False)
     return detection_cfg
-    # return DetectionEvaluator(
-    #     TEST_DATA_LOC / "detections_identity",
-    #     TEST_DATA_LOC,
-    #     TEST_DATA_LOC / "test_figures",
-    #     detection_cfg,
-    # )
 
 
 # @pytest.fixture  # type: ignore
@@ -123,12 +117,8 @@ def test_orientation_quarter_angles() -> None:
     quarter_angles = [np.array([0, 0, angle]) for angle in np.arange(0, 2 * np.pi, expected_result)]
     for i in range(len(quarter_angles) - 1):
         breakpoint()
-        dts = pd.DataFrame(
-            [{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(quarter_angles[i]).as_quat())}]
-        )
-        gts = pd.DataFrame(
-            [{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(quarter_angles[i + 1]).as_quat())}]
-        )
+        dts = pd.DataFrame([{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(quarter_angles[i]).as_quat())}])
+        gts = pd.DataFrame([{"quaternion": quat_scipy2argo_vectorized(R.from_rotvec(quarter_angles[i + 1]).as_quat())}])
 
         assert np.isclose(dist_fn(dts, gts, DistFnType.ORIENTATION), expected_result)
         assert np.isclose(dist_fn(gts, dts, DistFnType.ORIENTATION), expected_result)
