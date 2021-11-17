@@ -164,9 +164,8 @@ def test_orientation_eighth_angles() -> None:
 
 
 def test_wrap_angle() -> None:
-    theta: np.ndarray = np.array([-3 * np.pi / 2])
-
-    expected_result: float = np.array([np.pi / 2])
+    theta = np.array([-3 * np.pi / 2])
+    expected_result = np.array([np.pi / 2])
     assert np.isclose(wrap_angle(theta), expected_result)
 
 
