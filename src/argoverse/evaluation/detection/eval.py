@@ -85,8 +85,6 @@ def evaluate(dts: pd.DataFrame, gts: pd.DataFrame, poses: Optional[pd.DataFrame]
     """
 
     cls_to_ninst_list: List[Dict[str, int]] = []
-    # included_uuids: Set[Tuple[str, int]] = set(gts[["log_id", "tov_ns"]].to_records(index=False).tolist())
-
     jobs: List[Tuple[pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame], DetectionCfg]] = []
     for key, group in gts.groupby(["log_id", "tov_ns"]):
         log_dts = dts[np.all(dts[["log_id", "tov_ns"]] == key, axis=1)]
@@ -96,8 +94,9 @@ def evaluate(dts: pd.DataFrame, gts: pd.DataFrame, poses: Optional[pd.DataFrame]
 
     ncpus = mp.cpu_count()
     chunksize = max(len(jobs) // ncpus, 1)
-    with mp.Pool(ncpus) as p:
-        outputs = p.map(accumulate, jobs, chunksize=chunksize)
+    # with mp.Pool(ncpus) as p:
+    #     outputs = p.map(accumulate, jobs, chunksize=chunksize)
+    outputs = [accumulate(job) for job in jobs]
 
     stats: List[pd.DataFrame] = []
     for output in outputs:
