@@ -6,6 +6,7 @@ The rest apply no filtering to objects that have their corners located outside o
 """
 
 import logging
+import math
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -19,6 +20,7 @@ from argoverse.evaluation.detection.utils import (
     DetectionCfg,
     DistFnType,
     accumulate,
+    assign,
     compute_affinity_matrix,
     dist_fn,
     wrap_angle,
@@ -198,69 +200,34 @@ def test_accumulate() -> None:
 def test_assign() -> None:
     """Verify that the assign functions as expected by checking ATE of assigned detections against known distance."""
     cfg = DetectionCfg(eval_only_roi_instances=False)
-    dts: np.ndarray = np.array(
+
+    columns = ["length", "width", "height", "qw", "qx", "qy", "qz", "tx", "ty", "tz", "score"]
+    dts = pd.DataFrame(
         [
-            ObjectLabelRecord(
-                quaternion=np.array([1, 0, 0, 0]),
-                translation=np.array([0, 0, 0]),
-                length=5.0,
-                width=5.0,
-                height=5.0,
-                occlusion=0,
-            ),
-            ObjectLabelRecord(
-                quaternion=np.array([1, 0, 0, 0]),
-                translation=np.array([10, 10, 10]),
-                length=5.0,
-                width=5.0,
-                height=5.0,
-                occlusion=0,
-            ),
-            ObjectLabelRecord(
-                quaternion=np.array([1, 0, 0, 0]),
-                translation=np.array([20, 20, 20]),
-                length=5.0,
-                width=5.0,
-                height=5.0,
-                occlusion=0,
-            ),
-        ]
+            [5.0, 5.0, 5.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+            [5.0, 5.0, 5.0, 1.0, 0.0, 0.0, 0.0, 10.0, 10.0, 10.0, 1.0],
+            [5.0, 5.0, 5.0, 1.0, 0.0, 0.0, 0.0, 20.0, 20.0, 20.0, 1.0],
+        ],
+        columns=columns,
     )
-    gts: np.ndarray = np.array(
+
+    gts = pd.DataFrame(
         [
-            ObjectLabelRecord(
-                quaternion=np.array([1, 0, 0, 0]),
-                translation=np.array([-10, -10, -10]),
-                length=5.0,
-                width=5.0,
-                height=5.0,
-                occlusion=0,
-            ),
-            ObjectLabelRecord(
-                quaternion=np.array([1, 0, 0, 0]),
-                translation=np.array([0.1, 0, 0]),  # off by 0.1
-                length=5.0,
-                width=5.0,
-                height=5.0,
-                occlusion=0,
-            ),
-            ObjectLabelRecord(
-                quaternion=np.array([1, 0, 0, 0]),
-                translation=np.array([10.1, 10, 10]),  # off by 0.1
-                length=5.0,
-                width=5.0,
-                height=5.0,
-                occlusion=0,
-            ),
-        ]
+            [5.0, 5.0, 5.0, 1.0, 0.0, 0.0, 0.0, -10.0, -10.0, -10.0, 1.0],
+            [5.0, 5.0, 5.0, 1.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 1.0],
+            [5.0, 5.0, 5.0, 1.0, 0.0, 0.0, 0.0, 10.1, 10.0, 10.0, 1.0],
+        ],
+        columns=columns,
     )
+
     metrics = assign(dts, gts, cfg)
     # if these assign correctly, we should get an ATE of 0.1 for the first two
     expected_result: float = 0.1
     ATE_COL_IDX = 4
-    assert np.isclose(metrics[0, ATE_COL_IDX], expected_result)  # instance 0
-    assert np.isclose(metrics[1, ATE_COL_IDX], expected_result)  # instance 1
-    assert np.isnan(metrics[2, ATE_COL_IDX])  # instance 32
+
+    assert math.isclose(metrics.iloc[0, ATE_COL_IDX], expected_result)  # instance 0
+    assert math.isclose(metrics.iloc[1, ATE_COL_IDX], expected_result)  # instance 1
+    assert math.isnan(metrics.iloc[2, ATE_COL_IDX])  # instance 32
 
 
 def test_filter_instances() -> None:
