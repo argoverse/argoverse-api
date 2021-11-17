@@ -260,7 +260,7 @@ def rank(dts: pd.DataFrame) -> pd.DataFrame:
     """
 
     dts = dts.sort_values("score", ascending=False)
-    return dts[:MAX_NUM_BOXES].reset_index(drop=True)
+    return dts.iloc[:MAX_NUM_BOXES].reset_index(drop=True)
 
 
 def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:

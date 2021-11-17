@@ -19,10 +19,15 @@ from argoverse.evaluation.detection.utils import (
     AffFnType,
     DetectionCfg,
     DistFnType,
+    FilterMetric,
     accumulate,
     assign,
     compute_affinity_matrix,
     dist_fn,
+    filter_instances,
+    interp,
+    iou_aligned_3d,
+    rank,
     wrap_angle,
 )
 
@@ -232,25 +237,15 @@ def test_assign() -> None:
 
 def test_filter_instances() -> None:
     """Generate 100 different detections and filter them based on Euclidean distance."""
-    dts: List[ObjectLabelRecord] = [
-        ObjectLabelRecord(
-            translation=[i, i, 0],
-            quaternion=np.array([0, 0, 0, 0]),
-            length=5.0,
-            width=2.0,
-            height=3.0,
-            occlusion=0,
-            label_class="VEHICLE",
-        )
-        for i in range(100)
-    ]
+    columns = ["category", "length", "width", "height", "qw", "qx", "qy", "qz", "tx", "ty", "tz"]
 
-    target_class_name: str = "VEHICLE"
-    filter_metric: FilterMetric = FilterMetric.EUCLIDEAN
-    max_detection_range: float = 100.0
+    dts = pd.DataFrame(
+        [["REGULAR_VEHICLE", 0.0, 0.0, 0.0, 0.0, 5.0, 2.0, 3.0, i, i, 0] for i in range(100)], columns=columns
+    )
+    cfg = DetectionCfg(eval_only_roi_instances=False)
 
     expected_result: int = 71
-    assert len(filter_instances(dts, target_class_name, filter_metric, max_detection_range)) == expected_result
+    assert len(filter_instances(dts, cfg)) == expected_result
 
 
 def test_interp() -> None:
@@ -258,22 +253,21 @@ def test_interp() -> None:
     See equation 2 in http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.167.6629&rep=rep1&type=pdf
     for more information."""
     prec: np.ndarray = np.array([1.0, 0.5, 0.33, 0.5])
-
     expected_result: np.ndarray = np.array([1.0, 0.5, 0.5, 0.5])
-    assert (interp(prec) == expected_result).all()
+    assert np.isclose(interp(prec), expected_result).all()
 
 
-def test_plot() -> None:
-    """Test plotting functionality (i.e., plots are written to specified file)."""
-    prec_interp: np.ndarray = np.array([1.0, 0.5, 0.25, 0.125])
-    rec_interp: np.ndarray = np.array([0.25, 0.5, 0.75, 1.0])
-    cls_name: str = "VEHICLE"
-    figs_fpath: Path = Path("/tmp/figs")
-    if not figs_fpath.is_dir():
-        figs_fpath.mkdir(parents=True, exist_ok=True)
+# def test_plot() -> None:
+#     """Test plotting functionality (i.e., plots are written to specified file)."""
+#     prec_interp: np.ndarray = np.array([1.0, 0.5, 0.25, 0.125])
+#     rec_interp: np.ndarray = np.array([0.25, 0.5, 0.75, 1.0])
+#     cls_name: str = "VEHICLE"
+#     figs_fpath: Path = Path("/tmp/figs")
+#     if not figs_fpath.is_dir():
+#         figs_fpath.mkdir(parents=True, exist_ok=True)
 
-    expected_result: Path = Path(figs_fpath / (cls_name + ".png"))
-    assert plot(rec_interp, prec_interp, cls_name, figs_fpath) == expected_result
+#     expected_result: Path = Path(figs_fpath / (cls_name + ".png"))
+#     assert plot(rec_interp, prec_interp, cls_name, figs_fpath) == expected_result
 
 
 def test_iou_aligned_3d() -> None:
@@ -282,8 +276,9 @@ def test_iou_aligned_3d() -> None:
     Verify that calculated intersection-over-union matches the expected
     value between the detection and ground truth label.
     """
-    dt_dims: pd.DataFrame = pd.DataFrame([{"width": 10, "height": 3, "length": 4}])
-    gt_dims: pd.DataFrame = pd.DataFrame([{"width": 5, "height": 2, "length": 9}])
+    columns = ["length", "width", "height"]
+    dt_dims = pd.DataFrame([[4.0, 10.0, 3.0]], columns=columns).to_numpy()
+    gt_dims = pd.DataFrame([[9.0, 5.0, 2.0]], columns=columns).to_numpy()
 
     # Intersection is 40 = 4 * 5 * 2 (min of all dimensions).
     # Union is the sum of the two volumes, minus intersection: 270 = (10 * 3 * 4) + (5 * 2 * 9) - 40.
@@ -434,43 +429,24 @@ def test_AP_on_filtered_instances() -> None:
 
 def test_rank() -> None:
     """Test ranking of detections and scores during detection evaluation."""
-    dts: np.ndarray = np.array(
+    columns = ["track_uuid", "length", "width", "height", "qw", "qx", "qy", "qz", "tx", "ty", "tz", "score"]
+    dts = pd.DataFrame(
         [
-            ObjectLabelRecord(
-                quaternion=np.array([1, 0, 0, 0]),
-                translation=np.array([0, 0, 0]),
-                length=5.0,
-                width=5.0,
-                height=5.0,
-                occlusion=0,
-                score=0.7,
-                track_id="0",
-            ),
-            ObjectLabelRecord(
-                quaternion=np.array([1, 0, 0, 0]),
-                translation=np.array([10, 10, 10]),
-                length=5.0,
-                width=5.0,
-                height=5.0,
-                occlusion=0,
-                score=0.9,
-                track_id="1",
-            ),
-            ObjectLabelRecord(
-                quaternion=np.array([1, 0, 0, 0]),
-                translation=np.array([20, 20, 20]),
-                length=5.0,
-                width=5.0,
-                height=5.0,
-                occlusion=0,
-                score=0.8,
-                track_id="2",
-            ),
-        ]
+            ["00000000-0000-0000-0000-000000000000", 5.0, 5.0, 5.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7],
+            ["00000000-0000-0000-0000-000000000001", 5.0, 5.0, 5.0, 1.0, 0.0, 0.0, 0.0, 10.0, 10.0, 10.0, 0.9],
+            ["00000000-0000-0000-0000-000000000002", 5.0, 5.0, 5.0, 1.0, 0.0, 0.0, 0.0, 20.0, 20.0, 20.0, 0.8],
+        ],
+        columns=columns,
     )
 
-    ranked_dts, ranked_scores = rank(dts)
-    track_ids = np.array([dt.track_id for dt in ranked_dts.tolist()])
-    expected_track_ids = np.array(["1", "2", "0"])
+    ranked_dts = rank(dts)
+    track_uuids = ranked_dts["track_uuid"]
+    expected_track_ids = np.array(
+        [
+            "00000000-0000-0000-0000-000000000001",
+            "00000000-0000-0000-0000-000000000002",
+            "00000000-0000-0000-0000-000000000000",
+        ]
+    )
     expected_scores = np.array([0.9, 0.8, 0.7])
-    assert np.all(track_ids == expected_track_ids) and np.all(ranked_scores == expected_scores)
+    assert np.all(track_uuids == expected_track_ids) and np.all(ranked_dts["score"] == expected_scores)
