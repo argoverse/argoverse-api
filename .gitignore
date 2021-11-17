@@ -153,6 +153,5 @@ condaenv*
 experiments
 
 *.parquet
-*.feather
 *.pt
 *.mp4

@@ -7,6 +7,7 @@ The rest apply no filtering to objects that have their corners located outside o
 
 import logging
 from pathlib import Path
+from typing import Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -172,47 +173,26 @@ def test_wrap_angle() -> None:
 def test_accumulate() -> None:
     """Verify that the accumulate function matches known output for a self-comparison."""
     cfg = DetectionCfg(eval_only_roi_instances=False)
-    job = AccumulateJob(
-        TEST_DATA_LOC / "detections",
-        TEST_DATA_LOC / "detections/1/per_sweep_annotations_amodal/tracked_object_labels_0.json",
-        cfg,
-        avm=None,  # ArgoverseMap instance not required when not using ROI info in evaluation
-    )
-    cls_to_accum, cls_to_ninst = accumulate(job)
-    # ensure the detections match at all thresholds, have 0 TP errors, and have AP = 1
-    expected_ATE = 0.0
-    expected_ASE = 0.0
-    expected_AOE = 0.0
-    expected_AP = 1.0
-    assert (
-        cls_to_accum["VEHICLE"]
-        == np.array(
-            [
-                [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0,
-                    expected_ATE,
-                    expected_ASE,
-                    expected_AOE,
-                    expected_AP,
-                ],
-                [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0,
-                    expected_ATE,
-                    expected_ASE,
-                    expected_AOE,
-                    expected_AP,
-                ],
-            ]
-        )
-    ).all()
-    assert cls_to_ninst["VEHICLE"] == 2  # there are 2 vehicle labels in this file
-    assert sum(cls_to_ninst.values()) == 2  # and no other labels
+
+    # dts = pd.read_feather()
+    dts: pd.DataFrame = pd.read_feather("data/labels_0.feather")
+    gts: pd.DataFrame = pd.read_feather("data/labels_0.feather")
+    poses = None
+
+    job = (dts, gts, poses, cfg)
+    cat_stats, cls_to_ninst = accumulate(job)
+
+    # Check that there's a true positive under every threshold.
+    assert np.all(cat_stats.iloc[:, :4])
+
+    # Check that all error metrics are zero.
+    assert np.nonzero(cat_stats.iloc[:, 4:7].to_numpy())[0].shape[0] == 0
+
+    # Check that there are 2 regular vehicles.
+    assert cls_to_ninst["REGULAR_VEHICLE"] == 2
+
+    # Check that there are no other labels.
+    assert sum(cls_to_ninst.values()) == 2
 
 
 def test_assign() -> None:

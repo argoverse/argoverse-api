@@ -13,7 +13,7 @@ import logging
 import os
 from enum import Enum, auto
 from pathlib import Path
-from typing import Dict, Final, List, NamedTuple, Tuple, Union
+from typing import Dict, Final, List, NamedTuple, Optional, Tuple, Union
 
 import matplotlib
 import numpy as np
@@ -94,7 +94,7 @@ class DetectionCfg(NamedTuple):
 
 
 def accumulate(
-    job: Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, DetectionCfg]
+    job: Tuple[pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame], DetectionCfg]
 ) -> Tuple[pd.DataFrame, Dict[str, int]]:
     """Accumulate the true/false positives (boolean flags) and true positive errors for each class.
 
@@ -109,8 +109,6 @@ def accumulate(
             truth dataset.
     """
     dts, gts, poses, cfg = job
-    dts = dts.to_pandas()
-    gts = gts.to_pandas()
 
     dts = dts.sort_values("tov_ns").reset_index(drop=True)
     gts = gts.sort_values("tov_ns").reset_index(drop=True)
@@ -124,17 +122,17 @@ def accumulate(
 
     metrics: List[pd.DataFrame] = []
     cls_to_ninst: Dict[str, int] = {}
-    for label_class in cfg.dt_classes:
-        label_dts = dts_filtered[dts_filtered["label_class"] == label_class]
-        label_gts = gts_filtered[gts_filtered["label_class"] == label_class]
-        label_gts = remove_duplicate_instances(label_gts, cfg)
-        cls_to_ninst[label_class] = len(label_gts)
+    for cat in cfg.dt_classes:
+        cat_dts = dts_filtered[dts_filtered["category"] == cat]
+        cat_gts = gts_filtered[gts_filtered["category"] == cat]
+        cat_gts = remove_duplicate_instances(cat_gts, cfg)
+        cls_to_ninst[cat] = len(cat_gts)
 
         if dts_filtered.shape[0] > 0:
-            ranked_dts = rank(label_dts)
+            ranked_dts = rank(cat_dts)
 
-            class_metrics = assign(ranked_dts, label_gts, cfg)
-            class_metrics["label_class"] = label_class
+            class_metrics = assign(ranked_dts, cat_gts, cfg)
+            class_metrics["category"] = cat
             if class_metrics.shape[0] > 0:
                 metrics.append(class_metrics)
 
@@ -454,11 +452,13 @@ def wrap_angle(angles: np.ndarray, period: float = np.pi) -> np.ndarray:
 
 
 def filter_instances(cuboids: pd.DataFrame, cfg: DetectionCfg) -> pd.DataFrame:
+    cols = ["tx", "ty", "tz"]
+
     outputs = []
-    for class_name in cfg.dt_classes:
-        class_mask = cuboids.label_class == class_name
+    for cat in cfg.dt_classes:
+        class_mask = cuboids["category"] == cat
         classes = cuboids[class_mask]
-        norm = classes[["x", "y", "z"]].pow(2).sum(axis=1).pow(0.5)
+        norm = classes[cols].pow(2).sum(axis=1).pow(0.5)
         mask = norm < cfg.max_dt_range
         outputs.append(classes[mask])
     return pd.concat(outputs)

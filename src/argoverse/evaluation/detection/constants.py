@@ -2,7 +2,7 @@ from typing import Final, List, Tuple
 
 import numpy as np
 
-COMPETITION_CLASSES: Final[Tuple[str, ...]] = ("VEHICLE", "PEDESTRIAN", "BUS")
+COMPETITION_CLASSES: Final[Tuple[str, ...]] = ("REGULAR_VEHICLE", "PEDESTRIAN", "BUS")
 
 TP_ERROR_NAMES: Final[List[str]] = ["ATE", "ASE", "AOE"]
 N_TP_ERRORS: Final[int] = len(TP_ERROR_NAMES)
