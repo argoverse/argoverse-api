@@ -68,18 +68,13 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from argoverse.evaluation.detection.constants import (N_TP_ERRORS,
-                                                      SIGNIFICANT_DIGITS,
-                                                      STATISTIC_NAMES)
-from argoverse.evaluation.detection.utils import (DetectionCfg, accumulate,
-                                                  calc_ap, plot)
+from argoverse.evaluation.detection.constants import N_TP_ERRORS, SIGNIFICANT_DIGITS, STATISTIC_NAMES
+from argoverse.evaluation.detection.utils import DetectionCfg, accumulate, calc_ap, plot
 
 logger = logging.getLogger(__name__)
 
 
-def evaluate(
-    dts: pl.DataFrame, gts: pl.DataFrame, poses: DataFrame, cfg: DetectionCfg
-) -> DataFrame:
+def evaluate(dts: pl.DataFrame, gts: pl.DataFrame, poses: DataFrame, cfg: DetectionCfg) -> DataFrame:
     """Evaluate detection output and return metrics. The multiprocessing
     library is used for parallel processing of sweeps -- each sweep is
     processed independently, computing assignment between detections and
@@ -127,9 +122,7 @@ def evaluate(
     if len(stats) == 0:
         logger.warning("No matches ...")
         return summary
-    summary_update = DataFrame.from_dict(
-        summarize(stats, cfg, cls_to_ninst), orient="index", columns=STATISTIC_NAMES
-    )
+    summary_update = DataFrame.from_dict(summarize(stats, cfg, cls_to_ninst), orient="index", columns=STATISTIC_NAMES)
 
     summary.update(summary_update)
     summary = summary.round(SIGNIFICANT_DIGITS)
@@ -162,9 +155,7 @@ def summarize(
         Path(figs_rootdir).mkdir(parents=True, exist_ok=True)
 
     for cls_name, cls_stats in data.groupby("label_class"):
-        cls_stats = cls_stats.sort_values(by="score", ascending=False).reset_index(
-            drop=True
-        )
+        cls_stats = cls_stats.sort_values(by="score", ascending=False).reset_index(drop=True)
         ninst = cls_to_ninst[cls_name]
         for _, thresh in enumerate(cfg.affinity_threshs):
             tps = cls_stats.loc[:, str(thresh)].reset_index(drop=True)
@@ -183,18 +174,14 @@ def summarize(
         ap = np.array(summary[cls_name][:num_ths]).mean()
 
         # Select only the true positives for each instance.
-        tp_metrics_mask = ~np.isnan(
-            cls_stats.iloc[:, num_ths : num_ths + N_TP_ERRORS]
-        ).all(axis=1)
+        tp_metrics_mask = ~np.isnan(cls_stats.iloc[:, num_ths : num_ths + N_TP_ERRORS]).all(axis=1)
 
         # If there are no true positives set tps errors to their maximum values due to normalization below).
         if ~tp_metrics_mask.any():
             tp_metrics = cfg.tp_normalization_terms
         else:
             # Calculate TP metrics.
-            tp_metrics = cls_stats.iloc[:, num_ths : num_ths + N_TP_ERRORS][
-                tp_metrics_mask
-            ].mean(axis=0)
+            tp_metrics = cls_stats.iloc[:, num_ths : num_ths + N_TP_ERRORS][tp_metrics_mask].mean(axis=0)
 
         # Convert errors to scores.
         tp_scores = 1 - np.divide(tp_metrics, cfg.tp_normalization_terms)

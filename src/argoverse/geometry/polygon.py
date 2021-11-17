@@ -36,9 +36,7 @@ def cuboid2poly(cuboid: NDArray) -> NDArray:
     return polygon
 
 
-def filter_point_cloud_to_bbox_3D_vectorized(
-    bbox: NDArray, pc_raw: NDArray
-) -> Tuple[NDArray, NDArray]:
+def filter_point_cloud_to_bbox_3D_vectorized(bbox: NDArray, pc_raw: NDArray) -> Tuple[NDArray, NDArray]:
     r"""
     Args:
        bbox: Numpy array pf shape (8,3) representing 3d cuboid vertices, ordered
@@ -67,25 +65,13 @@ def filter_point_cloud_to_bbox_3D_vectorized(
     v = bbox[2] - bbox[3]
     w = bbox[2] - bbox[1]
 
-    valid_u1 = np.logical_and(
-        u.dot(bbox[2]) <= pc_raw.dot(u), pc_raw.dot(u) <= u.dot(bbox[6])
-    )
-    valid_v1 = np.logical_and(
-        v.dot(bbox[2]) <= pc_raw.dot(v), pc_raw.dot(v) <= v.dot(bbox[3])
-    )
-    valid_w1 = np.logical_and(
-        w.dot(bbox[2]) <= pc_raw.dot(w), pc_raw.dot(w) <= w.dot(bbox[1])
-    )
+    valid_u1 = np.logical_and(u.dot(bbox[2]) <= pc_raw.dot(u), pc_raw.dot(u) <= u.dot(bbox[6]))
+    valid_v1 = np.logical_and(v.dot(bbox[2]) <= pc_raw.dot(v), pc_raw.dot(v) <= v.dot(bbox[3]))
+    valid_w1 = np.logical_and(w.dot(bbox[2]) <= pc_raw.dot(w), pc_raw.dot(w) <= w.dot(bbox[1]))
 
-    valid_u2 = np.logical_and(
-        u.dot(bbox[2]) >= pc_raw.dot(u), pc_raw.dot(u) >= u.dot(bbox[6])
-    )
-    valid_v2 = np.logical_and(
-        v.dot(bbox[2]) >= pc_raw.dot(v), pc_raw.dot(v) >= v.dot(bbox[3])
-    )
-    valid_w2 = np.logical_and(
-        w.dot(bbox[2]) >= pc_raw.dot(w), pc_raw.dot(w) >= w.dot(bbox[1])
-    )
+    valid_u2 = np.logical_and(u.dot(bbox[2]) >= pc_raw.dot(u), pc_raw.dot(u) >= u.dot(bbox[6]))
+    valid_v2 = np.logical_and(v.dot(bbox[2]) >= pc_raw.dot(v), pc_raw.dot(v) >= v.dot(bbox[3]))
+    valid_w2 = np.logical_and(w.dot(bbox[2]) >= pc_raw.dot(w), pc_raw.dot(w) >= w.dot(bbox[1]))
 
     valid_u = np.logical_or(valid_u1, valid_u2)
     valid_v = np.logical_or(valid_v1, valid_v2)

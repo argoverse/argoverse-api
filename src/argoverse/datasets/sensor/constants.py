@@ -46,6 +46,4 @@ CUBOID_COLS: Final[List[str]] = [
 
 FOV: Final[np.ndarray] = np.array([-25.0 / 180.0 * np.pi, 15 / 180.0 * np.pi])
 
-EGO_SE3_LIDAR_UP: Final[np.ndarray] = np.array(
-    [[1, 0, 0, 1.35018], [0, 1, 0, 0], [0, 0, 1, 1.64042], [0, 0, 0, 1]]
-)
+EGO_SE3_LIDAR_UP: Final[np.ndarray] = np.array([[1, 0, 0, 1.35018], [0, 1, 0, 0], [0, 0, 1, 1.64042], [0, 0, 0, 1]])

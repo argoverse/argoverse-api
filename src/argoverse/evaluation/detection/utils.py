@@ -22,12 +22,15 @@ from pandas import DataFrame
 from scipy.spatial.distance import cdist
 from scipy.spatial.transform import Rotation as R
 
-from argoverse.evaluation.detection.constants import (COMPETITION_CLASSES,
-                                                      MAX_NORMALIZED_ASE,
-                                                      MAX_NUM_BOXES,
-                                                      MAX_SCALE_ERROR,
-                                                      MAX_YAW_ERROR, MIN_AP,
-                                                      MIN_CDS)
+from argoverse.evaluation.detection.constants import (
+    COMPETITION_CLASSES,
+    MAX_NORMALIZED_ASE,
+    MAX_NUM_BOXES,
+    MAX_SCALE_ERROR,
+    MAX_YAW_ERROR,
+    MIN_AP,
+    MIN_CDS,
+)
 
 matplotlib.use("Agg")  # isort:skip
 import matplotlib.pyplot as plt  # isort:skip  # noqa: E402
@@ -84,22 +87,14 @@ class DetectionCfg(NamedTuple):
     dt_metric: FilterMetric = FilterMetric.EUCLIDEAN
     max_dt_range: float = 100.0  # Meters
     save_figs: bool = False
-    tp_normalization_terms: np.ndarray = np.array(
-        [tp_thresh, MAX_SCALE_ERROR, MAX_YAW_ERROR]
-    )
-    summary_default_vals: np.ndarray = np.array(
-        [MIN_AP, tp_thresh, MAX_NORMALIZED_ASE, MAX_YAW_ERROR, MIN_CDS]
-    )
+    tp_normalization_terms: np.ndarray = np.array([tp_thresh, MAX_SCALE_ERROR, MAX_YAW_ERROR])
+    summary_default_vals: np.ndarray = np.array([MIN_AP, tp_thresh, MAX_NORMALIZED_ASE, MAX_YAW_ERROR, MIN_CDS])
     eval_only_roi_instances: bool = True
-    map_root: _PathLike = (
-        Path(__file__).parent.parent.parent.parent / "map_files"
-    )  # argoverse-api/map_files
+    map_root: _PathLike = Path(__file__).parent.parent.parent.parent / "map_files"  # argoverse-api/map_files
     splits: Tuple[str, ...] = ("val",)
 
 
-def accumulate(
-    job: Tuple[DataFrame, DataFrame, DataFrame, DetectionCfg]
-) -> Tuple[DataFrame, Dict[str, int]]:
+def accumulate(job: Tuple[DataFrame, DataFrame, DataFrame, DetectionCfg]) -> Tuple[DataFrame, Dict[str, int]]:
     """Accumulate the true/false positives (boolean flags) and true positive errors for each class.
 
     Args:
@@ -168,9 +163,7 @@ def remove_duplicate_instances(instances: DataFrame, cfg: DetectionCfg) -> DataF
         return instances
 
     # create affinity matrix as inverse distance to other objects
-    affinity_matrix = compute_affinity_matrix(
-        instances, instances, cfg.affinity_fn_type
-    )
+    affinity_matrix = compute_affinity_matrix(instances, instances, cfg.affinity_fn_type)
 
     row_idxs, col_idxs = np.where(affinity_matrix == 0)
 
@@ -290,9 +283,7 @@ def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
     return prec_interp
 
 
-def compute_affinity_matrix(
-    dts: DataFrame, gts: DataFrame, metric: AffFnType
-) -> np.ndarray:
+def compute_affinity_matrix(dts: DataFrame, gts: DataFrame, metric: AffFnType) -> np.ndarray:
     """Calculate the affinity matrix between detections and ground truth labels,
     using a specified affinity function type.
 
@@ -314,9 +305,7 @@ def compute_affinity_matrix(
     return sims
 
 
-def calc_ap(
-    tps: np.ndarray, recalls_interp: np.ndarray, ninst: int
-) -> Tuple[float, np.ndarray]:
+def calc_ap(tps: np.ndarray, recalls_interp: np.ndarray, ninst: int) -> Tuple[float, np.ndarray]:
     """Compute precision and recall, interpolated over n fixed recall points.
 
     Args:
@@ -474,9 +463,7 @@ def filter_instances(cuboids: DataFrame, cfg: DetectionCfg) -> DataFrame:
     return pd.concat(outputs)
 
 
-def plot(
-    rec_interp: np.ndarray, prec_interp: np.ndarray, cls_name: str, figs_fpath: Path
-) -> Path:
+def plot(rec_interp: np.ndarray, prec_interp: np.ndarray, cls_name: str, figs_fpath: Path) -> Path:
     """Plot and save the precision recall curve.
     Args:
         rec_interp: Interpolated recall data of shape (N,).
