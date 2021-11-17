@@ -315,8 +315,8 @@ def calc_ap(tps: np.ndarray, recalls_interp: np.ndarray, ninst: int) -> Tuple[fl
         avg_precision: Average precision.
         precisions_interp: Interpolated precision values.
     """
-    cumulative_tps = tps.cumsum()
-    cumulative_fps = (~tps).cumsum()
+    cumulative_tps = np.cumsum(tps)
+    cumulative_fps = np.cumsum(~tps)
     cumulative_fns = ninst - cumulative_tps
 
     precisions = cumulative_tps / (cumulative_tps + cumulative_fps + EPS)

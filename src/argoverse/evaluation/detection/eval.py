@@ -155,7 +155,7 @@ def summarize(
         for _, thresh in enumerate(cfg.affinity_threshs):
             tps = cls_stats.loc[:, str(thresh)].reset_index(drop=True)
             ap_th, precisions_interp = calc_ap(tps, recalls_interp, ninst)
-            summary[cls_name] += [ap_th]
+            summary[cls_name].append(ap_th)
 
             if cfg.save_figs:
                 plot(

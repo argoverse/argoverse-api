@@ -8,7 +8,6 @@ The rest apply no filtering to objects that have their corners located outside o
 import logging
 import math
 from pathlib import Path
-from typing import Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -20,7 +19,6 @@ from argoverse.evaluation.detection.utils import (
     AffFnType,
     DetectionCfg,
     DistFnType,
-    FilterMetric,
     accumulate,
     assign,
     compute_affinity_matrix,
@@ -40,7 +38,6 @@ logging.getLogger("matplotlib.font_manager").disabled = True
 def metrics_identity() -> pd.DataFrame:
     """Define an evaluator that compares a set of results to itself."""
     detection_cfg = DetectionCfg(dt_classes=("REGULAR_VEHICLE",), eval_only_roi_instances=False)
-
     dts: pd.DataFrame = pd.read_feather("data/detections_identity.feather")
     metrics = evaluate(dts, dts, None, detection_cfg)
     return metrics
@@ -161,24 +158,24 @@ def test_wrap_angle() -> None:
 def test_accumulate() -> None:
     """Verify that the accumulate function matches known output for a self-comparison."""
     cfg = DetectionCfg(eval_only_roi_instances=False)
-    dts: pd.DataFrame = pd.read_feather("data/labels.feather")
     gts: pd.DataFrame = pd.read_feather("data/labels.feather")
     poses = None
 
-    job = (dts, gts, poses, cfg)
-    cat_stats, cls_to_ninst = accumulate(job)
+    for _, group in gts.groupby(["log_id", "tov_ns"]):
+        job = (group, group, poses, cfg)
+        cat_stats, cls_to_ninst = accumulate(job)
 
-    # Check that there's a true positive under every threshold.
-    assert np.all(cat_stats.iloc[:, :4])
+        # Check that there's a true positive under every threshold.
+        assert np.all(cat_stats.iloc[:, :4])
 
-    # Check that all error metrics are zero.
-    assert np.nonzero(cat_stats.iloc[:, 4:7].to_numpy())[0].shape[0] == 0
+        # Check that all error metrics are zero.
+        assert np.nonzero(cat_stats.iloc[:, 4:7].to_numpy())[0].shape[0] == 0
 
-    # Check that there are 2 regular vehicles.
-    assert cls_to_ninst["REGULAR_VEHICLE"] == 2
+        # Check that there are 2 regular vehicles.
+        assert cls_to_ninst["REGULAR_VEHICLE"] == 2
 
-    # Check that there are no other labels.
-    assert sum(cls_to_ninst.values()) == 2
+        # Check that there are no other labels.
+        assert sum(cls_to_ninst.values()) == 2
 
 
 def test_assign() -> None:
@@ -267,7 +264,7 @@ def test_iou_aligned_3d() -> None:
 
 def test_assignment(metrics_assignment: pd.DataFrame) -> None:
     """Verify that assignment works as expected; should have one duplicate in the provided results."""
-    expected_result: float = 0.976
+    expected_result: float = 0.999
     assert metrics_assignment.loc["Average Metrics", "AP"] == expected_result
 
 
