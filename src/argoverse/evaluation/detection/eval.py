@@ -116,7 +116,9 @@ def evaluate(dts: pd.DataFrame, gts: pd.DataFrame, poses: Optional[pd.DataFrame]
     if len(stats) == 0:
         logger.warning("No matches ...")
         return summary
-    summary_update = pd.DataFrame.from_dict(summarize(stats, cfg, cls_to_ninst), orient="index", columns=STATISTIC_NAMES)
+    summary_update = pd.DataFrame.from_dict(
+        summarize(stats, cfg, cls_to_ninst), orient="index", columns=STATISTIC_NAMES
+    )
 
     summary.update(summary_update)
     summary = summary.round(SIGNIFICANT_DIGITS)

@@ -1,5 +1,4 @@
-import numpy as np
-import numpy.typing as npt
+import os
+import typing
 
-NDArray = npt.NDArray[np.float64]
-NDArrayInt = npt.NDArray[np.int64]
+PathLike = typing.Union[str, bytes, os.PathLike[str]]
