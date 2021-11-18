@@ -8,20 +8,28 @@ def _setup(session: Session) -> None:
 
 
 @nox.session
+def black(session: Session) -> None:
+    _setup(session)
+    session.install("black")
+    session.run("black", ".")
+
+
+@nox.session
+def isort(session: Session) -> None:
+    _setup(session)
+    session.install("isort")
+    session.run("isort", ".")
+
+
+@nox.session
 def tests(session: Session) -> None:
     _setup(session)
     session.install("pytest")
     session.run("pytest")
 
 
-# @nox.session
-# def lint(session: Session) -> None:
-#     _setup(session)
-#     session.install("flake8")
-#     session.run("flake8", "")
-
-# @nox.session
-# def mypy(session: Session) -> None:
-#     _setup(session)
-#     session.install("mypy")
-#     session.run("mypy")
+@nox.session
+def mypy(session: Session) -> None:
+    _setup(session)
+    session.install("mypy")
+    session.run("mypy", ".")

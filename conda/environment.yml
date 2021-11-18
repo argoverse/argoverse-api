@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - matplotlib
+  - nox
   - numpy
   - pandas
   - pyarrow
