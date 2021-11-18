@@ -1,5 +1,10 @@
-name: argoverse
+name: av2
 channels:
   - conda-forge
 dependencies:
+  - matplotlib
+  - numpy
   - pandas
+  - pyarrow
+  - pytest
+  - scipy

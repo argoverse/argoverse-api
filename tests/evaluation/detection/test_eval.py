@@ -30,7 +30,7 @@ from argoverse.evaluation.detection.utils import (
     wrap_angle,
 )
 
-TEST_DATA_LOC = Path(__file__).parent.parent / "tests" / "test_data" / "detection"
+TEST_DATA_LOC = Path(__file__).parent.parent / "detection" / "data"
 logging.getLogger("matplotlib.font_manager").disabled = True
 
 
@@ -38,7 +38,7 @@ logging.getLogger("matplotlib.font_manager").disabled = True
 def metrics_identity() -> pd.DataFrame:
     """Define an evaluator that compares a set of results to itself."""
     detection_cfg = DetectionCfg(dt_classes=("REGULAR_VEHICLE",), eval_only_roi_instances=False)
-    dts: pd.DataFrame = pd.read_feather("data/detections_identity.feather")
+    dts: pd.DataFrame = pd.read_feather(TEST_DATA_LOC / "detections_identity.feather")
     metrics = evaluate(dts, dts, None, detection_cfg)
     return metrics
 
@@ -47,8 +47,8 @@ def metrics_identity() -> pd.DataFrame:
 def metrics_assignment() -> pd.DataFrame:
     """Define an evaluator that compares a set of results to one with an extra detection to check assignment."""
     detection_cfg = DetectionCfg(dt_classes=("REGULAR_VEHICLE",), eval_only_roi_instances=False)
-    dts: pd.DataFrame = pd.read_feather("data/detections_assignment.feather")
-    gts: pd.DataFrame = pd.read_feather("data/labels.feather")
+    dts: pd.DataFrame = pd.read_feather(TEST_DATA_LOC / "detections_assignment.feather")
+    gts: pd.DataFrame = pd.read_feather(TEST_DATA_LOC / "labels.feather")
     metrics = evaluate(dts, gts, None, detection_cfg)
     return metrics
 
@@ -56,8 +56,8 @@ def metrics_assignment() -> pd.DataFrame:
 @pytest.fixture  # type: ignore
 def metrics() -> pd.DataFrame:
     detection_cfg = DetectionCfg(dt_classes=("REGULAR_VEHICLE",), eval_only_roi_instances=False)
-    dts: pd.DataFrame = pd.read_feather("data/detections.feather")
-    gts: pd.DataFrame = pd.read_feather("data/labels.feather")
+    dts: pd.DataFrame = pd.read_feather(TEST_DATA_LOC / "detections.feather")
+    gts: pd.DataFrame = pd.read_feather(TEST_DATA_LOC / "labels.feather")
     metrics = evaluate(dts, gts, None, detection_cfg)
     return metrics
 
@@ -158,7 +158,7 @@ def test_wrap_angle() -> None:
 def test_accumulate() -> None:
     """Verify that the accumulate function matches known output for a self-comparison."""
     cfg = DetectionCfg(eval_only_roi_instances=False)
-    gts: pd.DataFrame = pd.read_feather("data/labels.feather")
+    gts: pd.DataFrame = pd.read_feather(TEST_DATA_LOC / "labels.feather")
     poses = None
 
     for _, group in gts.groupby(["log_id", "tov_ns"]):
