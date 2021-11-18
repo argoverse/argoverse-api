@@ -42,7 +42,7 @@ def cart2hom(cart: np.ndarray) -> np.ndarray:
     M = cart.shape[0]
     N = cart.shape[1]
     hom: np.ndarray = np.ones((M, N + 1))
-    hom[:, :3] = cart
+    hom[:, :N] = cart
     return hom
 
 
