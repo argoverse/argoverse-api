@@ -2,11 +2,8 @@ name: av2
 channels:
   - conda-forge
 dependencies:
-  - black
-  - isort
   - matplotlib
   - numpy
   - pandas
   - pyarrow
-  - pytest
   - scipy
