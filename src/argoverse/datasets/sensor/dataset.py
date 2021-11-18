@@ -32,7 +32,6 @@ class SensorDataset(Dataset):
         #     split = sensor_path.parent.parent.parent.parent.stem
         #     metadata.append((split, log_id, record_type))
         # self.metadata = pd.DataFrame(metadata, columns=["split", "log_id", "record_type"])
-        breakpoint()
 
     def __getitem__(self, idx: int) -> pd.DataFrame:
         """Get an item from the dataset.

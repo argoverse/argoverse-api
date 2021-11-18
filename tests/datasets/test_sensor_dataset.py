@@ -1,7 +1,7 @@
 """Unit tests for sensor-dataset dataloader."""
 from pathlib import Path
 
-from argoverse.datasets.sensor_dataset import SensorDataset
+from argoverse.datasets.sensor.dataset import SensorDataset
 
 
 def test_sensor_dataset() -> None:

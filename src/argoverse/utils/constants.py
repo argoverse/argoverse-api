@@ -3,10 +3,8 @@
 
 import math
 import multiprocessing as mp
-from typing import Final
 from pathlib import Path
 from typing import Final
-
 
 # 3.14159 ...
 PI: Final[float] = math.pi
