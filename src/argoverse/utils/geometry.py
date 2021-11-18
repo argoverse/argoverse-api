@@ -63,7 +63,7 @@ def hom2cart(hom: np.ndarray) -> np.ndarray:
     return hom[:, :3]
 
 
-def pos2range(
+def cart2range(
     cart: np.ndarray,
     fov: np.ndarray,
     dims: np.ndarray = np.array([64, 1024]),

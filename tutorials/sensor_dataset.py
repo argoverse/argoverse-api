@@ -1,12 +1,13 @@
 """Example script for loading data from the AV2 sensor dataset."""
 
+from os import PathLike
 from pathlib import Path
 
 from argoverse.datasets.sensor import SensorDataset
-from argoverse.utils.pathlib import HOME
+from argoverse.utils.constants import HOME
 
 
-def main(dataset_dir: Path) -> None:
+def main(dataset_dir: PathLike) -> None:
     SensorDataset(dataset_dir)
 
     breakpoint()
