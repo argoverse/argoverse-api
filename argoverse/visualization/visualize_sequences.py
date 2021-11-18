@@ -15,7 +15,7 @@ from argoverse.map_representation.map_api import ArgoverseMap
 
 _ZORDER = {"AGENT": 15, "AV": 10, "OTHERS": 5}
 
-_PathLike = Union[str, "os.PathLike[str]", None]
+_PathLike = Union[str, "os.PathLike[str]"]
 
 def interpolate_polyline(polyline: np.ndarray, num_points: int) -> np.ndarray:
     duplicates = []
