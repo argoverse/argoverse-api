@@ -12,4 +12,5 @@ profile = "black"
 [tool.mypy]
 exclude = "build"
 ignore_missing_imports = true
+plugins = numpy.typing.mypy_plugin
 strict = true
