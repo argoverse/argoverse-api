@@ -1,9 +1,11 @@
 # <Copyright 2021, Argo AI, LLC. Released under the MIT license.>
 """Geometric utilities for manipulation point clouds, rigid objects, and vector geometry."""
 
+from typing import Tuple
+
 import numpy as np
 
-from argoverse.utils.constants import PI
+from argoverse.utils.constants import NAN, PI
 
 
 def wrap_angles(angles: np.ndarray, period: float = PI) -> np.ndarray:
@@ -59,3 +61,29 @@ def hom2cart(hom: np.ndarray) -> np.ndarray:
     """
     hom[:, :3] /= hom[:, 3:4]
     return hom[:, :3]
+
+
+def pos2range(
+    cart: np.ndarray,
+    fov: np.ndarray,
+    dims: np.ndarray = np.array([64, 1024]),
+) -> Tuple[np.ndarray, np.ndarray]:
+    fov_bottom, fov_top = np.abs(fov).transpose()
+
+    az, el, r = cart2sph(*cart.transpose())
+
+    v = 0.5 * (-az / PI + 1.0)
+    u = 1.0 - (el + fov_bottom) / (fov_bottom + fov_top)
+
+    perm = np.argsort(r)
+
+    uv = np.stack((u, v), axis=-1)[perm] * dims
+    uv = np.clip(uv, 0, dims - 1).astype(int)
+
+    range_im = np.full(dims, NAN)
+    pos_im = np.full((dims.tolist() + [3]), NAN)
+
+    u, v = uv.transpose()
+    range_im[u, v] = r[perm]
+    pos_im[u, v] = cart[perm]
+    return range_im, pos_im

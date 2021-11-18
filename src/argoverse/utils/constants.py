@@ -10,7 +10,7 @@ from typing import Final
 PI: Final[float] = math.pi
 
 # Not a number.
-NAN: Final[float] = float("nan")
+NAN: Final[float] = math.nan
 
 # System home directory.
 HOME: Final[Path] = Path.home()
