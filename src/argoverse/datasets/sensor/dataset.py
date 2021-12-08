@@ -4,7 +4,7 @@ import os
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import cv2
 import numpy as np
@@ -33,31 +33,44 @@ class SensorDataset(Dataset):
     def __post_init__(self) -> None:
         """Post initialization."""
         super().__post_init__()
-
         self.metadata = self._get_metadata()
+
         self.num_logs = len(self.metadata.index.unique("log_id"))
         self.num_sweeps = self.metadata.index.get_level_values("sensor_name").value_counts()["lidar"]
-        self.synchronized_metadata: Dict[str, pd.DataFrame] = {}
+        self.synchronized_metadata: Optional[pd.DataFrame] = None
 
         if self.with_imagery:
-            log_ids = self.metadata.index.unique(level="log_id")
-            for log_id in log_ids:
-                log_data = self.metadata.loc[log_id]
+            sync_path = Path(self.root_dir, "_sync_db")
+            if sync_path.exists():
+                self.synchronized_metadata = read_feather(sync_path)
+            else:
+                log_ids = self.metadata.index.unique(level="log_id")
 
-                sensors: List[str] = log_data.index.unique(level="sensor_name").values.tolist()
-                sensors.remove("lidar")
+                synchronized_metadata: List[pd.DataFrame] = []
+                for log_id in log_ids:
+                    log_data = self.metadata.loc[log_id]
 
-                reference_sensor = log_data.loc["lidar"]
-                reference_sensor.columns = ["tov_ns"]
-                for sensor in sensors:
-                    target_sensor = log_data.loc[sensor]
-                    target_sensor = target_sensor.rename({0: "tov_ns"}, axis=1)
-                    target_sensor[sensor] = target_sensor["tov_ns"]
+                    sensors: List[str] = log_data.index.unique(level="sensor_name").values.tolist()
+                    sensors.remove("lidar")
 
-                    reference_sensor = pd.merge_asof(reference_sensor, target_sensor, on="tov_ns", direction="nearest")
-                self.synchronized_metadata[log_id] = reference_sensor
+                    reference_sensor = log_data.loc["lidar"]
+                    for sensor in sensors:
+                        target_sensor = log_data.loc[sensor]
+                        target_sensor[sensor] = target_sensor["tov_ns"]
+
+                        reference_sensor = pd.merge_asof(
+                            reference_sensor, target_sensor, on="tov_ns", direction="nearest"
+                        )
+                    reference_sensor.insert(0, "log_id", log_id)
+                    synchronized_metadata.append(reference_sensor)
+                self.synchronized_metadata = pd.concat(synchronized_metadata).reset_index(drop=True)
+                self.synchronized_metadata.to_feather(str(sync_path))
+            self.synchronized_metadata = self.synchronized_metadata.set_index(["log_id", "tov_ns"])
 
     def _get_metadata(self) -> pd.DataFrame:
+        metadata_path = Path(self.root_dir, "_metadata")
+        if metadata_path.exists():
+            return read_feather(metadata_path).set_index(["log_id", "sensor_name"])
         lidar_pattern = "*/sensors/lidar/*.feather"
         lidar_paths: List[Path] = sorted(self.root_dir.glob(lidar_pattern))
 
@@ -79,7 +92,9 @@ class SensorDataset(Dataset):
         keys = lidar_keys + camera_keys
         data = lidar_data + camera_data
         index: pd.MultiIndex = pd.MultiIndex.from_tuples(keys, names=["log_id", "sensor_name"], sortorder=0)
-        return pd.DataFrame(index=index, data=data)
+        metadata = pd.DataFrame(index=index, data=data)
+        metadata.reset_index().to_feather(str(metadata_path))
+        return metadata
 
     def __len__(self) -> int:
         if self.mode == DataloaderMode.DETECTION:
@@ -114,20 +129,16 @@ class SensorDataset(Dataset):
 
         datum: Dict[str, Union[np.ndarray, pd.DataFrame]] = {"annotations": sweep_annotations, "lidar": lidar}
         if self.with_imagery:
-            synced_sensors = self.synchronized_metadata[log_id]
-            synchronized_record = synced_sensors[synced_sensors["tov_ns"] == tov_ns].iloc[:, 1:]
-
+            synchronized_record = self.synchronized_metadata.loc[(log_id, tov_ns)]
             sensor_data: Dict[str, np.ndarray] = {}
-            sensors: List[str] = list(synchronized_record.columns)
-            for sensor in sensors:
-                tov_ns = synchronized_record[sensor].values[0]
+            for sensor, tov_ns in synchronized_record.items():
                 sensor_path = Path(sensors_root, "cameras", sensor, str(tov_ns)).with_suffix(".jpg")
                 sensor_data[sensor] = cv2.imread(str(sensor_path))
             datum |= sensor_data
         return datum
 
 
-def _get_key(path: Path) -> Tuple[Tuple[str, ...], int]:
+def _get_key(path: Path) -> Tuple[Tuple[str, ...], Dict[str, int]]:
     sensor_name = path.parent.stem
 
     idx = 3
@@ -137,4 +148,4 @@ def _get_key(path: Path) -> Tuple[Tuple[str, ...], int]:
     log_id = path.parents[idx].stem
     sensor_name = path.parent.stem
     tov_ns = int(path.stem)
-    return (log_id, sensor_name), tov_ns
+    return (log_id, sensor_name), {"tov_ns": tov_ns}
