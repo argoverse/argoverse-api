@@ -11,7 +11,8 @@ from argoverse.utils.typing import PathLike
 def main(dataset_dir: PathLike) -> None:
     dataset = SensorDataset(dataset_dir, DataloaderMode.DETECTION)
     for datum in dataset:
-        lidar_xyz = datum[["x", "y", "z"]]
+        annotations = datum["annotations"]
+        lidar = datum["lidar"]
         breakpoint()
 
 
