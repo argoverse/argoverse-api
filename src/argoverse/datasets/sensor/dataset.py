@@ -28,6 +28,8 @@ class SensorDataset(Dataset):
 
     mode: DataloaderMode
     index_names: Tuple[str, ...] = INDEX_KEYS
+
+    with_cache = True
     with_imagery = True
 
     def __post_init__(self) -> None:
@@ -41,7 +43,7 @@ class SensorDataset(Dataset):
 
         if self.with_imagery:
             sync_path = Path(self.root_dir, "_sync_db")
-            if sync_path.exists():
+            if self.with_cache and sync_path.exists():
                 self.synchronized_metadata = read_feather(sync_path)
             else:
                 log_ids = self.metadata.index.unique(level="log_id")
@@ -69,7 +71,7 @@ class SensorDataset(Dataset):
 
     def _get_metadata(self) -> pd.DataFrame:
         metadata_path = Path(self.root_dir, "_metadata")
-        if metadata_path.exists():
+        if self.with_cache and metadata_path.exists():
             return read_feather(metadata_path).set_index(["log_id", "sensor_name"])
         lidar_pattern = "*/sensors/lidar/*.feather"
         lidar_paths: List[Path] = sorted(self.root_dir.glob(lidar_pattern))
@@ -127,7 +129,12 @@ class SensorDataset(Dataset):
         annotations = read_feather(annotations_path)
         sweep_annotations = annotations[annotations["tov_ns"] == tov_ns]
 
-        datum: Dict[str, Union[np.ndarray, pd.DataFrame]] = {"annotations": sweep_annotations, "lidar": lidar}
+        datum: Dict[str, Union[Dict[str, str], np.ndarray, pd.DataFrame]] = {
+            "annotations": sweep_annotations,
+            "lidar": lidar,
+            "metadata": {"log_id": log_id},
+        }
+
         if self.with_imagery:
             synchronized_record = self.synchronized_metadata.loc[(log_id, tov_ns)]
             sensor_data: Dict[str, np.ndarray] = {}
