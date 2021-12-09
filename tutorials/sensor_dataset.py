@@ -1,12 +1,12 @@
 """Example script for loading data from the AV2 sensor dataset."""
 
-from math import remainder
 from pathlib import Path
+from typing import Dict, Union
 
 import cv2
 import numpy as np
+import pandas as pd
 import torch
-from kornia.color import bgr_to_rgb
 from torchvision.io import write_video
 
 from argoverse.datasets.sensor import SensorDataset
@@ -40,7 +40,7 @@ def main(dataset_dir: PathLike) -> None:
     write_video("tiled_video.mp4", video, fps=10, options={"crf": "27"})
 
 
-def tile_cameras(datum) -> np.ndarray:
+def tile_cameras(datum: Dict[str, Union[np.ndarray, pd.DataFrame]]) -> np.ndarray:
     h = 1550 + 1550 + 1550
     w = 2048 + 1550 + 2048
     tiled_im = np.zeros((h, w, 3), dtype=np.uint8)
