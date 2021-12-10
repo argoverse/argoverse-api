@@ -29,8 +29,9 @@ class SensorDataset(Dataset):
     mode: DataloaderMode
     index_names: Tuple[str, ...] = INDEX_KEYS
 
-    with_cache = True
-    with_imagery = True
+    with_cache: bool = True
+    with_annotations: bool = True
+    with_imagery: bool = True
 
     def __post_init__(self) -> None:
         """Post initialization."""
@@ -125,15 +126,17 @@ class SensorDataset(Dataset):
         lidar_path = Path(sensors_root, "lidar", str(tov_ns)).with_suffix(".feather")
         lidar = read_feather(lidar_path)
 
-        annotations_path = Path(self.root_dir, log_id, "annotations.feather")
-        annotations = read_feather(annotations_path)
-        sweep_annotations = annotations[annotations["tov_ns"] == tov_ns]
-
         datum: Dict[str, Union[Dict[str, str], np.ndarray, pd.DataFrame]] = {
-            "annotations": sweep_annotations,
             "lidar": lidar,
             "metadata": {"log_id": log_id},
         }
+
+        with_annotations = False
+        if with_annotations:
+            annotations_path = Path(self.root_dir, log_id, "annotations.feather")
+            annotations = read_feather(annotations_path)
+            sweep_annotations = annotations[annotations["tov_ns"] == tov_ns]
+            datum |= {"annotations": sweep_annotations}
 
         if self.with_imagery:
             synchronized_record = self.synchronized_metadata.loc[(log_id, tov_ns)]
