@@ -3,6 +3,8 @@
 
 from typing import Optional, Tuple
 
+import cv2
+import numpy as np
 import pandas as pd
 from pyarrow import feather
 
@@ -24,3 +26,11 @@ def read_feather(path: PathLike, columns: Optional[Tuple[str, ...]] = None) -> p
         pd.DataFrame: (N,len(columns)) Apache Feather data represented as a `pandas` DataFrame.
     """
     return feather.read_feather(path, columns=columns)
+
+
+def read_im(path: PathLike) -> np.ndarray:
+    return cv2.imread(str(path))
+
+
+def write_im(fname: PathLike, im: np.ndarray) -> None:
+    cv2.imwrite(str(fname), im)

@@ -9,11 +9,12 @@ from typing import Dict, List, Optional, Tuple, Union
 import cv2
 import numpy as np
 import pandas as pd
+from PIL import Image
 
 from argoverse.datasets.dataset import Dataset
 from argoverse.datasets.sensor.constants import INDEX_KEYS
 from argoverse.utils.distributed import compute_chunksize, parallelize
-from argoverse.utils.io import read_feather
+from argoverse.utils.io import read_feather, read_im
 
 logger = logging.Logger(__name__)
 
@@ -143,7 +144,7 @@ class SensorDataset(Dataset):
             sensor_data: Dict[str, np.ndarray] = {}
             for sensor, tov_ns in synchronized_record.items():
                 sensor_path = Path(sensors_root, "cameras", sensor, str(tov_ns)).with_suffix(".jpg")
-                sensor_data[sensor] = cv2.imread(str(sensor_path))
+                sensor_data[sensor] = read_im(sensor_path)
             datum |= sensor_data
         return datum
 
