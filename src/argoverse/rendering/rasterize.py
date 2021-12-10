@@ -1,5 +1,5 @@
 """Raster visualization tools."""
-from typing import Any
+from typing import Optional
 import numpy as np
 from numba import njit
 
@@ -7,11 +7,14 @@ from numba import njit
 # TODO: add njit support.
 def pc2im(
     lidar_xyz: np.ndarray,
-    cmap: np.ndarray,
     voxel_resolution: np.ndarray,
     grid_size: np.ndarray,
-    is_normalized: bool = False,
+    cmap: Optional[np.ndarray] = None,
 ) -> np.ndarray:
+
+    # Default colormap to gray.
+    if cmap is None:
+        cmap = np.full((lidar_xyz.shape[0], 3), 128.0)
 
     # Grab the Cartesian coordinates (xyz).
     cart = lidar_xyz[..., :-1].copy()
@@ -55,6 +58,3 @@ def pc2im(
     im[..., -1] /= im[..., -1].max()
     im[..., -1] = np.power(im[..., -1], 0.2)
     return im
-
-
-# def overlay_annotations()
