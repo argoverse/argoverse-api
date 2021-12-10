@@ -1,10 +1,13 @@
 """Raster visualization tools."""
+from typing import Any
 import numpy as np
 from numba import njit
 
 
 # TODO: add njit support.
-def pc2im(lidar: np.ndarray, voxel_resolution: np.ndarray, grid_size: np.ndarray) -> np.ndarray:
+def pc2im(
+    lidar: np.ndarray, voxel_resolution: np.ndarray, grid_size: np.ndarray, is_normalized: bool = False
+) -> np.ndarray:
 
     # Grab the Cartesian coordinates (xyz).
     cart = lidar[..., :-1].copy()
@@ -49,4 +52,7 @@ def pc2im(lidar: np.ndarray, voxel_resolution: np.ndarray, grid_size: np.ndarray
     im = (1 - im) * (im != 0)
 
     # Greyscale -> RGB
-    return np.repeat(im, 3, axis=-1)
+    im = np.repeat(im, 3, axis=-1)
+    if not is_normalized:
+        im = np.multiply(im, 255.0)
+    return im

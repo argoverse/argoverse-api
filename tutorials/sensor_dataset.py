@@ -37,7 +37,7 @@ def main(dataset_dir: PathLike) -> None:
             voxel_resolution=VOXEL_RESOLUTION,
             grid_size=GRID_SIZE,
         )
-        cv2.imwrite("test.jpg", (im * 255.0).astype(np.uint8))
+        cv2.imwrite("test.jpg", im.astype(np.uint8))
 
         curr_log = datum["metadata"]["log_id"]
         if prev_log is not None and curr_log != prev_log:
