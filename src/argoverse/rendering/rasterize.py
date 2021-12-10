@@ -1,8 +1,23 @@
 """Raster visualization tools."""
-from typing import Optional
+from typing import Final, Optional
 
 import numpy as np
+import pandas as pd
 from numba import njit
+from scipy.spatial.transform import Rotation as R
+
+# Unit polygon (vertices in {-1, 0, 1}) with counter-clockwise (CCW) winding order.
+# +---+---+
+# | 1 | 0 |
+# +---+---+
+# | 2 | 3 |
+# +---+---+
+UNIT_POLYGON_2D: Final[np.ndarray] = np.array(
+    [[+1.0, +1.0, 0.0], [-1.0, +1.0, 0.0], [-1.0, -1.0, 0.0], [+1.0, -1.0, 0.0]]
+)
+
+UNIT_POLYGON_2D_EDGES: Final[np.ndarray] = np.array([[0, 1], [1, 2], [2, 3], [3, 0]])
+
 
 
 # TODO: add njit support.
@@ -64,10 +79,62 @@ def pc2im(
     im[..., -1] /= im[..., -1].max()
 
     # Gamma correction.
-    im[..., -1] = np.power(im[..., -1], 0.1)
+    im[..., -1] = np.power(im[..., -1], 0.05)
 
     # Scale RGB by intensity.
     im[..., :3] *= im[..., -1:]
 
     # Map RGB in [0, 1] -> [0, 255].
     return np.multiply(im[..., :3], 255.0)
+
+
+def overlay_annotations(im: np.ndarray, annotations: pd.DataFrame, voxel_resolution: np.ndarray) -> np.ndarray:
+
+    # Return original image if no annotations exist.
+    if annotations.shape[0] == 0:
+        return im
+
+    # Grab centers (xyz) of the annotations.
+    center_xyz = annotations[["x", "y", "z"]].to_numpy()
+
+    # Grab dimensions (length, width, height) of the annotations.
+    dims_lwh = annotations[["length", "width", "height"]].to_numpy()
+
+    # Construct unit polygons.
+    scaled_polygons = UNIT_POLYGON_2D[None] * np.divide(dims_lwh[:, None], 2.0)
+
+    # Get scalar last quaternions.
+    # NOTE: SciPy follows scaler *last* while AV2 uses scaler *first* ordering.
+    quat_xyzw = annotations[["qx", "qy", "qz", "qw"]].to_numpy()
+
+    # Repeat transformations by number of polygon vertices to vectorize SO3 transformation in SciPy.
+    quat_xyzw = np.repeat(quat_xyzw[:, None], scaled_polygons.shape[1], axis=1).reshape(-1, 4)
+
+    # Get SO3 transformation.
+    ego_SO3_obj = R.from_quat(quat_xyzw)
+
+    # Apply ego_SO3_obj to the scaled polygons.
+    polygons_xyz = ego_SO3_obj.apply(scaled_polygons.reshape(-1, 3)).reshape(-1, 4, 3)
+
+    # Translate by the annotations centers.
+    polygons_xyz += center_xyz[:, None]
+
+    alpha = np.linspace(0, 1, 1000)[None, None, :, None]
+
+    polygons_xyz = polygons_xyz[:, UNIT_POLYGON_2D_EDGES]
+    polygons_xyz = polygons_xyz[..., 0:1, :] * alpha + polygons_xyz[..., 1:2, :] * (1 - alpha)
+
+    polygons_xy = polygons_xyz[..., :2].reshape(-1, 2)
+    polygons_xy /= voxel_resolution[..., :2]
+    polygons_xy += np.divide(im.shape[:2], 2.0)
+    polygons_xy = polygons_xy.astype(int)
+
+    lower_boundary_condition = np.greater_equal(polygons_xy, 0)
+    upper_boundary_condition = np.less(polygons_xy, im.shape[:2])
+    grid_boundary_reduction = np.logical_and(lower_boundary_condition, upper_boundary_condition).all(axis=-1)
+    polygons_xy = polygons_xy[grid_boundary_reduction]
+
+    u = im.shape[0] - polygons_xy[..., 0] - 1
+    v = im.shape[1] - polygons_xy[..., 1] - 1
+    im[u, v] = np.array([0.0, 0.0, 255.0])
+    return im
