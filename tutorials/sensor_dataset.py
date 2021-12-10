@@ -1,18 +1,25 @@
 """Example script for loading data from the AV2 sensor dataset."""
 
 from pathlib import Path
-from typing import Dict, Union
+from typing import Dict, Final, Union
 
 import cv2
 import numpy as np
 import pandas as pd
 import torch
 from torchvision.io import write_video
+from tqdm import tqdm
 
 from argoverse.datasets.sensor import SensorDataset
 from argoverse.datasets.sensor.dataset import DataloaderMode
+from argoverse.rendering.rasterize import pc2im
+from argoverse.rendering.video import tile_cameras
 from argoverse.utils.constants import HOME
 from argoverse.utils.typing import PathLike
+
+FFMPEG_OPTIONS: Final[Dict[str, str]] = {"crf": "27"}
+VOXEL_RESOLUTION: Final[np.ndarray] = np.array([1e-1, 1e-1, 2e-1])
+GRID_SIZE: Final[np.ndarray] = np.array([100.0, 100.0, 5.0])
 
 
 def main(dataset_dir: PathLike) -> None:
@@ -21,49 +28,28 @@ def main(dataset_dir: PathLike) -> None:
     prev_log = None
 
     ims = []
-    for i, datum in enumerate(dataset):
+    for i, datum in enumerate(tqdm(dataset)):
         annotations = datum["annotations"]
         lidar = datum["lidar"]
+
+        im = pc2im(
+            lidar[["x", "y", "z", "intensity"]].to_numpy().astype(float),
+            voxel_resolution=VOXEL_RESOLUTION,
+            grid_size=GRID_SIZE,
+        )
+        cv2.imwrite("test.jpg", (im * 255.0).astype(np.uint8))
 
         curr_log = datum["metadata"]["log_id"]
         if prev_log is not None and curr_log != prev_log:
             break
 
         tiled_im = tile_cameras(datum)
+        # cv2.imwrite("tiled_im.jpg", tiled_im)
         ims.append(torch.as_tensor(tiled_im))
         prev_log = curr_log
 
-        # if i > 10:
-        #     break
-
     video = torch.stack(ims)
-    write_video("tiled_video.mp4", video, fps=10, options={"crf": "27"})
-
-
-def tile_cameras(datum: Dict[str, Union[np.ndarray, pd.DataFrame]]) -> np.ndarray:
-    h = 1550 + 1550 + 1550
-    w = 2048 + 1550 + 2048
-    tiled_im = np.zeros((h, w, 3), dtype=np.uint8)
-
-    ring_rear_left = datum["ring_rear_left"]
-    ring_side_left = datum["ring_side_left"]
-    ring_front_center = datum["ring_front_center"]
-    ring_front_left = datum["ring_front_left"]
-    ring_front_right = datum["ring_front_right"]
-    ring_side_right = datum["ring_side_right"]
-    ring_rear_right = datum["ring_rear_right"]
-
-    tiled_im[:1550, :2048] = ring_front_left
-    tiled_im[:2048, 2048 : 2048 + 1550] = ring_front_center
-    tiled_im[:1550, 2048 + 1550 :] = ring_front_right
-
-    tiled_im[1550:3100, :2048] = ring_side_left
-    tiled_im[1550:3100, 2048 + 1550 :] = ring_side_right
-
-    start = (w - 4096) // 2
-    tiled_im[3100:4650, start : start + 2048] = np.fliplr(ring_rear_left)
-    tiled_im[3100:4650, start + 2048 : start + 4096] = np.fliplr(ring_rear_right)
-    return cv2.cvtColor(tiled_im, cv2.COLOR_BGR2RGB)
+    write_video("tiled_video.mp4", video, fps=10, options=FFMPEG_OPTIONS)
 
 
 if __name__ == "__main__":
