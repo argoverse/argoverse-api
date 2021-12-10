@@ -182,7 +182,19 @@ def test_assign() -> None:
     """Verify that the assign functions as expected by checking ATE of assigned detections against known distance."""
     cfg = DetectionCfg(eval_only_roi_instances=False)
 
-    columns = ["length", "width", "height", "qw", "qx", "qy", "qz", "tx", "ty", "tz", "score"]
+    columns = [
+        "length",
+        "width",
+        "height",
+        "qw",
+        "qx",
+        "qy",
+        "qz",
+        "tx",
+        "ty",
+        "tz",
+        "score",
+    ]
     dts = pd.DataFrame(
         [
             [5.0, 5.0, 5.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
@@ -213,10 +225,23 @@ def test_assign() -> None:
 
 def test_filter_instances() -> None:
     """Generate 100 different detections and filter them based on Euclidean distance."""
-    columns = ["category", "length", "width", "height", "qw", "qx", "qy", "qz", "tx", "ty", "tz"]
+    columns = [
+        "category",
+        "length",
+        "width",
+        "height",
+        "qw",
+        "qx",
+        "qy",
+        "qz",
+        "tx",
+        "ty",
+        "tz",
+    ]
 
     dts = pd.DataFrame(
-        [["REGULAR_VEHICLE", 0.0, 0.0, 0.0, 0.0, 5.0, 2.0, 3.0, i, i, 0] for i in range(100)], columns=columns
+        [["REGULAR_VEHICLE", 0.0, 0.0, 0.0, 0.0, 5.0, 2.0, 3.0, i, i, 0] for i in range(100)],
+        columns=columns,
     )
     cfg = DetectionCfg(eval_only_roi_instances=False)
 
@@ -406,12 +431,64 @@ def test_orientation_error(metrics_identity: pd.DataFrame, metrics: pd.DataFrame
 
 def test_rank() -> None:
     """Test ranking of detections and scores during detection evaluation."""
-    columns = ["track_uuid", "length", "width", "height", "qw", "qx", "qy", "qz", "tx", "ty", "tz", "score"]
+    columns = [
+        "track_uuid",
+        "length",
+        "width",
+        "height",
+        "qw",
+        "qx",
+        "qy",
+        "qz",
+        "tx",
+        "ty",
+        "tz",
+        "score",
+    ]
     dts = pd.DataFrame(
         [
-            ["00000000-0000-0000-0000-000000000000", 5.0, 5.0, 5.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7],
-            ["00000000-0000-0000-0000-000000000001", 5.0, 5.0, 5.0, 1.0, 0.0, 0.0, 0.0, 10.0, 10.0, 10.0, 0.9],
-            ["00000000-0000-0000-0000-000000000002", 5.0, 5.0, 5.0, 1.0, 0.0, 0.0, 0.0, 20.0, 20.0, 20.0, 0.8],
+            [
+                "00000000-0000-0000-0000-000000000000",
+                5.0,
+                5.0,
+                5.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.7,
+            ],
+            [
+                "00000000-0000-0000-0000-000000000001",
+                5.0,
+                5.0,
+                5.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                10.0,
+                10.0,
+                10.0,
+                0.9,
+            ],
+            [
+                "00000000-0000-0000-0000-000000000002",
+                5.0,
+                5.0,
+                5.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                20.0,
+                20.0,
+                20.0,
+                0.8,
+            ],
         ],
         columns=columns,
     )

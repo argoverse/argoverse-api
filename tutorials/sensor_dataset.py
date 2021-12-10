@@ -1,20 +1,16 @@
 """Example script for loading data from the AV2 sensor dataset."""
 
 from pathlib import Path
-from typing import Dict, Final, Union
+from typing import Dict, Final
 
 import cv2
 import numpy as np
-import pandas as pd
 import torch
 from torchvision.io import write_video
 from tqdm import tqdm
 
 from argoverse.datasets.sensor import SensorDataset
-from argoverse.datasets.sensor.dataset import DataloaderMode
 from argoverse.rendering.rasterize import pc2im
-from argoverse.rendering.video import tile_cameras
-from argoverse.utils.constants import HOME
 from argoverse.utils.typing import PathLike
 
 FFMPEG_OPTIONS: Final[Dict[str, str]] = {"crf": "27"}
@@ -23,33 +19,34 @@ GRID_SIZE: Final[np.ndarray] = np.array([100.0, 100.0, 5.0])
 
 
 def main(dataset_dir: PathLike) -> None:
-    dataset = SensorDataset(dataset_dir, DataloaderMode.DETECTION)
+    dataset = SensorDataset(dataset_dir, with_annotations=True, with_imagery=False)
 
     prev_log = None
-
     ims = []
-    for i, datum in enumerate(tqdm(dataset)):
+    for _, datum in enumerate(tqdm(dataset)):
         annotations = datum["annotations"]
         lidar = datum["lidar"]
+        metadata = datum["metadata"]
+        log_id = metadata["log_id"]
 
-        im = pc2im(
+        offset_ns = lidar["offset_ns"]
+        cmap = np.full((offset_ns.shape[0], 3), 128.0)
+        bev = pc2im(
             lidar[["x", "y", "z", "intensity"]].to_numpy().astype(float),
+            cmap=cmap,
             voxel_resolution=VOXEL_RESOLUTION,
             grid_size=GRID_SIZE,
         )
-        cv2.imwrite("test.jpg", im.astype(np.uint8))
 
         curr_log = datum["metadata"]["log_id"]
         if prev_log is not None and curr_log != prev_log:
             break
 
-        tiled_im = tile_cameras(datum)
-        # cv2.imwrite("tiled_im.jpg", tiled_im)
-        ims.append(torch.as_tensor(tiled_im))
+        ims.append(torch.as_tensor(bev))
         prev_log = curr_log
 
     video = torch.stack(ims)
-    write_video("tiled_video.mp4", video, fps=10, options=FFMPEG_OPTIONS)
+    write_video("bev.mp4", video, fps=10, options=FFMPEG_OPTIONS)
 
 
 if __name__ == "__main__":

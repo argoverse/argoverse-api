@@ -1,6 +1,5 @@
 """Dataloader for the Argoverse 2 (AV2) sensor dataset."""
 import logging
-import os
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -9,7 +8,6 @@ from typing import Dict, List, Optional, Tuple, Union
 import cv2
 import numpy as np
 import pandas as pd
-from PIL import Image
 
 from argoverse.datasets.dataset import Dataset
 from argoverse.datasets.sensor.constants import INDEX_KEYS
@@ -19,15 +17,8 @@ from argoverse.utils.io import read_feather, read_im
 logger = logging.Logger(__name__)
 
 
-class DataloaderMode(Enum):
-    DETECTION = "DETECTION"
-    TRACKING = "TRACKING"
-
-
 @dataclass
 class SensorDataset(Dataset):
-
-    mode: DataloaderMode
     index_names: Tuple[str, ...] = INDEX_KEYS
 
     with_cache: bool = True
@@ -63,7 +54,10 @@ class SensorDataset(Dataset):
                         target_sensor[sensor] = target_sensor["tov_ns"]
 
                         reference_sensor = pd.merge_asof(
-                            reference_sensor, target_sensor, on="tov_ns", direction="nearest"
+                            reference_sensor,
+                            target_sensor,
+                            on="tov_ns",
+                            direction="nearest",
                         )
                     reference_sensor.insert(0, "log_id", log_id)
                     synchronized_metadata.append(reference_sensor)
@@ -80,7 +74,10 @@ class SensorDataset(Dataset):
 
         logger.info("Loading lidar data ...")
         items = parallelize(
-            _get_key, lidar_paths, chunksize=compute_chunksize(len(lidar_paths)), with_progress_bar=True
+            _get_key,
+            lidar_paths,
+            chunksize=compute_chunksize(len(lidar_paths)),
+            with_progress_bar=True,
         )
         lidar_keys, lidar_data = list(zip(*items))
 
@@ -89,7 +86,10 @@ class SensorDataset(Dataset):
 
         logger.info("Loading camera data ...")
         results = parallelize(
-            _get_key, camera_paths, chunksize=compute_chunksize(len(camera_paths)), with_progress_bar=True
+            _get_key,
+            camera_paths,
+            chunksize=compute_chunksize(len(camera_paths)),
+            with_progress_bar=True,
         )
         camera_keys, camera_data = list(zip(*results))
 
@@ -101,11 +101,7 @@ class SensorDataset(Dataset):
         return metadata
 
     def __len__(self) -> int:
-        if self.mode == DataloaderMode.DETECTION:
-            return self.num_sweeps
-        elif self.mode == DataloaderMode.TRACKING:
-            return self.num_logs
-        raise NotImplementedError(f"{self.mode} is not implemented!")
+        return self.num_sweeps
 
     def __getitem__(self, idx: int) -> Dict[str, Union[np.ndarray, pd.DataFrame]]:
         """Get an item from the dataset.
@@ -132,8 +128,7 @@ class SensorDataset(Dataset):
             "metadata": {"log_id": log_id},
         }
 
-        with_annotations = False
-        if with_annotations:
+        if self.with_annotations:
             annotations_path = Path(self.root_dir, log_id, "annotations.feather")
             annotations = read_feather(annotations_path)
             sweep_annotations = annotations[annotations["tov_ns"] == tov_ns]
