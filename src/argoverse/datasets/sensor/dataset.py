@@ -2,14 +2,13 @@
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Mapping, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import cv2
 import numpy as np
 import pandas as pd
 
 from argoverse.datasets.dataset import Dataset
-from argoverse.datasets.sensor.constants import INDEX_KEYS
 from argoverse.utils.distributed import compute_chunksize, parallelize
 from argoverse.utils.io import read_feather, read_im
 
