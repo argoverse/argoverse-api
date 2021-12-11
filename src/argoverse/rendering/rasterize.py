@@ -1,12 +1,12 @@
 """Raster visualization tools."""
-from typing import Dict, Final, List, Optional
+from typing import Dict, Final, Optional
 
 import numpy as np
 import pandas as pd
 from numba import njit
 from scipy.spatial.transform import Rotation as R
 
-from argoverse.utils.geometry import crop_points
+from argoverse.utils.geometry import annotations2polygons, crop_points
 
 AV2_CATEGORY_CMAP: Final[Dict[str, np.ndarray]] = {
     "REGULAR_VEHICLE": np.array([0.0, 255.0, 0.0]),
@@ -25,6 +25,36 @@ UNIT_POLYGON_2D: Final[np.ndarray] = np.array(
 )
 
 UNIT_POLYGON_2D_EDGES: Final[np.ndarray] = np.array([[0, 1], [1, 2], [2, 3], [3, 0]])
+
+UNIT_POLYGON_3D: Final[np.ndarray] = np.array(
+    [
+        [+1.0, +1.0, -1.0],
+        [-1.0, +1.0, -1.0],
+        [-1.0, -1.0, -1.0],
+        [+1.0, -1.0, -1.0],
+        [+1.0, +1.0, +1.0],
+        [-1.0, +1.0, +1.0],
+        [-1.0, -1.0, +1.0],
+        [+1.0, -1.0, +1.0],
+    ]
+)
+
+UNIT_POLYGON_3D_EDGES: Final[np.ndarray] = np.array(
+    [
+        [0, 1],
+        [1, 2],
+        [2, 3],
+        [3, 0],
+        [3, 4],
+        [4, 5],
+        [5, 6],
+        [6, 7],
+        [0, 4],
+        [1, 5],
+        [2, 6],
+        [3, 7],
+    ]
+)
 
 
 # TODO: add njit support.
@@ -60,7 +90,7 @@ def pc2im(
     voxel_grid_size = np.divide(grid_size, voxel_resolution).astype(int)
 
     # Crop point cloud to the region-of-interest.
-    indices, grid_boundary_reduction = crop_points(indices, np.array([0, 0, 0]), voxel_grid_size)
+    indices, grid_boundary_reduction = crop_points(indices, np.zeros(indices.shape[-1]), voxel_grid_size)
 
     # Filter the indices and intensity values.
     indices = indices[grid_boundary_reduction]
@@ -98,6 +128,7 @@ def overlay_annotations(
     annotations: pd.DataFrame,
     voxel_resolution: np.ndarray,
     category_cmap: Dict[str, np.ndarray] = {},
+    num_polygon_edge_points: int = 1000,
 ) -> np.ndarray:
 
     # Return original image if no annotations exist.
@@ -105,41 +136,17 @@ def overlay_annotations(
         return im
 
     categories = annotations[["category"]].to_numpy().flatten().tolist()
+    polygons_xyz = annotations2polygons(annotations, UNIT_POLYGON_2D)
 
-    # Grab centers (xyz) of the annotations.
-    center_xyz = annotations[["x", "y", "z"]].to_numpy()
-
-    # Grab dimensions (length, width, height) of the annotations.
-    dims_lwh = annotations[["length", "width", "height"]].to_numpy()
-
-    # Construct unit polygons.
-    scaled_polygons = UNIT_POLYGON_2D[None] * np.divide(dims_lwh[:, None], 2.0)
-
-    # Get scalar last quaternions.
-    # NOTE: SciPy follows scaler *last* while AV2 uses scaler *first* ordering.
-    quat_xyzw = annotations[["qx", "qy", "qz", "qw"]].to_numpy()
-
-    # Repeat transformations by number of polygon vertices to vectorize SO3 transformation in SciPy.
-    quat_xyzw = np.repeat(quat_xyzw[:, None], scaled_polygons.shape[1], axis=1).reshape(-1, 4)
-
-    # Get SO3 transformation.
-    ego_SO3_obj = R.from_quat(quat_xyzw)
-
-    # Apply ego_SO3_obj to the scaled polygons.
-    polygons_xyz = ego_SO3_obj.apply(scaled_polygons.reshape(-1, 3)).reshape(-1, 4, 3)
-
-    # Translate by the annotations centers.
-    polygons_xyz += center_xyz[:, None]
-
-    alpha = np.linspace(0, 1, 1000)[None, None, :, None]
+    alpha = np.linspace(0, 1, num_polygon_edge_points)[None, None, :, None]
 
     polygons_xyz = polygons_xyz[:, UNIT_POLYGON_2D_EDGES]
     polygons_xyz = polygons_xyz[..., 0:1, :] * alpha + polygons_xyz[..., 1:2, :] * (1 - alpha)
 
+    polygons_xyz /= voxel_resolution
+    polygons_xyz[..., :2] += np.divide(im.shape[:2], 2.0)
+    polygons_xyz = polygons_xyz.astype(int)
     polygons_xy = polygons_xyz[..., :2]
-    polygons_xy /= voxel_resolution[..., :2]
-    polygons_xy += np.divide(im.shape[:2], 2.0)
-    polygons_xy = polygons_xy.astype(int)
 
     colors = np.zeros_like(polygons_xyz)
     for i, category in enumerate(categories):
@@ -148,7 +155,9 @@ def overlay_annotations(
         else:
             colors[i] = category_cmap[category]
 
-    polygons_xy, grid_boundary_reduction = crop_points(polygons_xy, np.array([0, 0]), np.array(im.shape[:2]))
+    polygons_xy, grid_boundary_reduction = crop_points(
+        polygons_xy, np.zeros(polygons_xy.shape[-1]), np.array(im.shape[:2])
+    )
     polygons_xy = polygons_xy[grid_boundary_reduction]
     colors = colors[grid_boundary_reduction]
 

@@ -4,6 +4,8 @@
 from typing import Tuple
 
 import numpy as np
+import pandas as pd
+from scipy.spatial.transform import Rotation as R
 
 from argoverse.utils.constants import NAN, PI
 
@@ -90,7 +92,9 @@ def cart2range(
 
 
 def crop_points(
-    points: np.ndarray, lower_bound_inclusive: np.ndarray, upper_bound_exclusive: np.ndarray
+    points: np.ndarray,
+    lower_bound_inclusive: np.ndarray,
+    upper_bound_exclusive: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray]:
     ndim = points.shape[-1]
     lb_dim = lower_bound_inclusive.shape[0]
@@ -103,3 +107,32 @@ def crop_points(
     upper_bound_condition = np.less(points, upper_bound_exclusive)
     grid_bound_reduction = np.logical_and(lower_bound_condition, upper_bound_condition).all(axis=-1)
     return points, grid_bound_reduction
+
+
+def annotations2polygons(annotations: pd.DataFrame, unit_polygon: np.ndarray) -> np.ndarray:
+    # Grab centers (xyz) of the annotations.
+    center_xyz = annotations[["x", "y", "z"]].to_numpy()
+
+    # Grab dimensions (length, width, height) of the annotations.
+    dims_lwh = annotations[["length", "width", "height"]].to_numpy()
+
+    # Construct unit polygons.
+    scaled_polygons = unit_polygon[None] * np.divide(dims_lwh[:, None], 2.0)
+
+    # Get scalar last quaternions.
+    # NOTE: SciPy follows scaler *last* while AV2 uses scaler *first* ordering.
+    quat_xyzw = annotations[["qx", "qy", "qz", "qw"]].to_numpy()
+
+    # Repeat transformations by number of polygon vertices to vectorize SO3 transformation in SciPy.
+    quat_xyzw = np.repeat(quat_xyzw[:, None], scaled_polygons.shape[1], axis=1).reshape(-1, 4)
+
+    # Get SO3 transformation.
+    ego_SO3_obj = R.from_quat(quat_xyzw)
+
+    # Apply ego_SO3_obj to the scaled polygons.
+    polygons_xyz = ego_SO3_obj.apply(scaled_polygons.reshape(-1, 3)).reshape(-1, 4, 3)
+
+    # Translate by the annotations centers.
+    polygons_xyz += center_xyz[:, None]
+
+    return polygons_xyz

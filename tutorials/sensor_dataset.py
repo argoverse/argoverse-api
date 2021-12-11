@@ -38,7 +38,12 @@ def main(dataset_dir: PathLike) -> None:
             grid_size=GRID_SIZE,
         )
 
-        bev = overlay_annotations(bev, annotations, voxel_resolution=VOXEL_RESOLUTION, category_cmap=AV2_CATEGORY_CMAP)
+        bev = overlay_annotations(
+            bev,
+            annotations,
+            voxel_resolution=VOXEL_RESOLUTION,
+            category_cmap=AV2_CATEGORY_CMAP,
+        )
         cv2.imwrite("bev.jpg", bev)
 
         curr_log = datum["metadata"]["log_id"]
