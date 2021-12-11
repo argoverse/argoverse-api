@@ -3,58 +3,13 @@ from typing import Dict, Final, Optional
 
 import numpy as np
 import pandas as pd
-from numba import njit
-from scipy.spatial.transform import Rotation as R
 
-from argoverse.utils.geometry import annotations2polygons, crop_points
+from argoverse.utils.geometry import UNIT_POLYGON_2D, UNIT_POLYGON_2D_EDGES, annotations2polygons, crop_points
 
 AV2_CATEGORY_CMAP: Final[Dict[str, np.ndarray]] = {
     "REGULAR_VEHICLE": np.array([0.0, 255.0, 0.0]),
     "PEDESTRIAN": np.array([192.0, 255.0, 0.0]),
 }
-
-
-# Unit polygon (vertices in {-1, 0, 1}) with counter-clockwise (CCW) winding order.
-# +---+---+
-# | 1 | 0 |
-# +---+---+
-# | 2 | 3 |
-# +---+---+
-UNIT_POLYGON_2D: Final[np.ndarray] = np.array(
-    [[+1.0, +1.0, 0.0], [-1.0, +1.0, 0.0], [-1.0, -1.0, 0.0], [+1.0, -1.0, 0.0]]
-)
-
-UNIT_POLYGON_2D_EDGES: Final[np.ndarray] = np.array([[0, 1], [1, 2], [2, 3], [3, 0]])
-
-UNIT_POLYGON_3D: Final[np.ndarray] = np.array(
-    [
-        [+1.0, +1.0, -1.0],
-        [-1.0, +1.0, -1.0],
-        [-1.0, -1.0, -1.0],
-        [+1.0, -1.0, -1.0],
-        [+1.0, +1.0, +1.0],
-        [-1.0, +1.0, +1.0],
-        [-1.0, -1.0, +1.0],
-        [+1.0, -1.0, +1.0],
-    ]
-)
-
-UNIT_POLYGON_3D_EDGES: Final[np.ndarray] = np.array(
-    [
-        [0, 1],
-        [1, 2],
-        [2, 3],
-        [3, 0],
-        [3, 4],
-        [4, 5],
-        [5, 6],
-        [6, 7],
-        [0, 4],
-        [1, 5],
-        [2, 6],
-        [3, 7],
-    ]
-)
 
 
 # TODO: add njit support.
