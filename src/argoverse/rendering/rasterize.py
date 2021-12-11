@@ -1,10 +1,16 @@
 """Raster visualization tools."""
-from typing import Final, Optional
+from typing import Dict, Final, List, Optional
 
 import numpy as np
 import pandas as pd
 from numba import njit
 from scipy.spatial.transform import Rotation as R
+
+AV2_CATEGORY_CMAP: Final[Dict[str, np.ndarray]] = {
+    "REGULAR_VEHICLE": np.array([0.0, 255.0, 0.0]),
+    "PEDESTRIAN": np.array([192.0, 255.0, 0.0]),
+}
+
 
 # Unit polygon (vertices in {-1, 0, 1}) with counter-clockwise (CCW) winding order.
 # +---+---+
@@ -17,7 +23,6 @@ UNIT_POLYGON_2D: Final[np.ndarray] = np.array(
 )
 
 UNIT_POLYGON_2D_EDGES: Final[np.ndarray] = np.array([[0, 1], [1, 2], [2, 3], [3, 0]])
-
 
 
 # TODO: add njit support.
@@ -88,11 +93,18 @@ def pc2im(
     return np.multiply(im[..., :3], 255.0)
 
 
-def overlay_annotations(im: np.ndarray, annotations: pd.DataFrame, voxel_resolution: np.ndarray) -> np.ndarray:
+def overlay_annotations(
+    im: np.ndarray,
+    annotations: pd.DataFrame,
+    voxel_resolution: np.ndarray,
+    category_cmap: Dict[str, np.ndarray] = {},
+) -> np.ndarray:
 
     # Return original image if no annotations exist.
     if annotations.shape[0] == 0:
         return im
+
+    categories = annotations[["category"]].to_numpy().flatten().tolist()
 
     # Grab centers (xyz) of the annotations.
     center_xyz = annotations[["x", "y", "z"]].to_numpy()
@@ -124,17 +136,26 @@ def overlay_annotations(im: np.ndarray, annotations: pd.DataFrame, voxel_resolut
     polygons_xyz = polygons_xyz[:, UNIT_POLYGON_2D_EDGES]
     polygons_xyz = polygons_xyz[..., 0:1, :] * alpha + polygons_xyz[..., 1:2, :] * (1 - alpha)
 
-    polygons_xy = polygons_xyz[..., :2].reshape(-1, 2)
+    polygons_xy = polygons_xyz[..., :2]
     polygons_xy /= voxel_resolution[..., :2]
     polygons_xy += np.divide(im.shape[:2], 2.0)
     polygons_xy = polygons_xy.astype(int)
+
+    colors = np.zeros_like(polygons_xyz)
+    for i, category in enumerate(categories):
+        if category not in category_cmap:
+            colors[i] = np.array([0.0, 0.0, 255.0])
+        else:
+            colors[i] = category_cmap[category]
 
     lower_boundary_condition = np.greater_equal(polygons_xy, 0)
     upper_boundary_condition = np.less(polygons_xy, im.shape[:2])
     grid_boundary_reduction = np.logical_and(lower_boundary_condition, upper_boundary_condition).all(axis=-1)
     polygons_xy = polygons_xy[grid_boundary_reduction]
+    colors = colors[grid_boundary_reduction]
 
+    polygons_xy = polygons_xy.reshape(-1, 2)
     u = im.shape[0] - polygons_xy[..., 0] - 1
     v = im.shape[1] - polygons_xy[..., 1] - 1
-    im[u, v] = np.array([0.0, 0.0, 255.0])
+    im[u, v] = colors
     return im

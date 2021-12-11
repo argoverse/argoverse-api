@@ -1,9 +1,11 @@
 """Rendering tools for video visualizations."""
-from typing import Dict, Union
+from typing import Dict, Final, Union
 
 import cv2
 import numpy as np
 import pandas as pd
+
+FFMPEG_OPTIONS: Final[Dict[str, str]] = {"crf": "27"}
 
 
 def tile_cameras(named_sensors: Dict[str, Union[np.ndarray, pd.DataFrame]]) -> np.ndarray:

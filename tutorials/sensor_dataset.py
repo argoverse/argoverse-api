@@ -10,10 +10,10 @@ from torchvision.io import write_video
 from tqdm import tqdm
 
 from argoverse.datasets.sensor import SensorDataset
-from argoverse.rendering.rasterize import overlay_annotations, pc2im
+from argoverse.rendering.rasterize import AV2_CATEGORY_CMAP, overlay_annotations, pc2im
+from argoverse.rendering.video import FFMPEG_OPTIONS
 from argoverse.utils.typing import PathLike
 
-FFMPEG_OPTIONS: Final[Dict[str, str]] = {"crf": "27"}
 VOXEL_RESOLUTION: Final[np.ndarray] = np.array([1e-1, 1e-1, 2e-1])
 GRID_SIZE: Final[np.ndarray] = np.array([100.0, 100.0, 5.0])
 
@@ -37,7 +37,8 @@ def main(dataset_dir: PathLike) -> None:
             voxel_resolution=VOXEL_RESOLUTION,
             grid_size=GRID_SIZE,
         )
-        bev = overlay_annotations(bev, annotations, voxel_resolution=VOXEL_RESOLUTION)
+
+        bev = overlay_annotations(bev, annotations, voxel_resolution=VOXEL_RESOLUTION, category_cmap=AV2_CATEGORY_CMAP)
         cv2.imwrite("bev.jpg", bev)
 
         curr_log = datum["metadata"]["log_id"]
