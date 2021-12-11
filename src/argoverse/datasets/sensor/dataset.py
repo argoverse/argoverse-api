@@ -1,9 +1,8 @@
 """Dataloader for the Argoverse 2 (AV2) sensor dataset."""
 import logging
 from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Mapping, Optional, Tuple, Union
 
 import cv2
 import numpy as np
@@ -19,21 +18,42 @@ logger = logging.Logger(__name__)
 
 @dataclass
 class SensorDataset(Dataset):
-    index_names: Tuple[str, ...] = INDEX_KEYS
 
+    # Number of unique lidar sweeps.
+    num_sweeps: int = 0
+
+    # Number of unique logs.
+    num_logs: int = 0
+
+    # Flag to enable file directory caching.
+    # Recommended to keep this on unless you need to flush the cache.
+    # This will significantly speed up dataloading.
     with_cache: bool = True
+
+    # Flag to return annotations in the __getitem__ method.
     with_annotations: bool = True
+
+    # Flag to load and return synchronized imagery in the __getitem__ method.
     with_imagery: bool = True
 
     def __post_init__(self) -> None:
         """Post initialization."""
         super().__post_init__()
-        self.metadata = self._get_metadata()
 
+        # Load log_id, sensor_type, and time of validity (tov) information.
+        self.metadata = self._load_metadata()
+
+        # Compute the total number of unique logs in the dataset.
         self.num_logs = len(self.metadata.index.unique("log_id"))
+
+        # Compute the number of unique lidar sweeps in the dataset.
         self.num_sweeps = self.metadata.index.get_level_values("sensor_name").value_counts()["lidar"]
+
+        # Initialize synchronized metadata variable.
+        # This is only populated when self.use_imagery is set.
         self.synchronized_metadata: Optional[pd.DataFrame] = None
 
+        # Populate synchronization database.
         if self.with_imagery:
             sync_path = Path(self.root_dir, "_sync_db")
             if self.with_cache and sync_path.exists():
@@ -65,7 +85,7 @@ class SensorDataset(Dataset):
                 self.synchronized_metadata.to_feather(str(sync_path))
             self.synchronized_metadata = self.synchronized_metadata.set_index(["log_id", "tov_ns"])
 
-    def _get_metadata(self) -> pd.DataFrame:
+    def _load_metadata(self) -> pd.DataFrame:
         metadata_path = Path(self.root_dir, "_metadata")
         if self.with_cache and metadata_path.exists():
             return read_feather(metadata_path).set_index(["log_id", "sensor_name"])
@@ -101,25 +121,29 @@ class SensorDataset(Dataset):
         return metadata
 
     def __len__(self) -> int:
+        """Return the number of lidar sweeps in the dataset
+
+        Returns:
+            int: Number of lidar sweeps.
+        """
         return self.num_sweeps
 
-    def __getitem__(self, idx: int) -> Dict[str, Union[np.ndarray, pd.DataFrame]]:
-        """Get an item from the dataset.
+    def __getitem__(self, idx: int) -> Dict[str, Union[Dict[str, str], np.ndarray, pd.DataFrame]]:
+        """Get a dictionary which contains sensor data and metadata for the provided index.
 
         [extended_summary]
 
         Args:
-            idx (int): Index in [0, n - 1] where n
-                is the length of the entire dataset.
+            idx (int): Index within [0, self.num_sweeps]
 
         Returns:
-            DataFrame: Tabular representation of the item.
+            Dict[str, Union[np.ndarray, pd.DataFrame]]: Mapping of sensor dataset field name to the data.
         """
         record = self.metadata.xs("lidar", level=1).iloc[idx]
         log_id = str(record.name)
-        tov_ns = int(record[0])
+        tov_ns = int(record.item())
 
-        sensors_root = Path(self.root_dir, log_id, "sensors")
+        sensors_root = Path(str(self.root_dir), log_id, "sensors")
         lidar_path = Path(sensors_root, "lidar", str(tov_ns)).with_suffix(".feather")
         lidar = read_feather(lidar_path)
 
@@ -129,18 +153,20 @@ class SensorDataset(Dataset):
         }
 
         if self.with_annotations:
-            annotations_path = Path(self.root_dir, log_id, "annotations.feather")
+            annotations_path = Path(str(self.root_dir), log_id, "annotations").with_suffix(".feather")
             annotations = read_feather(annotations_path)
             sweep_annotations = annotations[annotations["tov_ns"] == tov_ns]
             datum |= {"annotations": sweep_annotations}
 
         if self.with_imagery:
-            synchronized_record = self.synchronized_metadata.loc[(log_id, tov_ns)]
-            sensor_data: Dict[str, np.ndarray] = {}
-            for sensor, tov_ns in synchronized_record.items():
-                sensor_path = Path(sensors_root, "cameras", sensor, str(tov_ns)).with_suffix(".jpg")
-                sensor_data[sensor] = read_im(sensor_path)
-            datum |= sensor_data
+            if self.synchronized_metadata is not None:
+                index = pd.Index((log_id, str(tov_ns)))
+                synchronized_record = self.synchronized_metadata.loc[index]
+                sensor_data: Dict[str, np.ndarray] = {}
+                for sensor, tov_ns in synchronized_record.items():
+                    sensor_path = Path(sensors_root, "cameras", str(sensor), str(tov_ns)).with_suffix(".jpg")
+                    sensor_data[str(sensor)] = read_im(sensor_path)
+                datum |= sensor_data
         return datum
 
 
