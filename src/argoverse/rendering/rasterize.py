@@ -6,6 +6,8 @@ import pandas as pd
 from numba import njit
 from scipy.spatial.transform import Rotation as R
 
+from argoverse.utils.geometry import crop_points
+
 AV2_CATEGORY_CMAP: Final[Dict[str, np.ndarray]] = {
     "REGULAR_VEHICLE": np.array([0.0, 255.0, 0.0]),
     "PEDESTRIAN": np.array([192.0, 255.0, 0.0]),
@@ -58,9 +60,7 @@ def pc2im(
     voxel_grid_size = np.divide(grid_size, voxel_resolution).astype(int)
 
     # Crop point cloud to the region-of-interest.
-    lower_boundary_condition = np.greater_equal(indices, 0)
-    upper_boundary_condition = np.less(indices, voxel_grid_size)
-    grid_boundary_reduction = np.logical_and(lower_boundary_condition, upper_boundary_condition).all(axis=-1)
+    indices, grid_boundary_reduction = crop_points(indices, np.array([0, 0, 0]), voxel_grid_size)
 
     # Filter the indices and intensity values.
     indices = indices[grid_boundary_reduction]
@@ -148,9 +148,7 @@ def overlay_annotations(
         else:
             colors[i] = category_cmap[category]
 
-    lower_boundary_condition = np.greater_equal(polygons_xy, 0)
-    upper_boundary_condition = np.less(polygons_xy, im.shape[:2])
-    grid_boundary_reduction = np.logical_and(lower_boundary_condition, upper_boundary_condition).all(axis=-1)
+    polygons_xy, grid_boundary_reduction = crop_points(polygons_xy, np.array([0, 0]), np.array(im.shape[:2]))
     polygons_xy = polygons_xy[grid_boundary_reduction]
     colors = colors[grid_boundary_reduction]
 

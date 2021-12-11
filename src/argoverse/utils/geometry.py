@@ -87,3 +87,19 @@ def cart2range(
     range_im[u, v] = r[perm]
     pos_im[u, v] = cart[perm]
     return range_im, pos_im
+
+
+def crop_points(
+    points: np.ndarray, lower_bound_inclusive: np.ndarray, upper_bound_exclusive: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
+    ndim = points.shape[-1]
+    lb_dim = lower_bound_inclusive.shape[0]
+    ub_dim = upper_bound_exclusive.shape[0]
+
+    assert ndim == lb_dim
+    assert ndim == ub_dim
+
+    lower_bound_condition = np.greater_equal(points, 0)
+    upper_bound_condition = np.less(points, upper_bound_exclusive)
+    grid_bound_reduction = np.logical_and(lower_bound_condition, upper_bound_condition).all(axis=-1)
+    return points, grid_bound_reduction
