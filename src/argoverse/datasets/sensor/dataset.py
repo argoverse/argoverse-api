@@ -98,22 +98,24 @@ class SensorDataset(Dataset):
             chunksize=compute_chunksize(len(lidar_paths)),
             with_progress_bar=True,
         )
-        lidar_keys, lidar_data = list(zip(*items))
+        keys, data = list(zip(*items))
 
-        camera_pattern = "*/sensors/cameras/*/*.jpg"
-        camera_paths: List[Path] = sorted(self.root_dir.glob(camera_pattern))
+        if self.with_imagery:
+            camera_pattern = "*/sensors/cameras/*/*.jpg"
+            camera_paths: List[Path] = sorted(self.root_dir.glob(camera_pattern))
 
-        logger.info("Loading camera data ...")
-        results = parallelize(
-            _get_key,
-            camera_paths,
-            chunksize=compute_chunksize(len(camera_paths)),
-            with_progress_bar=True,
-        )
-        camera_keys, camera_data = list(zip(*results))
+            logger.info("Loading camera data ...")
+            results = parallelize(
+                _get_key,
+                camera_paths,
+                chunksize=compute_chunksize(len(camera_paths)),
+                with_progress_bar=True,
+            )
+            camera_keys, camera_data = list(zip(*results))
 
-        keys = lidar_keys + camera_keys
-        data = lidar_data + camera_data
+            keys += camera_keys
+            data += camera_data
+
         index: pd.MultiIndex = pd.MultiIndex.from_tuples(keys, names=["log_id", "sensor_name"], sortorder=0)
         metadata = pd.DataFrame(index=index, data=data)
         metadata.reset_index().to_feather(str(metadata_path))

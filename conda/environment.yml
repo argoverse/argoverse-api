@@ -2,9 +2,12 @@ name: av2
 channels:
   - conda-forge
 dependencies:
+  - av
   - matplotlib
   - nox
   - numpy
+  - opencv
   - pandas
   - pyarrow
   - scipy
+  - tqdm

@@ -1,6 +1,8 @@
 """Rendering tools for video visualizations."""
+from pathlib import Path
 from typing import Dict, Final, Union
 
+import av
 import cv2
 import numpy as np
 import pandas as pd
@@ -54,3 +56,30 @@ def tile_cameras(named_sensors: Dict[str, Union[np.ndarray, pd.DataFrame]]) -> n
     tiled_im[3100:4650, start : start + landscape_width] = np.fliplr(ring_rear_left)
     tiled_im[3100:4650, start + landscape_width : start + 4096] = np.fliplr(ring_rear_right)
     return cv2.cvtColor(tiled_im, cv2.COLOR_BGR2RGB)
+
+
+def write_video(
+    video: np.ndarray,
+    dst: Path,
+    codec: str = "libx264",
+    fps: int = 10,
+    crf: int = 27,
+    preset: str = "veryfast",
+) -> None:
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    with av.open(str(dst), "w") as output:
+        stream = output.add_stream(codec, fps)
+        stream.width = video.shape[1]
+        stream.height = video.shape[2]
+        stream.options = {
+            "crf": str(crf),
+            "hwaccel": "auto",
+            "movflags": "+faststart",
+            "preset": preset,
+            "profile:v": "main",
+            "tag": "hvc1",
+        }
+        for _, im in enumerate(video):
+            frame = av.VideoFrame.from_ndarray(im)
+            output.mux(stream.encode(frame))
+        output.mux(stream.encode(None))

@@ -110,7 +110,5 @@ def overlay_annotations(
     v = im.shape[1] - polygons_xy[..., 1] - 1
     poly_uv = np.stack((v, u), axis=-1)
     for i, puv in enumerate(poly_uv):
-        cv2.polylines(
-            im, [puv], isClosed=True, color=colors[i, 0].tolist(), thickness=thickness, lineType=cv2.LINE_AA
-        )
+        cv2.polylines(im, [puv], isClosed=True, color=colors[i, 0].tolist(), thickness=thickness, lineType=cv2.LINE_AA)
     return im
