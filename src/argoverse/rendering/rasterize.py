@@ -1,6 +1,7 @@
 """Raster visualization tools."""
 from typing import Dict, Final, Optional
 
+import cv2
 import numpy as np
 import pandas as pd
 
@@ -83,7 +84,7 @@ def overlay_annotations(
     annotations: pd.DataFrame,
     voxel_resolution: np.ndarray,
     category_cmap: Dict[str, np.ndarray] = {},
-    num_polygon_edge_points: int = 1000,
+    thickness: int = 4,
 ) -> np.ndarray:
 
     # Return original image if no annotations exist.
@@ -92,11 +93,6 @@ def overlay_annotations(
 
     categories = annotations[["category"]].to_numpy().flatten().tolist()
     polygons_xyz = annotations2polygons(annotations, UNIT_POLYGON_2D)
-
-    alpha = np.linspace(0, 1, num_polygon_edge_points)[None, None, :, None]
-
-    polygons_xyz = polygons_xyz[:, UNIT_POLYGON_2D_EDGES]
-    polygons_xyz = polygons_xyz[..., 0:1, :] * alpha + polygons_xyz[..., 1:2, :] * (1 - alpha)
 
     polygons_xyz /= voxel_resolution
     polygons_xyz[..., :2] += np.divide(im.shape[:2], 2.0)
@@ -110,14 +106,11 @@ def overlay_annotations(
         else:
             colors[i] = category_cmap[category]
 
-    polygons_xy, grid_boundary_reduction = crop_points(
-        polygons_xy, np.zeros(polygons_xy.shape[-1]), np.array(im.shape[:2])
-    )
-    polygons_xy = polygons_xy[grid_boundary_reduction]
-    colors = colors[grid_boundary_reduction]
-
-    polygons_xy = polygons_xy.reshape(-1, 2)
     u = im.shape[0] - polygons_xy[..., 0] - 1
     v = im.shape[1] - polygons_xy[..., 1] - 1
-    im[u, v] = colors
+    poly_uv = np.stack((v, u), axis=-1)
+    for i, puv in enumerate(poly_uv):
+        cv2.polylines(
+            im, [puv], isClosed=True, color=colors[i, 0].tolist(), thickness=thickness, lineType=cv2.LINE_AA
+        )
     return im
