@@ -295,7 +295,7 @@ def compute_affinity_matrix(dts: pd.DataFrame, gts: pd.DataFrame, metric: AffFnT
         sims: Affinity scores between detections and ground truth annotations (N, M).
     """
     if metric == AffFnType.CENTER:
-        cols = ["tx", "ty"]
+        cols = ["x", "y"]
         dt_centers = dts[cols]
         gt_centers = gts[cols]
         sims = -cdist(dt_centers, gt_centers)
@@ -452,7 +452,7 @@ def wrap_angle(angles: np.ndarray, period: float = np.pi) -> np.ndarray:
 
 
 def filter_instances(cuboids: pd.DataFrame, cfg: DetectionCfg) -> pd.DataFrame:
-    cols = ["tx", "ty", "tz"]
+    cols = ["x", "y", "z"]
 
     outputs = []
     for cat in cfg.dt_classes:
