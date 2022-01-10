@@ -340,7 +340,7 @@ def dist_fn(dts: pd.DataFrame, gts: pd.DataFrame, metric: DistFnType) -> np.ndar
         Distance between the detections and ground truth, using the provided metric (N,).
     """
     if metric == DistFnType.TRANSLATION:
-        cols = ["tx", "ty"]
+        cols = ["x", "y"]
 
         dt_centers = dts[cols].reset_index(drop=True)
         gt_centers = gts[cols].reset_index(drop=True)

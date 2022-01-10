@@ -62,10 +62,12 @@ import logging
 import multiprocessing as mp
 from collections import defaultdict
 from pathlib import Path
-from typing import DefaultDict, Dict, List, Optional, Set, Tuple
+from typing import DefaultDict, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
+from tqdm.contrib.concurrent import process_map
 
 from argoverse.evaluation.detection.constants import N_TP_ERRORS, SIGNIFICANT_DIGITS, STATISTIC_NAMES
 from argoverse.evaluation.detection.utils import DetectionCfg, accumulate, calc_ap, plot
@@ -91,17 +93,18 @@ def evaluate(
 
     cls_to_ninst_list: List[Dict[str, int]] = []
     jobs: List[Tuple[pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame], DetectionCfg]] = []
-    for key, group in gts.groupby(["log_id", "tov_ns"]):
-        log_dts = dts[np.all(dts[["log_id", "tov_ns"]] == key, axis=1)]
-        if group.shape[0] == 0:
+
+    # indices = set(dts.index.tolist())
+    for key, group in tqdm(gts.groupby(["log_id", "tov_ns"])):
+        if key not in dts.index:
             continue
+        log_dts = dts.loc[key]
         jobs.append((log_dts, group, poses, cfg))
 
-    ncpus = mp.cpu_count()
-    chunksize = max(len(jobs) // ncpus, 1)
-    # with mp.Pool(ncpus) as p:
-    #     outputs = p.map(accumulate, jobs, chunksize=chunksize)
-    outputs = [accumulate(job) for job in jobs]
+    # ncpus = mp.cpu_count()
+    # chunksize = max(len(jobs) // ncpus, 1)
+    # outputs = process_map(accumulate, jobs, max_workers=ncpus, chunksize=chunksize)
+    outputs = [accumulate(job) for job in tqdm(jobs)]
 
     stats: List[pd.DataFrame] = []
     for output in outputs:
