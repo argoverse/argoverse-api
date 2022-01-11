@@ -66,6 +66,7 @@ from typing import DefaultDict, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
+from pandas.core.frame import DataFrame
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 
@@ -93,18 +94,13 @@ def evaluate(
 
     cls_to_ninst_list: List[Dict[str, int]] = []
     jobs: List[Tuple[pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame], DetectionCfg]] = []
+    for k, v in gts.items():
+        jobs.append((dts[k], v, poses, cfg))
 
-    # indices = set(dts.index.tolist())
-    for key, group in tqdm(gts.groupby(["log_id", "tov_ns"])):
-        if key not in dts.index:
-            continue
-        log_dts = dts.loc[key]
-        jobs.append((log_dts, group, poses, cfg))
-
-    # ncpus = mp.cpu_count()
-    # chunksize = max(len(jobs) // ncpus, 1)
-    # outputs = process_map(accumulate, jobs, max_workers=ncpus, chunksize=chunksize)
-    outputs = [accumulate(job) for job in tqdm(jobs)]
+    ncpus = mp.cpu_count()
+    chunksize = max(len(jobs) // ncpus, 1)
+    outputs = process_map(accumulate, jobs, max_workers=ncpus, chunksize=chunksize)
+    # outputs = [accumulate(job) for job in tqdm(jobs)]
 
     stats: List[pd.DataFrame] = []
     for output in outputs:

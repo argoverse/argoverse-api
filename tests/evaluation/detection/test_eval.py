@@ -67,7 +67,7 @@ def test_affinity_center() -> None:
     under the specified `AffFnType`.
     """
 
-    columns = ["tx", "ty", "tz", "length", "width", "height", "qw", "qx", "qy", "qz"]
+    columns = ["x", "y", "z", "length", "width", "height", "qw", "qx", "qy", "qz"]
     dts = pd.DataFrame([[0.0, 0.0, 0.0, 5.0, 5.0, 5.0, 1.0, 0.0, 0.0, 0.0]], columns=columns)
     gts = pd.DataFrame([[3.0, 4.0, 0.0, 5.0, 5.0, 5.0, 1.0, 0.0, 0.0, 0.0]], columns=columns)
 
@@ -80,7 +80,7 @@ def test_translation_distance() -> None:
     parameters. Verify that calculated distance matches expected distance under
     the specified `DistFnType`.
     """
-    columns = ["tx", "ty", "tz"]
+    columns = ["x", "y", "z"]
     dts = pd.DataFrame([[0.0, 0.0, 0.0]], columns=columns)
     gts = pd.DataFrame([[5.0, 5.0, 5.0]], columns=columns)
 
@@ -190,9 +190,9 @@ def test_assign() -> None:
         "qx",
         "qy",
         "qz",
-        "tx",
-        "ty",
-        "tz",
+        "x",
+        "y",
+        "z",
         "score",
     ]
     dts = pd.DataFrame(
@@ -234,9 +234,9 @@ def test_filter_instances() -> None:
         "qx",
         "qy",
         "qz",
-        "tx",
-        "ty",
-        "tz",
+        "x",
+        "y",
+        "z",
     ]
 
     dts = pd.DataFrame(
@@ -440,9 +440,9 @@ def test_rank() -> None:
         "qx",
         "qy",
         "qz",
-        "tx",
-        "ty",
-        "tz",
+        "x",
+        "y",
+        "z",
         "score",
     ]
     dts = pd.DataFrame(

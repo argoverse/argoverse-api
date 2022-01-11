@@ -102,7 +102,7 @@ def overlay_annotations(
     colors = np.zeros_like(polygons_xyz)
     for i, category in enumerate(categories):
         if category not in category_cmap:
-            colors[i] = np.array([0.0, 0.0, 255.0])
+            colors[i] = np.array([0.0, 0.0, 1.0])
         else:
             colors[i] = category_cmap[category]
 
