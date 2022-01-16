@@ -62,7 +62,7 @@ import logging
 import multiprocessing as mp
 from collections import defaultdict
 from pathlib import Path
-from typing import DefaultDict, Dict, List, Optional, Tuple
+from typing import Dict, Optional
 
 import numpy as np
 import pandas as pd
@@ -70,7 +70,7 @@ from pandas.core.frame import DataFrame
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 
-from argoverse.evaluation.detection.constants import N_TP_ERRORS, SIGNIFICANT_DIGITS, STATISTIC_NAMES
+from argoverse.evaluation.detection.constants import SIGNIFICANT_DIGITS, STATISTIC_NAMES, TP_ERROR_NAMES
 from argoverse.evaluation.detection.utils import DetectionCfg, accumulate, calc_ap, plot
 
 logger = logging.getLogger(__name__)
@@ -81,7 +81,7 @@ def evaluate(
     gts: pd.DataFrame,
     poses: Optional[pd.DataFrame],
     cfg: DetectionCfg,
-) -> pd.DataFrame:
+) -> Dict[str, pd.DataFrame]:
     """Evaluate detection output and return metrics. The multiprocessing
     library is used for parallel processing of sweeps -- each sweep is
     processed independently, computing assignment between detections and
@@ -92,50 +92,27 @@ def evaluate(
         plus a row for their means. K refers to the number of evaluation metrics.
     """
 
-    cls_to_ninst_list: List[Dict[str, int]] = []
-    jobs: List[Tuple[pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame], DetectionCfg]] = []
-    for k, v in gts.items():
-        jobs.append((dts[k], v, poses, cfg))
+    jobs = [(dts[k], v, poses, cfg) for k, v in gts.groupby(["log_id", "tov_ns"])]
+    # outputs = [accumulate(job) for job in jobs]
 
     ncpus = mp.cpu_count()
     chunksize = max(len(jobs) // ncpus, 1)
     outputs = process_map(accumulate, jobs, max_workers=ncpus, chunksize=chunksize)
-    # outputs = [accumulate(job) for job in tqdm(jobs)]
 
-    stats: List[pd.DataFrame] = []
-    for output in outputs:
-        accumulation, scene_cls_to_ninst = output
-        cls_to_ninst_list.append(scene_cls_to_ninst)
-        if accumulation.shape[0] > 0:
-            stats.append(accumulation)
+    dts = pd.concat([o["dts"] for o in outputs]).reset_index(drop=True)
+    gts = pd.concat([o["gts"] for o in outputs]).reset_index(drop=True)
 
-    cls_to_ninst: DefaultDict[str, int] = defaultdict(int)
-    for item in cls_to_ninst_list:
-        for k, v in item.items():
-            cls_to_ninst[k] += v
-
-    stats = pd.concat(stats).reset_index(drop=True)
-    init_data = {dt_cls: cfg.summary_default_vals for dt_cls in cfg.dt_classes}
-    summary = pd.DataFrame.from_dict(init_data, orient="index", columns=STATISTIC_NAMES)
-    if len(stats) == 0:
-        logger.warning("No matches ...")
-        return summary
-    summary_update = pd.DataFrame.from_dict(
-        summarize(stats, cfg, cls_to_ninst), orient="index", columns=STATISTIC_NAMES
-    )
-
-    summary.update(summary_update)
-    summary = summary.round(SIGNIFICANT_DIGITS)
+    summary = summarize(dts, gts, cfg).round(SIGNIFICANT_DIGITS)
     summary = summary.set_index(summary.index.str.title())
     summary.loc["Average Metrics"] = summary.mean().round(SIGNIFICANT_DIGITS)
-    return summary
+    return {"dts": dts, "gts": gts, "summary": summary}
 
 
 def summarize(
-    data: pd.DataFrame,
+    dts: pd.DataFrame,
+    gts: pd.DataFrame,
     cfg: DetectionCfg,
-    cls_to_ninst: DefaultDict[str, int],
-) -> DefaultDict[str, List[float]]:
+) -> pd.DataFrame:
     """Calculate and print the detection metrics.
 
     Args:
@@ -146,7 +123,8 @@ def summarize(
         summary: The summary statistics.
     """
 
-    summary: DefaultDict[str, List[float]] = defaultdict(list)
+    init_data = {dt_cls: cfg.summary_default_vals for dt_cls in cfg.dt_classes}
+    summary = pd.DataFrame.from_dict(init_data, orient="index", columns=STATISTIC_NAMES)
     recalls_interp = np.linspace(0, 1, cfg.n_rec_samples)
     num_ths = len(cfg.affinity_threshs)
 
@@ -154,13 +132,22 @@ def summarize(
     if not Path(figs_rootdir).is_dir():
         Path(figs_rootdir).mkdir(parents=True, exist_ok=True)
 
-    for cls_name, cls_stats in data.groupby("category"):
+    average_precisions = defaultdict(list)
+    for cls_name in cfg.dt_classes:
+        is_valid = (dts["category"] == cls_name) & dts["is_evaluated"]
+        cls_stats = dts[is_valid].reset_index(drop=True)
+
         cls_stats = cls_stats.sort_values(by="score", ascending=False).reset_index(drop=True)
-        ninst = cls_to_ninst[cls_name]
+        ninst = gts.loc[gts["category"] == cls_name, "is_evaluated"].sum()
+
+        if ninst == 0:
+            continue
+
         for _, thresh in enumerate(cfg.affinity_threshs):
-            tps = cls_stats.loc[:, str(thresh)].reset_index(drop=True)
+            tps = cls_stats.loc[:, str(thresh)].reset_index(drop=True).astype(bool)
             ap_th, precisions_interp = calc_ap(tps, recalls_interp, ninst)
-            summary[cls_name].append(ap_th)
+
+            average_precisions[cls_name].append(ap_th)
 
             if cfg.save_figs:
                 plot(
@@ -171,23 +158,23 @@ def summarize(
                 )
 
         # AP Metric.
-        ap = np.array(summary[cls_name][:num_ths]).mean()
+        ap = np.array(average_precisions[cls_name][:num_ths]).mean()
 
         # Select only the true positives for each instance.
-        tp_metrics_mask = ~np.isnan(cls_stats.iloc[:, num_ths : num_ths + N_TP_ERRORS]).all(axis=1)
+        middle_threshold = str(cfg.affinity_threshs[len(cfg.affinity_threshs) // 2])
+        tp_metrics_mask = cls_stats[middle_threshold]
 
         # If there are no true positives set tps errors to their maximum values due to normalization below).
         if ~tp_metrics_mask.any():
             tp_metrics = cfg.tp_normalization_terms
         else:
             # Calculate TP metrics.
-            tp_metrics = cls_stats.iloc[:, num_ths : num_ths + N_TP_ERRORS][tp_metrics_mask].mean(axis=0)
+            tp_metrics = cls_stats.loc[tp_metrics_mask, TP_ERROR_NAMES].mean(axis=0)
 
         # Convert errors to scores.
         tp_scores = 1 - np.divide(tp_metrics, cfg.tp_normalization_terms)
 
         # Compute Composite Detection Score (CDS).
         cds = ap * tp_scores.mean()
-
-        summary[cls_name] = [ap, *tp_metrics, cds]
+        summary.loc[cls_name] = [ap, *tp_metrics, cds]
     return summary

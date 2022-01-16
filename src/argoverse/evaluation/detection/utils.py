@@ -13,7 +13,7 @@ import logging
 import os
 from enum import Enum, auto
 from pathlib import Path
-from typing import Dict, Final, List, NamedTuple, Optional, Tuple, Union
+from typing import Any, Dict, Final, List, NamedTuple, Optional, Tuple, Union
 
 import matplotlib
 import numpy as np
@@ -29,6 +29,7 @@ from argoverse.evaluation.detection.constants import (
     MAX_YAW_ERROR,
     MIN_AP,
     MIN_CDS,
+    TP_ERROR_NAMES,
 )
 
 matplotlib.use("Agg")  # isort:skip
@@ -93,9 +94,7 @@ class DetectionCfg(NamedTuple):
     splits: Tuple[str, ...] = ("val",)
 
 
-def accumulate(
-    job: Tuple[pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame], DetectionCfg]
-) -> Tuple[pd.DataFrame, Dict[str, int]]:
+def accumulate(job: Tuple[pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame], DetectionCfg]) -> Dict[str, pd.DataFrame]:
     """Accumulate the true/false positives (boolean flags) and true positive errors for each class.
 
     Args:
@@ -110,38 +109,40 @@ def accumulate(
     """
     dts, gts, poses, cfg = job
 
-    dts = dts.sort_values("tov_ns").reset_index(drop=True)
-    gts = gts.sort_values("tov_ns").reset_index(drop=True)
+    dts = dts.sort_values("score", ascending=False).reset_index(drop=True)
+    # gts = gts.sort_values("tov_ns").reset_index(drop=True)
     # poses = poses.sort_values("tov_ns").reset_index(drop=True)
     # if cfg.eval_only_roi_instances and avm is not None:
     #     dts = filter_objs_to_roi(dts, poses, avm)
     #     gts = filter_objs_to_roi(gts, poses, avm)
 
-    dts_filtered = filter_instances(dts, cfg)
-    gts_filtered = filter_instances(gts, cfg)
+    is_filtered_dts = filter_instances(dts, cfg)
+    is_filtered_gts = filter_instances(gts, cfg)
 
-    metrics: List[pd.DataFrame] = []
-    cls_to_ninst: Dict[str, int] = {}
+    dts["is_evaluated"] = is_filtered_dts
+    gts["is_evaluated"] = is_filtered_gts
+
+    dts[list(map(str, cfg.affinity_threshs))] = False
+    dts[TP_ERROR_NAMES] = np.nan
+
     for cat in cfg.dt_classes:
-        cat_dts = dts_filtered[dts_filtered["category"] == cat]
-        cat_gts = gts_filtered[gts_filtered["category"] == cat]
-        cat_gts = remove_duplicate_instances(cat_gts, cfg)
-        cls_to_ninst[cat] = len(cat_gts)
+        eval_dts_mask = (dts["category"] == cat) & dts["is_evaluated"]
+        eval_gts_mask = (gts["category"] == cat) & gts["is_evaluated"]
 
-        if dts_filtered.shape[0] > 0:
-            ranked_dts = rank(cat_dts)
+        cat_dts = dts[eval_dts_mask].reset_index(drop=True)
+        cat_gts = gts[eval_gts_mask].reset_index(drop=True)
 
-            class_metrics = assign(ranked_dts, cat_gts, cfg)
-            class_metrics["category"] = cat
-            if class_metrics.shape[0] > 0:
-                metrics.append(class_metrics)
+        # TODO Finish.
+        # cat_gts = find_duplicate_instances(cat_gts, cfg)
+        # cls_to_ninst[cat] = len(cat_gts)
 
-    if len(metrics) > 0:
-        return pd.concat(metrics), cls_to_ninst
-    return pd.DataFrame(metrics), cls_to_ninst
+        if len(cat_dts) > 0:
+            assignments = assign(cat_dts, cat_gts, cfg)
+            dts.loc[eval_dts_mask, assignments.columns] = assignments.to_numpy()
+    return {"dts": dts, "gts": gts}
 
 
-def remove_duplicate_instances(instances: pd.DataFrame, cfg: DetectionCfg) -> pd.DataFrame:
+def find_duplicate_instances(instances: pd.DataFrame, cfg: DetectionCfg) -> pd.DataFrame:
     """Remove any duplicate cuboids in ground truth.
 
     Any ground truth cuboid of the same object class that shares the same centroid
@@ -174,6 +175,8 @@ def remove_duplicate_instances(instances: pd.DataFrame, cfg: DetectionCfg) -> pd
 
     # eliminate redundant column indices
     unique_ids = np.unique(first_col_idxs)
+
+    breakpoint()
 
     return instances.iloc[unique_ids].reset_index(drop=True)
 
@@ -259,8 +262,10 @@ def rank(dts: pd.DataFrame) -> pd.DataFrame:
         ranked_scores: Array of floats sorted in descending order (N,) where N <= MAX_NUM_BOXES.
     """
 
-    dts = dts.sort_values("score", ascending=False)
-    return dts.iloc[:MAX_NUM_BOXES].reset_index(drop=True)
+    perm = np.argsort(dts["score"])[::-1]
+    return perm
+    # breakpoint()
+    # return dts.iloc[:MAX_NUM_BOXES].reset_index(drop=True)
 
 
 def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
@@ -451,17 +456,17 @@ def wrap_angle(angles: np.ndarray, period: float = np.pi) -> np.ndarray:
 #     return cuboids_with_poses[is_within_roi]
 
 
-def filter_instances(cuboids: pd.DataFrame, cfg: DetectionCfg) -> pd.DataFrame:
+def filter_instances(cuboids: pd.DataFrame, cfg: DetectionCfg) -> np.ndarray:
     cols = ["x", "y", "z"]
 
-    outputs = []
+    mask = np.zeros(len(cuboids), dtype=bool)
     for cat in cfg.dt_classes:
-        class_mask = cuboids["category"] == cat
-        classes = cuboids[class_mask]
-        norm = classes[cols].pow(2).sum(axis=1).pow(0.5)
-        mask = norm < cfg.max_dt_range
-        outputs.append(classes[mask])
-    return pd.concat(outputs)
+        cat_mask = cuboids["category"] == cat
+        cat_cuboids = cuboids[cat_mask]
+        if len(cat_cuboids) > 0:
+            norm = cat_cuboids[cols].pow(2).sum(axis=1).pow(0.5)
+            mask[cat_mask] |= norm < cfg.max_dt_range
+    return mask
 
 
 def plot(rec_interp: np.ndarray, prec_interp: np.ndarray, cls_name: str, figs_fpath: Path) -> Path:

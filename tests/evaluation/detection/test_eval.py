@@ -432,7 +432,7 @@ def test_orientation_error(metrics_identity: pd.DataFrame, metrics: pd.DataFrame
 def test_rank() -> None:
     """Test ranking of detections and scores during detection evaluation."""
     columns = [
-        "track_uuid",
+        "uuid",
         "length",
         "width",
         "height",
@@ -494,7 +494,7 @@ def test_rank() -> None:
     )
 
     ranked_dts = rank(dts)
-    track_uuids = ranked_dts["track_uuid"]
+    uuids = ranked_dts["uuid"]
     expected_track_ids = np.array(
         [
             "00000000-0000-0000-0000-000000000001",
@@ -503,4 +503,4 @@ def test_rank() -> None:
         ]
     )
     expected_scores = np.array([0.9, 0.8, 0.7])
-    assert np.all(track_uuids == expected_track_ids) and np.all(ranked_dts["score"] == expected_scores)
+    assert np.all(uuids == expected_track_ids) and np.all(ranked_dts["score"] == expected_scores)
