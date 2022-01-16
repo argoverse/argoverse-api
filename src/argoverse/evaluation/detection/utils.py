@@ -132,7 +132,7 @@ def accumulate(job: Tuple[pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame], De
         cat_dts = dts[eval_dts_mask].reset_index(drop=True)
         cat_gts = gts[eval_gts_mask].reset_index(drop=True)
 
-        # TODO Finish.
+        # TODO Include find duplicates + add box limit back!
         # cat_gts = find_duplicate_instances(cat_gts, cfg)
         # cls_to_ninst[cat] = len(cat_gts)
 
@@ -457,7 +457,7 @@ def wrap_angle(angles: np.ndarray, period: float = np.pi) -> np.ndarray:
 
 
 def filter_instances(cuboids: pd.DataFrame, cfg: DetectionCfg) -> np.ndarray:
-    cols = ["x", "y", "z"]
+    cols = ["x", "y"]
 
     mask = np.zeros(len(cuboids), dtype=bool)
     for cat in cfg.dt_classes:
