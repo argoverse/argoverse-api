@@ -84,7 +84,7 @@ def overlay_annotations(
     annotations: pd.DataFrame,
     voxel_resolution: np.ndarray,
     category_cmap: Dict[str, np.ndarray] = {},
-    thickness: int = 4,
+    thickness: int = 2,
 ) -> np.ndarray:
 
     # Return original image if no annotations exist.
@@ -108,7 +108,7 @@ def overlay_annotations(
 
     u = im.shape[0] - polygons_xy[..., 0] - 1
     v = im.shape[1] - polygons_xy[..., 1] - 1
-    poly_uv = np.stack((v, u), axis=-1)
+    poly_uv = np.stack((v, u), axis=-1)[:, [2, 3, 0, 1]]
     for i, puv in enumerate(poly_uv):
-        cv2.polylines(im, [puv], isClosed=True, color=colors[i, 0].tolist(), thickness=thickness, lineType=cv2.LINE_AA)
+        cv2.polylines(im, [puv], isClosed=False, color=colors[i, 0].tolist(), thickness=thickness, lineType=cv2.LINE_AA)
     return im
