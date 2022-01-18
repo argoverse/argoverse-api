@@ -13,7 +13,7 @@ import logging
 import os
 from enum import Enum, auto
 from pathlib import Path
-from typing import Any, Dict, Final, List, NamedTuple, Optional, Tuple, Union
+from typing import Dict, Final, NamedTuple, Optional, Tuple, Union
 
 import matplotlib
 import numpy as np
@@ -87,14 +87,16 @@ class DetectionCfg(NamedTuple):
     dt_metric: FilterMetric = FilterMetric.EUCLIDEAN
     max_dt_range: float = 100.0  # Meters
     save_figs: bool = False
-    tp_normalization_terms: np.ndarray = np.array([tp_thresh, MAX_SCALE_ERROR, MAX_YAW_ERROR])
-    summary_default_vals: np.ndarray = np.array([MIN_AP, tp_thresh, MAX_NORMALIZED_ASE, MAX_YAW_ERROR, MIN_CDS])
+    tp_normalization_terms: Tuple[float, ...] = (tp_thresh, MAX_SCALE_ERROR, MAX_YAW_ERROR)
+    summary_default_vals: Tuple[float, ...] = (MIN_AP, tp_thresh, MAX_NORMALIZED_ASE, MAX_YAW_ERROR, MIN_CDS)
     eval_only_roi_instances: bool = True
     map_root: _PathLike = Path(__file__).parent.parent.parent.parent / "map_files"  # argoverse-api/map_files
     splits: Tuple[str, ...] = ("val",)
 
 
-def accumulate(job: Tuple[pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame], DetectionCfg]) -> Dict[str, pd.DataFrame]:
+def accumulate(
+    dts: pd.DataFrame, gts: pd.DataFrame, poses: Optional[pd.DataFrame], cfg: DetectionCfg
+) -> Dict[str, pd.DataFrame]:
     """Accumulate the true/false positives (boolean flags) and true positive errors for each class.
 
     Args:
@@ -107,8 +109,6 @@ def accumulate(job: Tuple[pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame], De
         cls_to_ninst: Mapping of shape |C| -> (1,) the class names to the number of instances in the ground
             truth dataset.
     """
-    dts, gts, poses, cfg = job
-
     dts = dts.sort_values("score", ascending=False).reset_index(drop=True)
     # gts = gts.sort_values("tov_ns").reset_index(drop=True)
     # poses = poses.sort_values("tov_ns").reset_index(drop=True)
@@ -122,12 +122,12 @@ def accumulate(job: Tuple[pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame], De
     dts["is_evaluated"] = is_filtered_dts
     gts["is_evaluated"] = is_filtered_gts
 
-    dts[list(map(str, cfg.affinity_threshs))] = False
-    dts[TP_ERROR_NAMES] = np.nan
+    dts[[*cfg.affinity_threshs]] = False
+    dts[[*TP_ERROR_NAMES]] = np.nan
 
     for cat in cfg.dt_classes:
-        eval_dts_mask = (dts["category"] == cat) & dts["is_evaluated"]
-        eval_gts_mask = (gts["category"] == cat) & gts["is_evaluated"]
+        eval_dts_mask = np.logical_and(dts["category"] == cat, dts["is_evaluated"])
+        eval_gts_mask = np.logical_and(gts["category"] == cat, gts["is_evaluated"])
 
         cat_dts = dts[eval_dts_mask].reset_index(drop=True)
         cat_gts = gts[eval_gts_mask].reset_index(drop=True)
@@ -193,16 +193,14 @@ def assign(dts: pd.DataFrame, gts: pd.DataFrame, cfg: DetectionCfg) -> pd.DataFr
         metrics: Matrix of true/false positive concatenated with true positive errors (N, K + S) where K is the number
             of true positive thresholds used for AP computation and S is the number of true positive errors.
     """
-    tp_cols = ["ATE", "ASE", "AOE"]
-    cols = list(map(str, cfg.affinity_threshs)) + tp_cols
+    cols = cfg.affinity_threshs + TP_ERROR_NAMES
     ncols = len(cols)
     nthreshs = len(cfg.affinity_threshs)
 
-    data = np.zeros((dts.shape[0], ncols))
+    data = np.zeros((len(dts), ncols))
+    metrics = pd.DataFrame(data, columns=list(cols))
 
-    metrics = pd.DataFrame(data, columns=cols)
-
-    aff_dtype = {str(x): bool for x in cfg.affinity_threshs}
+    aff_dtype = {x: bool for x in cfg.affinity_threshs}
     metrics = metrics.astype(aff_dtype)
 
     # Set the true positive metrics to np.nan since error is undefined on false positives.
@@ -246,26 +244,8 @@ def assign(dts: pd.DataFrame, gts: pd.DataFrame, cfg: DetectionCfg) -> pd.DataFr
             orient_error = dist_fn(dt_df, gt_df, DistFnType.ORIENTATION)
 
             tp_metrics = np.vstack((trans_error, scale_error, orient_error)).T
-            metrics.loc[dt_tp_indices, tp_cols] = tp_metrics
+            metrics.loc[dt_tp_indices, TP_ERROR_NAMES] = tp_metrics
     return metrics
-
-
-def rank(dts: pd.DataFrame) -> pd.DataFrame:
-    """Rank the detections in descending order according to score (detector confidence).
-
-
-    Args:
-        dts: Array of `ObjectLabelRecord` objects. (N,).
-
-    Returns:
-        ranked_dts: Array of `ObjectLabelRecord` objects ranked by score (N,) where N <= MAX_NUM_BOXES.
-        ranked_scores: Array of floats sorted in descending order (N,) where N <= MAX_NUM_BOXES.
-    """
-
-    perm = np.argsort(dts["score"])[::-1]
-    return perm
-    # breakpoint()
-    # return dts.iloc[:MAX_NUM_BOXES].reset_index(drop=True)
 
 
 def interp(prec: np.ndarray, method: InterpType = InterpType.ALL) -> np.ndarray:
@@ -459,13 +439,7 @@ def wrap_angle(angles: np.ndarray, period: float = np.pi) -> np.ndarray:
 def filter_instances(cuboids: pd.DataFrame, cfg: DetectionCfg) -> np.ndarray:
     cols = ["x", "y"]
 
-    mask = np.zeros(len(cuboids), dtype=bool)
-    for cat in cfg.dt_classes:
-        cat_mask = cuboids["category"] == cat
-        cat_cuboids = cuboids[cat_mask]
-        if len(cat_cuboids) > 0:
-            norm = cat_cuboids[cols].pow(2).sum(axis=1).pow(0.5)
-            mask[cat_mask] |= norm < cfg.max_dt_range
+    mask = np.linalg.norm(cuboids[cols], axis=1) < cfg.max_dt_range
     return mask
 
 

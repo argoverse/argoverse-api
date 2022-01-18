@@ -66,9 +66,7 @@ from typing import Dict, Optional
 
 import numpy as np
 import pandas as pd
-from pandas.core.frame import DataFrame
 from tqdm import tqdm
-from tqdm.contrib.concurrent import process_map
 
 from argoverse.evaluation.detection.constants import SIGNIFICANT_DIGITS, STATISTIC_NAMES, TP_ERROR_NAMES
 from argoverse.evaluation.detection.utils import DetectionCfg, accumulate, calc_ap, plot
@@ -92,12 +90,14 @@ def evaluate(
         plus a row for their means. K refers to the number of evaluation metrics.
     """
 
-    jobs = [(dts[k], v, poses, cfg) for k, v in gts.groupby(["log_id", "tov_ns"])]
-    # outputs = [accumulate(job) for job in jobs]
+    jobs = [(dts.loc[k], v, poses, cfg) for k, v in gts.groupby(["log_id", "tov_ns"])]
 
     ncpus = mp.cpu_count()
-    chunksize = max(len(jobs) // ncpus, 1)
-    outputs = process_map(accumulate, jobs, max_workers=ncpus, chunksize=chunksize)
+    chunksize = max(1, len(jobs) // ncpus)
+    # outputs = process_map(accumulate, jobs, max_workers=ncpus, chunksize=chunksize)
+    # with mp.Pool(ncpus) as p:
+    #     outputs = p.starmap(accumulate, jobs, chunksize=chunksize)
+    outputs = [accumulate(*job) for job in jobs]
 
     dts = pd.concat([o["dts"] for o in outputs]).reset_index(drop=True)
     gts = pd.concat([o["gts"] for o in outputs]).reset_index(drop=True)
@@ -123,18 +123,18 @@ def summarize(
         summary: The summary statistics.
     """
 
-    init_data = {dt_cls: cfg.summary_default_vals for dt_cls in cfg.dt_classes}
-    summary = pd.DataFrame.from_dict(init_data, orient="index", columns=STATISTIC_NAMES)
+    data = {stat: cfg.summary_default_vals[i] for i, stat in enumerate(STATISTIC_NAMES)}
+    summary = pd.DataFrame(data, index=cfg.dt_classes)
     recalls_interp = np.linspace(0, 1, cfg.n_rec_samples)
-    num_ths = len(cfg.affinity_threshs)
 
     figs_rootdir = Path("figs")
     if not Path(figs_rootdir).is_dir():
         Path(figs_rootdir).mkdir(parents=True, exist_ok=True)
 
-    average_precisions = defaultdict(list)
+    data = {threshold: 0.0 for threshold in cfg.affinity_threshs}
+    average_precisions = pd.DataFrame(data=data, index=cfg.dt_classes)
     for cls_name in cfg.dt_classes:
-        is_valid = (dts["category"] == cls_name) & dts["is_evaluated"]
+        is_valid = np.logical_and(dts["category"] == cls_name, dts["is_evaluated"])
         cls_stats = dts[is_valid].reset_index(drop=True)
 
         cls_stats = cls_stats.sort_values(by="score", ascending=False).reset_index(drop=True)
@@ -144,10 +144,10 @@ def summarize(
             continue
 
         for _, thresh in enumerate(cfg.affinity_threshs):
-            tps = cls_stats.loc[:, str(thresh)].reset_index(drop=True).astype(bool)
+            tps = cls_stats[thresh]
             ap_th, precisions_interp = calc_ap(tps, recalls_interp, ninst)
 
-            average_precisions[cls_name].append(ap_th)
+            average_precisions.loc[cls_name, thresh] = ap_th
 
             if cfg.save_figs:
                 plot(
@@ -158,10 +158,10 @@ def summarize(
                 )
 
         # AP Metric.
-        ap = np.array(average_precisions[cls_name][:num_ths]).mean()
+        ap = average_precisions.loc[cls_name].mean()
 
         # Select only the true positives for each instance.
-        middle_threshold = str(cfg.affinity_threshs[len(cfg.affinity_threshs) // 2])
+        middle_threshold = cfg.affinity_threshs[len(cfg.affinity_threshs) // 2]
         tp_metrics_mask = cls_stats[middle_threshold]
 
         # If there are no true positives set tps errors to their maximum values due to normalization below).

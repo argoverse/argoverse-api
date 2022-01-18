@@ -1,13 +1,13 @@
-from typing import Final, List, Tuple
+from typing import Final, Tuple
 
 import numpy as np
 
 COMPETITION_CLASSES: Final[Tuple[str, ...]] = ("REGULAR_VEHICLE", "PEDESTRIAN", "BUS")
 
-TP_ERROR_NAMES: Final[List[str]] = ["ATE", "ASE", "AOE"]
+TP_ERROR_NAMES: Final[Tuple[str, ...]] = ("ATE", "ASE", "AOE")
 N_TP_ERRORS: Final[int] = len(TP_ERROR_NAMES)
 
-STATISTIC_NAMES: Final[List[str]] = ["AP"] + TP_ERROR_NAMES + ["CDS"]
+STATISTIC_NAMES: Final[Tuple[str, ...]] = ("AP",) + TP_ERROR_NAMES + ("CDS",)
 
 MAX_SCALE_ERROR: Final[float] = 1.0
 MAX_YAW_ERROR: Final[float] = np.pi

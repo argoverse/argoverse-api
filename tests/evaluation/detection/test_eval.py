@@ -14,6 +14,7 @@ import pandas as pd
 import pytest
 from scipy.spatial.transform import Rotation as R
 
+from argoverse.evaluation.detection.constants import TP_ERROR_NAMES
 from argoverse.evaluation.detection.eval import evaluate
 from argoverse.evaluation.detection.utils import (
     AffFnType,
@@ -26,7 +27,6 @@ from argoverse.evaluation.detection.utils import (
     filter_instances,
     interp,
     iou_aligned_3d,
-    rank,
     wrap_angle,
 )
 
@@ -38,28 +38,28 @@ logging.getLogger("matplotlib.font_manager").disabled = True
 def metrics_identity() -> pd.DataFrame:
     """Define an evaluator that compares a set of results to itself."""
     detection_cfg = DetectionCfg(dt_classes=("REGULAR_VEHICLE",), eval_only_roi_instances=False)
-    dts: pd.DataFrame = pd.read_feather(TEST_DATA_LOC / "detections_identity.feather")
+    dts: pd.DataFrame = pd.read_feather(TEST_DATA_LOC / "detections_identity.feather").set_index(["log_id", "tov_ns"])
     metrics = evaluate(dts, dts, None, detection_cfg)
-    return metrics
+    return metrics["summary"]
 
 
 @pytest.fixture  # type: ignore
 def metrics_assignment() -> pd.DataFrame:
     """Define an evaluator that compares a set of results to one with an extra detection to check assignment."""
     detection_cfg = DetectionCfg(dt_classes=("REGULAR_VEHICLE",), eval_only_roi_instances=False)
-    dts: pd.DataFrame = pd.read_feather(TEST_DATA_LOC / "detections_assignment.feather")
-    gts: pd.DataFrame = pd.read_feather(TEST_DATA_LOC / "labels.feather")
+    dts: pd.DataFrame = pd.read_feather(TEST_DATA_LOC / "detections_assignment.feather").set_index(["log_id", "tov_ns"])
+    gts: pd.DataFrame = pd.read_feather(TEST_DATA_LOC / "labels.feather").set_index(["log_id", "tov_ns"])
     metrics = evaluate(dts, gts, None, detection_cfg)
-    return metrics
+    return metrics["summary"]
 
 
 @pytest.fixture  # type: ignore
 def metrics() -> pd.DataFrame:
     detection_cfg = DetectionCfg(dt_classes=("REGULAR_VEHICLE",), eval_only_roi_instances=False)
-    dts: pd.DataFrame = pd.read_feather(TEST_DATA_LOC / "detections.feather")
+    dts: pd.DataFrame = pd.read_feather(TEST_DATA_LOC / "detections.feather").set_index(["log_id", "tov_ns"])
     gts: pd.DataFrame = pd.read_feather(TEST_DATA_LOC / "labels.feather")
     metrics = evaluate(dts, gts, None, detection_cfg)
-    return metrics
+    return metrics["summary"]
 
 
 def test_affinity_center() -> None:
@@ -163,19 +163,20 @@ def test_accumulate() -> None:
 
     for _, group in gts.groupby(["log_id", "tov_ns"]):
         job = (group, group, poses, cfg)
-        cat_stats, cls_to_ninst = accumulate(job)
+        acc = accumulate(*job)
+        dts, gts = acc["dts"], acc["gts"]
 
         # Check that there's a true positive under every threshold.
-        assert np.all(cat_stats.iloc[:, :4])
+        assert np.all(dts[list(cfg.affinity_threshs)])
 
         # Check that all error metrics are zero.
-        assert np.nonzero(cat_stats.iloc[:, 4:7].to_numpy())[0].shape[0] == 0
+        assert (dts[list(TP_ERROR_NAMES)] == 0).all(axis=None)
 
         # Check that there are 2 regular vehicles.
-        assert cls_to_ninst["REGULAR_VEHICLE"] == 2
+        assert gts["category"].value_counts()["REGULAR_VEHICLE"] == 2
 
         # Check that there are no other labels.
-        assert sum(cls_to_ninst.values()) == 2
+        assert gts["category"].value_counts().sum() == 2
 
 
 def test_assign() -> None:
@@ -429,78 +430,78 @@ def test_orientation_error(metrics_identity: pd.DataFrame, metrics: pd.DataFrame
 #     assert metrics.AP.loc["Vehicle"] == 1.0
 
 
-def test_rank() -> None:
-    """Test ranking of detections and scores during detection evaluation."""
-    columns = [
-        "uuid",
-        "length",
-        "width",
-        "height",
-        "qw",
-        "qx",
-        "qy",
-        "qz",
-        "x",
-        "y",
-        "z",
-        "score",
-    ]
-    dts = pd.DataFrame(
-        [
-            [
-                "00000000-0000-0000-0000-000000000000",
-                5.0,
-                5.0,
-                5.0,
-                1.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.7,
-            ],
-            [
-                "00000000-0000-0000-0000-000000000001",
-                5.0,
-                5.0,
-                5.0,
-                1.0,
-                0.0,
-                0.0,
-                0.0,
-                10.0,
-                10.0,
-                10.0,
-                0.9,
-            ],
-            [
-                "00000000-0000-0000-0000-000000000002",
-                5.0,
-                5.0,
-                5.0,
-                1.0,
-                0.0,
-                0.0,
-                0.0,
-                20.0,
-                20.0,
-                20.0,
-                0.8,
-            ],
-        ],
-        columns=columns,
-    )
+# def test_rank() -> None:
+#     """Test ranking of detections and scores during detection evaluation."""
+#     columns = [
+#         "uuid",
+#         "length",
+#         "width",
+#         "height",
+#         "qw",
+#         "qx",
+#         "qy",
+#         "qz",
+#         "x",
+#         "y",
+#         "z",
+#         "score",
+#     ]
+#     dts = pd.DataFrame(
+#         [
+#             [
+#                 "00000000-0000-0000-0000-000000000000",
+#                 5.0,
+#                 5.0,
+#                 5.0,
+#                 1.0,
+#                 0.0,
+#                 0.0,
+#                 0.0,
+#                 0.0,
+#                 0.0,
+#                 0.0,
+#                 0.7,
+#             ],
+#             [
+#                 "00000000-0000-0000-0000-000000000001",
+#                 5.0,
+#                 5.0,
+#                 5.0,
+#                 1.0,
+#                 0.0,
+#                 0.0,
+#                 0.0,
+#                 10.0,
+#                 10.0,
+#                 10.0,
+#                 0.9,
+#             ],
+#             [
+#                 "00000000-0000-0000-0000-000000000002",
+#                 5.0,
+#                 5.0,
+#                 5.0,
+#                 1.0,
+#                 0.0,
+#                 0.0,
+#                 0.0,
+#                 20.0,
+#                 20.0,
+#                 20.0,
+#                 0.8,
+#             ],
+#         ],
+#         columns=columns,
+#     )
 
-    ranked_dts = rank(dts)
-    uuids = ranked_dts["uuid"]
-    expected_track_ids = np.array(
-        [
-            "00000000-0000-0000-0000-000000000001",
-            "00000000-0000-0000-0000-000000000002",
-            "00000000-0000-0000-0000-000000000000",
-        ]
-    )
-    expected_scores = np.array([0.9, 0.8, 0.7])
-    assert np.all(uuids == expected_track_ids) and np.all(ranked_dts["score"] == expected_scores)
+#     ranked_dts = rank(dts)
+#     uuids = ranked_dts["uuid"]
+#     expected_track_ids = np.array(
+#         [
+#             "00000000-0000-0000-0000-000000000001",
+#             "00000000-0000-0000-0000-000000000002",
+#             "00000000-0000-0000-0000-000000000000",
+#         ]
+#     )
+#     expected_scores = np.array([0.9, 0.8, 0.7])
+#     assert np.all(uuids == expected_track_ids) and np.all(ranked_dts["score"] == expected_scores)
