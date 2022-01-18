@@ -89,6 +89,8 @@ def evaluate(
         Evaluation metrics of shape (C + 1, K) where C + 1 is the number of classes.
         plus a row for their means. K refers to the number of evaluation metrics.
     """
+    dts = dts.sort_index()
+    gts = gts.sort_index()
 
     jobs = [(dts.loc[k], v, poses, cfg) for k, v in gts.groupby(["log_id", "tov_ns"])]
 
