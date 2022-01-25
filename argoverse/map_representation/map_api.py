@@ -315,9 +315,8 @@ class ArgoverseMap:
     def remove_ground_surface(
         self, point_cloud: np.ndarray, city_name: str, return_logicals: bool = False
     ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
-        """
-        Get a lidar point, snap it to the grid, perform the O(1) raster map query.
-        If our z-height is within THRESHOLD of that grid's z-height, then we keep it; otherwise, discard it
+        """Get a lidar point, snap it to the grid, perform the O(1) raster map query.
+        If our z-height is within THRESHOLD of that grid's z-height, then we keep it; otherwise, discard it.
 
         Args:
             point_cloud: NumPy n-d array of shape (n,3)
@@ -337,9 +336,7 @@ class ArgoverseMap:
         return point_cloud[not_ground_indxs]
 
     def remove_non_driveable_area_points(self, point_cloud: np.ndarray, city_name: str) -> np.ndarray:
-        """
-        Get a lidar point, snap it to the grid, perform the O(1) raster map query.
-        If our z-height is within THRESHOLD of that grid's z-height, then we keep it; otherwise, discard it
+        """Get a lidar point, snap it to the grid, perform the O(1) raster map query.
 
         Decimate the point cloud to the driveable area only.
 
@@ -353,8 +350,7 @@ class ArgoverseMap:
         return point_cloud[is_da_boolean_arr]
 
     def remove_non_roi_points(self, point_cloud: np.ndarray, city_name: str) -> np.ndarray:
-        """
-        Remove any points that does't fall within the region of interest (ROI)
+        """Remove any points that don't fall within the region of interest (ROI).
 
         Args:
             point_cloud: NumPy n-d array of shape (n,3)
@@ -367,8 +363,7 @@ class ArgoverseMap:
         return point_cloud[is_roi_boolean_arr]
 
     def get_ground_points_boolean(self, point_cloud: np.ndarray, city_name: str) -> np.ndarray:
-        """
-        Check whether each point is likely to be from the ground surface
+        """Check whether each point is likely to be from the ground surface.
 
         Args:
             point_cloud: Numpy array of shape (N,3)
@@ -385,8 +380,7 @@ class ArgoverseMap:
         return is_ground_boolean_arr
 
     def get_ground_height_at_xy(self, point_cloud: np.ndarray, city_name: str) -> np.ndarray:
-        """
-        Get ground height for each of the xy location in point_cloud
+        """Get ground height for each of the xy locations in a point cloud.
 
         Args:
             point_cloud: Numpy array of shape (k,2) or (k,3)
@@ -417,8 +411,7 @@ class ArgoverseMap:
         return ground_height_values
 
     def append_height_to_2d_city_pt_cloud(self, pt_cloud_xy: np.ndarray, city_name: str) -> np.ndarray:
-        """
-        Accept 2d point cloud in xy plane and return 3d point cloud (xyz)
+        """Accept 2d point cloud in xy plane and return 3d point cloud (xyz).
 
         Args:
             pt_cloud_xy: Numpy array of shape (N,2)
