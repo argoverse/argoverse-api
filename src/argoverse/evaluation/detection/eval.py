@@ -96,13 +96,12 @@ def evaluate(
 
     ncpus = mp.cpu_count()
     chunksize = max(1, len(jobs) // ncpus)
-    # outputs = process_map(accumulate, jobs, max_workers=ncpus, chunksize=chunksize)
-    # with mp.Pool(ncpus) as p:
-    #     outputs = p.starmap(accumulate, jobs, chunksize=chunksize)
-    outputs = [accumulate(*job) for job in jobs]
+    with mp.Pool(ncpus) as p:
+        outputs = p.starmap(accumulate, jobs, chunksize=chunksize)
+#     outputs = [accumulate(*job) for job in jobs]
 
     dts = pd.concat([o["dts"] for o in outputs]).reset_index(drop=True)
-    gts = pd.concat([o["gts"] for o in outputs]).reset_index(drop=True)
+    gts = pd.concat([o["gts"] for o in outputs]).reset_index()
 
     summary = summarize(dts, gts, cfg).round(SIGNIFICANT_DIGITS)
     summary = summary.set_index(summary.index.str.title())
