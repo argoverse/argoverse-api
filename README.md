@@ -11,7 +11,7 @@
 
 # Announcements
 
-[Argoverse 2 API](https://github.com/argoai/av2-api) has been released!
+[Argoverse 2 API](https://github.com/argoai/av2-api) has been released! Check out our [NeurIPS 2021 Datasets and Benchmarks publication](https://datasets-benchmarks-proceedings.neurips.cc/paper/2021/hash/4734ba6f3de83d861c3176a6273cac6d-Abstract-round2.html) to learn more about the datasets!
 
 ---
 
