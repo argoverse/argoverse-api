@@ -3,15 +3,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 ![Linux CI](https://github.com/argoai/argoverse-api/workflows/Python%20CI/badge.svg)
 
-# Argoverse API
-
-> Official GitHub repository for [Argoverse dataset](https://www.argoverse.org)
+> ### [Argoverse 2 API](https://github.com/argoai/av2-api) has been released! Check out our [NeurIPS 2021 Datasets and Benchmarks publication](https://datasets-benchmarks-proceedings.neurips.cc/paper/2021/hash/4734ba6f3de83d861c3176a6273cac6d-Abstract-round2.html) to learn more about the datasets.
 
 ---
 
-# Announcements
+# Argoverse API
 
-[Argoverse 2 API](https://github.com/argoai/av2-api) has been released! Check out our [NeurIPS 2021 Datasets and Benchmarks publication](https://datasets-benchmarks-proceedings.neurips.cc/paper/2021/hash/4734ba6f3de83d861c3176a6273cac6d-Abstract-round2.html) to learn more about the datasets!
+> Official GitHub repository for [Argoverse dataset](https://www.argoverse.org)
 
 ---
 
