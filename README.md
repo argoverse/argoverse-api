@@ -9,6 +9,12 @@
 
 ---
 
+# Announcements
+
+[Argoverse 2 API](https://github.com/argoai/av2-api) has been released!
+
+---
+
 ## Table of Contents
 
 > If you have any questions, feel free to open a [GitHub issue](https://github.com/argoai/argoverse-api/issues) describing the problem.
