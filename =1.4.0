@@ -1,0 +1,3 @@
+Looking in indexes: https://pypi.org/simple, https://pip.repos.neuron.amazonaws.com
+Requirement already satisfied: scipy in /home/ubuntu/anaconda3/envs/av1/lib/python3.8/site-packages (1.8.0)
+Requirement already satisfied: numpy<1.25.0,>=1.17.3 in /home/ubuntu/anaconda3/envs/av1/lib/python3.8/site-packages (from scipy) (1.19.0)
