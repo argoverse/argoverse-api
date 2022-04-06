@@ -19,4 +19,5 @@ repos:
     hooks:
     - id: black
       args: ["-l", "120"]
+      additional_dependencies: ['click==8.0.4']
 exclude: "docs/.*$"
