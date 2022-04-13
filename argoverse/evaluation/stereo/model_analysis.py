@@ -1,9 +1,9 @@
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, Tuple, Union
 
 import numpy as np
 import torch
-from fvcore.nn import ActivationCountAnalysis, FlopCountAnalysis, flop_count_table
+from fvcore.nn import ActivationCountAnalysis, FlopCountAnalysis, flop_count_table, parameter_count
 from rich.progress import track
 
 
@@ -21,6 +21,7 @@ def model_analysis(
     """
     flops = FlopCountAnalysis(model, inputs)
     activations = ActivationCountAnalysis(model, inputs)
+    parameters = parameter_count(model)
 
     count_table = flop_count_table(flops=flops, activations=activations, max_depth=3)
     time_stats = compute_forward_time(model, inputs)
@@ -28,18 +29,21 @@ def model_analysis(
     input_size_str = "\n".join(f"Input size {i}: {input.shape}" for i, input in enumerate(inputs))
     output_str = (
         f"Device name: {torch.cuda.get_device_name(0)} \n"
-        f"{input_size_str} \n"
+        f"#Parameters: {parameters['']} \n"
+        f"#Flops: {flops.total()} \n"
+        f"#Activations: {activations.total()} \n"
         f"Mean forward time (ms): {time_stats['mean_time_ms']} \n"
         f"Std forward time (ms): {time_stats['std_time_ms']} \n"
+        f"{input_size_str} \n"
         f"{count_table}"
     )
     print(output_str)
 
-    filename = output_dir / "model_analysis_report.txt"
-    with open(filename, "w") as f:
+    report_fpath = output_dir / "model_analysis_report.txt"
+    with open(report_fpath, "w") as f:
         print(output_str, file=f)
 
-    print(f"Saved model analysis report at {filename}.")
+    print(f"Saved report at {report_fpath}.")
 
 
 def compute_forward_time(
@@ -47,7 +51,7 @@ def compute_forward_time(
     inputs: Union[torch.Tensor, Tuple[torch.Tensor, ...]],
     num_forward_passes: int = 30,
 ) -> Dict[str, float]:
-    """Compute flops of the given model. Format the per-module parameters and flops of a model in a table. num activations
+    """Compute the model forward time.
 
     Args:
         model: The model to perform the analysis on.
@@ -115,10 +119,13 @@ if __name__ == "__main__":
 
     # Example of output report:
     # Device name: Tesla V100-SXM2-32GB
+    # #Parameters: 1315
+    # #Flops: 86400
+    # #Activations: 2156
+    # Mean forward time (ms): 0.21968213319778443
+    # Std forward time (ms): 0.027638812549933046
     # Input size 0: torch.Size([1, 3, 10, 10])
     # Input size 1: torch.Size([1, 3, 10, 10])
-    # Mean forward time (ms): 0.22599679827690125
-    # Std forward time (ms): 0.028908920877094492
     # | module               | #parameters or shape   | #flops   | #activations   |
     # |:---------------------|:-----------------------|:---------|:---------------|
     # | model                | 1.315K                 | 86.4K    | 2.156K         |
