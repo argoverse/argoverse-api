@@ -2,7 +2,12 @@ from pathlib import Path
 from typing import Dict, Tuple, Union
 
 import numpy as np
-import torch
+
+try:
+    import torch
+except ImportError:
+    raise ImportError("torch failed to import.")
+
 from fvcore.nn import ActivationCountAnalysis, FlopCountAnalysis, flop_count_table, parameter_count
 from rich.progress import track
 
@@ -18,7 +23,13 @@ def model_analysis(
         model: The model to perform the analysis on.
         inputs: Inputs that are passed to the model.
         output_dir: The output directory to save the final txt report with the analysis.
+
+    Raises:
+        RuntimeError: If `cuda` is not available.
     """
+    if not torch.cuda.is_available():
+        raise RuntimeError("Expected a 'cuda' device type to perform the analysis.")
+
     flops = FlopCountAnalysis(model, inputs)
     activations = ActivationCountAnalysis(model, inputs)
     parameters = parameter_count(model)
