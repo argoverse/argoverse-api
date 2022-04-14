@@ -126,7 +126,7 @@ if __name__ == "__main__":
     input2 = torch.randn(input_shape, device=device, dtype=dtype)
     dummy_input = (input1, input2)
 
-    report_dir = Path("/home/ubuntu/")
+    report_dir = Path.home()
 
     # Example of output report:
     # Device name: Tesla V100-SXM2-32GB
