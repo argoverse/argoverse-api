@@ -51,6 +51,15 @@ Results:
         fg*:3,
         bg*:3.
 
+    If a model analysis report (i.e., model_analysis_report.txt) is available in the folder which contains the
+        stereo predictions, the following information will be added to the summary results:
+
+        #parameters (M),
+        #flops (T),
+        #activations (G),
+        Inference time (ms),
+        Device name.
+
     Note: The `evaluate` function will use all available logical cores on the machine.
 
 """
@@ -111,6 +120,7 @@ class StereoEvaluator:
         pred_fpaths = list(self.pred_root_fpath.glob("**/*.png"))
         gt_fpaths = list(self.gt_root_fpath.glob("**/stereo_front_left_rect_disparity/*.png"))
         gt_obj_fpaths = list(self.gt_root_fpath.glob("**/stereo_front_left_rect_objects_disparity/*.png"))
+        report_fpath = self.pred_root_fpath / "model_analysis_report.txt"
 
         if len(pred_fpaths) == 1:
             timestamp = str(pred_fpaths[0]).split("_")[-1][:-4]
@@ -171,6 +181,23 @@ class StereoEvaluator:
             summary[f"all*:{abs_error_thresh}"] = all_est * 100
             summary[f"fg*:{abs_error_thresh}"] = fg_est * 100
             summary[f"bg*:{abs_error_thresh}"] = bg_est * 100
+
+        if report_fpath.is_file():
+            # Collect performance metrics from report
+            with open(report_fpath, "r") as f:
+                result_lines = f.readlines()
+
+            device_name = result_lines[0].split(": ")[-1].strip()
+            parameters = int(result_lines[1].split(": ")[-1].strip())
+            flops = int(result_lines[2].split(": ")[-1].strip())
+            activations = int(result_lines[3].split(": ")[-1].strip())
+            inference_time_ms = float(result_lines[4].split(": ")[-1].strip())
+
+            summary["#parameters (M)"] = parameters / 1e6
+            summary["#flops (T)"] = flops / 1e12
+            summary["#activations (G)"] = activations / 1e9
+            summary["Inference time (ms)"] = inference_time_ms
+            summary["Device name"] = device_name
 
         return summary
 
