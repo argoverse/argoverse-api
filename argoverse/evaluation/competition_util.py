@@ -7,7 +7,7 @@ import shutil
 import tempfile
 import uuid
 from pathlib import Path
-from typing import Dict, Final, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import cv2
 import h5py
@@ -134,7 +134,7 @@ def generate_stereo_zip(data_dir: str, output_dir: str) -> None:
     """
 
     data_dir = Path(data_dir)
-    output_dir = data_dir(output_dir)
+    output_dir = Path(output_dir)
 
     output_dir.mkdir(exist_ok=True, parents=True)
 
