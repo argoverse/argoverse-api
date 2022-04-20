@@ -164,7 +164,7 @@ def generate_stereo_zip(data_dir: Path, output_dir: Path) -> None:
         print(f"ERROR: Report file {report_fpath} not found! Please add it to the input folder.")
 
     print("Creating zip file for submission...")
-    shutil.make_archive((output_dir / "stereo_output"), "zip", data_dir)
+    shutil.make_archive(str(output_dir / "stereo_output"), "zip", data_dir)
 
     print(f"Zip file ({output_dir}/stereo_output.zip) created succesfully. Please submit it to EvalAI for evaluation.")
 
