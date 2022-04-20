@@ -68,7 +68,7 @@ import logging
 import os
 from multiprocessing import Pool
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import pandas as pd
 
@@ -161,7 +161,7 @@ class StereoEvaluator:
         data = pd.concat(errors)
         # Sums over all frames (row dimension) for each disparity error metric
         data_sum = data.sum(axis=0)
-        summary: Dict[str, float] = {}
+        summary: Dict[str, Union[float, str]] = {}
 
         for abs_error_thresh in self.abs_error_thresholds:
             all = (data_sum[f"num_errors_bg:{abs_error_thresh}"] + data_sum[f"num_errors_fg:{abs_error_thresh}"]) / (
