@@ -135,7 +135,7 @@ def generate_stereo_zip(data_dir: Path, output_dir: Path) -> None:
 
     output_dir.mkdir(exist_ok=True, parents=True)
 
-    num_test_logs: Final[int] = 15
+    num_test_logs = 15
     num_pred_logs = len([path for path in data_dir.iterdir() if path.is_dir()])
 
     assert (
