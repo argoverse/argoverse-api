@@ -124,7 +124,7 @@ def generate_tracking_zip(input_path: str, output_path: str, filename: str = "ar
     shutil.rmtree(dirpath)
 
 
-def generate_stereo_zip(data_path: str, output_path: str) -> None:
+def generate_stereo_zip(data_dir: Path, output_dir: Path) -> None:
     """
     Helper function to generate the result zip file for the argoverse stereo challenge.
 
@@ -132,9 +132,6 @@ def generate_stereo_zip(data_path: str, output_path: str) -> None:
         data_dir: Path to the directory containing the disparity predictions.
         output_dir: Path to the output directory to store the output zip file.
     """
-
-    data_dir = Path(data_path)
-    output_dir = Path(output_path)
 
     output_dir.mkdir(exist_ok=True, parents=True)
 
