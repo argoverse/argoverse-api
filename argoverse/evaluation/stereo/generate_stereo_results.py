@@ -92,8 +92,8 @@ def generate_stereo_results(
     model.eval()
 
     # Init time loggers
-    time_start = torch.cuda.Event(enable_timing=True)  # type: ignore
-    time_end = torch.cuda.Event(enable_timing=True)  # type: ignore
+    time_start = torch.cuda.Event(enable_timing=True)
+    time_end = torch.cuda.Event(enable_timing=True)
 
     timings_ms = []
 
@@ -176,7 +176,7 @@ def generate_stereo_results(
 if __name__ == "__main__":
 
     # Define dummy stereo model
-    class DummyStereoModel(torch.nn.Module):
+    class DummyStereoModel(torch.nn.Module):  # type: ignore
         def __init__(self) -> None:
             super().__init__()
             self.conv_layer1 = torch.nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, padding=1)
@@ -185,8 +185,8 @@ if __name__ == "__main__":
         def forward(self, input1: torch.Tensor, input2: torch.Tensor) -> torch.Tensor:
             output1 = self.conv_layer1(input1)
             output2 = self.conv_layer1(input2)
-            output = self.conv_layer2(torch.cat((output1, output2), axis=1))  # type: ignore
-            return output  # type: ignore
+            output = self.conv_layer2(torch.cat((output1, output2), axis=1))
+            return output
 
     model = DummyStereoModel()
 
