@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Union
 
 import cv2
 import numpy as np
@@ -28,7 +27,7 @@ class ArgoverseStereoDataset(torch.utils.data.Dataset):  # type: ignore
         self,
         data_dir: Path,
         split_name: str = "test",
-        transforms: Union[torchvision.transforms, torchvision.transforms.Compose] = None,
+        transforms: torchvision.transforms = None,
     ):
         left_stereo_img_fpaths = sorted(
             (data_dir / "rectified_stereo_images_v1.1" / split_name).glob("*/stereo_front_left_rect/*.jpg")
@@ -68,7 +67,7 @@ def generate_stereo_results(
     model: torch.nn.Module,
     data_dir: Path,
     output_dir: Path,
-    transforms: Union[torchvision.transforms, torchvision.transforms.Compose] = None,
+    transforms: torchvision.transforms = None,
 ) -> None:
     """Generate the stereo model predictions, benchmark the model, and create the submission file.
     Compute number of parametes, number of activations, flops, and latency (inference time).
@@ -191,8 +190,8 @@ if __name__ == "__main__":
     model = DummyStereoModel()
 
     # Example of paths
-    data_dir = Path("/home/ubuntu/argoverse-stereo-competition/argoverse_stereo_v1.1/")
-    output_dir = Path("/home/ubuntu/argoverse-stereo-competition/submission/stereo_output")
+    data_dir = Path("/data/datasets/stereo/argoverse1/")
+    output_dir = Path("/data/datasets/stereo/submission/stereo_output")
 
     # Example of transforms to be applied to the input data
     transforms = torchvision.transforms.Compose(
