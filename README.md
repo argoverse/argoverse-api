@@ -41,7 +41,7 @@
 
 ### 2) Download HD map data
 
-- Download `hd_maps.tar.gz` from [our website](https://www.argoverse.org/data.html#download-link) and extract into the root directory of the repo. Your directory structure should look something like this:
+- Download `hd_maps.tar.gz` from [our website](https://www.argoverse.org/av1.html#download-link) and extract into the root directory of the repo. Your directory structure should look something like this:
 
 ```
 argodataset
