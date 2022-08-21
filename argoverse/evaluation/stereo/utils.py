@@ -269,7 +269,10 @@ def compute_disparity_error_image(
     disparity_error_image = np.uint8(cv2.dilate(disparity_error_image, kernel=np.ones((2, 2), np.uint8), iterations=3))
 
     # Plot the custom log-colormap and blend it with the disparity error image.
-    fig = plt.figure(figsize=(24, 2))
+    if disparity_error_image.shape[0] < 1200:
+        fig = plt.figure(figsize=(12, 1))    
+    else:
+        fig = plt.figure(figsize=(24, 2))
     ax = fig.add_subplot(111)
     x = np.linspace(1, 11, 10)
     y = np.linspace(0, 0, 10)
@@ -281,7 +284,11 @@ def compute_disparity_error_image(
     # Plot the custom log-colormap as colored circles with the disparity error ranges as labels.
     plt.scatter(x, y, c=colors, s=3000)
     plt.xlabel("Disparity range errors in pixels", fontsize=24)
-    plt.xticks(x, scalars, fontsize=20)
+    if disparity_error_image.shape[0] < 1200:
+        plt.xticks(x, scalars, fontsize=10)
+    else:
+        plt.xticks(x, scalars, fontsize=20)
+
     plt.yticks([])
 
     # Remove the plot frame to make the log-colormap more clear.
