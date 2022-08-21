@@ -110,16 +110,16 @@ class StereoEvaluator:
         self.save_disparity_error_image = save_disparity_error_image
         self.num_procs = os.cpu_count() if num_procs == -1 else num_procs
 
-    def evaluate(self) -> pd.DataFrame:
+    def evaluate(self, data=pd.DataFrame()) -> pd.DataFrame:
         """Evaluate stereo output and return metrics. The multiprocessing library is used for parallel processing
         of disparity evaluation.
 
         Returns:
             Evaluation metrics.
         """
-        pred_fpaths = list(self.pred_root_fpath.glob("**/*.png"))
-        gt_fpaths = list(self.gt_root_fpath.glob("**/stereo_front_left_rect_disparity/*.png"))
-        gt_obj_fpaths = list(self.gt_root_fpath.glob("**/stereo_front_left_rect_objects_disparity/*.png"))
+        pred_fpaths = list(sorted(self.pred_root_fpath.glob("**/*.png")))
+        gt_fpaths = list(sorted(self.gt_root_fpath.glob("**/stereo_front_left_rect_disparity/*.png")))
+        gt_obj_fpaths = list(sorted(self.gt_root_fpath.glob("**/stereo_front_left_rect_objects_disparity/*.png")))
         report_fpath = self.pred_root_fpath / "model_analysis_report.txt"
 
         if len(pred_fpaths) == 1:
@@ -158,7 +158,10 @@ class StereoEvaluator:
             with Pool(self.num_procs) as p:
                 errors = p.starmap(compute_disparity_error, args)
 
-        data = pd.concat(errors)
+        # Concat results with previous results
+        errors = pd.concat(errors)
+        data = pd.concat([data, errors])
+
         # Sums over all frames (row dimension) for each disparity error metric
         data_sum = data.sum(axis=0)
         summary: Dict[str, Union[float, str]] = {}
@@ -199,7 +202,7 @@ class StereoEvaluator:
             summary["Inference time (ms)"] = inference_time_ms
             summary["Device name"] = device_name
 
-        return summary
+        return summary, data, errors
 
 
 def main() -> None:
