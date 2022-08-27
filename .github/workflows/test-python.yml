@@ -5,20 +5,28 @@ on: [pull_request]
 
 jobs:
   run-unit-tests:
-    
     name: Run all unit tests in codebase
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        python-version: ['3.7', '3.8', '3.9']
     
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.7
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
-        python-version: 3.7.1
+        python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
       run: |
-        pip install tox==3.12.1 pre-commit==1.17.0
+        pip install tox==3.12.1 pre-commit==1.17.0 coverage pytest pytest-cov mypy flake8 flake8-logging-format flake8-string-format numba
+
+    - name: Install wget for Windows
+      if: matrix.os == 'windows-latest'
+      run: |
+        choco install wget --no-progress 
         
     - name: Download Argoverse HD map files
       run: |
@@ -27,6 +35,6 @@ jobs:
 
     - name: Test with tox
       run: |
-        tox
+        tox -e py
         pre-commit run --all-files
         

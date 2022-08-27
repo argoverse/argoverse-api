@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools", "wheel", "numpy"]
+build-backend = "setuptools.build_meta"
+
 [tool.isort]
 known_first_party = "argoverse"
 known_third_party = "mayavi,pytest,colour,descartes,imageio,matplotlib,motmetrics,numpy,cv2,pandas,pillow,imageio,pyntcloud,scipy,shapely,sklearn"
