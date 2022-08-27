@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 """A simple python script template."""
+import os
 from collections import defaultdict
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
@@ -14,6 +15,7 @@ from argoverse.map_representation.map_api import ArgoverseMap
 
 _ZORDER = {"AGENT": 15, "AV": 10, "OTHERS": 5}
 
+_PathLike = Union[str, "os.PathLike[str]"]
 
 def interpolate_polyline(polyline: np.ndarray, num_points: int) -> np.ndarray:
     duplicates = []
@@ -31,6 +33,7 @@ def interpolate_polyline(polyline: np.ndarray, num_points: int) -> np.ndarray:
 
 def viz_sequence(
     df: pd.DataFrame,
+    map_root: _PathLike = None,
     lane_centerlines: Optional[List[np.ndarray]] = None,
     show: bool = True,
     smoothen: bool = False,
@@ -41,7 +44,10 @@ def viz_sequence(
 
     if lane_centerlines is None:
         # Get API for Argo Dataset map
-        avm = ArgoverseMap()
+        if map_root is not None:
+            avm = ArgoverseMap(map_root)
+        else:
+            avm = ArgoverseMap()
         seq_lane_props = avm.city_lane_centerlines_dict[city_name]
 
     plt.figure(0, figsize=(8, 7))
