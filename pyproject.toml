@@ -1,3 +1,6 @@
+[tool.black]
+line-length = 120
+
 [tool.isort]
 known_first_party = "argoverse"
 known_third_party = "mayavi,pytest,colour,descartes,imageio,matplotlib,motmetrics,numpy,cv2,pandas,pillow,imageio,pyntcloud,scipy,shapely,sklearn"
@@ -6,5 +9,9 @@ line_length = 120
 multi_line_output = 3
 profile = "black"
 
-[tool.black]
-line-length = 120
+[tool.mypy]
+ignore_missing_imports = true
+strict = true
+
+[tool.pytest.ini_options]
+addopts = "--cov argoverse --cov-append --cov-branch --cov-report=term-missing"
