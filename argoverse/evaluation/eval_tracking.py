@@ -24,7 +24,6 @@ _PathLike = Union[str, "os.PathLike[str]"]
 """
 Computes multiple object tracking (MOT) metrics. Please refer to the following
 papers for definitions of the following metrics:
-
 #FRAG, #IDSW: Milan et al., MOT16, https://arxiv.org/pdf/1603.00831.pdf
 MT, ML: Leal-Taixe et al., MOT15, https://arxiv.org/pdf/1504.01942.pdf
 MOTA: Bernardin et al. https://link.springer.com/article/10.1155/2008/246309
@@ -34,13 +33,11 @@ MOTA: Bernardin et al. https://link.springer.com/article/10.1155/2008/246309
 def in_distance_range_pose(ego_center: np.ndarray, pose: np.ndarray, d_min: float, d_max: float) -> bool:
     """Determine whether a pose in the ego-vehicle frame falls within a specified distance range
         of the egovehicle's origin.
-
     Args:
         ego_center: ego center pose (zero if bbox is in ego frame).
         pose:  pose to test.
         d_min: minimum distance range
         d_max: maximum distance range
-
     Returns:
         A boolean saying if input pose is with specified distance range.
     """
@@ -80,12 +77,10 @@ def get_distance_iou_3d(x1: Dict[str, np.ndarray], x2: Dict[str, np.ndarray], na
 
 def get_distance(x1: Dict[str, np.ndarray], x2: Dict[str, np.ndarray], name: str) -> float:
     """Get the distance between two poses, returns nan if distance is larger than detection threshold.
-
     Args:
         x1: first pose
         x2: second pose
         name: name of the field to test
-
     Returns:
         A distance value or NaN
     """
@@ -115,7 +110,6 @@ def eval_tracks(
     category: str = "VEHICLE",
 ) -> None:
     """Evaluate tracking output.
-
     Args:
         path_tracker_output_root: path to tracker output root, containing log_id subdirs
         path_dataset_root: path to dataset root, containing log_id subdirs
@@ -132,11 +126,12 @@ def eval_tracks(
             However, `mostly tracked` and `mostly lost` will be accurate.
         category: such as "VEHICLE" "PEDESTRIAN"
     """
+
     acc_c = mm.MOTAccumulator(auto_id=True)
     acc_i = mm.MOTAccumulator(auto_id=True)
     acc_o = mm.MOTAccumulator(auto_id=True)
 
-    ID_gt_all: List[str] = []
+    ID_gt_all: List[int] = []
 
     count_all: int = 0
     if diffatt is not None:
@@ -155,7 +150,6 @@ def eval_tracks(
     num_total_gt = 0
 
     for path_dataset in path_datasets:
-
         log_id = pathlib.Path(path_dataset).name
         if len(log_id) == 0 or log_id.startswith("_"):
             continue
@@ -165,7 +159,7 @@ def eval_tracks(
         path_track_data = sorted(
             glob.glob(os.path.join(os.fspath(path_tracker_output), "per_sweep_annotations_amodal", "*"))
         )
-
+        all_uuids: Dict[str, int] = {}  # stores all uuids attached to unique integers
         logger.info("log_id = %s", log_id)
 
         for ind_frame in range(len(path_track_data)):
@@ -185,10 +179,10 @@ def eval_tracks(
 
             gt_data = read_json_file(path_gt)
 
-            gt: Dict[str, Dict[str, Any]] = {}
+            gt: Dict[int, Dict[str, Any]] = {}
             id_gts = []
+            track_label_uuids: Dict[str, int] = {}  # stores uuids in frame with unique ints
             for i in range(len(gt_data)):
-
                 if gt_data[i]["label_class"] != category:
                     continue
 
@@ -206,8 +200,15 @@ def eval_tracks(
                         gt_data[i]["center"]["z"],
                     ]
                 )
+
                 if bbox[3] > 0 and in_distance_range_pose(np.zeros(3), center, d_min, d_max):
-                    track_label_uuid = gt_data[i]["track_label_uuid"]
+                    # assign a unique int value to each uuid in the frame
+                    if gt_data[i]["track_label_uuid"] not in track_label_uuids:
+                        track_label_uuids[gt_data[i]["track_label_uuid"]] = i
+                        track_label_uuid = i
+                    else:
+                        track_label_uuid = track_label_uuids[gt_data[i]["track_label_uuid"]]
+
                     gt[track_label_uuid] = {}
                     gt[track_label_uuid]["centroid"] = center
 
@@ -223,13 +224,15 @@ def eval_tracks(
                     id_gts.append(track_label_uuid)
                     num_total_gt += 1
 
-            tracks: Dict[str, Dict[str, Any]] = {}
-            id_tracks: List[str] = []
+            tracks: Dict[int, Dict[str, Any]] = {}
+            id_tracks: List[int] = []
 
             track_data = read_json_file(path_track_data[ind_frame])
 
             for track in track_data:
-                key = track["track_label_uuid"]
+                if track["track_label_uuid"] not in all_uuids:
+                    all_uuids[track["track_label_uuid"]] = len(all_uuids) + 1
+                key = all_uuids[track["track_label_uuid"]]
 
                 if track["label_class"] != category or track["height"] == 0:
                     continue
@@ -259,14 +262,19 @@ def eval_tracks(
                 dists_o.append(gt_track_data_o)
                 for track_key, track_value in tracks.items():
                     count_all += 1
-                    gt_track_data_c.append(get_distance(gt_value, track_value, "centroid"))
-                    gt_track_data_i.append(get_distance(gt_value, track_value, "iou"))
-                    gt_track_data_o.append(get_distance(gt_value, track_value, "orientation"))
-
+                    centroid_distance = get_distance(gt_value, track_value, "centroid")
+                    # appends distances if centroid distance is valid
+                    if np.isfinite(centroid_distance):
+                        gt_track_data_c.append(centroid_distance)
+                        gt_track_data_i.append(get_distance(gt_value, track_value, "iou"))
+                        gt_track_data_o.append(get_distance(gt_value, track_value, "orientation"))
+                    else:
+                        gt_track_data_c.append(float(np.nan))
+                        gt_track_data_i.append(float(np.nan))
+                        gt_track_data_o.append(float(np.nan))
             acc_c.update(id_gts, id_tracks, dists_c)
             acc_i.update(id_gts, id_tracks, dists_i)
             acc_o.update(id_gts, id_tracks, dists_o)
-    # print(count_all)
     if count_all == 0:
         # fix for when all hypothesis is empty,
         # pymotmetric currently doesn't support this, see https://github.com/cheind/py-motmetrics/issues/49

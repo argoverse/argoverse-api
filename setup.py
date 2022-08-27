@@ -56,7 +56,7 @@ setup(
         "imageio",
         "lapsolver",
         "matplotlib",
-        "motmetrics==1.1.3",
+        "motmetrics==1.2",
         "numba",
         "numpy==1.19",
         "omegaconf==2.1.0",
