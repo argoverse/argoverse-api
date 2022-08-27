@@ -104,7 +104,6 @@ def generate_tracking_zip(input_path: str, output_path: str, filename: str = "ar
         filename: to be used as the name of the file
 
     """
-
     if not os.path.exists(output_path):
         os.makedirs(output_path)
     dirpath = tempfile.mkdtemp()
@@ -170,27 +169,19 @@ def generate_stereo_zip(data_dir: Path, output_dir: Path) -> None:
 
 
 def get_polygon_from_points(points: np.ndarray) -> Polygon:
-    """
-    function to generate (convex hull) shapely polygon from set of points
+    """Convert a 3d point set to a Shapely polygon representing its convex hull.
 
     Args:
-        points: list of 2d coordinate points
+        points: list of 3d coordinate points
 
     Returns:
-        polygon: shapely polygon representing the results
+        polygon: shapely Polygon representing the points along the convex hull's boundary
     """
-    points = points
     hull = ConvexHull(points)
 
-    poly = []
-
-    for simplex in hull.simplices:
-        poly.append([points[simplex, 0][0], points[simplex, 1][0], points[simplex, 2][0]])
-        poly.append([points[simplex, 0][1], points[simplex, 1][1], points[simplex, 2][1]])
-
-        # plt.plot(points[simplex, 0], points[simplex, 1], 'k-')
-
-    return Polygon(poly)
+    # `simplices` contains indices of points forming the simplical facets of the convex hull.
+    poly_pts = hull.points[np.unique(hull.simplices)]
+    return Polygon(poly_pts)
 
 
 def get_rotated_bbox_from_points(points: np.ndarray) -> Polygon:
@@ -206,16 +197,6 @@ def get_rotated_bbox_from_points(points: np.ndarray) -> Polygon:
     return get_polygon_from_points(points).minimum_rotated_rectangle
 
 
-def unit_vector(pt0: Tuple[float, float], pt1: Tuple[float, float]) -> Tuple[float, float]:
-    # returns an unit vector that points in the direction of pt0 to pt1
-    dis_0_to_1 = math.sqrt((pt0[0] - pt1[0]) ** 2 + (pt0[1] - pt1[1]) ** 2)
-    return (pt1[0] - pt0[0]) / dis_0_to_1, (pt1[1] - pt0[1]) / dis_0_to_1
-
-
-def dist(p1: Tuple[float, float], p2: Tuple[float, float]) -> float:
-    return math.sqrt(((p1[0] - p2[0]) ** 2) + ((p1[1] - p2[1]) ** 2))
-
-
 def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") -> ObjectLabelRecord:
     """Convert a Shapely Polygon to a 3d cuboid by estimating the minimum-bounding rectangle.
 
@@ -223,47 +204,42 @@ def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") 
         poly: Shapely polygon object representing a convex hull of an object
         category: object category to which object belongs, e.g. VEHICLE, PEDESTRIAN, etc
         track_id: unique identifier
+
     Returns:
         object representing a 3d cuboid
     """
-
     bbox = poly.minimum_rotated_rectangle
+    centroid = bbox.centroid.coords[0]
 
-    x = bbox.exterior.xy[0]
-    y = bbox.exterior.xy[1]
+    # exterior consists of of x and y values for bbox vertices [0,1,2,3,0], i.e. the first vertex is repeated as last
+    x = np.array(bbox.exterior.xy[0]).reshape(5, 1)
+    y = np.array(bbox.exterior.xy[1]).reshape(5, 1)
+
+    v0, v1, v2, v3, _ = np.hstack([x, y])
+
     z = np.array([z for _, _, z in poly.exterior.coords])
+    height = max(z) - min(z)
 
-    # z = poly.exterior.xy[2]
-
-    d1 = dist((x[0], y[0]), (x[1], y[1]))
-    d2 = dist((x[1], y[1]), (x[2], y[2]))
+    d1 = np.linalg.norm(v0 - v1)
+    d2 = np.linalg.norm(v1 - v2)
 
     # assign orientation so that the rectangle's longest side represents the object's length
     width = min(d1, d2)
     length = max(d1, d2)
 
-    if max(d1, d2) == d2:
-        unit_v = unit_vector((x[1], y[1]), (x[2], y[2]))
+    if d2 == length:
+        # vector points from v1 -> v2
+        v = v2 - v1
     else:
-        unit_v = unit_vector((x[0], y[0]), (x[1], y[1]))
+        # vector points from v0 -> v1
+        v = v0 - v1
 
-    angle_rad = np.arctan2(unit_v[1], unit_v[0])
+    # vector need not be unit length
+    angle_rad = np.arctan2(v[1], v[0])
     q = yaw_to_quaternion3d(angle_rad)
 
-    height = max(z) - min(z)
-
     # location of object in egovehicle coordinates
-    center = np.array([bbox.centroid.xy[0][0], bbox.centroid.xy[1][0], min(z) + height / 2])
-
-    c = np.cos(angle_rad)
-    s = np.sin(angle_rad)
-    R = np.array(
-        [
-            [c, -s, 0],
-            [s, c, 0],
-            [0, 0, 1],
-        ]
-    )
+    center = np.array([centroid[0], centroid[1], min(z) + height / 2])
 
     return ObjectLabelRecord(
         quaternion=q,
@@ -278,7 +254,7 @@ def poly_to_label(poly: Polygon, category: str = "VEHICLE", track_id: str = "") 
 
 
 def get_objects(clustering: DBSCAN, pts: np.ndarray, category: str = "VEHICLE") -> List[Tuple[np.ndarray, uuid.UUID]]:
-
+    """ """
     core_samples_mask = np.zeros_like(clustering.labels_, dtype=bool)
     core_samples_mask[clustering.core_sample_indices_] = True
     labels = clustering.labels_
