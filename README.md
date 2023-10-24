@@ -58,7 +58,7 @@ argodataset
 
 ### 3) Download Argoverse-Tracking and Argoverse-Forecasting
 
-We provide both the full dataset and the sample version of the dataset for testing purposes. Head to [our website](https://www.argoverse.org/data.html#download-link) to see the download option.
+We provide both the full dataset and the sample version of the dataset for testing purposes. Head to [our website](https://www.argoverse.org/av1.html#download-link) to see the download option.
 
 * **Argoverse-Tracking** provides track annotations, egovehicle poses, and *undistorted*, raw data from camera (@30hz) and lidar sensors (@10hz) as well as two stereo cameras (@5hz). We've released a total 113 scenes/logs, separated into 65 logs for training, 24 logs for validating, and 24 logs for testing. We've separated training data into smaller files to make it easier to download, but you should extract them all into one folder.
     We also provide sample data (1 log) in `tracking_sample.tar.gz`.
