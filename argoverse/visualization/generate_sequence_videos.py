@@ -93,7 +93,8 @@ def main(arguments: List[str]) -> int:
 
         from moviepy.editor import ImageSequenceClip
 
-        img_idx = sorted([int(x.split(".")[0]) for x in os.listdir(seq_out_dir)])
+        #img_idx = sorted([int(x.split(".")[0]) for x in os.listdir(seq_out_dir)])
+        img_idx = sorted([int(x.split(".")[0]) for x in os.listdir(seq_out_dir) if x.split(".")[0].isdigit()])
         list_video = [f"{seq_out_dir}/{x}.png" for x in img_idx]
         clip = ImageSequenceClip(list_video, fps=10)
         video_path = os.path.join(args.output_dir, f"{seq_name.split('.')[0]}.mp4")
