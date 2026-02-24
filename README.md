@@ -58,7 +58,7 @@ argodataset
 
 ### 3) Download Argoverse-Tracking and Argoverse-Forecasting
 
-We provide both the full dataset and the sample version of the dataset for testing purposes. Head to [our website](https://www.argoverse.org/data.html#download-link) to see the download option.
+We provide both the full dataset and the sample version of the dataset for testing purposes. Head to [our website](https://www.argoverse.org/av1.html#download-link) to see the download option.
 
 * **Argoverse-Tracking** provides track annotations, egovehicle poses, and *undistorted*, raw data from camera (@30hz) and lidar sensors (@10hz) as well as two stereo cameras (@5hz). We've released a total 113 scenes/logs, separated into 65 logs for training, 24 logs for validating, and 24 logs for testing. We've separated training data into smaller files to make it easier to download, but you should extract them all into one folder.
     We also provide sample data (1 log) in `tracking_sample.tar.gz`.
@@ -109,7 +109,7 @@ avm = ArgoverseMap()
 argoverse_tracker_loader = ArgoverseTrackingLoader('argoverse-tracking/')    #simply change to your local path of the data
 argoverse_forecasting_loader = ArgoverseForecastingLoader('argoverse-forecasting/') #simply change to your local path of the data
 ```
-API documentation is available [here](https://argoai.github.io/argoverse-api/). We recommend you get started by working through the demo tutorials below.
+API documentation is available [here](https://argoverse.github.io/argoverse-api/). We recommend you get started by working through the demo tutorials below.
 
 ---
 
@@ -118,7 +118,7 @@ To make it easier to use our API, we provide demo tutorials in the form of Jupyt
 
 To run them, you'll need to first install Jupyter Notebook `pip install jupyter`. Then navigate to the repo directory and open a server with `jupyter notebook`. When you run the command, it will open your browser automatically. If you lose the page, you can click on the link in your terminal to re-open the Jupyter notebook.
 
-Once it's running, just navigate to the `demo_usage` folder and open any tutorial! Note that to use the tracking and forecasting tutorials, you'll need to download the tracking and forecasting sample data from [our website](https://www.argoverse.org/data.html#download-link) and extract the folders into the root of the repo.
+Once it's running, just navigate to the `demo_usage` folder and open any tutorial! Note that to use the tracking and forecasting tutorials, you'll need to download the tracking and forecasting sample data from [our website](https://www.argoverse.org/av1.html#download-link) and extract the folders into the root of the repo.
 
 ### **Argoverse Map Tutorial**
 [![](images/map_tutorial.png)](./demo_usage/argoverse_map_tutorial.ipynb)
