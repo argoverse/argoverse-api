@@ -52,7 +52,7 @@ setup(
         "colour",
         "descartes",
         "h5py",
-        "hydra-core==1.1.0",
+        "hydra-core==1.3.7",
         "imageio",
         "lapsolver",
         "matplotlib",
